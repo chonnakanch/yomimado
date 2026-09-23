@@ -1,0 +1,142 @@
+:root {
+  font-family: system-ui, sans-serif;
+  color: #f8f6f1;
+  background: #25211e;
+}
+:root[data-mode="capture"],
+:root[data-mode="overlay"],
+:root[data-mode="capture"] body,
+:root[data-mode="overlay"] body {
+  background: transparent;
+}
+body {
+  margin: 0;
+}
+button {
+  border: 0;
+  border-radius: 8px;
+  background: #df8259;
+  color: #201512;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 700;
+  padding: 0.8rem 1rem;
+}
+.main-window {
+  margin: 0 auto;
+  max-width: 32rem;
+  padding: 4rem 2rem;
+}
+h1 {
+  margin-bottom: 0.15rem;
+}
+h1 span {
+  color: #df8259;
+  font-size: 0.7em;
+}
+.status {
+  color: #c6bcb5;
+  margin-top: 2rem;
+}
+.hint {
+  color: #9f958e;
+  font-size: 0.875rem;
+}
+.capture-selector {
+  background: rgb(20 15 12 / 0.2);
+  box-sizing: border-box;
+  cursor: crosshair;
+  height: 100vh;
+  overflow: hidden;
+  position: relative;
+  user-select: none;
+  width: 100vw;
+}
+:root[data-capturing="true"] .capture-selector {
+  opacity: 0;
+  pointer-events: none;
+}
+.capture-selector p {
+  background: rgb(20 15 12 / 0.8);
+  border-radius: 6px;
+  left: 1rem;
+  margin: 0;
+  padding: 0.5rem 0.75rem;
+  position: absolute;
+  top: 1rem;
+}
+.capture-selector .capture-error {
+  background: rgb(110 32 25 / 0.9);
+  top: 3.8rem;
+}
+.selection {
+  background: rgb(223 130 89 / 0.16);
+  border: 2px solid #ffab83;
+  box-sizing: border-box;
+  pointer-events: none;
+  position: absolute;
+}
+.ocr-overlay {
+  height: 100vh;
+  pointer-events: none;
+  position: relative;
+  width: 100vw;
+}
+.ocr-overlay svg {
+  overflow: visible;
+  position: absolute;
+}
+.overlay-toolbar {
+  align-items: center;
+  display: flex;
+  gap: 0.25rem;
+  justify-content: space-between;
+  left: 0;
+  pointer-events: none;
+  position: absolute;
+  right: 0;
+  z-index: 1;
+}
+.ocr-region {
+  cursor: pointer;
+  fill: rgb(223 130 89 / 0.12);
+  pointer-events: all;
+  stroke: #ffab83;
+  stroke-width: 2;
+  transition:
+    fill 0.15s ease,
+    stroke 0.15s ease;
+  vector-effect: non-scaling-stroke;
+}
+.ocr-region:hover {
+  fill: rgb(223 130 89 / 0.3);
+  stroke: #ff7f4d;
+}
+.ocr-region.active {
+  fill: rgb(223 130 89 / 0.45);
+  stroke: #ff5722;
+}
+.ocr-region.demo {
+  fill: none;
+  stroke-dasharray: 6 5;
+}
+.demo-label {
+  background: rgb(37 33 30 / 0.9);
+  border-radius: 5px;
+  color: #f8f6f1;
+  font-size: 0.75rem;
+  margin-left: 0.25rem;
+  min-width: 0;
+  overflow: hidden;
+  padding: 0.25rem 0.45rem;
+  pointer-events: none;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.close-overlay {
+  pointer-events: all;
+  flex: 0 0 26px;
+  height: 26px;
+  margin-right: 0.25rem;
+  padding: 0;
+}
