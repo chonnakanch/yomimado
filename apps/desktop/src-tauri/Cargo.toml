@@ -23,3 +23,6 @@ tauri-plugin-global-shortcut = "2.3"
 thiserror = "2"
 urlencoding = "2"
 xcap = "0.8"
+
+[target.'cfg(target_os = "macos")'.dependencies]
+core-graphics = "0.25"

@@ -36,8 +36,13 @@ npm install
 npm run tauri dev
 ```
 
-macOS requires Screen Recording permission for the desktop app. The placeholder
-OCR endpoint does not download models or send images over the network.
+macOS requires Screen Recording permission. If macOS prompts during the first
+capture, enable YomiMado in **System Settings → Privacy & Security → Screen &
+System Audio Recording**, then restart the app. When running `tauri dev`, macOS
+may list the terminal application instead. Without this permission, macOS can
+return a screenshot containing only the desktop background instead of the
+visible windows. The placeholder OCR endpoint does not download models or send
+images over the network.
 
 ## Local OCR models (optional)
 

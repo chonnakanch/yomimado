@@ -37,11 +37,12 @@ impl XcapScreenCapture {
                 "Invalid selector viewport".into(),
             ));
         }
-        let scale_x = display.physical_bounds.width / display.viewport_width;
-        let scale_y = display.physical_bounds.height / display.viewport_height;
+        let selector = display.selector_physical_bounds;
+        let scale_x = selector.width / display.viewport_width;
+        let scale_y = selector.height / display.viewport_height;
         let physical = Rectangle {
-            x: display.physical_bounds.x + logical.x * scale_x,
-            y: display.physical_bounds.y + logical.y * scale_y,
+            x: selector.x + logical.x * scale_x,
+            y: selector.y + logical.y * scale_y,
             width: logical.width * scale_x,
             height: logical.height * scale_y,
         };
@@ -105,19 +106,19 @@ impl ScreenCapture for XcapScreenCapture {
             .map_err(|error| CaptureError::Unavailable(error.to_string()))?;
 
         // xcap's image size can differ from Tauri's physical monitor size on
-        // Retina/scaled displays. Map the selector's local logical rectangle
-        // into the *actual* captured image dimensions.
-        let logical = selection_logical.normalized();
+        // Retina/scaled displays. Map the measured screen-physical rectangle
+        // into the actual captured image rather than assuming the selector
+        // begins at the monitor origin.
         let (local_x, width) = crop_axis(
-            logical.x,
-            logical.width,
-            display.viewport_width,
+            physical.x - display.physical_bounds.x,
+            physical.width,
+            display.physical_bounds.width,
             image.width(),
         )?;
         let (local_y, height) = crop_axis(
-            logical.y,
-            logical.height,
-            display.viewport_height,
+            physical.y - display.physical_bounds.y,
+            physical.height,
+            display.physical_bounds.height,
             image.height(),
         )?;
 
@@ -166,21 +167,21 @@ impl ScreenCapture for XcapScreenCapture {
 }
 
 fn crop_axis(
-    logical_start: f64,
-    logical_length: f64,
-    display_logical_length: f64,
+    physical_start: f64,
+    physical_length: f64,
+    display_physical_length: f64,
     image_length: u32,
 ) -> Result<(u32, u32), CaptureError> {
-    if display_logical_length <= 0.0 || image_length == 0 {
+    if display_physical_length <= 0.0 || image_length == 0 {
         return Err(CaptureError::Unavailable(
             "Invalid display dimensions".into(),
         ));
     }
-    let ratio = f64::from(image_length) / display_logical_length;
-    let start = (logical_start * ratio)
+    let ratio = f64::from(image_length) / display_physical_length;
+    let start = (physical_start * ratio)
         .round()
         .clamp(0.0, f64::from(image_length)) as u32;
-    let end = ((logical_start + logical_length) * ratio)
+    let end = ((physical_start + physical_length) * ratio)
         .round()
         .clamp(0.0, f64::from(image_length)) as u32;
     if end <= start {
@@ -199,6 +200,12 @@ mod tests {
             id: "disp1".into(),
             name: "Display 1".into(),
             physical_bounds: Rectangle {
+                x: 0.0,
+                y: 0.0,
+                width: 1920.0,
+                height: 1080.0,
+            },
+            selector_physical_bounds: Rectangle {
                 x: 0.0,
                 y: 0.0,
                 width: 1920.0,
@@ -230,6 +237,12 @@ mod tests {
                 width: 3840.0,
                 height: 2160.0,
             },
+            selector_physical_bounds: Rectangle {
+                x: 0.0,
+                y: 0.0,
+                width: 3840.0,
+                height: 2160.0,
+            },
             scale_factor: 2.0,
             viewport_width: 1920.0,
             viewport_height: 1080.0,
@@ -251,6 +264,12 @@ mod tests {
             id: "disp2".into(),
             name: "Display 2".into(),
             physical_bounds: Rectangle {
+                x: -1920.0,
+                y: 0.0,
+                width: 1920.0,
+                height: 1080.0,
+            },
+            selector_physical_bounds: Rectangle {
                 x: -1920.0,
                 y: 0.0,
                 width: 1920.0,
@@ -287,6 +306,12 @@ mod tests {
                 width: 3000.0,
                 height: 2000.0,
             },
+            selector_physical_bounds: Rectangle {
+                x: 0.0,
+                y: 0.0,
+                width: 3000.0,
+                height: 2000.0,
+            },
             scale_factor: 2.0,
             viewport_width: 2000.0,
             viewport_height: 1000.0,
@@ -300,5 +325,59 @@ mod tests {
         let physical = XcapScreenCapture::physical_selection(&display, logical).unwrap();
         assert_eq!((physical.x, physical.y), (150.0, 100.0));
         assert_eq!((physical.width, physical.height), (300.0, 200.0));
+    }
+
+    #[test]
+    fn selector_inset_below_menu_bar_moves_capture_and_crop_together() {
+        let display = DisplayInfo {
+            id: "retina".into(),
+            name: "Retina".into(),
+            physical_bounds: Rectangle {
+                x: 0.0,
+                y: 0.0,
+                width: 2940.0,
+                height: 1912.0,
+            },
+            selector_physical_bounds: Rectangle {
+                x: 0.0,
+                y: 66.0,
+                width: 2940.0,
+                height: 1846.0,
+            },
+            scale_factor: 2.0,
+            viewport_width: 1470.0,
+            viewport_height: 923.0,
+        };
+        let selection = Rectangle {
+            x: 600.0,
+            y: 300.0,
+            width: 100.0,
+            height: 150.0,
+        };
+        let physical = XcapScreenCapture::physical_selection(&display, selection).unwrap();
+        assert_eq!(
+            (physical.x, physical.y, physical.width, physical.height),
+            (1200.0, 666.0, 200.0, 300.0)
+        );
+        assert_eq!(
+            crop_axis(
+                physical.y,
+                physical.height,
+                display.physical_bounds.height,
+                1912
+            )
+            .unwrap(),
+            (666, 300)
+        );
+        assert_eq!(
+            crop_axis(
+                physical.y,
+                physical.height,
+                display.physical_bounds.height,
+                956
+            )
+            .unwrap(),
+            (333, 150)
+        );
     }
 }

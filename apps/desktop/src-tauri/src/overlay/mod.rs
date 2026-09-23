@@ -145,4 +145,41 @@ mod tests {
         assert_eq!(result.toolbar_top, 0.0);
         assert_eq!(result.content_width, 20.0);
     }
+
+    #[test]
+    fn content_stays_on_the_selected_screen_rectangle() {
+        let metadata = CaptureMetadata {
+            display_id: "retina".into(),
+            display_name: "Retina".into(),
+            screen_physical_bounds: Rectangle {
+                x: 0.0,
+                y: 0.0,
+                width: 2940.0,
+                height: 1912.0,
+            },
+            selection_physical_bounds: Rectangle {
+                x: 1200.0,
+                y: 666.0,
+                width: 200.0,
+                height: 300.0,
+            },
+            selection_logical_bounds: Rectangle {
+                x: 600.0,
+                y: 300.0,
+                width: 100.0,
+                height: 150.0,
+            },
+            image_width: 200,
+            image_height: 300,
+            scale_factor: 2.0,
+        };
+        let result = layout(&metadata);
+        assert_eq!(
+            f64::from(result.window_x) + result.content_left * 2.0,
+            1200.0
+        );
+        assert_eq!(f64::from(result.window_y) + result.content_top * 2.0, 666.0);
+        assert_eq!(result.content_width * 2.0, 200.0);
+        assert_eq!(result.content_height * 2.0, 300.0);
+    }
 }

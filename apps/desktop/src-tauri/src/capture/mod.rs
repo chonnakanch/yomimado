@@ -41,6 +41,9 @@ pub struct DisplayInfo {
     pub id: String,
     pub name: String,
     pub physical_bounds: Rectangle,
+    /// Actual physical bounds of the selector webview. macOS can move a
+    /// requested full-screen borderless window below the menu bar.
+    pub selector_physical_bounds: Rectangle,
     pub scale_factor: f64,
     /// CSS pixel size of the selector webview, measured by the frontend.
     pub viewport_width: f64,

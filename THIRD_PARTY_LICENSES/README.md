@@ -4,6 +4,7 @@ This initial prototype uses the following direct runtime dependencies:
 
 - Tauri 2.11.6 and `tauri-plugin-global-shortcut` 2.3.2 — Apache-2.0 OR MIT
 - xcap 0.8.3 — Apache-2.0
+- core-graphics 0.25.0 (macOS permission check) — MIT OR Apache-2.0
 - React 19.3.0 — MIT
 
 Development tooling also includes Vite 7.3.6 (MIT) and the Tauri CLI

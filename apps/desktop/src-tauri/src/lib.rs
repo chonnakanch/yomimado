@@ -38,6 +38,12 @@ fn current_display(app: &AppHandle, window_label: &str) -> Result<DisplayInfo, S
             width: size.width as f64,
             height: size.height as f64,
         },
+        selector_physical_bounds: Rectangle {
+            x: position.x as f64,
+            y: position.y as f64,
+            width: size.width as f64,
+            height: size.height as f64,
+        },
         scale_factor: monitor.scale_factor(),
         viewport_width: size.width as f64 / monitor.scale_factor(),
         viewport_height: size.height as f64 / monitor.scale_factor(),
@@ -46,6 +52,14 @@ fn current_display(app: &AppHandle, window_label: &str) -> Result<DisplayInfo, S
 
 #[tauri::command]
 fn show_capture_selector(app: AppHandle) -> Result<(), String> {
+    #[cfg(target_os = "macos")]
+    {
+        let access = core_graphics::access::ScreenCaptureAccess;
+        if !access.preflight() {
+            access.request();
+            return Err("Screen Recording access is required. Enable YomiMado (or your terminal when running `tauri dev`) in System Settings > Privacy & Security > Screen & System Audio Recording, then restart the app.".into());
+        }
+    }
     let display = current_display(&app, "main")?;
     let main = app
         .get_webview_window("main")
@@ -109,10 +123,25 @@ async fn capture_selection(
     viewport: ViewportSize,
 ) -> Result<CapturedImage, String> {
     let mut display = current_display(&app, "capture-selector")?;
+    let selector = app
+        .get_webview_window("capture-selector")
+        .ok_or("Capture selector is unavailable")?;
+    let position = selector
+        .inner_position()
+        .map_err(|error| error.to_string())?;
+    let size = selector.inner_size().map_err(|error| error.to_string())?;
+    display.selector_physical_bounds = Rectangle {
+        x: f64::from(position.x),
+        y: f64::from(position.y),
+        width: f64::from(size.width),
+        height: f64::from(size.height),
+    };
     display.viewport_width = viewport.width;
     display.viewport_height = viewport.height;
-    app.get_webview_window("capture-selector")
-        .ok_or("Capture selector is unavailable")?;
+    eprintln!(
+        "YomiMado: selector actual={:?} monitor={:?}",
+        display.selector_physical_bounds, display.physical_bounds
+    );
     let capture = Arc::clone(&state.capture);
     // Give the window compositor time to remove the selection UI before xcap
     // snapshots the monitor. The blocking work stays off the Tauri UI thread.
@@ -168,7 +197,9 @@ pub fn run() {
             GlobalShortcutBuilder::new()
                 .with_handler(|app, _shortcut, event| {
                     if event.state() == ShortcutState::Pressed {
-                        let _ = show_capture_selector(app.clone());
+                        if let Err(error) = show_capture_selector(app.clone()) {
+                            eprintln!("YomiMado: {error}");
+                        }
                     }
                 })
                 .build(),
