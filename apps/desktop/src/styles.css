@@ -5,8 +5,10 @@
 }
 :root[data-mode="capture"],
 :root[data-mode="overlay"],
+:root[data-mode="translation"],
 :root[data-mode="capture"] body,
-:root[data-mode="overlay"] body {
+:root[data-mode="overlay"] body,
+:root[data-mode="translation"] body {
   background: transparent;
 }
 body {
@@ -139,4 +141,83 @@ h1 span {
   height: 26px;
   margin-right: 0.25rem;
   padding: 0;
+}
+.overlay-error {
+  background: rgb(110 32 25 / 0.95);
+  border-radius: 6px;
+  left: 0.5rem;
+  max-width: 20rem;
+  padding: 0.5rem;
+  pointer-events: none;
+  position: absolute;
+  top: 2.5rem;
+  z-index: 2;
+}
+.translation-popup {
+  background: #25211e;
+  border: 1px solid #df8259;
+  border-radius: 10px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  height: 100vh;
+  overflow: hidden;
+  padding: 0.75rem;
+  width: 100vw;
+}
+.translation-heading {
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+}
+.translation-heading strong {
+  font-size: 0.9rem;
+}
+.translation-close {
+  flex: 0 0 26px;
+  height: 26px;
+  padding: 0;
+}
+.translation-popup label,
+.translation-caption {
+  color: #c6bcb5;
+  font-size: 0.75rem;
+}
+.translation-popup textarea {
+  background: #171411;
+  border: 1px solid #5c5048;
+  border-radius: 6px;
+  box-sizing: border-box;
+  color: #f8f6f1;
+  font: inherit;
+  min-height: 4.5rem;
+  resize: vertical;
+  width: 100%;
+}
+.translate-button {
+  align-self: flex-start;
+  padding: 0.45rem 0.7rem;
+}
+.translate-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+.translation-output {
+  background: #171411;
+  border-radius: 6px;
+  flex: 1;
+  overflow-y: auto;
+  padding: 0.6rem;
+}
+.translation-output p {
+  margin: 0.3rem 0 0;
+  overflow-wrap: anywhere;
+}
+.translation-error {
+  color: #ffab83;
+}
+.translation-hint {
+  color: #9f958e;
+  font-size: 0.8rem;
 }

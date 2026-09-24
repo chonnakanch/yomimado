@@ -17,3 +17,9 @@ Optional, user-installed OCR components: comic-text-detector's source repository
 is GPL-3.0; Manga OCR 0.1.16 software and the `kha-white/manga-ocr-base`
 model card state Apache-2.0. The detector model weights are not bundled here;
 review their terms separately before distributing them.
+
+Optional, user-installed translation components: Transformers 4.57.3
+(Apache-2.0), PyTorch 2.8.0 (BSD-3-Clause), and SentencePiece 0.2.1
+(Apache-2.0). The suggested Helsinki-NLP/opus-mt-ja-en model card states
+Apache-2.0. These packages and model weights are not bundled with YomiMado;
+review resolved transitive packages and model assets before any distribution.

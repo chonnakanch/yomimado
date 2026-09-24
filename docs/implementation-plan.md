@@ -15,6 +15,11 @@ recognizer models, the OCR service returns a labeled demo boundary for the
 selected area. Phase 1 and Phase 2 are not complete until their respective
 "Done when" criteria below are verified with actual captures and real OCR.
 
+At the user's request, an on-demand local translation slice is being added
+before those manual OCR/overlay checks are complete. This does not mark the
+earlier phases complete. Translation requires a separately installed local
+model; the no-model path shows a setup error rather than inventing a result.
+
 ---
 
 # Phase 0 — Repository bootstrap
@@ -363,14 +368,14 @@ Translate only when the user explicitly asks.
 
 ## Tasks
 
-- [ ] Define `TranslationProvider` interface.
-- [ ] Add one configurable provider.
-- [ ] Add sentence popup.
+- [x] Define `TranslationProvider` interface.
+- [x] Add one configurable local provider (model path is user-supplied).
+- [x] Add sentence popup.
 - [ ] Send Japanese text and optional immediate context.
-- [ ] Preserve source Japanese.
-- [ ] Cache translation results in SQLite.
-- [ ] Show provider/API errors clearly.
-- [ ] Never automatically translate all OCR regions.
+- [x] Preserve source Japanese.
+- [x] Cache translation results in SQLite.
+- [x] Show provider/API errors clearly.
+- [x] Never automatically translate all OCR regions.
 
 ## Conceptual interface
 

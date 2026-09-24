@@ -34,3 +34,14 @@ class OcrResponse(BaseModel):
 
 class ErrorResponse(BaseModel):
     detail: str
+
+
+class TranslationRequest(BaseModel):
+    text: str = Field(min_length=1, max_length=2000)
+
+
+class TranslationResponse(BaseModel):
+    sourceText: str
+    translatedText: str
+    provider: str
+    cached: bool

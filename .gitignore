@@ -8,3 +8,4 @@ __pycache__/
 .pytest_cache/
 *.py[cod]
 services/ocr/local-fixtures/
+services/ocr/local-models/

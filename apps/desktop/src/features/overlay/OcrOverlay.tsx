@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { invoke } from "@tauri-apps/api/core";
-import { getCurrentWindow } from "@tauri-apps/api/window";
 import type { CaptureMetadata } from "../../lib/coordinates";
 import { ocrPolygonToOverlay } from "../../lib/coordinates";
 import type { TextRegion } from "../../lib/ocr-types";
@@ -33,6 +32,7 @@ function polygonPoints(
 
 export function OcrOverlay() {
   const [activeRegionId, setActiveRegionId] = useState<string | null>(null);
+  const [popupError, setPopupError] = useState<string | null>(null);
   const [viewport, setViewport] = useState({
     width: window.innerWidth,
     height: window.innerHeight,
@@ -45,7 +45,7 @@ export function OcrOverlay() {
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
-        void getCurrentWindow().close();
+        void invoke("close_ocr_overlay");
       }
     };
     window.addEventListener("keydown", handleKeyDown);
@@ -70,7 +70,17 @@ export function OcrOverlay() {
 
   const handleRegionClick = async (region: TextRegion) => {
     setActiveRegionId(region.id);
-    await invoke("region_clicked", { regionId: region.id });
+    setPopupError(null);
+    try {
+      await invoke("show_translation_popup", {
+        metadata: state.metadata,
+        text: region.text,
+        polygon: region.polygon,
+        demo: state.engine === "demo",
+      });
+    } catch (error) {
+      setPopupError(String(error));
+    }
   };
 
   return (
@@ -87,13 +97,14 @@ export function OcrOverlay() {
         )}
         <button
           className="close-overlay"
-          onClick={() => void getCurrentWindow().close()}
+          onClick={() => void invoke("close_ocr_overlay")}
           aria-label="Close overlay"
           title="Close overlay (Esc)"
         >
           ×
         </button>
       </div>
+      {popupError && <div className="overlay-error">{popupError}</div>}
       <svg
         style={{
           left: state.layout.contentLeft * scaleX,

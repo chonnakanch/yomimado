@@ -67,6 +67,9 @@ fn show_capture_selector(app: AppHandle) -> Result<(), String> {
     if let Some(window) = app.get_webview_window("ocr-overlay") {
         window.close().map_err(|error| error.to_string())?;
     }
+    if let Some(window) = app.get_webview_window("translation-popup") {
+        window.close().map_err(|error| error.to_string())?;
+    }
     if let Some(window) = app.get_webview_window("capture-selector") {
         main.minimize().map_err(|error| error.to_string())?;
         window.show().map_err(|error| error.to_string())?;
@@ -187,8 +190,25 @@ fn show_ocr_overlay(
 }
 
 #[tauri::command]
-fn region_clicked(region_id: String) {
-    let _ = region_id;
+fn show_translation_popup(
+    app: AppHandle,
+    metadata: CaptureMetadata,
+    text: String,
+    polygon: Vec<overlay::OcrPoint>,
+    demo: bool,
+) -> Result<(), String> {
+    overlay::show_translation_popup(&app, &metadata, &text, &polygon, demo)
+}
+
+#[tauri::command]
+fn close_ocr_overlay(app: AppHandle) -> Result<(), String> {
+    if let Some(window) = app.get_webview_window("translation-popup") {
+        window.close().map_err(|error| error.to_string())?;
+    }
+    if let Some(window) = app.get_webview_window("ocr-overlay") {
+        window.close().map_err(|error| error.to_string())?;
+    }
+    Ok(())
 }
 
 pub fn run() {
@@ -219,7 +239,8 @@ pub fn run() {
             cancel_capture_selector,
             capture_selection,
             show_ocr_overlay,
-            region_clicked
+            show_translation_popup,
+            close_ocr_overlay
         ])
         .run(tauri::generate_context!())
         .expect("error while running YomiMado");

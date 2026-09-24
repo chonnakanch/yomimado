@@ -15,6 +15,10 @@ The initial capture-to-overlay slice is implemented:
 4. The app calls the local OCR service and shows its geometry in a transparent
    overlay. Without local models, the service shows a dashed **demo boundary**
    around the selected area. This is a coordinate check, not recognized text.
+5. Click a recognized region to open a Japanese → English popup. Edit the OCR
+   text if needed, then press **Translate locally**. Translation never starts
+   merely because OCR detected a region. In demo mode, enter Japanese text
+   manually; the demo boundary contains no recognized text.
 
 ## Development
 
@@ -65,3 +69,30 @@ geometry and orientation; Manga OCR recognizes each detected crop. The model
 API does not provide a calibrated recognition confidence, so the response uses
 `0` to indicate that confidence is unknown. Keep the checkout and weights
 outside this repository until their distribution terms are reviewed.
+
+## Local translation model (optional)
+
+The on-demand popup can translate Japanese text to English with the free,
+user-installed [Helsinki-NLP/opus-mt-ja-en](https://huggingface.co/Helsinki-NLP/opus-mt-ja-en)
+model. This is a baseline model, not a manga-specific or contextual translator.
+Neither model weights nor Japanese text are sent to a cloud translation service
+at runtime. No model is downloaded by YomiMado itself.
+
+Install the optional Python dependencies in the OCR service environment and
+download the model to the git-ignored local model directory:
+
+```sh
+cd services/ocr
+pip install -e '.[dev,translation]'
+hf download Helsinki-NLP/opus-mt-ja-en --local-dir ./local-models/opus-mt-ja-en
+export YOMIMADO_TRANSLATION_MODEL="$PWD/local-models/opus-mt-ja-en"
+uvicorn app.main:app --reload --port 8765
+```
+
+The popup reports a setup error until the model and optional dependencies are
+available. Successful translations are cached locally in
+`~/.cache/yomimado/translation.sqlite3` (override with
+`YOMIMADO_TRANSLATION_CACHE`). Only the selected Japanese text is sent from
+the desktop window to this loopback service; screenshots are not submitted for
+translation. The service accepts browser requests only from the Tauri app and
+the development frontend origins.

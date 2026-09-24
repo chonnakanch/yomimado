@@ -3,6 +3,7 @@ import ReactDOM from "react-dom/client";
 import { App } from "./App";
 import { CaptureSelector } from "./features/capture/CaptureSelector";
 import { OcrOverlay } from "./features/overlay/OcrOverlay";
+import { TranslationPopup } from "./features/translation/TranslationPopup";
 import "./styles.css";
 
 const mode = new URLSearchParams(window.location.search).get("mode");
@@ -15,6 +16,8 @@ root.render(
       <CaptureSelector />
     ) : mode === "overlay" ? (
       <OcrOverlay />
+    ) : mode === "translation" ? (
+      <TranslationPopup />
     ) : (
       <App />
     )}

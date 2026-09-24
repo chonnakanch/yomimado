@@ -2,6 +2,6 @@
   "$schema": "../gen/schemas/desktop-schema.json",
   "identifier": "default",
   "description": "Permissions required by YomiMado's app windows.",
-  "windows": ["main", "capture-selector", "ocr-overlay"],
+  "windows": ["main", "capture-selector", "ocr-overlay", "translation-popup"],
   "permissions": ["core:default", "core:window:allow-close"]
 }
