@@ -1,8 +1,10 @@
+mod legacy_cache;
 mod xcap_capture;
 
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
 
+pub use legacy_cache::cleanup_legacy_captures;
 pub use xcap_capture::XcapScreenCapture;
 
 #[derive(Debug, Clone, Copy, Deserialize, Serialize)]
@@ -72,8 +74,7 @@ pub struct CaptureMetadata {
 #[derive(Debug, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct CapturedImage {
-    pub image_path: String,
-    pub image_data_url: Option<String>,
+    pub image_data_url: String,
     pub metadata: CaptureMetadata,
 }
 
@@ -85,8 +86,8 @@ pub enum CaptureError {
     EmptySelection,
     #[error("The selection lies outside the active display")]
     OutsideDisplay,
-    #[error("Could not save the captured image: {0}")]
-    Save(String),
+    #[error("Could not encode the captured image: {0}")]
+    Encode(String),
 }
 
 pub trait ScreenCapture: Send + Sync {

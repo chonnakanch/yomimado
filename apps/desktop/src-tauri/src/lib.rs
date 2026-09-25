@@ -4,8 +4,8 @@ mod overlay;
 use std::sync::Arc;
 
 use capture::{
-    CaptureMetadata, CapturedImage, DisplayInfo, Rectangle, ScreenCapture, ViewportSize,
-    XcapScreenCapture,
+    cleanup_legacy_captures, CaptureMetadata, CapturedImage, DisplayInfo, Rectangle, ScreenCapture,
+    ViewportSize, XcapScreenCapture,
 };
 use tauri::{AppHandle, Manager, PhysicalPosition, PhysicalSize, WebviewUrl, WebviewWindowBuilder};
 use tauri_plugin_global_shortcut::{
@@ -237,8 +237,11 @@ pub fn run() {
         )
         .setup(|app| {
             let capture_dir = app.path().app_cache_dir()?.join("captures");
+            if let Err(error) = cleanup_legacy_captures(&capture_dir) {
+                eprintln!("YomiMado: could not clear legacy capture cache: {error}");
+            }
             app.manage(AppState {
-                capture: Arc::new(XcapScreenCapture::new(capture_dir)),
+                capture: Arc::new(XcapScreenCapture::new()),
             });
             let shortcut =
                 Shortcut::try_from("CMDORCONTROL+SHIFT+O").map_err(|error| error.to_string())?;

@@ -1,9 +1,3 @@
-use std::{
-    fs,
-    path::PathBuf,
-    time::{SystemTime, UNIX_EPOCH},
-};
-
 use base64::prelude::*;
 use image::ImageEncoder;
 
@@ -11,13 +5,11 @@ use super::{CaptureError, CaptureMetadata, CapturedImage, DisplayInfo, Rectangle
 
 /// Cross-platform implementation. `xcap` remains isolated here so native
 /// ScreenCaptureKit / Windows Graphics Capture can replace it without changing commands.
-pub struct XcapScreenCapture {
-    output_directory: PathBuf,
-}
+pub struct XcapScreenCapture;
 
 impl XcapScreenCapture {
-    pub fn new(output_directory: PathBuf) -> Self {
-        Self { output_directory }
+    pub fn new() -> Self {
+        Self
     }
 
     pub fn physical_selection(
@@ -123,16 +115,6 @@ impl ScreenCapture for XcapScreenCapture {
         )?;
 
         let crop = image::imageops::crop_imm(&image, local_x, local_y, width, height).to_image();
-        fs::create_dir_all(&self.output_directory)
-            .map_err(|error| CaptureError::Save(error.to_string()))?;
-        let timestamp = SystemTime::now()
-            .duration_since(UNIX_EPOCH)
-            .unwrap_or_default()
-            .as_millis();
-        let path = self
-            .output_directory
-            .join(format!("capture-{timestamp}.png"));
-
         let mut png_bytes = Vec::new();
         image::codecs::png::PngEncoder::new(&mut png_bytes)
             .write_image(
@@ -141,17 +123,14 @@ impl ScreenCapture for XcapScreenCapture {
                 crop.height(),
                 image::ExtendedColorType::Rgba8,
             )
-            .map_err(|error| CaptureError::Save(error.to_string()))?;
-
-        fs::write(&path, &png_bytes).map_err(|error| CaptureError::Save(error.to_string()))?;
+            .map_err(|error| CaptureError::Encode(error.to_string()))?;
         let data_url = format!(
             "data:image/png;base64,{}",
             BASE64_STANDARD.encode(&png_bytes)
         );
 
         Ok(CapturedImage {
-            image_path: path.to_string_lossy().into_owned(),
-            image_data_url: Some(data_url),
+            image_data_url: data_url,
             metadata: CaptureMetadata {
                 display_id: display.id.clone(),
                 display_name: display.name.clone(),

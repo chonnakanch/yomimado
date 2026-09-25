@@ -18,7 +18,6 @@ it("shows the exact captured image and OCR text with image-space polygons", () =
   const markup = renderToStaticMarkup(
     <CaptureDebugView
       imageDataUrl="data:image/png;base64,dGVzdA=="
-      imagePath="/tmp/capture.png"
       metadata={metadata}
       response={{
         engine: "manga",
@@ -87,13 +86,13 @@ it("shows the exact captured image and OCR text with image-space polygons", () =
   expect(container.textContent).toContain("confidence: unknown");
   expect(container.textContent).toContain("approximate selected-area box");
   expect(container.textContent).toContain("Whole-selection retry");
+  expect(container.textContent).toContain("no PNG saved to disk");
 });
 
 it("keeps the captured image visible when OCR fails", () => {
   const markup = renderToStaticMarkup(
     <CaptureDebugView
       imageDataUrl="data:image/png;base64,dGVzdA=="
-      imagePath="/tmp/capture.png"
       metadata={metadata}
       response={null}
       error="OCR service unavailable"

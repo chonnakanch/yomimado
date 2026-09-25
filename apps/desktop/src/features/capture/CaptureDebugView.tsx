@@ -7,7 +7,6 @@ function polygonPoints(points: Point[]): string {
 
 interface CaptureDebugViewProps {
   imageDataUrl: string;
-  imagePath: string;
   metadata: CaptureMetadata;
   response: OcrResponse | null;
   error: string | null;
@@ -17,7 +16,6 @@ interface CaptureDebugViewProps {
 
 export function CaptureDebugView({
   imageDataUrl,
-  imagePath,
   metadata,
   response,
   error,
@@ -92,7 +90,7 @@ export function CaptureDebugView({
               {imageWidth} × {imageHeight} image px · {metadata.scaleFactor}×
               display scale
             </p>
-            <p className="capture-debug-path">Saved locally: {imagePath}</p>
+            <p>Capture held in memory; no PNG saved to disk.</p>
             {error && <p className="capture-debug-error">{error}</p>}
             {!response && !error && <p>Recognizing text…</p>}
             {response && (

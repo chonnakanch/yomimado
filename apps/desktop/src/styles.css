@@ -174,7 +174,6 @@ h1 span {
   overflow: auto;
   padding: 1rem;
 }
-.capture-debug-results .capture-debug-path,
 .capture-debug-results code {
   font-size: 0.75rem;
   overflow-wrap: anywhere;

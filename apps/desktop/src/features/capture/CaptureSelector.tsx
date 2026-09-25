@@ -11,7 +11,6 @@ import type { OcrResponse } from "../../lib/ocr-types";
 import { CaptureDebugView } from "./CaptureDebugView";
 
 interface CaptureResult {
-  imagePath: string;
   imageDataUrl: string;
   metadata: CaptureMetadata;
 }
@@ -106,7 +105,6 @@ export function CaptureSelector() {
     return (
       <CaptureDebugView
         imageDataUrl={debugCapture.captured.imageDataUrl}
-        imagePath={debugCapture.captured.imagePath}
         metadata={debugCapture.captured.metadata}
         response={debugCapture.response}
         error={debugCapture.error}

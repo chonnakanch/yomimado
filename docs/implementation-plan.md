@@ -78,7 +78,8 @@ image captured
 - [x] Create capture-selection window.
 - [x] Enumerate displays/monitors.
 - [x] Capture selected rectangle.
-- [x] Return image bytes/path to the OCR service.
+- [x] Return image bytes to the OCR service.
+- [x] Keep captures in memory and remove legacy cached PNG captures on app startup.
 - [x] Record capture metadata:
   - [x] monitor identifier
   - [x] physical image width/height

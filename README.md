@@ -50,7 +50,9 @@ VITE_CAPTURE_DEBUG=1 npm run tauri dev
 
 After selecting a region, the debug view shows the captured image, final OCR
 polygons, raw detector boxes and their individual crops/recognitions (including
-empty results), image dimensions, and the local PNG path. For a small selection
+empty results) and image dimensions. Captures are held in memory, not saved as
+PNG files. On the first launch after this change, YomiMado removes its older
+`capture-<number>.png` files from its own captures cache. For a small selection
 with one incomplete or missing detector region, the service also tries Manga OCR
 on the whole selected crop. If it recovers plausible text, the overlay uses a
 dashed, approximate selection-area box rather than claiming precise text
