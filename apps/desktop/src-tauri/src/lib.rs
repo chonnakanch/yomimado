@@ -213,6 +213,17 @@ fn close_ocr_overlay(app: AppHandle) -> Result<(), String> {
 
 pub fn run() {
     tauri::Builder::default()
+        .on_window_event(|window, event| {
+            if window.label() == "translation-popup"
+                && matches!(event, tauri::WindowEvent::Focused(false))
+            {
+                // Hiding instead of closing keeps the label reusable when an
+                // OCR-region click immediately opens the next popup.
+                if let Err(error) = window.hide() {
+                    eprintln!("YomiMado: failed to hide translation popup: {error}");
+                }
+            }
+        })
         .plugin(
             GlobalShortcutBuilder::new()
                 .with_handler(|app, _shortcut, event| {

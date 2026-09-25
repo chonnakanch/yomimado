@@ -40,6 +40,20 @@ npm install
 npm run tauri dev
 ```
 
+To inspect the exact PNG sent to OCR and every returned text region before
+showing the overlay, start the desktop app with capture debug mode enabled:
+
+```sh
+cd apps/desktop
+VITE_CAPTURE_DEBUG=1 npm run tauri dev
+```
+
+After selecting a region, the debug view shows the captured image, OCR polygons,
+recognized text, image dimensions, and the local PNG path. Choose **Show
+overlay** to continue or **Close** to cancel. This flag is read when Vite
+starts; restart the app without it to return to the normal flow. On Windows
+PowerShell, set `$env:VITE_CAPTURE_DEBUG="1"` before running `npm run tauri dev`.
+
 macOS requires Screen Recording permission. If macOS prompts during the first
 capture, enable YomiMado in **System Settings → Privacy & Security → Screen &
 System Audio Recording**, then restart the app. When running `tauri dev`, macOS

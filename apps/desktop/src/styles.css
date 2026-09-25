@@ -78,6 +78,140 @@ h1 span {
   pointer-events: none;
   position: absolute;
 }
+.capture-debug {
+  background: rgb(20 15 12 / 0.88);
+  box-sizing: border-box;
+  height: 100vh;
+  padding: 1rem;
+  width: 100vw;
+}
+.capture-debug-panel {
+  background: #25211e;
+  border: 1px solid #5c5048;
+  border-radius: 10px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  margin: 0 auto;
+  max-width: 1200px;
+  overflow: hidden;
+}
+.capture-debug-header {
+  align-items: center;
+  border-bottom: 1px solid #5c5048;
+  display: flex;
+  gap: 1rem;
+  justify-content: space-between;
+  padding: 0.75rem 1rem;
+}
+.capture-debug-header h1,
+.capture-debug-results h2 {
+  font-size: 1.1rem;
+  margin: 0;
+}
+.capture-debug-header p,
+.capture-debug-results p {
+  color: #c6bcb5;
+  margin: 0.35rem 0 0;
+}
+.capture-debug-actions {
+  display: flex;
+  flex-shrink: 0;
+  gap: 0.5rem;
+}
+.capture-debug-actions button {
+  padding: 0.5rem 0.75rem;
+}
+.capture-debug-actions button:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+.capture-debug-secondary {
+  background: #5c5048;
+  color: #f8f6f1;
+}
+.capture-debug-content {
+  display: grid;
+  flex: 1;
+  grid-template-columns: minmax(0, 1fr) minmax(16rem, 22rem);
+  min-height: 0;
+}
+.capture-debug-image-section {
+  background: #171411;
+  min-width: 0;
+  overflow: auto;
+  padding: 1rem;
+}
+.capture-debug-image-frame {
+  margin: 0 auto;
+  max-width: 100%;
+  position: relative;
+  width: 1000px;
+}
+.capture-debug-image-frame img,
+.capture-debug-image-frame svg {
+  display: block;
+  height: 100%;
+  left: 0;
+  position: absolute;
+  top: 0;
+  width: 100%;
+}
+.capture-debug-image-frame svg polygon {
+  fill: rgb(223 130 89 / 0.18);
+  stroke: #ff7f4d;
+  stroke-width: 2;
+  vector-effect: non-scaling-stroke;
+}
+.capture-debug-results {
+  border-left: 1px solid #5c5048;
+  overflow: auto;
+  padding: 1rem;
+}
+.capture-debug-results .capture-debug-path,
+.capture-debug-results code {
+  font-size: 0.75rem;
+  overflow-wrap: anywhere;
+}
+.capture-debug-results .capture-debug-error {
+  color: #ffab83;
+}
+.capture-debug-results ol {
+  padding-left: 1.5rem;
+}
+.capture-debug-results li {
+  border-top: 1px solid #5c5048;
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
+}
+.capture-debug-results li strong,
+.capture-debug-results li span,
+.capture-debug-results li code {
+  display: block;
+}
+.capture-debug-results li strong {
+  white-space: pre-wrap;
+}
+.capture-debug-results li span,
+.capture-debug-results li code {
+  color: #c6bcb5;
+  margin-top: 0.25rem;
+}
+@media (max-width: 760px) {
+  .capture-debug-header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+  .capture-debug-content {
+    grid-template-columns: 1fr;
+    grid-template-rows: minmax(12rem, 1fr) minmax(10rem, 1fr);
+  }
+  .capture-debug-results {
+    border-left: 0;
+    border-top: 1px solid #5c5048;
+  }
+}
 .ocr-overlay {
   height: 100vh;
   pointer-events: none;

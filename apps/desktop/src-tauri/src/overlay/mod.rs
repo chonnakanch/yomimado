@@ -84,6 +84,13 @@ fn popup_position(
     })
 }
 
+fn translation_popup_query(text: &str, demo: bool) -> String {
+    let state = serde_json::json!({ "text": text, "demo": demo });
+    let serialized = state.to_string();
+    let encoded = urlencoding::encode(&serialized);
+    format!("mode=translation&state={encoded}")
+}
+
 fn layout(metadata: &CaptureMetadata) -> OverlayLayout {
     let selection = &metadata.selection_physical_bounds;
     let screen = &metadata.screen_physical_bounds;
@@ -161,6 +168,7 @@ pub fn show_overlay(
     .transparent(true)
     .decorations(false)
     .always_on_top(true)
+    .accept_first_mouse(true)
     .skip_taskbar(true)
     .visible(false)
     .build()
@@ -183,19 +191,32 @@ pub fn show_translation_popup(
     demo: bool,
 ) -> Result<(), String> {
     let position = popup_position(metadata, polygon)?;
+    let query = translation_popup_query(text, demo);
     if let Some(window) = app.get_webview_window("translation-popup") {
-        window.close().map_err(|error| error.to_string())?;
+        // Reuse the existing webview: close() can return before its label is
+        // removed, so immediately rebuilding with the same label can fail.
+        let mut url = window.url().map_err(|error| error.to_string())?;
+        url.set_query(Some(&query));
+        window.navigate(url).map_err(|error| error.to_string())?;
+        window
+            .set_position(PhysicalPosition::new(position.x, position.y))
+            .map_err(|error| error.to_string())?;
+        window
+            .set_size(PhysicalSize::new(position.width, position.height))
+            .map_err(|error| error.to_string())?;
+        window.show().map_err(|error| error.to_string())?;
+        window.set_focus().map_err(|error| error.to_string())?;
+        return Ok(());
     }
-    let state = serde_json::json!({ "text": text, "demo": demo });
-    let encoded = urlencoding::encode(&state.to_string()).into_owned();
     let window = WebviewWindowBuilder::new(
         app,
         "translation-popup",
-        WebviewUrl::App(format!("index.html?mode=translation&state={encoded}").into()),
+        WebviewUrl::App(format!("index.html?{query}").into()),
     )
     .transparent(true)
     .decorations(false)
     .always_on_top(true)
+    .accept_first_mouse(true)
     .skip_taskbar(true)
     .visible(false)
     .build()
@@ -207,6 +228,7 @@ pub fn show_translation_popup(
         .set_size(PhysicalSize::new(position.width, position.height))
         .map_err(|error| error.to_string())?;
     window.show().map_err(|error| error.to_string())?;
+    window.set_focus().map_err(|error| error.to_string())?;
     Ok(())
 }
 
@@ -214,6 +236,22 @@ pub fn show_translation_popup(
 mod tests {
     use super::*;
     use crate::capture::Rectangle;
+
+    #[test]
+    fn translation_popup_navigation_preserves_new_ocr_text() {
+        let mut url = tauri::Url::parse("http://localhost:1420/index.html?mode=translation")
+            .expect("valid app URL");
+        url.set_query(Some(&translation_popup_query("たまにはいいでしょ", false)));
+
+        let state = url
+            .query_pairs()
+            .find(|(key, _)| key == "state")
+            .map(|(_, value)| value.into_owned())
+            .expect("popup state");
+        let state: serde_json::Value = serde_json::from_str(&state).expect("JSON popup state");
+        assert_eq!(state["text"], "たまにはいいでしょ");
+        assert_eq!(state["demo"], false);
+    }
 
     #[test]
     fn small_selection_gets_toolbar_outside_image() {

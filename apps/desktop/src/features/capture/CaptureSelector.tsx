@@ -8,6 +8,7 @@ import {
 } from "../../lib/coordinates";
 import type { Point } from "../../lib/ocr-types";
 import type { OcrResponse } from "../../lib/ocr-types";
+import { CaptureDebugView } from "./CaptureDebugView";
 
 interface CaptureResult {
   imagePath: string;
@@ -15,10 +16,17 @@ interface CaptureResult {
   metadata: CaptureMetadata;
 }
 
+const debugCaptureEnabled = import.meta.env.VITE_CAPTURE_DEBUG === "1";
+
 export function CaptureSelector() {
   const [start, setStart] = useState<Point | null>(null);
   const [end, setEnd] = useState<Point | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [debugCapture, setDebugCapture] = useState<{
+    captured: CaptureResult;
+    response: OcrResponse | null;
+    error: string | null;
+  } | null>(null);
   const selection = useMemo(
     () => (start && end ? normalizeRectangle(start, end) : null),
     [start, end],
@@ -42,6 +50,18 @@ export function CaptureSelector() {
     };
   };
 
+  const showOverlay = async (
+    captured: CaptureResult,
+    response: OcrResponse,
+  ) => {
+    await invoke("show_ocr_overlay", {
+      metadata: captured.metadata,
+      regions: response.regions,
+      engine: response.engine,
+    });
+    await getCurrentWindow().close();
+  };
+
   const finish = async (event: PointerEvent<HTMLDivElement>) => {
     if (!start) return;
     const selection = normalizeRectangle(start, point(event));
@@ -60,18 +80,52 @@ export function CaptureSelector() {
         selection,
         viewport,
       });
+      if (debugCaptureEnabled) {
+        setDebugCapture({ captured, response: null, error: null });
+        document.documentElement.dataset.capturing = "false";
+      }
       const response: OcrResponse = await requestOcr(captured.imageDataUrl);
-      await invoke("show_ocr_overlay", {
-        metadata: captured.metadata,
-        regions: response.regions,
-        engine: response.engine,
-      });
-      await getCurrentWindow().close();
+      if (debugCaptureEnabled) {
+        setDebugCapture({ captured, response, error: null });
+      } else {
+        await showOverlay(captured, response);
+      }
     } catch (captureError) {
       document.documentElement.dataset.capturing = "false";
-      setError(`Capture or OCR failed: ${String(captureError)}`);
+      const message = `Capture or OCR failed: ${String(captureError)}`;
+      setDebugCapture((current) =>
+        current ? { ...current, error: message } : null,
+      );
+      setError(message);
     }
   };
+
+  if (debugCapture) {
+    return (
+      <CaptureDebugView
+        imageDataUrl={debugCapture.captured.imageDataUrl}
+        imagePath={debugCapture.captured.imagePath}
+        metadata={debugCapture.captured.metadata}
+        response={debugCapture.response}
+        error={debugCapture.error}
+        onContinue={() => {
+          if (!debugCapture.response) return;
+          void showOverlay(debugCapture.captured, debugCapture.response).catch(
+            (overlayError) =>
+              setDebugCapture((current) =>
+                current
+                  ? {
+                      ...current,
+                      error: `Overlay failed: ${String(overlayError)}`,
+                    }
+                  : null,
+              ),
+          );
+        }}
+        onCancel={() => void invoke("cancel_capture_selector")}
+      />
+    );
+  }
 
   return (
     <div
