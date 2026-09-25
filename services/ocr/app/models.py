@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import Literal
 
 from pydantic import BaseModel, Field
@@ -25,11 +27,27 @@ class TextRegion(BaseModel):
     confidence: float = Field(ge=0, le=1)
     type: Literal["dialogue", "narration", "soundEffect", "other"]
     tokens: list[TextToken]
+    geometrySource: Literal["selection"] | None = None
+
+
+class OcrDebugDetection(BaseModel):
+    id: str
+    box: list[Point] = Field(min_length=4)
+    cropDataUrl: str | None = None
+    text: str
+    status: Literal["recognized", "empty", "invalid"]
+
+
+class OcrDebug(BaseModel):
+    detections: list[OcrDebugDetection]
+    selectionText: str | None = None
+    selectionFallbackUsed: bool = False
 
 
 class OcrResponse(BaseModel):
     regions: list[TextRegion]
     engine: Literal["demo", "manga"]
+    debug: OcrDebug | None = None
 
 
 class ErrorResponse(BaseModel):

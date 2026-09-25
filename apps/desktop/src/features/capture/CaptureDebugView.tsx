@@ -1,5 +1,9 @@
 import type { CaptureMetadata } from "../../lib/coordinates";
-import type { OcrResponse } from "../../lib/ocr-types";
+import type { OcrResponse, Point } from "../../lib/ocr-types";
+
+function polygonPoints(points: Point[]): string {
+  return points.map((point) => `${point.x},${point.y}`).join(" ");
+}
 
 interface CaptureDebugViewProps {
   imageDataUrl: string;
@@ -29,7 +33,8 @@ export function CaptureDebugView({
           <div>
             <h1>Capture debug</h1>
             <p>
-              Exact PNG sent to OCR, with returned polygons in image pixels.
+              Exact PNG sent to OCR. Orange: final regions; cyan: raw detector
+              boxes.
             </p>
           </div>
           <div className="capture-debug-actions">
@@ -58,12 +63,20 @@ export function CaptureDebugView({
                   viewBox={`0 0 ${imageWidth} ${imageHeight}`}
                   preserveAspectRatio="none"
                 >
+                  {response.debug?.detections.map((detection) => (
+                    <polygon
+                      className="capture-debug-detector-box"
+                      key={detection.id}
+                      points={polygonPoints(detection.box)}
+                    >
+                      <title>{`Detector ${detection.id}: ${detection.status}`}</title>
+                    </polygon>
+                  ))}
                   {response.regions.map((region) => (
                     <polygon
+                      className="capture-debug-final-region"
                       key={region.id}
-                      points={region.polygon
-                        .map((point) => `${point.x},${point.y}`)
-                        .join(" ")}
+                      points={polygonPoints(region.polygon)}
                     >
                       <title>{region.text}</title>
                     </polygon>
@@ -100,6 +113,8 @@ export function CaptureDebugView({
                         {region.confidence === 0
                           ? "unknown"
                           : region.confidence.toFixed(2)}
+                        {region.geometrySource === "selection" &&
+                          " · approximate selected-area box"}
                       </span>
                       <code>
                         {region.polygon
@@ -109,6 +124,46 @@ export function CaptureDebugView({
                     </li>
                   ))}
                 </ol>
+                {response.engine === "manga" && !response.debug && (
+                  <p>
+                    Detector diagnostics unavailable; restart the OCR service.
+                  </p>
+                )}
+                {response.debug && (
+                  <section className="capture-debug-detector-results">
+                    <h2>Detector stage</h2>
+                    <p>
+                      {response.debug.detections.length} raw box(es). Empty
+                      recognitions are shown here too.
+                    </p>
+                    {response.debug.selectionText && (
+                      <p>
+                        Whole-selection retry: {response.debug.selectionText}
+                        {response.debug.selectionFallbackUsed
+                          ? " (used with approximate geometry)"
+                          : " (not used)"}
+                      </p>
+                    )}
+                    <ol>
+                      {response.debug.detections.map((detection) => (
+                        <li key={detection.id}>
+                          <strong>{detection.id}</strong>
+                          <span>
+                            {detection.status} · {detection.text || "No text"}
+                          </span>
+                          <code>{polygonPoints(detection.box)}</code>
+                          {detection.cropDataUrl && (
+                            <img
+                              className="capture-debug-crop"
+                              src={detection.cropDataUrl}
+                              alt={`Crop for ${detection.id}`}
+                            />
+                          )}
+                        </li>
+                      ))}
+                    </ol>
+                  </section>
+                )}
               </>
             )}
           </section>

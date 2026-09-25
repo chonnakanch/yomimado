@@ -11,6 +11,7 @@ from app.models import OcrResponse, Point, TextRegion
 class OcrInput:
     image_bytes: bytes
     content_type: str | None
+    debug: bool = False
 
 
 def _parse_png_dimensions(image_bytes: bytes) -> tuple[int, int] | None:
@@ -41,7 +42,7 @@ class OcrPipeline:
         if self.engine == "manga":
             from app.pipeline.real_ocr import recognize_with_models
 
-            return recognize_with_models(input_image.image_bytes)
+            return recognize_with_models(input_image.image_bytes, debug=input_image.debug)
 
         width, height = map(float, dimensions)
 

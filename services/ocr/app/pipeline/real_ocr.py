@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import base64
 import sys
 from functools import lru_cache
 from io import BytesIO
@@ -9,7 +10,9 @@ from os import environ
 from pathlib import Path
 from typing import Any
 
-from app.models import OcrResponse, Point, TextRegion
+from app.models import OcrDebug, OcrDebugDetection, OcrResponse, Point, TextRegion
+
+SMALL_SELECTION_MAX_SIDE = 320
 
 
 def _configured_paths() -> tuple[Path, Path, Path]:
@@ -51,7 +54,75 @@ def _polygon(block: Any) -> list[Point]:
     ]
 
 
-def recognize_with_models(image_bytes: bytes) -> OcrResponse:
+def _box_polygon(bounds: Any) -> list[Point]:
+    x1, y1, x2, y2 = [float(value) for value in bounds]
+    return [
+        Point(x=x1, y=y1),
+        Point(x=x2, y=y1),
+        Point(x=x2, y=y2),
+        Point(x=x1, y=y2),
+    ]
+
+
+def _should_retry_selection(width: int, height: int, regions: list[TextRegion]) -> bool:
+    return (
+        width <= SMALL_SELECTION_MAX_SIDE
+        and height <= SMALL_SELECTION_MAX_SIDE
+        and len(regions) <= 1
+    )
+
+
+def _has_visible_ink(image: Any) -> bool:
+    dark_pixels = sum(image.convert("L").histogram()[:180])
+    return dark_pixels >= max(20, image.width * image.height // 200)
+
+
+def _has_plausible_japanese_text(text: str) -> bool:
+    japanese_characters = sum(
+        "\u3040" <= character <= "\u30ff" or "\u3400" <= character <= "\u9fff" for character in text
+    )
+    return japanese_characters >= 3
+
+
+def _selection_adds_text(selection_text: str, detected_text: str) -> bool:
+    full = "".join(selection_text.split())
+    partial = "".join(detected_text.split())
+    return bool(partial) and partial in full and len(full) >= len(partial) + 2
+
+
+def _apply_selection_fallback(
+    regions: list[TextRegion], width: int, height: int, selection_text: str
+) -> tuple[list[TextRegion], bool]:
+    if not _should_retry_selection(width, height, regions):
+        return regions, False
+    if regions and not _selection_adds_text(selection_text, regions[0].text):
+        return regions, False
+    if not regions and not _has_plausible_japanese_text(selection_text):
+        return regions, False
+    # The whole selection may contain text outside the detector box. Keep its
+    # geometry honest: this covers the selected crop, not a precise text polygon.
+    fallback = TextRegion(
+        id="region-1",
+        text=selection_text,
+        polygon=_box_polygon((0, 0, width, height)),
+        orientation=regions[0].orientation
+        if regions
+        else ("vertical" if height > width else "horizontal"),
+        confidence=0,
+        type=regions[0].type if regions else "other",
+        tokens=[],
+        geometrySource="selection",
+    )
+    return [fallback], True
+
+
+def _crop_data_url(crop: Any) -> str:
+    output = BytesIO()
+    crop.save(output, format="PNG")
+    return "data:image/png;base64," + base64.b64encode(output.getvalue()).decode("ascii")
+
+
+def recognize_with_models(image_bytes: bytes, *, debug: bool = False) -> OcrResponse:
     try:
         import cv2  # type: ignore[import-not-found]
         import numpy as np  # type: ignore[import-not-found]
@@ -67,13 +138,34 @@ def recognize_with_models(image_bytes: bytes) -> OcrResponse:
     bgr = cv2.cvtColor(np.asarray(image), cv2.COLOR_RGB2BGR)
     _, _, blocks = detector(bgr)
     regions: list[TextRegion] = []
-    for block in blocks:
+    detections: list[OcrDebugDetection] = []
+    for index, block in enumerate(blocks, start=1):
         x1, y1, x2, y2 = [int(value) for value in block.xyxy]
         x1, y1 = max(0, x1), max(0, y1)
         x2, y2 = min(image.width, x2), min(image.height, y2)
         if x2 <= x1 or y2 <= y1:
+            if debug:
+                detections.append(
+                    OcrDebugDetection(
+                        id=f"detection-{index}",
+                        box=_box_polygon(block.xyxy),
+                        text="",
+                        status="invalid",
+                    )
+                )
             continue
-        text = recognizer(image.crop((x1, y1, x2, y2))).strip()
+        crop = image.crop((x1, y1, x2, y2))
+        text = recognizer(crop).strip()
+        if debug:
+            detections.append(
+                OcrDebugDetection(
+                    id=f"detection-{index}",
+                    box=_box_polygon(block.xyxy),
+                    cropDataUrl=_crop_data_url(crop),
+                    text=text,
+                    status="recognized" if text else "empty",
+                )
+            )
         if not text:
             continue
         regions.append(
@@ -88,4 +180,28 @@ def recognize_with_models(image_bytes: bytes) -> OcrResponse:
                 tokens=[],
             )
         )
-    return OcrResponse(regions=regions, engine="manga")
+
+    selection_text: str | None = None
+    fallback_used = False
+    retry_selection = _should_retry_selection(image.width, image.height, regions) and (
+        bool(regions) or _has_visible_ink(image)
+    )
+    if retry_selection:
+        selection_text = recognizer(image).strip()
+        regions, fallback_used = _apply_selection_fallback(
+            regions, image.width, image.height, selection_text
+        )
+
+    return OcrResponse(
+        regions=regions,
+        engine="manga",
+        debug=(
+            OcrDebug(
+                detections=detections,
+                selectionText=selection_text,
+                selectionFallbackUsed=fallback_used,
+            )
+            if debug
+            else None
+        ),
+    )

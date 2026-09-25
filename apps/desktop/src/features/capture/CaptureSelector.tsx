@@ -84,7 +84,9 @@ export function CaptureSelector() {
         setDebugCapture({ captured, response: null, error: null });
         document.documentElement.dataset.capturing = "false";
       }
-      const response: OcrResponse = await requestOcr(captured.imageDataUrl);
+      const response: OcrResponse = await requestOcr(captured.imageDataUrl, {
+        debug: debugCaptureEnabled,
+      });
       if (debugCaptureEnabled) {
         setDebugCapture({ captured, response, error: null });
       } else {

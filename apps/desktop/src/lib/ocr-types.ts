@@ -22,9 +22,25 @@ export interface TextRegion {
   confidence: number;
   type: TextRegionType;
   tokens: TextToken[];
+  geometrySource?: "selection";
+}
+
+export interface OcrDebugDetection {
+  id: string;
+  box: Point[];
+  cropDataUrl?: string;
+  text: string;
+  status: "recognized" | "empty" | "invalid";
+}
+
+export interface OcrDebug {
+  detections: OcrDebugDetection[];
+  selectionText?: string;
+  selectionFallbackUsed: boolean;
 }
 
 export interface OcrResponse {
   regions: TextRegion[];
   engine: "demo" | "manga";
+  debug?: OcrDebug;
 }

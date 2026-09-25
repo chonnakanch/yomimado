@@ -36,8 +36,27 @@ it("shows the exact captured image and OCR text with image-space polygons", () =
             confidence: 0,
             type: "other",
             tokens: [],
+            geometrySource: "selection",
           },
         ],
+        debug: {
+          detections: [
+            {
+              id: "detection-1",
+              box: [
+                { x: 12, y: 22 },
+                { x: 80, y: 22 },
+                { x: 80, y: 200 },
+                { x: 12, y: 200 },
+              ],
+              cropDataUrl: "data:image/png;base64,Y3JvcA==",
+              text: "数か月",
+              status: "recognized",
+            },
+          ],
+          selectionText: "数か月前",
+          selectionFallbackUsed: true,
+        },
       }}
       error={null}
       onContinue={() => {}}
@@ -54,10 +73,20 @@ it("shows the exact captured image and OCR text with image-space polygons", () =
     "0 0 240 360",
   );
   expect(container.querySelector("polygon")?.getAttribute("points")).toBe(
-    "10,20 90,20 90,220 10,220",
+    "12,22 80,22 80,200 12,200",
   );
+  expect(
+    container
+      .querySelector(".capture-debug-final-region")
+      ?.getAttribute("points"),
+  ).toBe("10,20 90,20 90,220 10,220");
+  expect(
+    container.querySelector(".capture-debug-crop")?.getAttribute("src"),
+  ).toBe("data:image/png;base64,Y3JvcA==");
   expect(container.textContent).toContain("数か月前");
   expect(container.textContent).toContain("confidence: unknown");
+  expect(container.textContent).toContain("approximate selected-area box");
+  expect(container.textContent).toContain("Whole-selection retry");
 });
 
 it("keeps the captured image visible when OCR fails", () => {

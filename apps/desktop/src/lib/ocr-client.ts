@@ -4,6 +4,7 @@ const OCR_URL = import.meta.env.VITE_OCR_URL ?? "http://127.0.0.1:8765";
 
 export async function requestOcr(
   imageSource: string | Blob,
+  options: { debug?: boolean } = {},
 ): Promise<OcrResponse> {
   let blob: Blob;
   if (typeof imageSource === "string") {
@@ -29,6 +30,7 @@ export async function requestOcr(
 
   const form = new FormData();
   form.append("image", blob, "capture.png");
+  if (options.debug) form.append("debug", "true");
   const response = await fetch(`${OCR_URL}/api/v1/ocr`, {
     method: "POST",
     body: form,

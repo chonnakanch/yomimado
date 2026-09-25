@@ -164,6 +164,11 @@ h1 span {
   stroke-width: 2;
   vector-effect: non-scaling-stroke;
 }
+.capture-debug-image-frame svg .capture-debug-detector-box {
+  fill: none;
+  stroke: #58d5e8;
+  stroke-dasharray: 5 4;
+}
 .capture-debug-results {
   border-left: 1px solid #5c5048;
   overflow: auto;
@@ -197,6 +202,19 @@ h1 span {
 .capture-debug-results li code {
   color: #c6bcb5;
   margin-top: 0.25rem;
+}
+.capture-debug-detector-results {
+  border-top: 1px solid #5c5048;
+  margin-top: 1rem;
+  padding-top: 1rem;
+}
+.capture-debug-crop {
+  background: white;
+  display: block;
+  height: auto;
+  margin-top: 0.5rem;
+  max-height: 12rem;
+  max-width: 100%;
 }
 @media (max-width: 760px) {
   .capture-debug-header {
@@ -254,6 +272,9 @@ h1 span {
 }
 .ocr-region.demo {
   fill: none;
+  stroke-dasharray: 6 5;
+}
+.ocr-region.approximate {
   stroke-dasharray: 6 5;
 }
 .demo-label {

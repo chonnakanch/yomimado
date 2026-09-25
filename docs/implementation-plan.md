@@ -139,6 +139,9 @@ recognized Japanese
 - [x] Implement `POST /api/v1/ocr` (structured placeholder until OCR dependencies are selected).
 - [x] Add `/health` endpoint.
 - [x] Add structured error responses.
+- [x] Add opt-in detector-box/crop diagnostics for local OCR debugging.
+- [x] Retry small, partially detected selections with whole-crop Manga OCR; mark fallback geometry as approximate.
+- [x] Recover plausible whole-crop text from small selections with no detector boxes; retain approximate geometry and unknown confidence.
 
 ## Suggested service structure
 

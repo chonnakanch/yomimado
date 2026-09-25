@@ -48,10 +48,15 @@ cd apps/desktop
 VITE_CAPTURE_DEBUG=1 npm run tauri dev
 ```
 
-After selecting a region, the debug view shows the captured image, OCR polygons,
-recognized text, image dimensions, and the local PNG path. Choose **Show
-overlay** to continue or **Close** to cancel. This flag is read when Vite
-starts; restart the app without it to return to the normal flow. On Windows
+After selecting a region, the debug view shows the captured image, final OCR
+polygons, raw detector boxes and their individual crops/recognitions (including
+empty results), image dimensions, and the local PNG path. For a small selection
+with one incomplete or missing detector region, the service also tries Manga OCR
+on the whole selected crop. If it recovers plausible text, the overlay uses a
+dashed, approximate selection-area box rather than claiming precise text
+geometry. Choose **Show overlay** to continue or **Close** to cancel. This flag is read when Vite
+starts; restart both the desktop app and OCR service after updating them, and
+restart the desktop app without the flag to return to the normal flow. On Windows
 PowerShell, set `$env:VITE_CAPTURE_DEBUG="1"` before running `npm run tauri dev`.
 
 macOS requires Screen Recording permission. If macOS prompts during the first
