@@ -296,12 +296,12 @@ Turn OCR strings into useful Japanese tokens/readings.
 
 ## Tasks
 
-- [ ] Integrate Sudachi implementation.
-- [ ] Pin exact software and dictionary versions.
-- [ ] Define tokenizer interface.
-- [ ] Map token offsets back to original OCR strings.
-- [ ] Produce surface form, reading, dictionary form, part of speech.
-- [ ] Handle punctuation and unknown tokens.
+- [x] Integrate Sudachi implementation.
+- [x] Pin exact software and dictionary versions.
+- [x] Define tokenizer interface.
+- [x] Map token offsets back to original OCR strings.
+- [x] Produce surface form, reading, dictionary form, part of speech.
+- [x] Handle punctuation and unknown tokens.
 
 ## Example
 
@@ -322,6 +322,11 @@ Exact segmentation can differ depending on dictionary mode/version; use the sele
 ## Done when
 
 A selected OCR region can be displayed as structured Japanese tokens.
+
+Status: complete for the selected-region popup. Analysis is on-demand through
+`POST /api/v1/tokenize`; the OCR response's `tokens` array is still empty, so
+full-screen detection does not tokenize every region unnecessarily. Dictionary
+definitions and kanji details remain Phase 6 work.
 
 ---
 

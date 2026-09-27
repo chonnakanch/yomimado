@@ -1,9 +1,11 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import {
   requestTranslation,
   type TranslationResult,
 } from "../../lib/translation-client";
+import { requestTokenization } from "../../lib/tokenization-client";
+import type { TextToken } from "../../lib/ocr-types";
 
 interface PopupState {
   text: string;
@@ -18,6 +20,10 @@ export function TranslationPopup() {
   const [result, setResult] = useState<TranslationResult | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [tokens, setTokens] = useState<TextToken[] | null>(null);
+  const [tokenError, setTokenError] = useState<string | null>(null);
+  const [tokenLoading, setTokenLoading] = useState(false);
+  const tokenRequestId = useRef(0);
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
@@ -26,6 +32,29 @@ export function TranslationPopup() {
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
   }, []);
+
+  useEffect(() => {
+    if (!state?.text.trim() || state.demo) return;
+    let cancelled = false;
+    const requestId = ++tokenRequestId.current;
+    setTokenLoading(true);
+    void requestTokenization(state.text)
+      .then((nextTokens) => {
+        if (!cancelled && requestId === tokenRequestId.current) {
+          setTokens(nextTokens);
+          setTokenLoading(false);
+        }
+      })
+      .catch((requestError: unknown) => {
+        if (!cancelled && requestId === tokenRequestId.current) {
+          setTokenError(String(requestError).replace(/^Error: /, ""));
+          setTokenLoading(false);
+        }
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [state?.text, state?.demo]);
 
   if (!state) return null;
 
@@ -39,6 +68,22 @@ export function TranslationPopup() {
       setError(String(requestError).replace(/^Error: /, ""));
     } finally {
       setLoading(false);
+    }
+  };
+
+  const analyze = async () => {
+    const requestId = ++tokenRequestId.current;
+    setTokenLoading(true);
+    setTokens(null);
+    setTokenError(null);
+    try {
+      const nextTokens = await requestTokenization(source);
+      if (requestId === tokenRequestId.current) setTokens(nextTokens);
+    } catch (requestError) {
+      if (requestId === tokenRequestId.current)
+        setTokenError(String(requestError).replace(/^Error: /, ""));
+    } finally {
+      if (requestId === tokenRequestId.current) setTokenLoading(false);
     }
   };
 
@@ -64,11 +109,44 @@ export function TranslationPopup() {
         lang="ja"
         value={source}
         onChange={(event) => {
+          tokenRequestId.current++;
           setSource(event.target.value);
           setResult(null);
           setError(null);
+          setTokens(null);
+          setTokenError(null);
+          setTokenLoading(false);
         }}
       />
+      <div className="tokenization-heading">
+        <span className="translation-caption">Words and readings</span>
+        <button
+          className="analyze-button"
+          onClick={() => void analyze()}
+          disabled={tokenLoading || !source.trim()}
+        >
+          {tokenLoading ? "Analyzing…" : "Analyze words"}
+        </button>
+      </div>
+      <div className="tokenization-output" aria-live="polite">
+        {tokenError && <p className="translation-error">{tokenError}</p>}
+        {tokenLoading && !tokenError && <p>Analyzing words…</p>}
+        {!tokenLoading && !tokenError && tokens === null && (
+          <p className="translation-hint">
+            Press Analyze words to inspect this text.
+          </p>
+        )}
+        {tokens?.map((token, index) => (
+          <div className="tokenization-token" key={`${token.start}-${index}`}>
+            <ruby lang="ja">
+              {token.surface}
+              <rt>{token.reading}</rt>
+            </ruby>
+            <small>Base: {token.dictionaryForm}</small>
+            <small>POS: {token.partOfSpeech}</small>
+          </div>
+        ))}
+      </div>
       <button
         className="translate-button"
         onClick={() => void translate()}

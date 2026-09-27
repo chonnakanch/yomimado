@@ -11,14 +11,17 @@ The initial capture-to-overlay slice is implemented:
 1. Press `Cmd+Shift+O` on macOS or `Ctrl+Shift+O` on Windows (or use **Select
    screen region** in the main window).
 2. Drag a rectangular selection on the current display.
-3. The Rust capture layer saves a PNG crop locally and returns scaling metadata.
+3. The Rust capture layer returns an in-memory PNG crop and scaling metadata.
 4. The app calls the local OCR service and shows its geometry in a transparent
    overlay. Without local models, the service shows a dashed **demo boundary**
    around the selected area. This is a coordinate check, not recognized text.
-5. Click a recognized region to open a Japanese → English popup. Edit the OCR
-   text if needed, then press **Translate locally**. Translation never starts
-   merely because OCR detected a region. In demo mode, enter Japanese text
-   manually; the demo boundary contains no recognized text.
+5. Click a recognized region to open a Japanese learning popup. The selected
+   OCR text is tokenized locally to show words, readings, dictionary forms, and
+   parts of speech. After editing the text, press **Analyze words** to refresh
+   those tokens. Press **Translate locally** only if a sentence translation is
+   wanted; translation never starts merely because OCR detected a region. In
+   demo mode, enter Japanese text manually; the demo boundary contains no
+   recognized text.
 
 ## Development
 
@@ -28,7 +31,7 @@ Start the OCR service in one terminal (Python 3.9+):
 cd services/ocr
 python3 -m venv .venv
 . .venv/bin/activate
-pip install -e '.[dev]'
+pip install -e '.[dev,tokenization]'
 uvicorn app.main:app --reload --port 8765
 ```
 
@@ -117,3 +120,16 @@ available. Successful translations are cached locally in
 the desktop window to this loopback service; screenshots are not submitted for
 translation. The service accepts browser requests only from the Tauri app and
 the development frontend origins.
+
+## Japanese tokenization
+
+The `tokenization` Python extra installs pinned SudachiPy 0.6.10 and the
+Sudachi core dictionary 20250515. It works without a translation model or
+network service. The selected OCR string is sent to the local
+`POST /api/v1/tokenize` endpoint when its popup opens; edited text is analyzed
+again only when **Analyze words** is pressed. The endpoint preserves the exact
+input and returns character offsets into that string, including punctuation
+and unknown tokens. Offsets count Unicode code points, not UTF-16 code units.
+Readings are displayed in Sudachi's katakana form. If the
+extra is not installed, OCR and translation continue to work and the popup
+shows a tokenization setup error.

@@ -24,34 +24,61 @@ afterEach(async () => {
   vi.unstubAllGlobals();
 });
 
-it("preserves OCR text and translates only after a click", async () => {
+it("shows local word analysis while translating only after a click", async () => {
   const state = encodeURIComponent(
     JSON.stringify({ text: "学校", demo: false }),
   );
   window.history.replaceState({}, "", `/?mode=translation&state=${state}`);
-  const fetch = vi.fn().mockResolvedValue(
-    new Response(
-      JSON.stringify({
-        sourceText: "学校",
-        translatedText: "School",
-        provider: "test-local-model",
-        cached: true,
-      }),
-      { status: 200 },
-    ),
-  );
+  const fetch = vi.fn((url: string) => {
+    if (url.endsWith("/tokenize")) {
+      return Promise.resolve(
+        new Response(
+          JSON.stringify({
+            sourceText: "学校",
+            tokens: [
+              {
+                surface: "学校",
+                reading: "ガッコウ",
+                dictionaryForm: "学校",
+                start: 0,
+                end: 2,
+                partOfSpeech: "名詞",
+              },
+            ],
+          }),
+          { status: 200 },
+        ),
+      );
+    }
+    return Promise.resolve(
+      new Response(
+        JSON.stringify({
+          sourceText: "学校",
+          translatedText: "School",
+          provider: "test-local-model",
+          cached: true,
+        }),
+        { status: 200 },
+      ),
+    );
+  });
   vi.stubGlobal("fetch", fetch);
 
   await act(async () => root.render(<TranslationPopup />));
   expect(
     (container.querySelector("textarea") as HTMLTextAreaElement).value,
   ).toBe("学校");
-  expect(fetch).not.toHaveBeenCalled();
+  expect(fetch).toHaveBeenCalledTimes(1);
+  expect(container.textContent).toContain("ガッコウ");
+  expect(container.textContent).toContain("Base: 学校");
+  expect(container.textContent).toContain("POS: 名詞");
+  expect(fetch.mock.calls[0][0]).toContain("/tokenize");
 
   await act(async () => {
     container.querySelector<HTMLButtonElement>(".translate-button")!.click();
   });
-  expect(fetch).toHaveBeenCalledTimes(1);
+  expect(fetch).toHaveBeenCalledTimes(2);
+  expect(fetch.mock.calls[1][0]).toContain("/translate");
   expect(container.textContent).toContain("School");
   expect(container.textContent).toContain("cached");
 });

@@ -23,3 +23,10 @@ Optional, user-installed translation components: Transformers 4.57.3
 (Apache-2.0). The suggested Helsinki-NLP/opus-mt-ja-en model card states
 Apache-2.0. These packages and model weights are not bundled with YomiMado;
 review resolved transitive packages and model assets before any distribution.
+
+Optional, user-installed Japanese analysis components: SudachiPy 0.6.10
+software (Apache-2.0) and SudachiDict-core 20250515 dictionary package
+(Apache-2.0). The dictionary is installed into the user's Python environment,
+not committed or bundled here. Its data terms must be reviewed independently
+before distributing a packaged build. See the [SudachiPy release](https://pypi.org/project/SudachiPy/0.6.10/)
+and [dictionary release](https://pypi.org/project/sudachidict-core/20250515/).

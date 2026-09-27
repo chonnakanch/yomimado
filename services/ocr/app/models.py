@@ -58,6 +58,15 @@ class TranslationRequest(BaseModel):
     text: str = Field(min_length=1, max_length=2000)
 
 
+class TokenizationRequest(BaseModel):
+    text: str = Field(min_length=1, max_length=2000)
+
+
+class TokenizationResponse(BaseModel):
+    sourceText: str
+    tokens: list[TextToken]
+
+
 class TranslationResponse(BaseModel):
     sourceText: str
     translatedText: str

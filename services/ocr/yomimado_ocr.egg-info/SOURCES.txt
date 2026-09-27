@@ -6,11 +6,15 @@ app/translation.py
 app/api/__init__.py
 app/api/health.py
 app/api/ocr.py
+app/api/tokenization.py
 app/api/translation.py
 app/pipeline/__init__.py
 app/pipeline/pipeline.py
 app/pipeline/real_ocr.py
+app/tokenizer/__init__.py
+app/tokenizer/sudachi.py
 tests/test_api.py
+tests/test_tokenization.py
 tests/test_translation.py
 yomimado_ocr.egg-info/PKG-INFO
 yomimado_ocr.egg-info/SOURCES.txt

@@ -7,8 +7,8 @@ export interface TextToken {
   surface: string;
   reading: string;
   dictionaryForm: string;
-  start: number;
-  end: number;
+  start: number; // Unicode code-point offset in the original OCR string
+  end: number; // Exclusive Unicode code-point offset
   partOfSpeech: string;
 }
 
