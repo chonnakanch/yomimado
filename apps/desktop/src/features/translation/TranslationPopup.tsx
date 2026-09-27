@@ -12,6 +12,27 @@ interface PopupState {
   demo: boolean;
 }
 
+function isWord(token: TextToken): boolean {
+  return /[\p{L}\p{N}]/u.test(token.surface);
+}
+
+function textPieces(text: string, tokens: TextToken[]) {
+  const characters = Array.from(text);
+  const pieces: Array<{ text: string; tokenIndex?: number }> = [];
+  let cursor = 0;
+  tokens.forEach((token, tokenIndex) => {
+    if (token.start > cursor) {
+      pieces.push({ text: characters.slice(cursor, token.start).join("") });
+    }
+    pieces.push({ text: token.surface, tokenIndex });
+    cursor = token.end;
+  });
+  if (cursor < characters.length) {
+    pieces.push({ text: characters.slice(cursor).join("") });
+  }
+  return pieces;
+}
+
 export function TranslationPopup() {
   const state = JSON.parse(
     new URLSearchParams(window.location.search).get("state") ?? "null",
@@ -23,6 +44,9 @@ export function TranslationPopup() {
   const [tokens, setTokens] = useState<TextToken[] | null>(null);
   const [tokenError, setTokenError] = useState<string | null>(null);
   const [tokenLoading, setTokenLoading] = useState(false);
+  const [selectedTokenIndex, setSelectedTokenIndex] = useState<number | null>(
+    null,
+  );
   const tokenRequestId = useRef(0);
 
   useEffect(() => {
@@ -75,6 +99,7 @@ export function TranslationPopup() {
     const requestId = ++tokenRequestId.current;
     setTokenLoading(true);
     setTokens(null);
+    setSelectedTokenIndex(null);
     setTokenError(null);
     try {
       const nextTokens = await requestTokenization(source);
@@ -114,12 +139,13 @@ export function TranslationPopup() {
           setResult(null);
           setError(null);
           setTokens(null);
+          setSelectedTokenIndex(null);
           setTokenError(null);
           setTokenLoading(false);
         }}
       />
       <div className="tokenization-heading">
-        <span className="translation-caption">Words and readings</span>
+        <span className="translation-caption">Select a word</span>
         <button
           className="analyze-button"
           onClick={() => void analyze()}
@@ -133,19 +159,44 @@ export function TranslationPopup() {
         {tokenLoading && !tokenError && <p>Analyzing words…</p>}
         {!tokenLoading && !tokenError && tokens === null && (
           <p className="translation-hint">
-            Press Analyze words to inspect this text.
+            Press Analyze words after editing the text.
           </p>
         )}
-        {tokens?.map((token, index) => (
-          <div className="tokenization-token" key={`${token.start}-${index}`}>
-            <ruby lang="ja">
-              {token.surface}
-              <rt>{token.reading}</rt>
-            </ruby>
-            <small>Base: {token.dictionaryForm}</small>
-            <small>POS: {token.partOfSpeech}</small>
+        {tokens && (
+          <div className="tokenization-text" lang="ja">
+            {textPieces(source, tokens).map((piece, index) => {
+              const tokenIndex = piece.tokenIndex;
+              return tokenIndex !== undefined && isWord(tokens[tokenIndex]) ? (
+                <button
+                  type="button"
+                  className="tokenization-word"
+                  aria-pressed={selectedTokenIndex === tokenIndex}
+                  onClick={() => setSelectedTokenIndex(tokenIndex)}
+                  key={`${tokens[tokenIndex].start}-${index}`}
+                >
+                  {piece.text}
+                </button>
+              ) : (
+                <span key={`plain-${index}`}>{piece.text}</span>
+              );
+            })}
           </div>
-        ))}
+        )}
+        {tokens && !tokens.some(isWord) && (
+          <p className="translation-hint">No words found in this text.</p>
+        )}
+        {tokens &&
+          selectedTokenIndex !== null &&
+          tokens[selectedTokenIndex] && (
+            <div className="tokenization-selected">
+              <ruby lang="ja">
+                {tokens[selectedTokenIndex].surface}
+                <rt>{tokens[selectedTokenIndex].reading}</rt>
+              </ruby>
+              <small>Base: {tokens[selectedTokenIndex].dictionaryForm}</small>
+              <small>POS: {tokens[selectedTokenIndex].partOfSpeech}</small>
+            </div>
+          )}
       </div>
       <button
         className="translate-button"

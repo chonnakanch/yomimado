@@ -54,5 +54,13 @@ export async function requestTokenization(text: string): Promise<TextToken[]> {
   ) {
     throw new Error("Tokenizer returned invalid token offsets or fields");
   }
-  return result.tokens as TextToken[];
+  const tokens = result.tokens as TextToken[];
+  let previousEnd = 0;
+  for (const token of tokens) {
+    if (token.start < previousEnd) {
+      throw new Error("Tokenizer returned overlapping or unordered tokens");
+    }
+    previousEnd = token.end;
+  }
+  return tokens;
 }

@@ -325,8 +325,11 @@ A selected OCR region can be displayed as structured Japanese tokens.
 
 Status: complete for the selected-region popup. Analysis is on-demand through
 `POST /api/v1/tokenize`; the OCR response's `tokens` array is still empty, so
-full-screen detection does not tokenize every region unnecessarily. Dictionary
-definitions and kanji details remain Phase 6 work.
+full-screen detection does not tokenize every region unnecessarily. The popup
+shows details only for a word the user selects in its OCR text; punctuation is
+kept in the source sentence but omitted as a study token. Direct word selection
+on the manga image still needs finer character geometry. Dictionary definitions
+and kanji details remain Phase 6 work.
 
 ---
 

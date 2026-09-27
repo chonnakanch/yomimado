@@ -15,10 +15,10 @@ The initial capture-to-overlay slice is implemented:
 4. The app calls the local OCR service and shows its geometry in a transparent
    overlay. Without local models, the service shows a dashed **demo boundary**
    around the selected area. This is a coordinate check, not recognized text.
-5. Click a recognized region to open a Japanese learning popup. The selected
-   OCR text is tokenized locally to show words, readings, dictionary forms, and
-   parts of speech. After editing the text, press **Analyze words** to refresh
-   those tokens. Press **Translate locally** only if a sentence translation is
+5. Click a recognized region to open a Japanese learning popup. Select a word
+   in the popup's OCR text to see that word's reading, dictionary form, and
+   part of speech. After editing the text, press **Analyze words** to refresh
+   word boundaries. Press **Translate locally** only if a sentence translation is
    wanted; translation never starts merely because OCR detected a region. In
    demo mode, enter Japanese text manually; the demo boundary contains no
    recognized text.
@@ -128,8 +128,10 @@ Sudachi core dictionary 20250515. It works without a translation model or
 network service. The selected OCR string is sent to the local
 `POST /api/v1/tokenize` endpoint when its popup opens; edited text is analyzed
 again only when **Analyze words** is pressed. The endpoint preserves the exact
-input and returns character offsets into that string, including punctuation
-and unknown tokens. Offsets count Unicode code points, not UTF-16 code units.
-Readings are displayed in Sudachi's katakana form. If the
-extra is not installed, OCR and translation continue to work and the popup
-shows a tokenization setup error.
+input and returns Unicode code-point offsets for word tokens. It omits
+punctuation-only and symbol-only study tokens, while keeping punctuation in the
+source sentence for translation. Readings are displayed in Sudachi's katakana
+form. The popup offers precise word selection in the OCR text, not directly on
+the manga image; the detector currently provides region polygons, not
+per-character positions. If the extra is not installed, OCR and translation
+continue to work and the popup shows a tokenization setup error.

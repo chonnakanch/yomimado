@@ -17,14 +17,6 @@ it("preserves the untrimmed source text and checks token offsets", async () => {
             end: 3,
             partOfSpeech: "名詞",
           },
-          {
-            surface: "。",
-            reading: "。",
-            dictionaryForm: "。",
-            start: 3,
-            end: 4,
-            partOfSpeech: "補助記号",
-          },
         ],
       }),
       { status: 200 },
@@ -33,6 +25,7 @@ it("preserves the untrimmed source text and checks token offsets", async () => {
   vi.stubGlobal("fetch", fetch);
 
   const tokens = await requestTokenization(" 学校。");
+  expect(tokens).toHaveLength(1);
   expect(tokens[0].reading).toBe("ガッコウ");
   expect(JSON.parse(fetch.mock.calls[0][1].body)).toEqual({ text: " 学校。" });
 });

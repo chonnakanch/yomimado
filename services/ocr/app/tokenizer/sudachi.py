@@ -51,6 +51,10 @@ class SudachiTokenizer:
         tokens: list[TextToken] = []
         for morpheme in morphemes:
             surface = morpheme.surface()
+            # Preserve punctuation in sourceText for sentence translation, but
+            # do not offer symbol-only morphemes as selectable study words.
+            if not any(character.isalnum() for character in surface):
+                continue
             start, end = _offsets(text, surface, morpheme.begin(), morpheme.end())
             tokens.append(
                 TextToken(
