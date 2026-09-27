@@ -30,3 +30,9 @@ software (Apache-2.0) and SudachiDict-core 20250515 dictionary package
 not committed or bundled here. Its data terms must be reviewed independently
 before distributing a packaged build. See the [SudachiPy release](https://pypi.org/project/SudachiPy/0.6.10/)
 and [dictionary release](https://pypi.org/project/sudachidict-core/20250515/).
+
+Optional, user-downloaded KANJIDIC2 dictionary data is copyright the
+Electronic Dictionary Research and Development Group and licensed under
+[CC BY-SA 4.0](https://www.edrdg.org/edrdg/licence.html). YomiMado does not
+bundle it. The kanji popup attributes EDRDG on each lookup. Users should
+refresh their local copy regularly from the [official KANJIDIC project](https://www.edrdg.org/wiki/KANJIDIC_Project.html).

@@ -76,13 +76,47 @@ it("shows local word analysis while translating only after a click", async () =>
   expect(container.textContent).toContain("ガッコウ");
   expect(container.textContent).toContain("Base: 学校");
   expect(container.textContent).toContain("POS: 名詞");
+  expect(container.querySelectorAll(".kanji-choices button")).toHaveLength(2);
+  expect(fetch).toHaveBeenCalledTimes(1);
+  fetch.mockImplementation((url: string) => {
+    if (url.endsWith("/kanji")) {
+      return Promise.resolve(
+        new Response(
+          JSON.stringify({
+            character: "学",
+            onReadings: ["ガク"],
+            kunReadings: ["まな.ぶ"],
+            meanings: ["study"],
+          }),
+        ),
+      );
+    }
+    return Promise.resolve(
+      new Response(
+        JSON.stringify({
+          sourceText: "学校",
+          translatedText: "School",
+          provider: "test-local-model",
+          cached: true,
+        }),
+      ),
+    );
+  });
+  await act(async () => {
+    container
+      .querySelector<HTMLButtonElement>('[aria-label="Look up kanji 学"]')!
+      .click();
+  });
+  expect(container.textContent).toContain("Meanings: study");
+  expect(container.textContent).toContain("On: ガク");
+  expect(container.textContent).toContain("Used here in 学校");
   expect(fetch.mock.calls[0][0]).toContain("/tokenize");
 
   await act(async () => {
     container.querySelector<HTMLButtonElement>(".translate-button")!.click();
   });
-  expect(fetch).toHaveBeenCalledTimes(2);
-  expect(fetch.mock.calls[1][0]).toContain("/translate");
+  expect(fetch).toHaveBeenCalledTimes(3);
+  expect(fetch.mock.calls[2][0]).toContain("/translate");
   expect(container.textContent).toContain("School");
   expect(container.textContent).toContain("cached");
 });

@@ -5,6 +5,7 @@ import {
   type TranslationResult,
 } from "../../lib/translation-client";
 import { requestTokenization } from "../../lib/tokenization-client";
+import { requestKanji, type KanjiEntry } from "../../lib/kanji-client";
 import type { TextToken } from "../../lib/ocr-types";
 
 interface PopupState {
@@ -48,6 +49,37 @@ export function TranslationPopup() {
     null,
   );
   const tokenRequestId = useRef(0);
+  const kanjiRequestId = useRef(0);
+  const [selectedKanji, setSelectedKanji] = useState<string | null>(null);
+  const [kanjiEntry, setKanjiEntry] = useState<KanjiEntry | null>(null);
+  const [kanjiError, setKanjiError] = useState<string | null>(null);
+  const [kanjiLoading, setKanjiLoading] = useState(false);
+
+  const selectWord = (tokenIndex: number) => {
+    kanjiRequestId.current++;
+    setSelectedTokenIndex(tokenIndex);
+    setSelectedKanji(null);
+    setKanjiEntry(null);
+    setKanjiError(null);
+    setKanjiLoading(false);
+  };
+
+  const selectKanji = async (character: string) => {
+    const requestId = ++kanjiRequestId.current;
+    setSelectedKanji(character);
+    setKanjiEntry(null);
+    setKanjiError(null);
+    setKanjiLoading(true);
+    try {
+      const entry = await requestKanji(character);
+      if (requestId === kanjiRequestId.current) setKanjiEntry(entry);
+    } catch (requestError) {
+      if (requestId === kanjiRequestId.current)
+        setKanjiError(String(requestError).replace(/^Error: /, ""));
+    } finally {
+      if (requestId === kanjiRequestId.current) setKanjiLoading(false);
+    }
+  };
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
@@ -100,6 +132,10 @@ export function TranslationPopup() {
     setTokenLoading(true);
     setTokens(null);
     setSelectedTokenIndex(null);
+    kanjiRequestId.current++;
+    setSelectedKanji(null);
+    setKanjiEntry(null);
+    setKanjiError(null);
     setTokenError(null);
     try {
       const nextTokens = await requestTokenization(source);
@@ -140,6 +176,11 @@ export function TranslationPopup() {
           setError(null);
           setTokens(null);
           setSelectedTokenIndex(null);
+          kanjiRequestId.current++;
+          setSelectedKanji(null);
+          setKanjiEntry(null);
+          setKanjiError(null);
+          setKanjiLoading(false);
           setTokenError(null);
           setTokenLoading(false);
         }}
@@ -171,7 +212,7 @@ export function TranslationPopup() {
                   type="button"
                   className="tokenization-word"
                   aria-pressed={selectedTokenIndex === tokenIndex}
-                  onClick={() => setSelectedTokenIndex(tokenIndex)}
+                  onClick={() => selectWord(tokenIndex)}
                   key={`${tokens[tokenIndex].start}-${index}`}
                 >
                   {piece.text}
@@ -195,6 +236,71 @@ export function TranslationPopup() {
               </ruby>
               <small>Base: {tokens[selectedTokenIndex].dictionaryForm}</small>
               <small>POS: {tokens[selectedTokenIndex].partOfSpeech}</small>
+              {Array.from(tokens[selectedTokenIndex].surface).some(
+                (character) => /\p{Script=Han}/u.test(character),
+              ) && (
+                <div className="kanji-section">
+                  <span className="translation-caption">
+                    Kanji in this word
+                  </span>
+                  <div className="kanji-choices">
+                    {Array.from(tokens[selectedTokenIndex].surface).map(
+                      (character, index) =>
+                        /\p{Script=Han}/u.test(character) && (
+                          <button
+                            type="button"
+                            key={`${character}-${index}`}
+                            aria-label={`Look up kanji ${character}`}
+                            aria-pressed={selectedKanji === character}
+                            onClick={() => void selectKanji(character)}
+                          >
+                            {character}
+                          </button>
+                        ),
+                    )}
+                  </div>
+                  {kanjiLoading && <small>Looking up {selectedKanji}…</small>}
+                  {kanjiError && (
+                    <small className="translation-error">{kanjiError}</small>
+                  )}
+                  {kanjiEntry && (
+                    <div className="kanji-detail">
+                      <strong>{kanjiEntry.character}</strong>
+                      <span>
+                        Meanings:{" "}
+                        {kanjiEntry.meanings.join("; ") || "not listed"}
+                      </span>
+                      <span>
+                        On: {kanjiEntry.onReadings.join("、") || "not listed"}
+                      </span>
+                      <span>
+                        Kun: {kanjiEntry.kunReadings.join("、") || "not listed"}
+                      </span>
+                      <span>
+                        Used here in {tokens[selectedTokenIndex].surface}{" "}
+                        (whole-word reading:{" "}
+                        {tokens[selectedTokenIndex].reading}).
+                      </span>
+                      <span lang="ja">In this sentence: {source}</span>
+                      <small>
+                        Character readings are possibilities; the whole-word
+                        reading is not split per character.
+                      </small>
+                      <small>
+                        Source:{" "}
+                        <a
+                          href="https://www.edrdg.org/wiki/KANJIDIC_Project.html"
+                          target="_blank"
+                          rel="noreferrer"
+                        >
+                          KANJIDIC2 (EDRDG)
+                        </a>{" "}
+                        · CC BY-SA 4.0
+                      </small>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           )}
       </div>

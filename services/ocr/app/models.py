@@ -67,6 +67,17 @@ class TokenizationResponse(BaseModel):
     tokens: list[TextToken]
 
 
+class KanjiRequest(BaseModel):
+    character: str = Field(min_length=1, max_length=1)
+
+
+class KanjiEntry(BaseModel):
+    character: str
+    onReadings: list[str]
+    kunReadings: list[str]
+    meanings: list[str]
+
+
 class TranslationResponse(BaseModel):
     sourceText: str
     translatedText: str

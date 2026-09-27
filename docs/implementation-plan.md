@@ -328,8 +328,9 @@ Status: complete for the selected-region popup. Analysis is on-demand through
 full-screen detection does not tokenize every region unnecessarily. The popup
 shows details only for a word the user selects in its OCR text; punctuation is
 kept in the source sentence but omitted as a study token. Direct word selection
-on the manga image still needs finer character geometry. Dictionary definitions
-and kanji details remain Phase 6 work.
+on the manga image still needs finer character geometry. Word dictionary
+definitions remain Phase 6 work. A user-installed KANJIDIC2 file now supports
+an initial kanji lookup from the selected word.
 
 ---
 
@@ -342,13 +343,13 @@ Provide instant offline word and kanji information.
 ## Tasks
 
 - [ ] Import JMdict data into an application-friendly local format.
-- [ ] Import KANJIDIC2 data.
+- [x] Read user-installed KANJIDIC2 XML/XML.gz data locally (not bundled).
 - [ ] Add database/version metadata.
 - [ ] Build indexes for expression and reading.
 - [ ] Implement word lookup API.
-- [ ] Implement kanji lookup API.
+- [x] Implement single-character kanji lookup API.
 - [ ] Add dictionary result caching if useful.
-- [ ] Add attribution/license metadata.
+- [x] Add KANJIDIC2 attribution/license metadata in UI and docs.
 
 ## UI
 
@@ -369,6 +370,10 @@ school
 ## Done when
 
 Word selection shows useful local dictionary information without a network request.
+
+Status: partial. Character readings and meanings work with a user-installed
+KANJIDIC2 file. JMdict word definitions, compound examples, and packaging/data
+update automation are not implemented yet.
 
 ---
 
@@ -426,8 +431,12 @@ Each character gets an independent hit box.
 
 - [ ] Add per-character or approximate character geometry.
 - [ ] Add fallback click-crop OCR where useful.
-- [ ] Lookup KANJIDIC2.
-- [ ] Show on-yomi/kun-yomi and meanings.
+- [x] Lookup user-installed KANJIDIC2 from a selected popup word.
+- [x] Show on-yomi/kun-yomi and meanings in the popup.
+
+Status: the first approach works with local dictionary data. Direct clicks on
+characters in the manga image still need finer OCR geometry. Compound examples
+and fuller usage information remain part of JMdict integration.
 - [ ] Show selected example compounds.
 
 ## Done when

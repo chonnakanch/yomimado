@@ -17,7 +17,10 @@ The initial capture-to-overlay slice is implemented:
    around the selected area. This is a coordinate check, not recognized text.
 5. Click a recognized region to open a Japanese learning popup. Select a word
    in the popup's OCR text to see that word's reading, dictionary form, and
-   part of speech. After editing the text, press **Analyze words** to refresh
+   part of speech. Click a kanji in that word for local KANJIDIC2 meanings and
+   on/kun readings. The popup shows the selected word as its immediate usage
+   context; it does not guess which character reading forms that word. After
+   editing the text, press **Analyze words** to refresh
    word boundaries. Press **Translate locally** only if a sentence translation is
    wanted; translation never starts merely because OCR detected a region. In
    demo mode, enter Japanese text manually; the demo boundary contains no
@@ -135,3 +138,24 @@ form. The popup offers precise word selection in the OCR text, not directly on
 the manga image; the detector currently provides region polygons, not
 per-character positions. If the extra is not installed, OCR and translation
 continue to work and the popup shows a tokenization setup error.
+
+## Local kanji dictionary
+
+For kanji meanings and readings, download the current
+[KANJIDIC2 XML file](https://www.edrdg.org/kanjidic/kanjidic2.xml.gz)
+from the [EDRDG KANJIDIC project](https://www.edrdg.org/wiki/KANJIDIC_Project.html)
+to `services/ocr/local-dictionaries/kanjidic2.xml.gz` (this directory is
+git-ignored). Alternatively, set `YOMIMADO_KANJIDIC2` to the absolute path of
+an uncompressed `.xml` or compressed `.xml.gz` copy before starting the OCR
+service. Restart the service after replacing the file. Refresh this local copy
+regularly from EDRDG; YomiMado does not download or silently update it.
+
+The popup requests a single kanji only when clicked. Lookup stays on the local
+OCR service; neither manga images nor selected text are sent to EDRDG. If the
+file is missing, the popup shows the setup path rather than inventing a meaning.
+This initial slice shows character meanings/readings and the word where the
+character appeared. Separate example-compound and word-definition lookup still
+require JMdict integration.
+
+KANJIDIC2 is copyright the Electronic Dictionary Research and Development
+Group, provided under [CC BY-SA 4.0 and the EDRDG dictionary licence](https://www.edrdg.org/edrdg/licence.html).

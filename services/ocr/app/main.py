@@ -2,6 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.api.health import router as health_router
+from app.api.kanji import router as kanji_router
 from app.api.ocr import router as ocr_router
 from app.api.tokenization import router as tokenization_router
 from app.api.translation import router as translation_router
@@ -21,6 +22,7 @@ app.add_middleware(
 )
 
 app.include_router(health_router)
+app.include_router(kanji_router)
 app.include_router(ocr_router)
 app.include_router(tokenization_router)
 app.include_router(translation_router)

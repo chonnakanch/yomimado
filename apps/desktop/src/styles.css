@@ -418,6 +418,43 @@ h1 span {
   font-size: 0.65rem;
   overflow-wrap: anywhere;
 }
+.kanji-section {
+  border-top: 1px solid #5c5048;
+  margin-top: 0.4rem;
+  padding-top: 0.4rem;
+  width: 100%;
+}
+.kanji-choices {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin-top: 0.35rem;
+}
+.kanji-choices button {
+  padding: 0.25rem 0.45rem;
+}
+.kanji-choices button[aria-pressed="true"] {
+  background: #ffab83;
+}
+.kanji-detail {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  margin-top: 0.5rem;
+  overflow-wrap: anywhere;
+}
+.kanji-detail strong {
+  font-size: 1.2rem;
+}
+.kanji-detail span {
+  font-size: 0.8rem;
+}
+.kanji-detail a {
+  color: #ffab83;
+}
+.tokenization-selected .translation-error {
+  color: #ffab83;
+}
 .translation-output {
   background: #171411;
   border-radius: 6px;

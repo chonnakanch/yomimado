@@ -9,3 +9,4 @@ __pycache__/
 *.py[cod]
 services/ocr/local-fixtures/
 services/ocr/local-models/
+services/ocr/local-dictionaries/
