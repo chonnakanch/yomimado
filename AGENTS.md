@@ -411,6 +411,10 @@ After coding:
 3. Verify the app still builds for the current target platform where practical.
 4. Summarize changed files, tests run, and any platform limitation.
 5. Update the implementation-plan status when a milestone is completed.
+6. For material features, bug fixes, or workflow changes, create a focused
+   commit after verification and push it to the current tracked branch, unless
+   the user asks otherwise. Do not include unrelated user changes or force-push.
+   If pushing fails, report the local commit and the blocker.
 
 ## Current milestone
 
