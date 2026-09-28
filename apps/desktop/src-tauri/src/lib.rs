@@ -201,6 +201,15 @@ fn show_translation_popup(
 }
 
 #[tauri::command]
+fn resize_translation_popup(
+    app: AppHandle,
+    placement: overlay::PopupPlacement,
+    logical_height: f64,
+) -> Result<(), String> {
+    overlay::resize_translation_popup(&app, placement, logical_height)
+}
+
+#[tauri::command]
 fn close_ocr_overlay(app: AppHandle) -> Result<(), String> {
     if let Some(window) = app.get_webview_window("translation-popup") {
         window.close().map_err(|error| error.to_string())?;
@@ -254,6 +263,7 @@ pub fn run() {
             capture_selection,
             show_ocr_overlay,
             show_translation_popup,
+            resize_translation_popup,
             close_ocr_overlay
         ])
         .run(tauri::generate_context!())

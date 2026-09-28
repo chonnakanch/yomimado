@@ -4,6 +4,10 @@ import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
 import { TranslationPopup } from "./TranslationPopup";
 
+const invokeMock = vi.hoisted(() => vi.fn(() => Promise.resolve()));
+
+vi.mock("@tauri-apps/api/core", () => ({ invoke: invokeMock }));
+
 vi.mock("@tauri-apps/api/window", () => ({
   getCurrentWindow: () => ({ close: vi.fn() }),
 }));
@@ -12,6 +16,7 @@ let container: HTMLDivElement;
 let root: Root;
 
 beforeEach(() => {
+  invokeMock.mockClear();
   Object.assign(globalThis, { IS_REACT_ACT_ENVIRONMENT: true });
   container = document.createElement("div");
   document.body.appendChild(container);
@@ -22,6 +27,53 @@ afterEach(async () => {
   await act(async () => root.unmount());
   container.remove();
   vi.unstubAllGlobals();
+  vi.restoreAllMocks();
+});
+
+it("resizes to its content when details expand", async () => {
+  const placement = {
+    screen: { x: 0, y: 0, width: 1920, height: 1080 },
+    anchorLeft: 100,
+    anchorRight: 200,
+    anchorTop: 100,
+    scaleFactor: 1,
+  };
+  const state = encodeURIComponent(
+    JSON.stringify({ text: "", demo: true, placement }),
+  );
+  window.history.replaceState({}, "", `/?mode=translation&state=${state}`);
+  let observedResize: (() => void) | undefined;
+  vi.stubGlobal(
+    "ResizeObserver",
+    class {
+      constructor(callback: () => void) {
+        observedResize = callback;
+      }
+      observe() {}
+      disconnect() {}
+    },
+  );
+  vi.stubGlobal("requestAnimationFrame", (callback: FrameRequestCallback) => {
+    callback(0);
+    return 1;
+  });
+  vi.stubGlobal("cancelAnimationFrame", () => {});
+  let contentHeight = 420;
+  vi.spyOn(HTMLElement.prototype, "getBoundingClientRect").mockImplementation(
+    () => ({ height: contentHeight }) as DOMRect,
+  );
+
+  await act(async () => root.render(<TranslationPopup />));
+  expect(invokeMock).toHaveBeenLastCalledWith("resize_translation_popup", {
+    placement,
+    logicalHeight: 422,
+  });
+  contentHeight = 710;
+  await act(async () => observedResize?.());
+  expect(invokeMock).toHaveBeenLastCalledWith("resize_translation_popup", {
+    placement,
+    logicalHeight: 712,
+  });
 });
 
 it("shows local word analysis while translating only after a click", async () => {

@@ -1,7 +1,11 @@
 use serde::{Deserialize, Serialize};
 use tauri::{AppHandle, Manager, PhysicalPosition, PhysicalSize, WebviewUrl, WebviewWindowBuilder};
 
-use crate::capture::CaptureMetadata;
+use crate::capture::{CaptureMetadata, Rectangle};
+
+const POPUP_LOGICAL_WIDTH: f64 = 460.0;
+const INITIAL_POPUP_LOGICAL_HEIGHT: f64 = 320.0;
+const POPUP_SCREEN_INSET: f64 = 12.0;
 
 #[derive(Serialize)]
 #[serde(rename_all = "camelCase")]
@@ -32,10 +36,21 @@ struct PopupPosition {
     height: u32,
 }
 
-fn popup_position(
+#[derive(Clone, Copy, Deserialize, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct PopupPlacement {
+    screen: Rectangle,
+    anchor_left: f64,
+    anchor_right: f64,
+    anchor_top: f64,
+    scale_factor: f64,
+}
+
+fn popup_placement(
     metadata: &CaptureMetadata,
     polygon: &[OcrPoint],
-) -> Result<PopupPosition, String> {
+    screen: Rectangle,
+) -> Result<PopupPlacement, String> {
     if polygon.len() < 3 || metadata.image_width == 0 || metadata.image_height == 0 {
         return Err("The selected OCR region has no usable geometry".into());
     }
@@ -59,23 +74,57 @@ fn popup_position(
         return Err("Invalid OCR region coordinates".into());
     }
     let selection = metadata.selection_physical_bounds;
-    let screen = metadata.screen_physical_bounds;
     let anchor_left = selection.x + min_x * selection.width / f64::from(metadata.image_width);
     let anchor_right = selection.x + max_x * selection.width / f64::from(metadata.image_width);
     let anchor_top = selection.y + min_y * selection.height / f64::from(metadata.image_height);
-    let width = (360.0 * scale).round().min(screen.width).max(1.0);
-    let height = (320.0 * scale).round().min(screen.height).max(1.0);
+    Ok(PopupPlacement {
+        screen,
+        anchor_left,
+        anchor_right,
+        anchor_top,
+        scale_factor: scale,
+    })
+}
+
+fn popup_position(placement: PopupPlacement, logical_height: f64) -> Result<PopupPosition, String> {
+    let screen = placement.screen;
+    let scale = placement.scale_factor;
+    if !logical_height.is_finite()
+        || logical_height <= 0.0
+        || !scale.is_finite()
+        || scale <= 0.0
+        || !screen.width.is_finite()
+        || !screen.height.is_finite()
+        || screen.width <= 0.0
+        || screen.height <= 0.0
+    {
+        return Err("Invalid popup size or display bounds".into());
+    }
+    let inset = (POPUP_SCREEN_INSET * scale)
+        .round()
+        .min((screen.width.min(screen.height) / 4.0).floor());
+    let available_width = (screen.width - 2.0 * inset).max(1.0);
+    let available_height = (screen.height - 2.0 * inset).max(1.0);
+    let width = (POPUP_LOGICAL_WIDTH * scale).round().min(available_width);
+    let height = (logical_height * scale)
+        .round()
+        .min(available_height)
+        .max(1.0);
     let gap = (8.0 * scale).round();
-    let screen_right = screen.x + screen.width;
-    let screen_bottom = screen.y + screen.height;
-    let x = if anchor_right + gap + width <= screen_right {
-        anchor_right + gap
-    } else if anchor_left - gap - width >= screen.x {
-        anchor_left - gap - width
+    let screen_left = screen.x + inset;
+    let screen_top = screen.y + inset;
+    let screen_right = screen.x + screen.width - inset;
+    let screen_bottom = screen.y + screen.height - inset;
+    let x = if placement.anchor_right + gap + width <= screen_right {
+        placement.anchor_right + gap
+    } else if placement.anchor_left - gap - width >= screen_left {
+        placement.anchor_left - gap - width
     } else {
-        (anchor_right + gap).clamp(screen.x, screen_right - width)
+        (placement.anchor_right + gap).clamp(screen_left, screen_right - width)
     };
-    let y = anchor_top.clamp(screen.y, screen_bottom - height);
+    let y = placement
+        .anchor_top
+        .clamp(screen_top, screen_bottom - height);
     Ok(PopupPosition {
         x: x.round() as i32,
         y: y.round() as i32,
@@ -84,8 +133,8 @@ fn popup_position(
     })
 }
 
-fn translation_popup_query(text: &str, demo: bool) -> String {
-    let state = serde_json::json!({ "text": text, "demo": demo });
+fn translation_popup_query(text: &str, demo: bool, placement: PopupPlacement) -> String {
+    let state = serde_json::json!({ "text": text, "demo": demo, "placement": placement });
     let serialized = state.to_string();
     let encoded = urlencoding::encode(&serialized);
     format!("mode=translation&state={encoded}")
@@ -190,8 +239,22 @@ pub fn show_translation_popup(
     polygon: &[OcrPoint],
     demo: bool,
 ) -> Result<(), String> {
-    let position = popup_position(metadata, polygon)?;
-    let query = translation_popup_query(text, demo);
+    let screen = app
+        .get_webview_window("ocr-overlay")
+        .and_then(|window| window.current_monitor().ok().flatten())
+        .map(|monitor| {
+            let area = monitor.work_area();
+            Rectangle {
+                x: f64::from(area.position.x),
+                y: f64::from(area.position.y),
+                width: f64::from(area.size.width),
+                height: f64::from(area.size.height),
+            }
+        })
+        .unwrap_or(metadata.screen_physical_bounds);
+    let placement = popup_placement(metadata, polygon, screen)?;
+    let position = popup_position(placement, INITIAL_POPUP_LOGICAL_HEIGHT)?;
+    let query = translation_popup_query(text, demo, placement);
     if let Some(window) = app.get_webview_window("translation-popup") {
         // Reuse the existing webview: close() can return before its label is
         // removed, so immediately rebuilding with the same label can fail.
@@ -232,6 +295,23 @@ pub fn show_translation_popup(
     Ok(())
 }
 
+pub fn resize_translation_popup(
+    app: &AppHandle,
+    placement: PopupPlacement,
+    logical_height: f64,
+) -> Result<(), String> {
+    let window = app
+        .get_webview_window("translation-popup")
+        .ok_or("Translation popup is unavailable")?;
+    let position = popup_position(placement, logical_height)?;
+    window
+        .set_size(PhysicalSize::new(position.width, position.height))
+        .map_err(|error| error.to_string())?;
+    window
+        .set_position(PhysicalPosition::new(position.x, position.y))
+        .map_err(|error| error.to_string())
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -239,9 +319,25 @@ mod tests {
 
     #[test]
     fn translation_popup_navigation_preserves_new_ocr_text() {
+        let placement = PopupPlacement {
+            screen: Rectangle {
+                x: 0.0,
+                y: 0.0,
+                width: 1920.0,
+                height: 1080.0,
+            },
+            anchor_left: 100.0,
+            anchor_right: 200.0,
+            anchor_top: 100.0,
+            scale_factor: 1.0,
+        };
         let mut url = tauri::Url::parse("http://localhost:1420/index.html?mode=translation")
             .expect("valid app URL");
-        url.set_query(Some(&translation_popup_query("たまにはいいでしょ", false)));
+        url.set_query(Some(&translation_popup_query(
+            "たまにはいいでしょ",
+            false,
+            placement,
+        )));
 
         let state = url
             .query_pairs()
@@ -251,6 +347,7 @@ mod tests {
         let state: serde_json::Value = serde_json::from_str(&state).expect("JSON popup state");
         assert_eq!(state["text"], "たまにはいいでしょ");
         assert_eq!(state["demo"], false);
+        assert_eq!(state["placement"]["anchorLeft"], 100.0);
     }
 
     #[test]
@@ -357,14 +454,77 @@ mod tests {
             OcrPoint { x: 200.0, y: 0.0 },
             OcrPoint { x: 200.0, y: 300.0 },
         ];
+        let placement = popup_placement(&metadata, &polygon, metadata.screen_physical_bounds)
+            .expect("valid popup placement");
         assert_eq!(
-            popup_position(&metadata, &polygon).unwrap(),
+            popup_position(placement, INITIAL_POPUP_LOGICAL_HEIGHT).unwrap(),
             PopupPosition {
                 x: 1416,
                 y: 666,
-                width: 720,
+                width: 920,
                 height: 640
             }
         );
+    }
+
+    #[test]
+    fn tall_popup_fits_work_area_and_keeps_retina_scale() {
+        let placement = PopupPlacement {
+            screen: Rectangle {
+                x: -1600.0,
+                y: 30.0,
+                width: 1600.0,
+                height: 900.0,
+            },
+            anchor_left: -200.0,
+            anchor_right: -100.0,
+            anchor_top: 700.0,
+            scale_factor: 2.0,
+        };
+        let position = popup_position(placement, 800.0).unwrap();
+        assert_eq!(position.width, 920);
+        assert_eq!(position.height, 852);
+        assert!(position.x >= -1576);
+        assert!(position.x + position.width as i32 <= -24);
+        assert!(position.y >= 54);
+        assert!(position.y + position.height as i32 <= 906);
+    }
+
+    #[test]
+    fn popup_grows_to_content_height_when_screen_has_room() {
+        let placement = PopupPlacement {
+            screen: Rectangle {
+                x: 0.0,
+                y: 0.0,
+                width: 1920.0,
+                height: 1080.0,
+            },
+            anchor_left: 100.0,
+            anchor_right: 200.0,
+            anchor_top: 120.0,
+            scale_factor: 1.0,
+        };
+        let position = popup_position(placement, 680.0).unwrap();
+        assert_eq!((position.width, position.height), (460, 680));
+        assert_eq!((position.x, position.y), (208, 120));
+    }
+
+    #[test]
+    fn small_screen_clamps_popup_width_and_height() {
+        let placement = PopupPlacement {
+            screen: Rectangle {
+                x: 0.0,
+                y: 0.0,
+                width: 360.0,
+                height: 500.0,
+            },
+            anchor_left: 200.0,
+            anchor_right: 250.0,
+            anchor_top: 200.0,
+            scale_factor: 1.0,
+        };
+        let position = popup_position(placement, 900.0).unwrap();
+        assert_eq!((position.width, position.height), (336, 476));
+        assert_eq!((position.x, position.y), (12, 12));
     }
 }
