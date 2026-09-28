@@ -36,3 +36,9 @@ Electronic Dictionary Research and Development Group and licensed under
 [CC BY-SA 4.0](https://www.edrdg.org/edrdg/licence.html). YomiMado does not
 bundle it. The kanji popup attributes EDRDG on each lookup. Users should
 refresh their local copy regularly from the [official KANJIDIC project](https://www.edrdg.org/wiki/KANJIDIC_Project.html).
+
+Optional, user-downloaded JMdict dictionary data is copyright the Electronic
+Dictionary Research and Development Group and licensed under
+[CC BY-SA 4.0](https://www.edrdg.org/edrdg/licence.html). YomiMado does not
+bundle it. The word popup attributes EDRDG on each lookup. Users should
+refresh their local copy regularly from the [official dictionary archive](https://www.edrdg.org/pub/Nihongo/00INDEX.html).

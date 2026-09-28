@@ -328,9 +328,9 @@ Status: complete for the selected-region popup. Analysis is on-demand through
 full-screen detection does not tokenize every region unnecessarily. The popup
 shows details only for a word the user selects in its OCR text; punctuation is
 kept in the source sentence but omitted as a study token. Direct word selection
-on the manga image still needs finer character geometry. Word dictionary
-definitions remain Phase 6 work. A user-installed KANJIDIC2 file now supports
-an initial kanji lookup from the selected word.
+on the manga image still needs finer character geometry. User-installed JMdict
+and KANJIDIC2 files now support whole-word and individual-kanji lookup from
+the selected word.
 
 ---
 
@@ -342,14 +342,15 @@ Provide instant offline word and kanji information.
 
 ## Tasks
 
-- [ ] Import JMdict data into an application-friendly local format.
+- [x] Index user-installed JMdict XML/XML.gz in a local SQLite lookup file.
 - [x] Read user-installed KANJIDIC2 XML/XML.gz data locally (not bundled).
-- [ ] Add database/version metadata.
-- [ ] Build indexes for expression and reading.
-- [ ] Implement word lookup API.
+- [x] Record source fingerprint and index schema version for automatic rebuilds.
+- [x] Build a lookup index for JMdict written expressions and readings.
+- [x] Implement word lookup API.
 - [x] Implement single-character kanji lookup API.
 - [ ] Add dictionary result caching if useful.
 - [x] Add KANJIDIC2 attribution/license metadata in UI and docs.
+- [x] Add JMdict attribution/license metadata in UI and docs.
 
 ## UI
 
@@ -371,9 +372,10 @@ school
 
 Word selection shows useful local dictionary information without a network request.
 
-Status: partial. Character readings and meanings work with a user-installed
-KANJIDIC2 file. JMdict word definitions, compound examples, and packaging/data
-update automation are not implemented yet.
+Status: core word and character lookup work with user-installed JMdict and
+KANJIDIC2 files. JMdict can return multiple possible senses; the app does not
+disambiguate them using sentence context. Example compounds for individual
+kanji and packaging/data update automation are not implemented yet.
 
 ---
 

@@ -78,6 +78,29 @@ class KanjiEntry(BaseModel):
     meanings: list[str]
 
 
+class WordLookupRequest(BaseModel):
+    surface: str = Field(min_length=1, max_length=100)
+    dictionaryForm: str = Field(min_length=1, max_length=100)
+    reading: str = Field(max_length=100)
+
+
+class WordSense(BaseModel):
+    glosses: list[str]
+
+
+class WordEntry(BaseModel):
+    expression: str
+    reading: str
+    senses: list[WordSense]
+    match: Literal["surface", "dictionaryForm"]
+    readingMatch: bool
+    common: bool
+
+
+class WordLookupResponse(BaseModel):
+    entries: list[WordEntry]
+
+
 class TranslationResponse(BaseModel):
     sourceText: str
     translatedText: str

@@ -6,6 +6,7 @@ import {
 } from "../../lib/translation-client";
 import { requestTokenization } from "../../lib/tokenization-client";
 import { requestKanji, type KanjiEntry } from "../../lib/kanji-client";
+import { requestWord, type WordEntry } from "../../lib/word-client";
 import type { TextToken } from "../../lib/ocr-types";
 
 interface PopupState {
@@ -49,19 +50,38 @@ export function TranslationPopup() {
     null,
   );
   const tokenRequestId = useRef(0);
+  const wordRequestId = useRef(0);
+  const [wordEntries, setWordEntries] = useState<WordEntry[] | null>(null);
+  const [wordError, setWordError] = useState<string | null>(null);
+  const [wordLoading, setWordLoading] = useState(false);
   const kanjiRequestId = useRef(0);
   const [selectedKanji, setSelectedKanji] = useState<string | null>(null);
   const [kanjiEntry, setKanjiEntry] = useState<KanjiEntry | null>(null);
   const [kanjiError, setKanjiError] = useState<string | null>(null);
   const [kanjiLoading, setKanjiLoading] = useState(false);
 
-  const selectWord = (tokenIndex: number) => {
+  const selectWord = async (tokenIndex: number) => {
+    const token = tokens?.[tokenIndex];
+    if (!token) return;
+    const requestId = ++wordRequestId.current;
     kanjiRequestId.current++;
     setSelectedTokenIndex(tokenIndex);
+    setWordEntries(null);
+    setWordError(null);
+    setWordLoading(true);
     setSelectedKanji(null);
     setKanjiEntry(null);
     setKanjiError(null);
     setKanjiLoading(false);
+    try {
+      const entries = await requestWord(token);
+      if (requestId === wordRequestId.current) setWordEntries(entries);
+    } catch (requestError) {
+      if (requestId === wordRequestId.current)
+        setWordError(String(requestError).replace(/^Error: /, ""));
+    } finally {
+      if (requestId === wordRequestId.current) setWordLoading(false);
+    }
   };
 
   const selectKanji = async (character: string) => {
@@ -132,6 +152,10 @@ export function TranslationPopup() {
     setTokenLoading(true);
     setTokens(null);
     setSelectedTokenIndex(null);
+    wordRequestId.current++;
+    setWordEntries(null);
+    setWordError(null);
+    setWordLoading(false);
     kanjiRequestId.current++;
     setSelectedKanji(null);
     setKanjiEntry(null);
@@ -176,6 +200,10 @@ export function TranslationPopup() {
           setError(null);
           setTokens(null);
           setSelectedTokenIndex(null);
+          wordRequestId.current++;
+          setWordEntries(null);
+          setWordError(null);
+          setWordLoading(false);
           kanjiRequestId.current++;
           setSelectedKanji(null);
           setKanjiEntry(null);
@@ -212,7 +240,7 @@ export function TranslationPopup() {
                   type="button"
                   className="tokenization-word"
                   aria-pressed={selectedTokenIndex === tokenIndex}
-                  onClick={() => selectWord(tokenIndex)}
+                  onClick={() => void selectWord(tokenIndex)}
                   key={`${tokens[tokenIndex].start}-${index}`}
                 >
                   {piece.text}
@@ -236,6 +264,58 @@ export function TranslationPopup() {
               </ruby>
               <small>Base: {tokens[selectedTokenIndex].dictionaryForm}</small>
               <small>POS: {tokens[selectedTokenIndex].partOfSpeech}</small>
+              <div className="word-meanings">
+                <span className="translation-caption">
+                  Combined word meaning
+                </span>
+                {wordLoading && <small>Looking up word…</small>}
+                {wordError && (
+                  <small className="translation-error">{wordError}</small>
+                )}
+                {wordEntries?.length === 0 && (
+                  <small>
+                    No JMdict entry found for this word or base form.
+                  </small>
+                )}
+                {wordEntries?.map((entry, index) => (
+                  <div
+                    className="word-entry"
+                    key={`${entry.expression}-${entry.reading}-${index}`}
+                  >
+                    <strong lang="ja">
+                      {entry.expression} · {entry.reading}
+                    </strong>
+                    {entry.match === "dictionaryForm" && (
+                      <small>Matched base form</small>
+                    )}
+                    {entry.match === "surface" && !entry.readingMatch && (
+                      <small>
+                        Reading differs from the selected token; check this
+                        sense.
+                      </small>
+                    )}
+                    <ol>
+                      {entry.senses.map((sense, senseIndex) => (
+                        <li key={senseIndex}>{sense.glosses.join("; ")}</li>
+                      ))}
+                    </ol>
+                  </div>
+                ))}
+                {wordEntries && wordEntries.length > 0 && (
+                  <small>
+                    Possible dictionary senses, not a context-specific
+                    translation. Source:{" "}
+                    <a
+                      href="https://www.edrdg.org/wiki/JMdict-EDICT_Dictionary_Project.html"
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      JMdict (EDRDG)
+                    </a>{" "}
+                    · CC BY-SA 4.0
+                  </small>
+                )}
+              </div>
               {Array.from(tokens[selectedTokenIndex].surface).some(
                 (character) => /\p{Script=Han}/u.test(character),
               ) && (

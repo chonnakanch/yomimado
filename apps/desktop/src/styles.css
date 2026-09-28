@@ -418,6 +418,30 @@ h1 span {
   font-size: 0.65rem;
   overflow-wrap: anywhere;
 }
+.word-meanings {
+  border-top: 1px solid #5c5048;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  margin-top: 0.4rem;
+  padding-top: 0.4rem;
+  width: 100%;
+}
+.word-meanings a {
+  color: #ffab83;
+}
+.word-entry {
+  border-left: 2px solid #df8259;
+  padding-left: 0.5rem;
+}
+.word-entry strong {
+  font-size: 0.8rem;
+}
+.word-entry ol {
+  font-size: 0.8rem;
+  margin: 0.25rem 0;
+  padding-left: 1.25rem;
+}
 .kanji-section {
   border-top: 1px solid #5c5048;
   margin-top: 0.4rem;

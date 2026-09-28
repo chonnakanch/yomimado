@@ -16,8 +16,9 @@ The initial capture-to-overlay slice is implemented:
    overlay. Without local models, the service shows a dashed **demo boundary**
    around the selected area. This is a coordinate check, not recognized text.
 5. Click a recognized region to open a Japanese learning popup. Select a word
-   in the popup's OCR text to see that word's reading, dictionary form, and
-   part of speech. Click a kanji in that word for local KANJIDIC2 meanings and
+   in the popup's OCR text to see its reading, dictionary form, part of speech,
+   and possible combined-word meanings from a local JMdict file. Click a kanji
+   in that word for local KANJIDIC2 meanings and
    on/kun readings. The popup shows the selected word as its immediate usage
    context; it does not guess which character reading forms that word. After
    editing the text, press **Analyze words** to refresh
@@ -139,6 +140,29 @@ the manga image; the detector currently provides region polygons, not
 per-character positions. If the extra is not installed, OCR and translation
 continue to work and the popup shows a tokenization setup error.
 
+## Local word dictionary
+
+For combined-word meanings (for example, 今日 → “today” rather than the
+separate meanings of 今 and 日), download the English-only
+[JMdict_e.gz file from EDRDG](https://www.edrdg.org/pub/Nihongo/JMdict_e.gz)
+to `services/ocr/local-dictionaries/JMdict_e.gz`. This directory is
+git-ignored. Alternatively, set `YOMIMADO_JMDICT` to an absolute path to the
+compressed `.gz` or uncompressed XML file before starting the OCR service.
+The service creates a local SQLite lookup index on first use in the same
+directory; set `YOMIMADO_JMDICT_INDEX` to an absolute writable path if needed.
+It rebuilds the index when the source file changes. Refresh your local copy
+regularly from EDRDG; YomiMado does not download or silently update it.
+
+Selecting a word in the popup requests its possible JMdict senses from the
+local OCR service. Inflected words also try their Sudachi dictionary form.
+Multiple senses are shown because this lookup does not choose a meaning from
+sentence context. The separate **Translate locally** action remains optional.
+If JMdict is missing, the popup shows the expected setup path and other
+learning features continue to work.
+
+JMdict is copyright the Electronic Dictionary Research and Development Group,
+provided under [CC BY-SA 4.0 and the EDRDG dictionary licence](https://www.edrdg.org/edrdg/licence.html).
+
 ## Local kanji dictionary
 
 For kanji meanings and readings, download the current
@@ -154,8 +178,8 @@ The popup requests a single kanji only when clicked. Lookup stays on the local
 OCR service; neither manga images nor selected text are sent to EDRDG. If the
 file is missing, the popup shows the setup path rather than inventing a meaning.
 This initial slice shows character meanings/readings and the word where the
-character appeared. Separate example-compound and word-definition lookup still
-require JMdict integration.
+character appeared. JMdict supplies meanings for a selected whole word;
+example compounds for an individual kanji are not yet shown.
 
 KANJIDIC2 is copyright the Electronic Dictionary Research and Development
 Group, provided under [CC BY-SA 4.0 and the EDRDG dictionary licence](https://www.edrdg.org/edrdg/licence.html).

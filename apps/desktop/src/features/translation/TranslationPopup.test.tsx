@@ -50,6 +50,36 @@ it("shows local word analysis while translating only after a click", async () =>
         ),
       );
     }
+    if (url.endsWith("/word")) {
+      return Promise.resolve(
+        new Response(
+          JSON.stringify({
+            entries: [
+              {
+                expression: "学校",
+                reading: "がっこう",
+                senses: [{ glosses: ["school"] }],
+                match: "surface",
+                readingMatch: true,
+                common: true,
+              },
+            ],
+          }),
+        ),
+      );
+    }
+    if (url.endsWith("/kanji")) {
+      return Promise.resolve(
+        new Response(
+          JSON.stringify({
+            character: "学",
+            onReadings: ["ガク"],
+            kunReadings: ["まな.ぶ"],
+            meanings: ["study"],
+          }),
+        ),
+      );
+    }
     return Promise.resolve(
       new Response(
         JSON.stringify({
@@ -76,32 +106,10 @@ it("shows local word analysis while translating only after a click", async () =>
   expect(container.textContent).toContain("ガッコウ");
   expect(container.textContent).toContain("Base: 学校");
   expect(container.textContent).toContain("POS: 名詞");
+  expect(container.textContent).toContain("Combined word meaning");
+  expect(container.textContent).toContain("school");
   expect(container.querySelectorAll(".kanji-choices button")).toHaveLength(2);
-  expect(fetch).toHaveBeenCalledTimes(1);
-  fetch.mockImplementation((url: string) => {
-    if (url.endsWith("/kanji")) {
-      return Promise.resolve(
-        new Response(
-          JSON.stringify({
-            character: "学",
-            onReadings: ["ガク"],
-            kunReadings: ["まな.ぶ"],
-            meanings: ["study"],
-          }),
-        ),
-      );
-    }
-    return Promise.resolve(
-      new Response(
-        JSON.stringify({
-          sourceText: "学校",
-          translatedText: "School",
-          provider: "test-local-model",
-          cached: true,
-        }),
-      ),
-    );
-  });
+  expect(fetch).toHaveBeenCalledTimes(2);
   await act(async () => {
     container
       .querySelector<HTMLButtonElement>('[aria-label="Look up kanji 学"]')!
@@ -115,8 +123,8 @@ it("shows local word analysis while translating only after a click", async () =>
   await act(async () => {
     container.querySelector<HTMLButtonElement>(".translate-button")!.click();
   });
-  expect(fetch).toHaveBeenCalledTimes(3);
-  expect(fetch.mock.calls[2][0]).toContain("/translate");
+  expect(fetch).toHaveBeenCalledTimes(4);
+  expect(fetch.mock.calls[3][0]).toContain("/translate");
   expect(container.textContent).toContain("School");
   expect(container.textContent).toContain("cached");
 });
@@ -149,6 +157,9 @@ it("keeps punctuation as sentence context but not as selectable words", async ()
         new Response(JSON.stringify({ sourceText: text, tokens })),
       );
     }
+    if (url.endsWith("/word")) {
+      return Promise.resolve(new Response(JSON.stringify({ entries: [] })));
+    }
     expect(JSON.parse(options?.body as string)).toEqual({ text });
     return Promise.resolve(
       new Response(
@@ -179,7 +190,7 @@ it("keeps punctuation as sentence context but not as selectable words", async ()
   await act(async () => {
     container.querySelector<HTMLButtonElement>(".translate-button")!.click();
   });
-  expect(fetch).toHaveBeenCalledTimes(2);
+  expect(fetch).toHaveBeenCalledTimes(3);
   expect(container.textContent).toContain("Today!? School");
 });
 
