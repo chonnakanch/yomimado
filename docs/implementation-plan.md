@@ -476,6 +476,11 @@ results.
 
 Reduce manual capture work.
 
+Status: a one-shot **Scan current display** action is available. It captures
+the current display's visible area, runs the existing local OCR pipeline once,
+and shows the returned regions without a drag. This is a small slice of the
+phase, not continuous scanning or automatic manga/panel filtering.
+
 Current manual flow:
 
 ```text

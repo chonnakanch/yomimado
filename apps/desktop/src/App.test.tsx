@@ -2,6 +2,7 @@
 import { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
+import { invoke } from "@tauri-apps/api/core";
 import { App } from "./App";
 
 vi.mock("@tauri-apps/api/core", () => ({ invoke: vi.fn() }));
@@ -20,6 +21,19 @@ afterEach(async () => {
   await act(async () => root.unmount());
   container.remove();
   vi.unstubAllGlobals();
+  vi.mocked(invoke).mockReset();
+});
+
+it("starts a one-shot display scan from the main window", async () => {
+  vi.mocked(invoke).mockResolvedValue(undefined);
+  await act(async () => root.render(<App />));
+  await act(async () => {
+    Array.from(container.querySelectorAll("button"))
+      .find((button) => button.textContent === "Scan current display")!
+      .click();
+  });
+  expect(invoke).toHaveBeenCalledExactlyOnceWith("show_display_scanner");
+  expect(container.textContent).toContain("Scanning visible text");
 });
 
 it("shows saved words and removes one only after confirmation", async () => {

@@ -52,6 +52,15 @@ fn current_display(app: &AppHandle, window_label: &str) -> Result<DisplayInfo, S
 
 #[tauri::command]
 fn show_capture_selector(app: AppHandle) -> Result<(), String> {
+    show_capture_window(app, false)
+}
+
+#[tauri::command]
+fn show_display_scanner(app: AppHandle) -> Result<(), String> {
+    show_capture_window(app, true)
+}
+
+fn show_capture_window(app: AppHandle, scan_display: bool) -> Result<(), String> {
     #[cfg(target_os = "macos")]
     {
         let access = core_graphics::access::ScreenCaptureAccess;
@@ -70,7 +79,27 @@ fn show_capture_selector(app: AppHandle) -> Result<(), String> {
     if let Some(window) = app.get_webview_window("translation-popup") {
         window.close().map_err(|error| error.to_string())?;
     }
+    let query = if scan_display {
+        "mode=capture&scan=display"
+    } else {
+        "mode=capture"
+    };
     if let Some(window) = app.get_webview_window("capture-selector") {
+        let mut url = window.url().map_err(|error| error.to_string())?;
+        url.set_query(Some(query));
+        window.navigate(url).map_err(|error| error.to_string())?;
+        window
+            .set_position(PhysicalPosition::new(
+                display.physical_bounds.x as i32,
+                display.physical_bounds.y as i32,
+            ))
+            .map_err(|error| error.to_string())?;
+        window
+            .set_size(PhysicalSize::new(
+                display.physical_bounds.width as u32,
+                display.physical_bounds.height as u32,
+            ))
+            .map_err(|error| error.to_string())?;
         main.minimize().map_err(|error| error.to_string())?;
         window.show().map_err(|error| error.to_string())?;
         window.set_focus().map_err(|error| error.to_string())?;
@@ -79,7 +108,7 @@ fn show_capture_selector(app: AppHandle) -> Result<(), String> {
     let window = WebviewWindowBuilder::new(
         &app,
         "capture-selector",
-        WebviewUrl::App("index.html?mode=capture".into()),
+        WebviewUrl::App(format!("index.html?{query}").into()),
     )
     .transparent(true)
     .decorations(false)
@@ -104,6 +133,69 @@ fn show_capture_selector(app: AppHandle) -> Result<(), String> {
     main.minimize().map_err(|error| error.to_string())?;
     window.set_focus().map_err(|error| error.to_string())?;
     Ok(())
+}
+
+#[tauri::command]
+async fn capture_display(
+    app: AppHandle,
+    state: tauri::State<'_, AppState>,
+) -> Result<CapturedImage, String> {
+    let mut display = current_display(&app, "capture-selector")?;
+    let selector = app
+        .get_webview_window("capture-selector")
+        .ok_or("Capture selector is unavailable")?;
+    let position = selector
+        .inner_position()
+        .map_err(|error| error.to_string())?;
+    let size = selector.inner_size().map_err(|error| error.to_string())?;
+    display.selector_physical_bounds = Rectangle {
+        x: f64::from(position.x),
+        y: f64::from(position.y),
+        width: f64::from(size.width),
+        height: f64::from(size.height),
+    };
+    // The compositor may inset a borderless window below the macOS menu bar.
+    // Capture its actual visible bounds so the OCR overlay can occupy the same
+    // physical rectangle without drifting vertically.
+    let selection = display_capture_selection(&mut display)?;
+    let capture = Arc::clone(&state.capture);
+    let result = tauri::async_runtime::spawn_blocking(move || {
+        std::thread::sleep(std::time::Duration::from_millis(180));
+        capture.capture(&display, selection)
+    })
+    .await;
+    let captured = match result {
+        Ok(Ok(captured)) => captured,
+        Ok(Err(error)) => return Err(error.to_string()),
+        Err(error) => return Err(error.to_string()),
+    };
+    eprintln!(
+        "YomiMado: display capture physical={:?} image={}x{}",
+        captured.metadata.selection_physical_bounds,
+        captured.metadata.image_width,
+        captured.metadata.image_height,
+    );
+    Ok(captured)
+}
+
+fn display_capture_selection(display: &mut DisplayInfo) -> Result<Rectangle, String> {
+    let bounds = display.selector_physical_bounds;
+    if !display.scale_factor.is_finite()
+        || display.scale_factor <= 0.0
+        || bounds.width <= 0.0
+        || bounds.height <= 0.0
+    {
+        return Err("Invalid display dimensions or scale".into());
+    }
+    let selection = Rectangle {
+        x: 0.0,
+        y: 0.0,
+        width: bounds.width / display.scale_factor,
+        height: bounds.height / display.scale_factor,
+    };
+    display.viewport_width = selection.width;
+    display.viewport_height = selection.height;
+    Ok(selection)
 }
 
 #[tauri::command]
@@ -259,8 +351,10 @@ pub fn run() {
         })
         .invoke_handler(tauri::generate_handler![
             show_capture_selector,
+            show_display_scanner,
             cancel_capture_selector,
             capture_selection,
+            capture_display,
             show_ocr_overlay,
             show_translation_popup,
             resize_translation_popup,
@@ -268,4 +362,64 @@ pub fn run() {
         ])
         .run(tauri::generate_context!())
         .expect("error while running YomiMado");
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn display_scan_uses_actual_selector_bounds_on_retina() {
+        let mut display = DisplayInfo {
+            id: "retina".into(),
+            name: "Retina".into(),
+            physical_bounds: Rectangle {
+                x: 0.0,
+                y: 0.0,
+                width: 2940.0,
+                height: 1912.0,
+            },
+            selector_physical_bounds: Rectangle {
+                x: 0.0,
+                y: 66.0,
+                width: 2940.0,
+                height: 1846.0,
+            },
+            scale_factor: 2.0,
+            viewport_width: 1470.0,
+            viewport_height: 956.0,
+        };
+        let selection = display_capture_selection(&mut display).unwrap();
+        assert_eq!((selection.width, selection.height), (1470.0, 923.0));
+        let physical = XcapScreenCapture::physical_selection(&display, selection).unwrap();
+        assert_eq!((physical.x, physical.y), (0.0, 66.0));
+        assert_eq!((physical.width, physical.height), (2940.0, 1846.0));
+    }
+
+    #[test]
+    fn display_scan_handles_negative_monitor_origin() {
+        let mut display = DisplayInfo {
+            id: "left".into(),
+            name: "Left".into(),
+            physical_bounds: Rectangle {
+                x: -1920.0,
+                y: 0.0,
+                width: 1920.0,
+                height: 1080.0,
+            },
+            selector_physical_bounds: Rectangle {
+                x: -1920.0,
+                y: 0.0,
+                width: 1920.0,
+                height: 1080.0,
+            },
+            scale_factor: 1.0,
+            viewport_width: 1920.0,
+            viewport_height: 1080.0,
+        };
+        let selection = display_capture_selection(&mut display).unwrap();
+        let physical = XcapScreenCapture::physical_selection(&display, selection).unwrap();
+        assert_eq!((physical.x, physical.y), (-1920.0, 0.0));
+        assert_eq!((physical.width, physical.height), (1920.0, 1080.0));
+    }
 }

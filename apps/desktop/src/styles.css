@@ -38,6 +38,7 @@ button {
   justify-content: space-between;
 }
 .main-actions {
+  flex-wrap: wrap;
   justify-content: flex-start;
 }
 .secondary-button {

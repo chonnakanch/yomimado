@@ -164,8 +164,14 @@ fn layout(metadata: &CaptureMetadata) -> OverlayLayout {
     let window_x = selection_x
         .min(screen_right - window_width)
         .max(screen_left);
-    let (window_y, content_top, toolbar_top, window_height) = if selection_y - toolbar >= screen_top
-    {
+    let fills_visible_display = selection_width >= screen_right - screen_left - 1
+        && selection_y + selection_height >= screen_bottom - 1;
+    let (window_y, content_top, toolbar_top, window_height) = if fills_visible_display {
+        // A macOS selector can start below the menu bar. Placing the toolbar
+        // above it would make the OS shift the overlay window down and drift
+        // every OCR polygon away from the captured image.
+        (selection_y, 0, 0, selection_height)
+    } else if selection_y - toolbar >= screen_top {
         (
             selection_y - toolbar,
             toolbar,
@@ -420,6 +426,39 @@ mod tests {
         assert_eq!(f64::from(result.window_y) + result.content_top * 2.0, 666.0);
         assert_eq!(result.content_width * 2.0, 200.0);
         assert_eq!(result.content_height * 2.0, 300.0);
+    }
+
+    #[test]
+    fn display_scan_keeps_overlay_below_mac_menu_bar() {
+        let metadata = CaptureMetadata {
+            display_id: "retina".into(),
+            display_name: "Retina".into(),
+            screen_physical_bounds: Rectangle {
+                x: 0.0,
+                y: 0.0,
+                width: 2940.0,
+                height: 1912.0,
+            },
+            selection_physical_bounds: Rectangle {
+                x: 0.0,
+                y: 66.0,
+                width: 2940.0,
+                height: 1846.0,
+            },
+            selection_logical_bounds: Rectangle {
+                x: 0.0,
+                y: 0.0,
+                width: 1470.0,
+                height: 923.0,
+            },
+            image_width: 2940,
+            image_height: 1846,
+            scale_factor: 2.0,
+        };
+        let result = layout(&metadata);
+        assert_eq!(result.window_y, 66);
+        assert_eq!(result.content_top, 0.0);
+        assert_eq!(result.window_height, 1846);
     }
 
     #[test]

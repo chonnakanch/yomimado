@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type PointerEvent } from "react";
+import { useEffect, useMemo, useRef, useState, type PointerEvent } from "react";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import { invoke } from "@tauri-apps/api/core";
 import { requestOcr } from "../../lib/ocr-client";
@@ -18,6 +18,8 @@ interface CaptureResult {
 const debugCaptureEnabled = import.meta.env.VITE_CAPTURE_DEBUG === "1";
 
 export function CaptureSelector() {
+  const scanDisplay =
+    new URLSearchParams(window.location.search).get("scan") === "display";
   const [start, setStart] = useState<Point | null>(null);
   const [end, setEnd] = useState<Point | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -26,6 +28,7 @@ export function CaptureSelector() {
     response: OcrResponse | null;
     error: string | null;
   } | null>(null);
+  const captureStarted = useRef(false);
   const selection = useMemo(
     () => (start && end ? normalizeRectangle(start, end) : null),
     [start, end],
@@ -39,6 +42,12 @@ export function CaptureSelector() {
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
+  }, []);
+
+  useEffect(() => {
+    if (!scanDisplay || captureStarted.current) return;
+    captureStarted.current = true;
+    void captureAndRecognize(() => invoke<CaptureResult>("capture_display"));
   }, []);
 
   const point = (event: PointerEvent<HTMLDivElement>): Point => {
@@ -61,24 +70,14 @@ export function CaptureSelector() {
     await getCurrentWindow().close();
   };
 
-  const finish = async (event: PointerEvent<HTMLDivElement>) => {
-    if (!start) return;
-    const selection = normalizeRectangle(start, point(event));
-    if (selection.width < 4 || selection.height < 4) return;
-    const viewport = {
-      width: event.currentTarget.clientWidth,
-      height: event.currentTarget.clientHeight,
-    };
+  const captureAndRecognize = async (capture: () => Promise<CaptureResult>) => {
     document.documentElement.dataset.capturing = "true";
     try {
       // Let the transparent selector repaint before xcap takes its screenshot.
       await new Promise<void>((resolve) =>
         requestAnimationFrame(() => requestAnimationFrame(() => resolve())),
       );
-      const captured = await invoke<CaptureResult>("capture_selection", {
-        selection,
-        viewport,
-      });
+      const captured = await capture();
       if (debugCaptureEnabled) {
         setDebugCapture({ captured, response: null, error: null });
         document.documentElement.dataset.capturing = "false";
@@ -88,6 +87,16 @@ export function CaptureSelector() {
       });
       if (debugCaptureEnabled) {
         setDebugCapture({ captured, response, error: null });
+      } else if (scanDisplay && response.engine === "demo") {
+        document.documentElement.dataset.capturing = "false";
+        setError(
+          "Display scanning needs the local OCR models. Press Escape to close.",
+        );
+      } else if (response.regions.length === 0) {
+        document.documentElement.dataset.capturing = "false";
+        setError(
+          "No text was detected on this display. Press Escape to close.",
+        );
       } else {
         await showOverlay(captured, response);
       }
@@ -99,6 +108,21 @@ export function CaptureSelector() {
       );
       setError(message);
     }
+  };
+
+  const finish = async (event: PointerEvent<HTMLDivElement>) => {
+    if (!start || captureStarted.current) return;
+    const selection = normalizeRectangle(start, point(event));
+    if (selection.width < 4 || selection.height < 4) return;
+    captureStarted.current = true;
+    const viewport = {
+      width: event.currentTarget.clientWidth,
+      height: event.currentTarget.clientHeight,
+    };
+    await captureAndRecognize(() =>
+      invoke<CaptureResult>("capture_selection", { selection, viewport }),
+    );
+    captureStarted.current = false;
   };
 
   if (debugCapture) {
@@ -130,16 +154,26 @@ export function CaptureSelector() {
   return (
     <div
       className="capture-selector"
-      onPointerDown={(event) => {
-        event.currentTarget.setPointerCapture(event.pointerId);
-        const next = point(event);
-        setStart(next);
-        setEnd(next);
-      }}
-      onPointerMove={(event) => start && setEnd(point(event))}
-      onPointerUp={(event) => void finish(event)}
+      onPointerDown={
+        scanDisplay
+          ? undefined
+          : (event) => {
+              event.currentTarget.setPointerCapture(event.pointerId);
+              const next = point(event);
+              setStart(next);
+              setEnd(next);
+            }
+      }
+      onPointerMove={
+        scanDisplay ? undefined : (event) => start && setEnd(point(event))
+      }
+      onPointerUp={scanDisplay ? undefined : (event) => void finish(event)}
     >
-      <p>Drag to capture a region. Press Escape to cancel.</p>
+      <p>
+        {scanDisplay
+          ? "Scanning this display… Press Escape to cancel."
+          : "Drag to capture a region. Press Escape to cancel."}
+      </p>
       {error && <p className="capture-error">{error}</p>}
       {selection && (
         <div

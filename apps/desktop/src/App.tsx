@@ -23,6 +23,15 @@ export function App() {
     }
   };
 
+  const scanCurrentDisplay = async () => {
+    try {
+      await invoke("show_display_scanner");
+      setMessage("Scanning visible text on this display.");
+    } catch (error) {
+      setMessage(`Unable to scan this display: ${String(error)}`);
+    }
+  };
+
   const loadSavedWords = async () => {
     setShowSavedWords(true);
     setSavedWordsLoading(true);
@@ -60,6 +69,7 @@ export function App() {
       <p>Read beyond the page.</p>
       <div className="main-actions">
         <button onClick={startCapture}>Select screen region</button>
+        <button onClick={scanCurrentDisplay}>Scan current display</button>
         <button
           className="secondary-button"
           onClick={() =>
