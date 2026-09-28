@@ -101,6 +101,21 @@ class WordLookupResponse(BaseModel):
     entries: list[WordEntry]
 
 
+class KanjiExamplesRequest(BaseModel):
+    character: str = Field(min_length=1, max_length=1)
+    excludeWord: str = Field(default="", max_length=100)
+
+
+class KanjiExample(BaseModel):
+    expression: str
+    reading: str
+    meanings: list[str]
+
+
+class KanjiExamplesResponse(BaseModel):
+    examples: list[KanjiExample]
+
+
 class TranslationResponse(BaseModel):
     sourceText: str
     translatedText: str

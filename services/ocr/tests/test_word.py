@@ -85,3 +85,32 @@ def test_missing_and_changed_dictionary(monkeypatch, tmp_path) -> None:
     )
     assert missing.status_code == 503
     assert "JMdict is not installed" in missing.json()["detail"]
+    missing_examples = client.post("/api/v1/kanji/examples", json={"character": "今"})
+    assert missing_examples.status_code == 503
+
+
+def test_kanji_examples_are_common_compounds_not_the_selected_word(monkeypatch, tmp_path) -> None:
+    examples = """
+<entry><ent_seq>5</ent_seq><k_ele><keb>今度</keb><ke_pri>nf03</ke_pri></k_ele>
+<r_ele><reb>こんど</reb></r_ele><sense><gloss>this time</gloss></sense></entry>
+<entry><ent_seq>6</ent_seq><k_ele><keb>今月</keb><ke_pri>nf05</ke_pri></k_ele>
+<r_ele><reb>こんげつ</reb></r_ele><sense><gloss>this month</gloss></sense></entry>
+<entry><ent_seq>7</ent_seq><k_ele><keb>今回</keb><ke_pri>nf01</ke_pri></k_ele>
+<r_ele><reb>こんかい</reb></r_ele><sense><gloss>this time</gloss></sense></entry>
+<entry><ent_seq>8</ent_seq><k_ele><keb>今朝</keb><ke_pri>nf10</ke_pri></k_ele>
+<r_ele><reb>けさ</reb></r_ele><sense><gloss>this morning</gloss></sense></entry>
+<entry><ent_seq>9</ent_seq><k_ele><keb>今すぐ</keb><ke_pri>nf01</ke_pri></k_ele>
+<r_ele><reb>いますぐ</reb></r_ele><sense><gloss>right now</gloss></sense></entry>
+""".encode()
+    _install(monkeypatch, tmp_path, FIXTURE.replace(b"</JMdict>", examples + b"</JMdict>"))
+    response = client.post(
+        "/api/v1/kanji/examples", json={"character": "今", "excludeWord": "今度"}
+    )
+    assert response.status_code == 200
+    assert response.json()["examples"] == [
+        {"expression": "今回", "reading": "こんかい", "meanings": ["this time"]},
+        {"expression": "今月", "reading": "こんげつ", "meanings": ["this month"]},
+        {"expression": "今朝", "reading": "けさ", "meanings": ["this morning"]},
+    ]
+    invalid = client.post("/api/v1/kanji/examples", json={"character": "?"})
+    assert invalid.status_code == 422

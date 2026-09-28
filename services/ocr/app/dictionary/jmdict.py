@@ -11,13 +11,13 @@ import unicodedata
 from pathlib import Path
 from xml.etree import ElementTree
 
-from app.models import WordEntry, WordSense
+from app.models import KanjiExample, WordEntry, WordSense
 
 DICTIONARY_DIR = Path(__file__).resolve().parents[2] / "local-dictionaries"
 DEFAULT_PATH = DICTIONARY_DIR / "JMdict_e.gz"
 DEFAULT_INDEX_PATH = DICTIONARY_DIR / "jmdict-index.sqlite3"
 XML_LANG = "{http://www.w3.org/XML/1998/namespace}lang"
-SCHEMA_VERSION = 1
+SCHEMA_VERSION = 4
 _index_lock = threading.Lock()
 
 
@@ -35,9 +35,27 @@ def _hiragana(text: str) -> str:
     )
 
 
+def _frequency(element: ElementTree.Element, tag: str) -> int:
+    numbers = [
+        int(value.text[2:])
+        for value in element.findall(tag)
+        if value.text and value.text.startswith("nf") and value.text[2:].isdigit()
+    ]
+    return min(numbers, default=999)
+
+
+def _is_kanji(character: str) -> bool:
+    name = unicodedata.name(character, "")
+    return name.startswith(("CJK UNIFIED IDEOGRAPH", "CJK COMPATIBILITY IDEOGRAPH"))
+
+
 def _entry_data(element: ElementTree.Element) -> dict:
     kanji = [
-        {"text": item.findtext("keb"), "common": item.find("ke_pri") is not None}
+        {
+            "text": item.findtext("keb"),
+            "common": item.find("ke_pri") is not None,
+            "frequency": _frequency(item, "ke_pri"),
+        }
         for item in element.findall("k_ele")
         if item.findtext("keb")
     ]
@@ -45,6 +63,7 @@ def _entry_data(element: ElementTree.Element) -> dict:
         {
             "text": item.findtext("reb"),
             "common": item.find("re_pri") is not None,
+            "frequency": _frequency(item, "re_pri"),
             "noKanji": item.find("re_nokanji") is not None,
             "restrictions": [restricted.text for restricted in item.findall("re_restr")],
         }
@@ -74,9 +93,14 @@ def _build_index(connection: sqlite3.Connection, source: Path, fingerprint: str)
     connection.execute("BEGIN IMMEDIATE")
     try:
         connection.execute("DROP TABLE IF EXISTS forms")
+        connection.execute("DROP TABLE IF EXISTS kanji_forms")
         connection.execute("DROP TABLE IF EXISTS entries")
         connection.execute("CREATE TABLE entries (id INTEGER PRIMARY KEY, payload TEXT NOT NULL)")
         connection.execute("CREATE TABLE forms (form TEXT NOT NULL, entry_id INTEGER NOT NULL)")
+        connection.execute(
+            "CREATE TABLE kanji_forms (character TEXT NOT NULL, form TEXT NOT NULL, "
+            "entry_id INTEGER NOT NULL)"
+        )
         with opener(source, "rb") as stream:
             events = ElementTree.iterparse(stream, events=("start", "end"))
             _, root = next(events)
@@ -94,8 +118,24 @@ def _build_index(connection: sqlite3.Connection, source: Path, fingerprint: str)
                         "INSERT INTO forms (form, entry_id) VALUES (?, ?)",
                         ((form, cursor.lastrowid) for form in forms),
                     )
+                    compound_forms = [
+                        item["text"]
+                        for item in entry["kanji"]
+                        if 2 <= len(item["text"]) <= 4
+                        and len(set(item["text"])) > 1
+                        and all(_is_kanji(letter) for letter in item["text"])
+                    ]
+                    connection.executemany(
+                        "INSERT INTO kanji_forms (character, form, entry_id) VALUES (?, ?, ?)",
+                        (
+                            (character, form, cursor.lastrowid)
+                            for form in compound_forms
+                            for character in set(form)
+                        ),
+                    )
                 root.clear()
         connection.execute("CREATE INDEX forms_by_form ON forms (form)")
+        connection.execute("CREATE INDEX kanji_forms_by_character ON kanji_forms (character)")
         connection.execute("DELETE FROM metadata")
         connection.execute(
             "INSERT INTO metadata (fingerprint, schema_version) VALUES (?, ?)",
@@ -154,7 +194,7 @@ def _candidate(
         return None
     chosen = next(
         (item for item in applicable if _hiragana(item["text"]) == _hiragana(requested_reading)),
-        applicable[0],
+        min(applicable, key=lambda item: (item["frequency"], not item["common"])),
     )
     senses = [
         WordSense(glosses=sense["glosses"][:5])
@@ -207,5 +247,50 @@ def lookup(surface: str, dictionary_form: str, reading: str) -> list[WordEntry]:
                     found.append(candidate)
         found.sort(key=lambda pair: pair[0], reverse=True)
         return [item for _, item in found[:3]]
+    finally:
+        connection.close()
+
+
+def lookup_examples(character: str, exclude_word: str = "") -> list[KanjiExample]:
+    if not _is_kanji(character):
+        raise ValueError("Select one kanji character")
+    connection = _connection()
+    try:
+        ranked: list[tuple[tuple[int, int, int, str], KanjiExample]] = []
+        rows = connection.execute(
+            "SELECT k.form, e.payload FROM kanji_forms k JOIN entries e ON e.id = k.entry_id "
+            "WHERE k.character = ?",
+            (character,),
+        )
+        for form, payload in rows:
+            if form == exclude_word:
+                continue
+            entry = json.loads(payload)
+            candidate = _candidate(entry, form, "", "surface")
+            if candidate is None:
+                continue
+            _, word = candidate
+            if not word.senses or not word.senses[0].glosses:
+                continue
+            written = next(item for item in entry["kanji"] if item["text"] == form)
+            frequency = written["frequency"]
+            reading = next(item for item in entry["readings"] if item["text"] == word.reading)
+            frequency = min(frequency, reading["frequency"])
+            example = KanjiExample(
+                expression=form,
+                reading=word.reading,
+                meanings=word.senses[0].glosses[:2],
+            )
+            ranked.append(((not word.common, frequency, len(form), form), example))
+        ranked.sort(key=lambda pair: pair[0])
+        examples: list[KanjiExample] = []
+        seen: set[str] = set()
+        for _, example in ranked:
+            if example.expression not in seen:
+                examples.append(example)
+                seen.add(example.expression)
+            if len(examples) == 3:
+                break
+        return examples
     finally:
         connection.close()

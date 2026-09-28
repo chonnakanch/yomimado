@@ -178,8 +178,12 @@ The popup requests a single kanji only when clicked. Lookup stays on the local
 OCR service; neither manga images nor selected text are sent to EDRDG. If the
 file is missing, the popup shows the setup path rather than inventing a meaning.
 This initial slice shows character meanings/readings and the word where the
-character appeared. JMdict supplies meanings for a selected whole word;
-example compounds for an individual kanji are not yet shown.
+character appeared. When a kanji is clicked, YomiMado also shows up to three
+short JMdict compound words containing that character, preferring common
+entries. Each shows a reading and English meanings. These are dictionary
+examples, not usage sentences or
+claims about the character's reading in the selected manga word. If JMdict is
+missing, kanji meanings from KANJIDIC2 remain available.
 
 KANJIDIC2 is copyright the Electronic Dictionary Research and Development
 Group, provided under [CC BY-SA 4.0 and the EDRDG dictionary licence](https://www.edrdg.org/edrdg/licence.html).

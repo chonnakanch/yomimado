@@ -374,8 +374,9 @@ Word selection shows useful local dictionary information without a network reque
 
 Status: core word and character lookup work with user-installed JMdict and
 KANJIDIC2 files. JMdict can return multiple possible senses; the app does not
-disambiguate them using sentence context. Example compounds for individual
-kanji and packaging/data update automation are not implemented yet.
+disambiguate them using sentence context. A clicked kanji also shows short
+example compounds from JMdict, preferring common entries. Packaging and data
+update automation are not implemented yet.
 
 ---
 
@@ -435,11 +436,11 @@ Each character gets an independent hit box.
 - [ ] Add fallback click-crop OCR where useful.
 - [x] Lookup user-installed KANJIDIC2 from a selected popup word.
 - [x] Show on-yomi/kun-yomi and meanings in the popup.
+- [x] Show selected example compounds from user-installed JMdict.
 
 Status: the first approach works with local dictionary data. Direct clicks on
 characters in the manga image still need finer OCR geometry. Compound examples
-and fuller usage information remain part of JMdict integration.
-- [ ] Show selected example compounds.
+are dictionary words, not example sentences or context-specific readings.
 
 ## Done when
 

@@ -80,6 +80,21 @@ it("shows local word analysis while translating only after a click", async () =>
         ),
       );
     }
+    if (url.endsWith("/kanji/examples")) {
+      return Promise.resolve(
+        new Response(
+          JSON.stringify({
+            examples: [
+              {
+                expression: "学生",
+                reading: "がくせい",
+                meanings: ["student"],
+              },
+            ],
+          }),
+        ),
+      );
+    }
     return Promise.resolve(
       new Response(
         JSON.stringify({
@@ -113,6 +128,7 @@ it("shows local word analysis while translating only after a click", async () =>
   expect(container.textContent).toContain("school");
   expect(container.querySelectorAll(".kanji-choices button")).toHaveLength(2);
   expect(container.textContent).not.toContain("Meanings: study");
+  expect(container.textContent).not.toContain("Example compounds");
   expect(fetch).toHaveBeenCalledTimes(2);
   await act(async () => {
     container
@@ -122,13 +138,16 @@ it("shows local word analysis while translating only after a click", async () =>
   expect(container.textContent).toContain("Meanings: study");
   expect(container.textContent).toContain("On: ガク");
   expect(container.textContent).toContain("Used here in 学校");
+  expect(container.textContent).toContain("Example compounds");
+  expect(container.textContent).toContain("学生");
+  expect(container.textContent).toContain("student");
   expect(fetch.mock.calls[0][0]).toContain("/tokenize");
 
   await act(async () => {
     container.querySelector<HTMLButtonElement>(".translate-button")!.click();
   });
-  expect(fetch).toHaveBeenCalledTimes(4);
-  expect(fetch.mock.calls[3][0]).toContain("/translate");
+  expect(fetch).toHaveBeenCalledTimes(5);
+  expect(fetch.mock.calls[4][0]).toContain("/translate");
   expect(container.textContent).toContain("School");
   expect(container.textContent).toContain("cached");
 });

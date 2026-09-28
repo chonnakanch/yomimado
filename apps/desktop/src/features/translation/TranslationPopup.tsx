@@ -5,7 +5,12 @@ import {
   type TranslationResult,
 } from "../../lib/translation-client";
 import { requestTokenization } from "../../lib/tokenization-client";
-import { requestKanji, type KanjiEntry } from "../../lib/kanji-client";
+import {
+  requestKanji,
+  requestKanjiExamples,
+  type KanjiEntry,
+  type KanjiExample,
+} from "../../lib/kanji-client";
 import { requestWord, type WordEntry } from "../../lib/word-client";
 import type { TextToken } from "../../lib/ocr-types";
 
@@ -59,6 +64,10 @@ export function TranslationPopup() {
   const [kanjiEntry, setKanjiEntry] = useState<KanjiEntry | null>(null);
   const [kanjiError, setKanjiError] = useState<string | null>(null);
   const [kanjiLoading, setKanjiLoading] = useState(false);
+  const [kanjiExamples, setKanjiExamples] = useState<KanjiExample[] | null>(
+    null,
+  );
+  const [exampleError, setExampleError] = useState<string | null>(null);
 
   const selectWord = async (tokenIndex: number) => {
     const token = tokens?.[tokenIndex];
@@ -73,6 +82,8 @@ export function TranslationPopup() {
     setKanjiEntry(null);
     setKanjiError(null);
     setKanjiLoading(false);
+    setKanjiExamples(null);
+    setExampleError(null);
     try {
       const entries = await requestWord(token);
       if (requestId === wordRequestId.current) setWordEntries(entries);
@@ -90,15 +101,20 @@ export function TranslationPopup() {
     setKanjiEntry(null);
     setKanjiError(null);
     setKanjiLoading(true);
-    try {
-      const entry = await requestKanji(character);
-      if (requestId === kanjiRequestId.current) setKanjiEntry(entry);
-    } catch (requestError) {
-      if (requestId === kanjiRequestId.current)
-        setKanjiError(String(requestError).replace(/^Error: /, ""));
-    } finally {
-      if (requestId === kanjiRequestId.current) setKanjiLoading(false);
-    }
+    setKanjiExamples(null);
+    setExampleError(null);
+    const selectedWord = tokens?.[selectedTokenIndex ?? -1]?.surface ?? "";
+    const [entryResult, examplesResult] = await Promise.allSettled([
+      requestKanji(character),
+      requestKanjiExamples(character, selectedWord),
+    ]);
+    if (requestId !== kanjiRequestId.current) return;
+    if (entryResult.status === "fulfilled") setKanjiEntry(entryResult.value);
+    else setKanjiError(String(entryResult.reason).replace(/^Error: /, ""));
+    if (examplesResult.status === "fulfilled")
+      setKanjiExamples(examplesResult.value);
+    else setExampleError(String(examplesResult.reason).replace(/^Error: /, ""));
+    setKanjiLoading(false);
   };
 
   useEffect(() => {
@@ -160,6 +176,8 @@ export function TranslationPopup() {
     setSelectedKanji(null);
     setKanjiEntry(null);
     setKanjiError(null);
+    setKanjiExamples(null);
+    setExampleError(null);
     setTokenError(null);
     try {
       const nextTokens = await requestTokenization(source);
@@ -209,6 +227,8 @@ export function TranslationPopup() {
           setKanjiEntry(null);
           setKanjiError(null);
           setKanjiLoading(false);
+          setKanjiExamples(null);
+          setExampleError(null);
           setTokenError(null);
           setTokenLoading(false);
         }}
@@ -371,6 +391,43 @@ export function TranslationPopup() {
                           rel="noreferrer"
                         >
                           KANJIDIC2 (EDRDG)
+                        </a>{" "}
+                        · CC BY-SA 4.0
+                      </small>
+                    </div>
+                  )}
+                  {exampleError && (
+                    <small className="translation-error">{exampleError}</small>
+                  )}
+                  {kanjiExamples && (
+                    <div className="kanji-examples">
+                      <span className="translation-caption">
+                        Example compounds
+                      </span>
+                      {kanjiExamples.length === 0 ? (
+                        <small>No short compounds found in local JMdict.</small>
+                      ) : (
+                        <ul>
+                          {kanjiExamples.map((example) => (
+                            <li
+                              key={`${example.expression}-${example.reading}`}
+                            >
+                              <strong lang="ja">{example.expression}</strong>{" "}
+                              <span lang="ja">({example.reading})</span>
+                              <span> — {example.meanings.join("; ")}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                      <small>
+                        Short dictionary words containing {selectedKanji}.
+                        Source:{" "}
+                        <a
+                          href="https://www.edrdg.org/wiki/JMdict-EDICT_Dictionary_Project.html"
+                          target="_blank"
+                          rel="noreferrer"
+                        >
+                          JMdict (EDRDG)
                         </a>{" "}
                         · CC BY-SA 4.0
                       </small>

@@ -476,6 +476,24 @@ h1 span {
 .kanji-detail a {
   color: #ffab83;
 }
+.kanji-examples {
+  border-top: 1px solid #5c5048;
+  margin-top: 0.5rem;
+  overflow-wrap: anywhere;
+  padding-top: 0.5rem;
+}
+.kanji-examples ul {
+  font-size: 0.8rem;
+  list-style: none;
+  margin: 0.35rem 0;
+  padding: 0;
+}
+.kanji-examples li + li {
+  margin-top: 0.35rem;
+}
+.kanji-examples a {
+  color: #ffab83;
+}
 .tokenization-selected .translation-error {
   color: #ffab83;
 }
