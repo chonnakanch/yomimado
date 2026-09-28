@@ -154,10 +154,21 @@ async fn capture_display(
         width: f64::from(size.width),
         height: f64::from(size.height),
     };
-    // The compositor may inset a borderless window below the macOS menu bar.
-    // Capture its actual visible bounds so the OCR overlay can occupy the same
-    // physical rectangle without drifting vertically.
+    // The compositor may shift the full-height borderless window below the
+    // macOS menu bar without reducing its height. Clip it to the monitor so
+    // capture and overlay share the same visible physical rectangle.
     let selection = display_capture_selection(&mut display)?;
+    eprintln!(
+        "YomiMado: display scan selector={:?} visible={:?} monitor={:?}",
+        Rectangle {
+            x: f64::from(position.x),
+            y: f64::from(position.y),
+            width: f64::from(size.width),
+            height: f64::from(size.height),
+        },
+        display.selector_physical_bounds,
+        display.physical_bounds,
+    );
     let capture = Arc::clone(&state.capture);
     let result = tauri::async_runtime::spawn_blocking(move || {
         std::thread::sleep(std::time::Duration::from_millis(180));
@@ -179,14 +190,11 @@ async fn capture_display(
 }
 
 fn display_capture_selection(display: &mut DisplayInfo) -> Result<Rectangle, String> {
-    let bounds = display.selector_physical_bounds;
-    if !display.scale_factor.is_finite()
-        || display.scale_factor <= 0.0
-        || bounds.width <= 0.0
-        || bounds.height <= 0.0
-    {
+    let bounds = visible_capture_bounds(display.physical_bounds, display.selector_physical_bounds)?;
+    if !display.scale_factor.is_finite() || display.scale_factor <= 0.0 {
         return Err("Invalid display dimensions or scale".into());
     }
+    display.selector_physical_bounds = bounds;
     let selection = Rectangle {
         x: 0.0,
         y: 0.0,
@@ -196,6 +204,41 @@ fn display_capture_selection(display: &mut DisplayInfo) -> Result<Rectangle, Str
     display.viewport_width = selection.width;
     display.viewport_height = selection.height;
     Ok(selection)
+}
+
+fn visible_capture_bounds(screen: Rectangle, selector: Rectangle) -> Result<Rectangle, String> {
+    if ![
+        screen.x,
+        screen.y,
+        screen.width,
+        screen.height,
+        selector.x,
+        selector.y,
+        selector.width,
+        selector.height,
+    ]
+    .iter()
+    .all(|value| value.is_finite())
+        || screen.width <= 0.0
+        || screen.height <= 0.0
+        || selector.width <= 0.0
+        || selector.height <= 0.0
+    {
+        return Err("Invalid display dimensions".into());
+    }
+    let left = selector.x.max(screen.x);
+    let top = selector.y.max(screen.y);
+    let right = (selector.x + selector.width).min(screen.x + screen.width);
+    let bottom = (selector.y + selector.height).min(screen.y + screen.height);
+    if right <= left || bottom <= top {
+        return Err("Capture window does not overlap the active display".into());
+    }
+    Ok(Rectangle {
+        x: left,
+        y: top,
+        width: right - left,
+        height: bottom - top,
+    })
 }
 
 #[tauri::command]
@@ -383,7 +426,7 @@ mod tests {
                 x: 0.0,
                 y: 66.0,
                 width: 2940.0,
-                height: 1846.0,
+                height: 1912.0,
             },
             scale_factor: 2.0,
             viewport_width: 1470.0,
@@ -391,6 +434,7 @@ mod tests {
         };
         let selection = display_capture_selection(&mut display).unwrap();
         assert_eq!((selection.width, selection.height), (1470.0, 923.0));
+        assert_eq!(display.selector_physical_bounds.height, 1846.0);
         let physical = XcapScreenCapture::physical_selection(&display, selection).unwrap();
         assert_eq!((physical.x, physical.y), (0.0, 66.0));
         assert_eq!((physical.width, physical.height), (2940.0, 1846.0));
@@ -421,5 +465,41 @@ mod tests {
         let physical = XcapScreenCapture::physical_selection(&display, selection).unwrap();
         assert_eq!((physical.x, physical.y), (-1920.0, 0.0));
         assert_eq!((physical.width, physical.height), (1920.0, 1080.0));
+    }
+
+    #[test]
+    fn display_scan_clips_window_on_left_monitor() {
+        let screen = Rectangle {
+            x: -1920.0,
+            y: 0.0,
+            width: 1920.0,
+            height: 1080.0,
+        };
+        let selector = Rectangle {
+            x: -1930.0,
+            y: 20.0,
+            width: 1920.0,
+            height: 1080.0,
+        };
+        let visible = visible_capture_bounds(screen, selector).unwrap();
+        assert_eq!((visible.x, visible.y), (-1920.0, 20.0));
+        assert_eq!((visible.width, visible.height), (1910.0, 1060.0));
+    }
+
+    #[test]
+    fn display_scan_rejects_window_outside_monitor() {
+        let screen = Rectangle {
+            x: 0.0,
+            y: 0.0,
+            width: 1920.0,
+            height: 1080.0,
+        };
+        let selector = Rectangle {
+            x: 2000.0,
+            y: 0.0,
+            width: 100.0,
+            height: 100.0,
+        };
+        assert!(visible_capture_bounds(screen, selector).is_err());
     }
 }
