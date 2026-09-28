@@ -106,9 +106,10 @@ it("shows local word analysis while translating only after a click", async () =>
   expect(container.textContent).toContain("ガッコウ");
   expect(container.textContent).toContain("Base: 学校");
   expect(container.textContent).toContain("POS: 名詞");
-  expect(container.textContent).toContain("Combined word meaning");
+  expect(container.textContent).not.toContain("Combined word meaning");
   expect(container.textContent).toContain("school");
   expect(container.querySelectorAll(".kanji-choices button")).toHaveLength(2);
+  expect(container.textContent).not.toContain("Meanings: study");
   expect(fetch).toHaveBeenCalledTimes(2);
   await act(async () => {
     container

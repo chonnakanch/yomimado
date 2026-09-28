@@ -265,9 +265,6 @@ export function TranslationPopup() {
               <small>Base: {tokens[selectedTokenIndex].dictionaryForm}</small>
               <small>POS: {tokens[selectedTokenIndex].partOfSpeech}</small>
               <div className="word-meanings">
-                <span className="translation-caption">
-                  Combined word meaning
-                </span>
                 {wordLoading && <small>Looking up word…</small>}
                 {wordError && (
                   <small className="translation-error">{wordError}</small>
