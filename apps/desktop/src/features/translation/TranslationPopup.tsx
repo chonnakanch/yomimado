@@ -187,7 +187,7 @@ export function TranslationPopup() {
       <label htmlFor="translation-source">
         {state.demo
           ? "Demo: type Japanese text to test translation"
-          : "OCR text (edit if needed)"}
+          : "OCR text"}
       </label>
       <textarea
         id="translation-source"

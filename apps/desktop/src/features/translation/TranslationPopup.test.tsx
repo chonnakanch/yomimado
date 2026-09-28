@@ -98,6 +98,9 @@ it("shows local word analysis while translating only after a click", async () =>
   expect(
     (container.querySelector("textarea") as HTMLTextAreaElement).value,
   ).toBe("学校");
+  expect(
+    container.querySelector('label[for="translation-source"]')?.textContent,
+  ).toBe("OCR text");
   expect(fetch).toHaveBeenCalledTimes(1);
   expect(container.textContent).not.toContain("ガッコウ");
   await act(async () => {
