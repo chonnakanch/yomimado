@@ -13,6 +13,7 @@ import {
   type KanjiExample,
 } from "../../lib/kanji-client";
 import { requestWord, type WordEntry } from "../../lib/word-client";
+import { saveVocabularyWord } from "../../lib/vocabulary-client";
 import type { TextToken } from "../../lib/ocr-types";
 
 interface PopupState {
@@ -71,6 +72,10 @@ export function TranslationPopup() {
   const [wordEntries, setWordEntries] = useState<WordEntry[] | null>(null);
   const [wordError, setWordError] = useState<string | null>(null);
   const [wordLoading, setWordLoading] = useState(false);
+  const saveRequestId = useRef(0);
+  const [savingWord, setSavingWord] = useState(false);
+  const [savedEntryIndex, setSavedEntryIndex] = useState<number | null>(null);
+  const [saveError, setSaveError] = useState<string | null>(null);
   const kanjiRequestId = useRef(0);
   const [selectedKanji, setSelectedKanji] = useState<string | null>(null);
   const [kanjiEntry, setKanjiEntry] = useState<KanjiEntry | null>(null);
@@ -90,6 +95,10 @@ export function TranslationPopup() {
     setWordEntries(null);
     setWordError(null);
     setWordLoading(true);
+    saveRequestId.current++;
+    setSavingWord(false);
+    setSavedEntryIndex(null);
+    setSaveError(null);
     setSelectedKanji(null);
     setKanjiEntry(null);
     setKanjiError(null);
@@ -209,6 +218,29 @@ export function TranslationPopup() {
     }
   };
 
+  const saveWord = async (entry: WordEntry | null, entryIndex: number) => {
+    const token = tokens?.[selectedTokenIndex ?? -1];
+    if (!token) return;
+    const requestId = ++saveRequestId.current;
+    setSavingWord(true);
+    setSaveError(null);
+    try {
+      await saveVocabularyWord({
+        surface: token.surface,
+        reading: entry?.reading ?? token.reading,
+        dictionaryForm: token.dictionaryForm,
+        meanings: entry?.senses.map((sense) => sense.glosses.join("; ")) ?? [],
+        sourceText: source,
+      });
+      if (requestId === saveRequestId.current) setSavedEntryIndex(entryIndex);
+    } catch (requestError) {
+      if (requestId === saveRequestId.current)
+        setSaveError(String(requestError).replace(/^Error: /, ""));
+    } finally {
+      if (requestId === saveRequestId.current) setSavingWord(false);
+    }
+  };
+
   const analyze = async () => {
     const requestId = ++tokenRequestId.current;
     setTokenLoading(true);
@@ -218,6 +250,10 @@ export function TranslationPopup() {
     setWordEntries(null);
     setWordError(null);
     setWordLoading(false);
+    saveRequestId.current++;
+    setSavingWord(false);
+    setSavedEntryIndex(null);
+    setSaveError(null);
     kanjiRequestId.current++;
     setSelectedKanji(null);
     setKanjiEntry(null);
@@ -269,6 +305,10 @@ export function TranslationPopup() {
             setWordEntries(null);
             setWordError(null);
             setWordLoading(false);
+            saveRequestId.current++;
+            setSavingWord(false);
+            setSavedEntryIndex(null);
+            setSaveError(null);
             kanjiRequestId.current++;
             setSelectedKanji(null);
             setKanjiEntry(null);
@@ -342,6 +382,21 @@ export function TranslationPopup() {
                       No JMdict entry found for this word or base form.
                     </small>
                   )}
+                  {saveError && (
+                    <small className="translation-error">{saveError}</small>
+                  )}
+                  {(wordEntries?.length === 0 || wordError) && (
+                    <button
+                      type="button"
+                      className="save-word-button"
+                      disabled={savingWord || savedEntryIndex === -1}
+                      onClick={() => void saveWord(null, -1)}
+                    >
+                      {savedEntryIndex === -1
+                        ? "Saved without meaning"
+                        : "Save without meaning"}
+                    </button>
+                  )}
                   {wordEntries?.map((entry, index) => (
                     <div
                       className="word-entry"
@@ -364,6 +419,14 @@ export function TranslationPopup() {
                           <li key={senseIndex}>{sense.glosses.join("; ")}</li>
                         ))}
                       </ol>
+                      <button
+                        type="button"
+                        className="save-word-button"
+                        disabled={savingWord || savedEntryIndex === index}
+                        onClick={() => void saveWord(entry, index)}
+                      >
+                        {savedEntryIndex === index ? "Saved" : "Save this word"}
+                      </button>
                     </div>
                   ))}
                   {wordEntries && wordEntries.length > 0 && (

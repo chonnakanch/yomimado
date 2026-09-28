@@ -6,6 +6,7 @@ from app.api.kanji import router as kanji_router
 from app.api.ocr import router as ocr_router
 from app.api.tokenization import router as tokenization_router
 from app.api.translation import router as translation_router
+from app.api.vocabulary import router as vocabulary_router
 from app.api.word import router as word_router
 
 app = FastAPI(title="YomiMado local OCR service", version="0.1.0")
@@ -18,7 +19,7 @@ app.add_middleware(
         "http://localhost:1420",  # Vite development server
         "http://127.0.0.1:1420",
     ],
-    allow_methods=["POST"],
+    allow_methods=["GET", "POST", "DELETE"],
     allow_headers=["Content-Type"],
 )
 
@@ -28,3 +29,4 @@ app.include_router(ocr_router)
 app.include_router(tokenization_router)
 app.include_router(word_router)
 app.include_router(translation_router)
+app.include_router(vocabulary_router)

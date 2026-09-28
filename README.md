@@ -26,6 +26,10 @@ The initial capture-to-overlay slice is implemented:
    wanted; translation never starts merely because OCR detected a region. In
    demo mode, enter Japanese text manually; the demo boundary contains no
    recognized text.
+6. To keep a word, choose **Save this word** under its JMdict entry (or **Save
+   without meaning** if no entry was found). Open **Saved words** in the main
+   YomiMado window to review or remove it. Saving is explicit; OCR does not
+   automatically add words to your history.
 
 ## Development
 
@@ -159,6 +163,15 @@ Multiple senses are shown because this lookup does not choose a meaning from
 sentence context. The separate **Translate locally** action remains optional.
 If JMdict is missing, the popup shows the expected setup path and other
 learning features continue to work.
+
+Saved vocabulary is stored separately from disposable captures/cache in
+`~/Library/Application Support/YomiMado/vocabulary.sqlite3` on macOS or
+`%APPDATA%\YomiMado\vocabulary.sqlite3` on Windows. Override this with
+`YOMIMADO_VOCAB_DB` before starting the OCR service. The saved record contains
+the chosen dictionary entry's possible meanings and the Japanese source
+sentence, but no screenshot or automatically generated translation. The same
+word and sentence can be saved again to update its meanings without creating a
+duplicate. Restart the OCR service after updating to a version with this API.
 
 JMdict is copyright the Electronic Dictionary Research and Development Group,
 provided under [CC BY-SA 4.0 and the EDRDG dictionary licence](https://www.edrdg.org/edrdg/licence.html).

@@ -101,6 +101,28 @@ class WordLookupResponse(BaseModel):
     entries: list[WordEntry]
 
 
+class SaveWordRequest(BaseModel):
+    surface: str = Field(min_length=1, max_length=100)
+    reading: str = Field(max_length=100)
+    dictionaryForm: str = Field(min_length=1, max_length=100)
+    meanings: list[str] = Field(default_factory=list, max_length=100)
+    sourceText: str = Field(min_length=1, max_length=2000)
+
+
+class SavedWord(BaseModel):
+    id: int
+    surface: str
+    reading: str
+    dictionaryForm: str
+    meanings: list[str]
+    sourceText: str
+    createdAt: str
+
+
+class SavedWordsResponse(BaseModel):
+    words: list[SavedWord]
+
+
 class KanjiExamplesRequest(BaseModel):
     character: str = Field(min_length=1, max_length=1)
     excludeWord: str = Field(default="", max_length=100)

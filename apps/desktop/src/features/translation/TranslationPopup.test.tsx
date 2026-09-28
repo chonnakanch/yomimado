@@ -81,7 +81,7 @@ it("shows local word analysis while translating only after a click", async () =>
     JSON.stringify({ text: "学校", demo: false }),
   );
   window.history.replaceState({}, "", `/?mode=translation&state=${state}`);
-  const fetch = vi.fn((url: string) => {
+  const fetch = vi.fn((url: string, _options?: RequestInit) => {
     if (url.endsWith("/tokenize")) {
       return Promise.resolve(
         new Response(
@@ -147,6 +147,21 @@ it("shows local word analysis while translating only after a click", async () =>
         ),
       );
     }
+    if (url.endsWith("/vocabulary")) {
+      return Promise.resolve(
+        new Response(
+          JSON.stringify({
+            id: 1,
+            surface: "学校",
+            reading: "がっこう",
+            dictionaryForm: "学校",
+            meanings: ["school"],
+            sourceText: "学校",
+            createdAt: "2026-09-28T12:00:00+00:00",
+          }),
+        ),
+      );
+    }
     return Promise.resolve(
       new Response(
         JSON.stringify({
@@ -202,6 +217,21 @@ it("shows local word analysis while translating only after a click", async () =>
   expect(fetch.mock.calls[4][0]).toContain("/translate");
   expect(container.textContent).toContain("School");
   expect(container.textContent).toContain("cached");
+  expect(container.textContent).toContain("Save this word");
+  expect(fetch).toHaveBeenCalledTimes(5);
+  await act(async () => {
+    container.querySelector<HTMLButtonElement>(".save-word-button")!.click();
+  });
+  expect(fetch).toHaveBeenCalledTimes(6);
+  expect(fetch.mock.calls[5][0]).toContain("/vocabulary");
+  expect(JSON.parse(fetch.mock.calls[5][1]!.body as string)).toEqual({
+    surface: "学校",
+    reading: "がっこう",
+    dictionaryForm: "学校",
+    meanings: ["school"],
+    sourceText: "学校",
+  });
+  expect(container.textContent).toContain("Saved");
 });
 
 it("keeps punctuation as sentence context but not as selectable words", async () => {
@@ -235,6 +265,21 @@ it("keeps punctuation as sentence context but not as selectable words", async ()
     if (url.endsWith("/word")) {
       return Promise.resolve(new Response(JSON.stringify({ entries: [] })));
     }
+    if (url.endsWith("/vocabulary")) {
+      return Promise.resolve(
+        new Response(
+          JSON.stringify({
+            id: 2,
+            surface: "学校",
+            reading: "ガッコウ",
+            dictionaryForm: "学校",
+            meanings: [],
+            sourceText: text,
+            createdAt: "2026-09-28T12:00:00+00:00",
+          }),
+        ),
+      );
+    }
     expect(JSON.parse(options?.body as string)).toEqual({ text });
     return Promise.resolve(
       new Response(
@@ -267,6 +312,17 @@ it("keeps punctuation as sentence context but not as selectable words", async ()
   });
   expect(fetch).toHaveBeenCalledTimes(3);
   expect(container.textContent).toContain("Today!? School");
+  await act(async () => {
+    container.querySelector<HTMLButtonElement>(".save-word-button")!.click();
+  });
+  expect(JSON.parse(fetch.mock.calls[3][1]!.body as string)).toEqual({
+    surface: "学校",
+    reading: "ガッコウ",
+    dictionaryForm: "学校",
+    meanings: [],
+    sourceText: text,
+  });
+  expect(container.textContent).toContain("Saved without meaning");
 });
 
 it("does not treat a demo boundary as recognized text", async () => {
