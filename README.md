@@ -9,8 +9,9 @@ overlay rather than replacing text.
 The initial capture-to-overlay slice is implemented:
 
 1. Press `Cmd+Shift+O` on macOS or `Ctrl+Shift+O` on Windows (or use **Select
-   screen region** in the main window). To recognize the current display in
-   one shot, click **Scan current display** instead; no drag is needed.
+   screen region** in the main window). For repeated manga scans, click
+   **Scan manga area**. On first use, draw the reading area once; later scans
+   reuse it without another drag.
 2. For a selected-region capture, drag a rectangle on the current display.
 3. The Rust capture layer returns an in-memory PNG crop and scaling metadata.
 4. The app calls the local OCR service and shows its geometry in a transparent
@@ -32,13 +33,14 @@ The initial capture-to-overlay slice is implemented:
    YomiMado window to review or remove it. Saving is explicit; OCR does not
    automatically add words to your history.
 
-**Scan current display** captures the visible display once, runs the same local
-OCR pipeline, and overlays all returned text regions. It does not watch for
-screen changes or translate detected text automatically. Close the overlay
-before changing pages, then scan again. On macOS, the system menu bar may be
-outside the selectable window area and is excluded from the capture. The
-full-display mode is not yet manually verified on Windows or multi-monitor
-setups.
+**Scan manga area** captures only the saved screen rectangle, runs the same
+local OCR pipeline, and overlays its returned text regions. Use **Set/adjust
+scan area** when the browser moves or resizes. The area is saved locally for
+that display layout; a display resolution or scaling change asks you to draw
+it again. It does not follow a moving browser window, watch for screen changes,
+or translate text automatically. Close the overlay before changing pages, then
+scan again. The saved-area mode is not yet manually verified on Windows or
+multi-monitor setups.
 
 ## Development
 
@@ -68,8 +70,9 @@ cd apps/desktop
 VITE_CAPTURE_DEBUG=1 npm run tauri dev
 ```
 
-After selecting a region or scanning a display, the debug view shows the captured image, final OCR
-polygons, raw detector boxes and their individual crops/recognitions (including
+After selecting a region or scanning the saved area, the debug view shows the
+captured image, final OCR polygons, raw detector boxes and their individual
+crops/recognitions (including
 empty results) and image dimensions. Captures are held in memory, not saved as
 PNG files. On the first launch after this change, YomiMado removes its older
 `capture-<number>.png` files from its own captures cache. For a small selection

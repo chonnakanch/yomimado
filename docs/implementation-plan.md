@@ -476,10 +476,14 @@ results.
 
 Reduce manual capture work.
 
-Status: a one-shot **Scan current display** action is available. It captures
-the current display's visible area, runs the existing local OCR pipeline once,
-and shows the returned regions without a drag. This is a small slice of the
-phase, not continuous scanning or automatic manga/panel filtering.
+Status: a one-shot **Scan manga area** action is available. On first use, the
+reader draws a reusable manga reading area; subsequent scans crop only that
+saved screen area on the same display. **Set/adjust scan area** redraws it.
+The area is kept in local app webview storage, keyed to the display bounds and
+scale; display-layout changes require a new area. This excludes browser chrome
+when the reader draws around the page, but does not automatically detect manga
+content or prevent false OCR inside the chosen area. This is not continuous
+scanning or automatic manga/panel filtering.
 
 Current manual flow:
 

@@ -24,16 +24,27 @@ afterEach(async () => {
   vi.mocked(invoke).mockReset();
 });
 
-it("starts a one-shot display scan from the main window", async () => {
+it("starts a one-shot saved-area scan from the main window", async () => {
   vi.mocked(invoke).mockResolvedValue(undefined);
   await act(async () => root.render(<App />));
   await act(async () => {
     Array.from(container.querySelectorAll("button"))
-      .find((button) => button.textContent === "Scan current display")!
+      .find((button) => button.textContent === "Scan manga area")!
       .click();
   });
-  expect(invoke).toHaveBeenCalledExactlyOnceWith("show_display_scanner");
-  expect(container.textContent).toContain("Scanning visible text");
+  expect(invoke).toHaveBeenCalledExactlyOnceWith("show_saved_area_scanner");
+  expect(container.textContent).toContain("Scanning the saved manga area");
+});
+
+it("opens the scan-area adjustment selector", async () => {
+  vi.mocked(invoke).mockResolvedValue(undefined);
+  await act(async () => root.render(<App />));
+  await act(async () => {
+    Array.from(container.querySelectorAll("button"))
+      .find((button) => button.textContent === "Set/adjust scan area")!
+      .click();
+  });
+  expect(invoke).toHaveBeenCalledExactlyOnceWith("show_scan_area_selector");
 });
 
 it("shows saved words and removes one only after confirmation", async () => {

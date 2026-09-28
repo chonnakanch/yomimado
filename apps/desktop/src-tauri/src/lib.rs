@@ -7,6 +7,7 @@ use capture::{
     cleanup_legacy_captures, CaptureMetadata, CapturedImage, DisplayInfo, Rectangle, ScreenCapture,
     ViewportSize, XcapScreenCapture,
 };
+use serde::Serialize;
 use tauri::{AppHandle, Manager, PhysicalPosition, PhysicalSize, WebviewUrl, WebviewWindowBuilder};
 use tauri_plugin_global_shortcut::{
     Builder as GlobalShortcutBuilder, GlobalShortcutExt, Shortcut, ShortcutState,
@@ -52,15 +53,52 @@ fn current_display(app: &AppHandle, window_label: &str) -> Result<DisplayInfo, S
 
 #[tauri::command]
 fn show_capture_selector(app: AppHandle) -> Result<(), String> {
-    show_capture_window(app, false)
+    show_capture_window(app, "")
 }
 
 #[tauri::command]
-fn show_display_scanner(app: AppHandle) -> Result<(), String> {
-    show_capture_window(app, true)
+fn show_saved_area_scanner(app: AppHandle) -> Result<(), String> {
+    show_capture_window(app, "scan=area")
 }
 
-fn show_capture_window(app: AppHandle, scan_display: bool) -> Result<(), String> {
+#[tauri::command]
+fn show_scan_area_selector(app: AppHandle) -> Result<(), String> {
+    show_capture_window(app, "scan=configure")
+}
+
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+struct CaptureSurface {
+    display_id: String,
+    screen_physical_bounds: Rectangle,
+    selector_physical_bounds: Rectangle,
+    scale_factor: f64,
+}
+
+#[tauri::command]
+fn get_capture_surface(app: AppHandle) -> Result<CaptureSurface, String> {
+    let display = current_display(&app, "capture-selector")?;
+    let selector = app
+        .get_webview_window("capture-selector")
+        .ok_or("Capture selector is unavailable")?;
+    let position = selector
+        .inner_position()
+        .map_err(|error| error.to_string())?;
+    let size = selector.inner_size().map_err(|error| error.to_string())?;
+    Ok(CaptureSurface {
+        display_id: display.id,
+        screen_physical_bounds: display.physical_bounds,
+        selector_physical_bounds: Rectangle {
+            x: f64::from(position.x),
+            y: f64::from(position.y),
+            width: f64::from(size.width),
+            height: f64::from(size.height),
+        },
+        scale_factor: display.scale_factor,
+    })
+}
+
+fn show_capture_window(app: AppHandle, scan_query: &str) -> Result<(), String> {
     #[cfg(target_os = "macos")]
     {
         let access = core_graphics::access::ScreenCaptureAccess;
@@ -79,14 +117,14 @@ fn show_capture_window(app: AppHandle, scan_display: bool) -> Result<(), String>
     if let Some(window) = app.get_webview_window("translation-popup") {
         window.close().map_err(|error| error.to_string())?;
     }
-    let query = if scan_display {
-        "mode=capture&scan=display"
+    let query = if scan_query.is_empty() {
+        "mode=capture".to_string()
     } else {
-        "mode=capture"
+        format!("mode=capture&{scan_query}")
     };
     if let Some(window) = app.get_webview_window("capture-selector") {
         let mut url = window.url().map_err(|error| error.to_string())?;
-        url.set_query(Some(query));
+        url.set_query(Some(&query));
         window.navigate(url).map_err(|error| error.to_string())?;
         window
             .set_position(PhysicalPosition::new(
@@ -394,7 +432,9 @@ pub fn run() {
         })
         .invoke_handler(tauri::generate_handler![
             show_capture_selector,
-            show_display_scanner,
+            show_saved_area_scanner,
+            show_scan_area_selector,
+            get_capture_surface,
             cancel_capture_selector,
             capture_selection,
             capture_display,

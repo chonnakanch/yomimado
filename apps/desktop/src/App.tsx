@@ -23,12 +23,21 @@ export function App() {
     }
   };
 
-  const scanCurrentDisplay = async () => {
+  const scanSavedArea = async () => {
     try {
-      await invoke("show_display_scanner");
-      setMessage("Scanning visible text on this display.");
+      await invoke("show_saved_area_scanner");
+      setMessage("Scanning the saved manga area on this display.");
     } catch (error) {
-      setMessage(`Unable to scan this display: ${String(error)}`);
+      setMessage(`Unable to scan the manga area: ${String(error)}`);
+    }
+  };
+
+  const adjustScanArea = async () => {
+    try {
+      await invoke("show_scan_area_selector");
+      setMessage("Drag around the manga reading area to save and scan it.");
+    } catch (error) {
+      setMessage(`Unable to set the scan area: ${String(error)}`);
     }
   };
 
@@ -69,7 +78,10 @@ export function App() {
       <p>Read beyond the page.</p>
       <div className="main-actions">
         <button onClick={startCapture}>Select screen region</button>
-        <button onClick={scanCurrentDisplay}>Scan current display</button>
+        <button onClick={scanSavedArea}>Scan manga area</button>
+        <button className="secondary-button" onClick={adjustScanArea}>
+          Set/adjust scan area
+        </button>
         <button
           className="secondary-button"
           onClick={() =>

@@ -9,6 +9,13 @@ import {
 import type { Point } from "../../lib/ocr-types";
 import type { OcrResponse } from "../../lib/ocr-types";
 import { CaptureDebugView } from "./CaptureDebugView";
+import {
+  loadScanArea,
+  physicalToSelection,
+  saveScanArea,
+  selectionToPhysical,
+  type CaptureSurface,
+} from "./scan-area";
 
 interface CaptureResult {
   imageDataUrl: string;
@@ -18,17 +25,19 @@ interface CaptureResult {
 const debugCaptureEnabled = import.meta.env.VITE_CAPTURE_DEBUG === "1";
 
 export function CaptureSelector() {
-  const scanDisplay =
-    new URLSearchParams(window.location.search).get("scan") === "display";
+  const scanMode = new URLSearchParams(window.location.search).get("scan");
+  const scanArea = scanMode === "area" || scanMode === "configure";
   const [start, setStart] = useState<Point | null>(null);
   const [end, setEnd] = useState<Point | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [needsArea, setNeedsArea] = useState(scanMode === "configure");
   const [debugCapture, setDebugCapture] = useState<{
     captured: CaptureResult;
     response: OcrResponse | null;
     error: string | null;
   } | null>(null);
   const captureStarted = useRef(false);
+  const scanChecked = useRef(false);
   const selection = useMemo(
     () => (start && end ? normalizeRectangle(start, end) : null),
     [start, end],
@@ -45,9 +54,30 @@ export function CaptureSelector() {
   }, []);
 
   useEffect(() => {
-    if (!scanDisplay || captureStarted.current) return;
-    captureStarted.current = true;
-    void captureAndRecognize(() => invoke<CaptureResult>("capture_display"));
+    if (scanMode !== "area" || scanChecked.current) return;
+    scanChecked.current = true;
+    void (async () => {
+      try {
+        const surface = await invoke<CaptureSurface>("get_capture_surface");
+        const viewport = {
+          width: document.documentElement.clientWidth,
+          height: document.documentElement.clientHeight,
+        };
+        const area = loadScanArea(surface);
+        const selection = area && physicalToSelection(area, viewport, surface);
+        if (!selection) {
+          setNeedsArea(true);
+          return;
+        }
+        captureStarted.current = true;
+        await captureAndRecognize(() =>
+          invoke<CaptureResult>("capture_selection", { selection, viewport }),
+        );
+      } catch (scanError) {
+        setError(`Unable to load scan area: ${String(scanError)}`);
+        setNeedsArea(true);
+      }
+    })();
   }, []);
 
   const point = (event: PointerEvent<HTMLDivElement>): Point => {
@@ -87,15 +117,15 @@ export function CaptureSelector() {
       });
       if (debugCaptureEnabled) {
         setDebugCapture({ captured, response, error: null });
-      } else if (scanDisplay && response.engine === "demo") {
+      } else if (scanArea && response.engine === "demo") {
         document.documentElement.dataset.capturing = "false";
         setError(
-          "Display scanning needs the local OCR models. Press Escape to close.",
+          "Area scanning needs the local OCR models. Press Escape to close.",
         );
       } else if (response.regions.length === 0) {
         document.documentElement.dataset.capturing = "false";
         setError(
-          "No text was detected on this display. Press Escape to close.",
+          `No text was detected in this ${scanArea ? "scan area" : "selection"}. Press Escape to close.`,
         );
       } else {
         await showOverlay(captured, response);
@@ -119,6 +149,24 @@ export function CaptureSelector() {
       width: event.currentTarget.clientWidth,
       height: event.currentTarget.clientHeight,
     };
+    if (scanArea) {
+      try {
+        const surface = await invoke<CaptureSurface>("get_capture_surface");
+        const physical = selectionToPhysical(selection, viewport, surface);
+        if (!physical) {
+          setError(
+            "Scan area must fit inside the visible display. Drag again.",
+          );
+          captureStarted.current = false;
+          return;
+        }
+        saveScanArea(surface, physical);
+      } catch (saveError) {
+        setError(`Unable to save scan area: ${String(saveError)}`);
+        captureStarted.current = false;
+        return;
+      }
+    }
     await captureAndRecognize(() =>
       invoke<CaptureResult>("capture_selection", { selection, viewport }),
     );
@@ -155,7 +203,7 @@ export function CaptureSelector() {
     <div
       className="capture-selector"
       onPointerDown={
-        scanDisplay
+        scanMode === "area" && !needsArea
           ? undefined
           : (event) => {
               event.currentTarget.setPointerCapture(event.pointerId);
@@ -165,14 +213,22 @@ export function CaptureSelector() {
             }
       }
       onPointerMove={
-        scanDisplay ? undefined : (event) => start && setEnd(point(event))
+        scanMode === "area" && !needsArea
+          ? undefined
+          : (event) => start && setEnd(point(event))
       }
-      onPointerUp={scanDisplay ? undefined : (event) => void finish(event)}
+      onPointerUp={
+        scanMode === "area" && !needsArea
+          ? undefined
+          : (event) => void finish(event)
+      }
     >
       <p>
-        {scanDisplay
-          ? "Scanning this display… Press Escape to cancel."
-          : "Drag to capture a region. Press Escape to cancel."}
+        {scanMode === "area" && !needsArea
+          ? "Scanning saved area… Press Escape to cancel."
+          : scanArea
+            ? "Drag around the manga reading area. It will be reused on future scans. Press Escape to cancel."
+            : "Drag to capture a region. Press Escape to cancel."}
       </p>
       {error && <p className="capture-error">{error}</p>}
       {selection && (
