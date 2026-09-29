@@ -485,7 +485,9 @@ black-and-white page crop beneath darker browser controls before OCR. If the
 image is ambiguous it uses the saved manga area or asks the reader to draw one.
 The crop looks for one contiguous page-like span, excluding sparse white text
 and thumbnails in a dark website sidebar; similarly sized competing spans
-still fall back to the saved area.
+still fall back to the saved area. The page evidence threshold accepts fine
+line art with relatively little solid-black ink, as verified against local
+Comipo and X screenshots without adding those images to the repository.
 **Set/adjust scan area** redraws the fallback, and Cmd/Ctrl+Shift+S starts the
 same scan. The saved area is keyed to display bounds and scale. This first-pass
 page detection deliberately declines light-themed or unusual layouts, and it

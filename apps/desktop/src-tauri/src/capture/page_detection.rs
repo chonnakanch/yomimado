@@ -100,7 +100,8 @@ fn detect_page_bounds(image: &RgbaImage) -> Option<PixelBounds> {
         }
     }
     let area = usize::try_from((right - left + 1) * body_height).ok()?;
-    if white * 100 < area * 12 || dark * 100 < area * 6 {
+    // Fine line art can contain little solid-black ink after downsampling.
+    if white * 100 < area * 12 || dark * 100 < area * 4 {
         return None;
     }
 
@@ -256,6 +257,35 @@ mod tests {
         assert!(bounds.x <= 250);
         assert!(bounds.x + bounds.width >= 650);
         assert!(bounds.x + bounds.width < 770);
+    }
+
+    #[test]
+    fn finds_a_narrow_page_with_light_line_art_beside_dark_site_ui() {
+        let mut screen = RgbaImage::from_pixel(1000, 600, Rgba([30, 30, 30, 255]));
+        for y in 100..600 {
+            for x in 300..580 {
+                screen.put_pixel(x, y, Rgba([250, 250, 250, 255]));
+            }
+        }
+        for x in [330, 390, 450, 510] {
+            for y in 150..550 {
+                for offset in 0..6 {
+                    screen.put_pixel(x + offset, y, Rgba([20, 20, 20, 255]));
+                }
+            }
+        }
+        for y in [160, 230, 300] {
+            for line_y in y..y + 10 {
+                for x in 800..980 {
+                    screen.put_pixel(x, line_y, Rgba([250, 250, 250, 255]));
+                }
+            }
+        }
+
+        let bounds = detect_page_bounds(&screen).unwrap();
+        assert!(bounds.x <= 300);
+        assert!(bounds.x + bounds.width >= 580);
+        assert!(bounds.x + bounds.width < 800);
     }
 
     #[test]
