@@ -143,6 +143,7 @@ recognized Japanese
 - [x] Add opt-in detector-box/crop diagnostics for local OCR debugging.
 - [x] Retry small, partially detected selections with whole-crop Manga OCR; mark fallback geometry as approximate.
 - [x] Recover plausible whole-crop text from small selections with no detector boxes; retain approximate geometry and unknown confidence.
+- [x] Retry medium and larger captures on bounded overlapping detector tiles and merge nonduplicate boxes in image coordinates.
 
 ## Suggested service structure
 
@@ -498,6 +499,11 @@ strings with no Japanese script. Capture debug retains those raw boxes, crops,
 recognized strings, and explicit rejection reasons. This is deliberately not
 a confidence filter: Manga OCR does not supply a calibrated confidence score.
 Japanese-looking OCR hallucinations in artwork remain possible.
+Medium and larger captures now also get a bounded overlapping-tile detector
+retry, making small lettering less likely to disappear when the full image is
+scaled down.
+The retry preserves full-image coordinates and labels tile results in capture
+debug. It does not guarantee detection of faint or transparent-bubble text.
 
 Current manual flow:
 

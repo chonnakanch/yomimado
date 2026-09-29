@@ -78,9 +78,12 @@ VITE_CAPTURE_DEBUG=1 npm run tauri dev
 ```
 
 After selecting a region or scanning a page, the debug view shows the captured
-image, final OCR polygons, raw detector boxes, and their individual crops and
-recognitions. Gray boxes were filtered; their reasons appear in the detector
-list. The first filter only removes nearly uniform crops and recognized text
+image, final OCR polygons, detector candidate boxes, and their individual crops
+and recognitions. Medium and large captures receive a bounded retry on
+overlapping image tiles; duplicate boxes are merged, and the detector list
+labels tile results.
+Gray boxes were filtered; their reasons appear in the detector list. The first
+filter only removes nearly uniform crops and recognized text
 without Japanese characters. It does not reliably distinguish manga artwork
 from text when OCR hallucinates Japanese. Captures are held in memory, not saved
 as PNG files. On the first launch after this change, YomiMado removes its older

@@ -39,6 +39,7 @@ it("shows the exact captured image and OCR text with image-space polygons", () =
           },
         ],
         debug: {
+          tileRetryCount: 2,
           detections: [
             {
               id: "detection-1",
@@ -63,6 +64,7 @@ it("shows the exact captured image and OCR text with image-space polygons", () =
               text: "comipo Play",
               status: "filtered",
               filterReason: "No Japanese characters in the recognized text",
+              detectionPass: "tile",
             },
           ],
           selectionText: "数か月前",
@@ -98,6 +100,8 @@ it("shows the exact captured image and OCR text with image-space polygons", () =
   expect(container.textContent).toContain("confidence: unknown");
   expect(container.textContent).toContain("approximate selected-area box");
   expect(container.textContent).toContain("Whole-selection retry");
+  expect(container.textContent).toContain("tile retry");
+  expect(container.textContent).toContain("Tile retry: 2 overlapping crop(s)");
   expect(
     container.querySelector(".capture-debug-detector-box.filtered title")
       ?.textContent,

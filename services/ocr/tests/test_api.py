@@ -227,6 +227,69 @@ def test_model_adapter_reports_raw_boxes_and_crops(monkeypatch) -> None:
     assert result.debug.selectionFallbackUsed is False
 
 
+def test_large_capture_tile_retry_recovers_missed_text_without_duplicate_boxes(monkeypatch) -> None:
+    image_module = pytest.importorskip("PIL.Image")
+    image_draw = pytest.importorskip("PIL.ImageDraw")
+    pytest.importorskip("cv2")
+    pytest.importorskip("numpy")
+    from app.pipeline import real_ocr
+
+    image = image_module.new("RGB", (830, 1340), "white")
+    draw = image_draw.Draw(image)
+    draw.rectangle((105, 155, 140, 225), fill="black")
+    draw.rectangle((305, 1035, 335, 1095), fill="black")
+    image_bytes = BytesIO()
+    image.save(image_bytes, format="PNG")
+    first = SimpleNamespace(lines=[], xyxy=[100, 150, 145, 230], vertical=True)
+    missed = SimpleNamespace(
+        lines=[object()],
+        xyxy=[300, 202, 340, 272],
+        vertical=True,
+        min_rect=lambda: ([(300, 202), (340, 202), (340, 272), (300, 272)], None),
+    )
+    shapes = []
+    tiles = real_ocr._retry_tiles(830, 1340)
+
+    def detector(crop):
+        shapes.append(crop.shape[:2])
+        if len(shapes) == 1:
+            return None, None, [first]
+        tile = tiles[len(shapes) - 2]
+        if tile[:2] == (0, 0):
+            return None, None, [first]
+        if tile[:2] == (0, 828):
+            return None, None, [missed]
+        return None, None, []
+
+    recognized = iter(["いぶき", "みて"])
+    monkeypatch.setattr(real_ocr, "_configured_paths", lambda: (Path("."),) * 3)
+    monkeypatch.setattr(
+        real_ocr, "_models", lambda *_paths: (detector, lambda _crop: next(recognized))
+    )
+
+    result = real_ocr.recognize_with_models(image_bytes.getvalue(), debug=True)
+    assert shapes == [(1340, 830)] + [(512, 512)] * 8
+    assert [region.text for region in result.regions] == ["いぶき", "みて"]
+    assert result.regions[1].polygon[0] == Point(x=300, y=1030)
+    assert [item.detectionPass for item in result.debug.detections] == ["full", "tile"]
+    assert [item.id for item in result.debug.detections] == ["detection-1", "detection-2"]
+    assert result.debug.tileRetryCount == 8
+
+
+def test_tile_retry_is_bounded_to_small_captures_and_at_most_eight_tiles() -> None:
+    from app.pipeline.real_ocr import _retry_tiles
+
+    assert _retry_tiles(640, 400) == []
+    assert _retry_tiles(830, 623) == [
+        (0, 0, 512, 512),
+        (318, 0, 512, 512),
+        (0, 111, 512, 512),
+        (318, 111, 512, 512),
+    ]
+    assert len(_retry_tiles(830, 1340)) == 8
+    assert _retry_tiles(5000, 3000) == []
+
+
 def test_model_adapter_filters_latin_ui_text_but_keeps_japanese_and_debug_boxes(
     monkeypatch,
 ) -> None:

@@ -37,10 +37,12 @@ class OcrDebugDetection(BaseModel):
     text: str
     status: Literal["recognized", "empty", "invalid", "filtered"]
     filterReason: str | None = None
+    detectionPass: Literal["full", "tile"] = "full"
 
 
 class OcrDebug(BaseModel):
     detections: list[OcrDebugDetection]
+    tileRetryCount: int = 0
     selectionText: str | None = None
     selectionFallbackUsed: bool = False
 

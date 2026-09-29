@@ -33,8 +33,8 @@ export function CaptureDebugView({
           <div>
             <h1>Capture debug</h1>
             <p>
-              Exact PNG sent to OCR. Orange: final regions; cyan: raw detector
-              boxes; gray: filtered boxes.
+              Exact PNG sent to OCR. Orange: final regions; cyan: detector
+              candidates; gray: filtered boxes.
             </p>
           </div>
           <div className="capture-debug-actions">
@@ -137,9 +137,16 @@ export function CaptureDebugView({
                   <section className="capture-debug-detector-results">
                     <h2>Detector stage</h2>
                     <p>
-                      {response.debug.detections.length} raw box(es). Empty and
-                      filtered recognitions are shown here too.
+                      {response.debug.detections.length} candidate box(es) after
+                      duplicate tile boxes are merged. Empty and filtered
+                      recognitions are shown here too.
                     </p>
+                    {!!response.debug.tileRetryCount && (
+                      <p>
+                        Tile retry: {response.debug.tileRetryCount} overlapping
+                        crop(s).
+                      </p>
+                    )}
                     {response.debug.selectionText && (
                       <p>
                         Whole-selection retry: {response.debug.selectionText}
@@ -153,7 +160,10 @@ export function CaptureDebugView({
                         <li key={detection.id}>
                           <strong>{detection.id}</strong>
                           <span>
-                            {detection.status} · {detection.text || "No text"}
+                            {detection.detectionPass === "tile"
+                              ? "tile retry"
+                              : "full image"}{" "}
+                            · {detection.status} · {detection.text || "No text"}
                           </span>
                           {detection.filterReason && (
                             <span>Filtered: {detection.filterReason}</span>
