@@ -30,7 +30,8 @@ export interface OcrDebugDetection {
   box: Point[];
   cropDataUrl?: string;
   text: string;
-  status: "recognized" | "empty" | "invalid";
+  status: "recognized" | "empty" | "invalid" | "filtered";
+  filterReason?: string;
 }
 
 export interface OcrDebug {

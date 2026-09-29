@@ -238,6 +238,10 @@ h1 span {
   stroke: #58d5e8;
   stroke-dasharray: 5 4;
 }
+.capture-debug-image-frame svg .capture-debug-detector-box.filtered {
+  fill: rgb(159 156 151 / 0.12);
+  stroke: #a7a39c;
+}
 .capture-debug-results {
   border-left: 1px solid #5c5048;
   overflow: auto;

@@ -52,6 +52,18 @@ it("shows the exact captured image and OCR text with image-space polygons", () =
               text: "数か月",
               status: "recognized",
             },
+            {
+              id: "detection-2",
+              box: [
+                { x: 100, y: 20 },
+                { x: 140, y: 20 },
+                { x: 140, y: 70 },
+                { x: 100, y: 70 },
+              ],
+              text: "comipo Play",
+              status: "filtered",
+              filterReason: "No Japanese characters in the recognized text",
+            },
           ],
           selectionText: "数か月前",
           selectionFallbackUsed: true,
@@ -86,6 +98,13 @@ it("shows the exact captured image and OCR text with image-space polygons", () =
   expect(container.textContent).toContain("confidence: unknown");
   expect(container.textContent).toContain("approximate selected-area box");
   expect(container.textContent).toContain("Whole-selection retry");
+  expect(
+    container.querySelector(".capture-debug-detector-box.filtered title")
+      ?.textContent,
+  ).toContain("No Japanese characters");
+  expect(container.textContent).toContain(
+    "Filtered: No Japanese characters in the recognized text",
+  );
   expect(container.textContent).toContain("no PNG saved to disk");
 });
 

@@ -488,6 +488,12 @@ same scan. The saved area is keyed to display bounds and scale. This first-pass
 page detection deliberately declines light-themed or unusual layouts, and it
 does not eliminate false OCR within a page. It is not continuous scanning.
 
+An initial text-region filter rejects nearly uniform detector crops and OCR
+strings with no Japanese script. Capture debug retains those raw boxes, crops,
+recognized strings, and explicit rejection reasons. This is deliberately not
+a confidence filter: Manga OCR does not supply a calibrated confidence score.
+Japanese-looking OCR hallucinations in artwork remain possible.
+
 Current manual flow:
 
 ```text
@@ -507,7 +513,8 @@ OCR all relevant regions
 ## Tasks
 
 - [x] conservative automatic manga-region detection with saved-area fallback
-- [ ] text-region filtering
+- [x] basic text-region filtering with debug reasons
+- [ ] stronger artwork-versus-text filtering without hiding uncertain dialogue
 - [ ] panel ordering where useful
 - [ ] Japanese reading-order heuristics
 - [ ] sound-effect filtering

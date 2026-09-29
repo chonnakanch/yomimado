@@ -9,7 +9,12 @@ from fastapi.testclient import TestClient
 
 from app.main import app
 from app.models import OcrDebug, OcrDebugDetection, OcrResponse, Point, TextRegion
-from app.pipeline.real_ocr import _apply_selection_fallback, _polygon
+from app.pipeline.real_ocr import (
+    _apply_selection_fallback,
+    _crop_filter_reason,
+    _polygon,
+    _text_filter_reason,
+)
 
 client = TestClient(app)
 PNG = b"\x89PNG\r\n\x1a\n" + b"\x00\x00\x00\x0dIHDR" + pack(">II", 200, 300)
@@ -58,6 +63,24 @@ def test_detector_box_maps_to_image_polygon() -> None:
         (30, 80),
         (10, 80),
     ]
+
+
+def test_text_filter_rejects_only_strings_without_japanese_script() -> None:
+    assert _text_filter_reason("comipo Play") == "No Japanese characters in the recognized text"
+    assert _text_filter_reason("2026!?ー・") == "No Japanese characters in the recognized text"
+    assert _text_filter_reason("ＡＢＣ") == "No Japanese characters in the recognized text"
+    for text in ("学校", "ゲーム", "こんにちは", "VRゲーム", "ｶﾀｶﾅ", "あ", "々"):
+        assert _text_filter_reason(text) is None
+
+
+def test_nearly_uniform_crop_is_filtered_without_using_a_confidence_guess() -> None:
+    image_module = pytest.importorskip("PIL.Image")
+    assert _crop_filter_reason(image_module.new("RGB", (40, 80), "white"))
+    image = image_module.new("RGB", (40, 80), "white")
+    for x in range(10, 30):
+        for y in range(15, 65):
+            image.putpixel((x, y), (10, 10, 10))
+    assert _crop_filter_reason(image) is None
 
 
 def test_small_selection_retry_preserves_honest_geometry() -> None:
@@ -114,6 +137,10 @@ def test_small_selection_without_detector_box_can_use_whole_crop_text() -> None:
     assert not used
     assert unchanged == []
 
+    unchanged, used = _apply_selection_fallback([], 109, 145, "ーーー")
+    assert not used
+    assert unchanged == []
+
 
 def test_debug_request_is_opt_in_and_returns_detector_details(monkeypatch) -> None:
     ocr_module = importlib.import_module("app.api.ocr")
@@ -137,7 +164,19 @@ def test_debug_request_is_opt_in_and_returns_detector_details(monkeypatch) -> No
                         cropDataUrl="data:image/png;base64,dGVzdA==",
                         text="たまには",
                         status="recognized",
-                    )
+                    ),
+                    OcrDebugDetection(
+                        id="detection-2",
+                        box=[
+                            Point(x=40, y=20),
+                            Point(x=90, y=20),
+                            Point(x=90, y=80),
+                            Point(x=40, y=80),
+                        ],
+                        text="comipo Play",
+                        status="filtered",
+                        filterReason="No Japanese characters in the recognized text",
+                    ),
                 ],
                 selectionText="たまにはいいでしょ",
             ),
@@ -154,15 +193,20 @@ def test_debug_request_is_opt_in_and_returns_detector_details(monkeypatch) -> No
     assert response.json()["debug"]["selectionText"] == "たまにはいいでしょ"
     assert response.json()["debug"]["detections"][0]["status"] == "recognized"
     assert response.json()["debug"]["detections"][0]["cropDataUrl"].startswith("data:image/png;")
+    assert response.json()["debug"]["detections"][1]["filterReason"] == (
+        "No Japanese characters in the recognized text"
+    )
 
 
 def test_model_adapter_reports_raw_boxes_and_crops(monkeypatch) -> None:
     image_module = pytest.importorskip("PIL.Image")
+    image_draw = pytest.importorskip("PIL.ImageDraw")
     pytest.importorskip("cv2")
     pytest.importorskip("numpy")
     from app.pipeline import real_ocr
 
     image = image_module.new("RGB", (120, 160), "white")
+    image_draw.Draw(image).rectangle((15, 25, 35, 90), fill="black")
     image_bytes = BytesIO()
     image.save(image_bytes, format="PNG")
     blocks = [
@@ -181,6 +225,106 @@ def test_model_adapter_reports_raw_boxes_and_crops(monkeypatch) -> None:
     assert result.debug.detections[0].cropDataUrl.startswith("data:image/png;base64,")
     assert result.debug.detections[1].cropDataUrl is None
     assert result.debug.selectionFallbackUsed is False
+
+
+def test_model_adapter_filters_latin_ui_text_but_keeps_japanese_and_debug_boxes(
+    monkeypatch,
+) -> None:
+    image_module = pytest.importorskip("PIL.Image")
+    image_draw = pytest.importorskip("PIL.ImageDraw")
+    pytest.importorskip("cv2")
+    pytest.importorskip("numpy")
+    from app.pipeline import real_ocr
+
+    image = image_module.new("RGB", (640, 400), "white")
+    draw = image_draw.Draw(image)
+    draw.rectangle((25, 25, 45, 90), fill="black")
+    draw.rectangle((125, 25, 145, 90), fill="black")
+    image_bytes = BytesIO()
+    image.save(image_bytes, format="PNG")
+    blocks = [
+        SimpleNamespace(lines=[], xyxy=[20, 20, 60, 100], vertical=True),
+        SimpleNamespace(lines=[], xyxy=[120, 20, 160, 100], vertical=False),
+    ]
+    recognized = iter(["学校", "comipo Play"])
+
+    monkeypatch.setattr(real_ocr, "_configured_paths", lambda: (Path("."),) * 3)
+    monkeypatch.setattr(
+        real_ocr,
+        "_models",
+        lambda *_paths: (lambda _image: (None, None, blocks), lambda _crop: next(recognized)),
+    )
+
+    result = real_ocr.recognize_with_models(image_bytes.getvalue(), debug=True)
+    assert [region.text for region in result.regions] == ["学校"]
+    assert [item.status for item in result.debug.detections] == ["recognized", "filtered"]
+    assert result.debug.detections[1].text == "comipo Play"
+    assert (
+        result.debug.detections[1].filterReason == "No Japanese characters in the recognized text"
+    )
+    assert result.debug.detections[1].cropDataUrl.startswith("data:image/png;base64,")
+
+
+def test_model_adapter_skips_nearly_uniform_detector_crop(monkeypatch) -> None:
+    image_module = pytest.importorskip("PIL.Image")
+    pytest.importorskip("cv2")
+    pytest.importorskip("numpy")
+    from app.pipeline import real_ocr
+
+    image = image_module.new("RGB", (160, 160), "black")
+    image_bytes = BytesIO()
+    image.save(image_bytes, format="PNG")
+    block = SimpleNamespace(lines=[], xyxy=[20, 20, 60, 100], vertical=True)
+
+    monkeypatch.setattr(real_ocr, "_configured_paths", lambda: (Path("."),) * 3)
+    monkeypatch.setattr(
+        real_ocr,
+        "_models",
+        lambda *_paths: (
+            lambda _image: (None, None, [block]),
+            lambda _crop: pytest.fail("Nearly uniform crop should not reach recognizer"),
+        ),
+    )
+
+    result = real_ocr.recognize_with_models(image_bytes.getvalue(), debug=True)
+    assert result.regions == []
+    assert result.debug.detections[0].status == "filtered"
+    assert (
+        result.debug.detections[0].filterReason == "Almost no visible contrast in the detector crop"
+    )
+    assert result.debug.selectionText is None
+
+
+def test_filtered_small_selection_does_not_return_a_whole_crop_hallucination(monkeypatch) -> None:
+    image_module = pytest.importorskip("PIL.Image")
+    image_draw = pytest.importorskip("PIL.ImageDraw")
+    pytest.importorskip("cv2")
+    pytest.importorskip("numpy")
+    from app.pipeline import real_ocr
+
+    image = image_module.new("RGB", (160, 160), "white")
+    image_draw.Draw(image).rectangle((25, 25, 45, 95), fill="black")
+    image_bytes = BytesIO()
+    image.save(image_bytes, format="PNG")
+    block = SimpleNamespace(lines=[], xyxy=[20, 20, 60, 100], vertical=False)
+    calls = []
+
+    def recognizer(_crop):
+        calls.append(True)
+        return "comipo Play" if len(calls) == 1 else "これは日本語です"
+
+    monkeypatch.setattr(real_ocr, "_configured_paths", lambda: (Path("."),) * 3)
+    monkeypatch.setattr(
+        real_ocr,
+        "_models",
+        lambda *_paths: (lambda _image: (None, None, [block]), recognizer),
+    )
+
+    result = real_ocr.recognize_with_models(image_bytes.getvalue(), debug=True)
+    assert result.regions == []
+    assert result.debug.detections[0].status == "filtered"
+    assert result.debug.selectionText is None
+    assert calls == [True]
 
 
 def test_model_adapter_recovers_text_when_detector_finds_no_boxes(monkeypatch) -> None:

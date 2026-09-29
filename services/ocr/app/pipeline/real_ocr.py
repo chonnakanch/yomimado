@@ -13,6 +13,8 @@ from typing import Any
 from app.models import OcrDebug, OcrDebugDetection, OcrResponse, Point, TextRegion
 
 SMALL_SELECTION_MAX_SIDE = 320
+# Only skip crops that are almost flat; this is not an OCR confidence estimate.
+MIN_CROP_LUMINANCE_RANGE = 12
 
 
 def _configured_paths() -> tuple[Path, Path, Path]:
@@ -77,11 +79,36 @@ def _has_visible_ink(image: Any) -> bool:
     return dark_pixels >= max(20, image.width * image.height // 200)
 
 
-def _has_plausible_japanese_text(text: str) -> bool:
-    japanese_characters = sum(
-        "\u3040" <= character <= "\u30ff" or "\u3400" <= character <= "\u9fff" for character in text
+def _is_japanese_script_character(character: str) -> bool:
+    return (
+        ("\u3040" <= character <= "\u30ff" and character not in {"ー", "・"})
+        or "\u3400" <= character <= "\u9fff"
+        or "\uf900" <= character <= "\ufaff"
+        or "\uff66" <= character <= "\uff9f"
+        or "\U00020000" <= character <= "\U0002fa1f"
+        or character == "々"
     )
-    return japanese_characters >= 3
+
+
+def _has_plausible_japanese_text(text: str) -> bool:
+    return sum(_is_japanese_script_character(character) for character in text) >= 3
+
+
+def _has_japanese_script(text: str) -> bool:
+    return any(_is_japanese_script_character(character) for character in text)
+
+
+def _crop_filter_reason(crop: Any) -> str | None:
+    low, high = crop.convert("L").getextrema()
+    if high - low < MIN_CROP_LUMINANCE_RANGE:
+        return "Almost no visible contrast in the detector crop"
+    return None
+
+
+def _text_filter_reason(text: str) -> str | None:
+    if text and not _has_japanese_script(text):
+        return "No Japanese characters in the recognized text"
+    return None
 
 
 def _selection_adds_text(selection_text: str, detected_text: str) -> bool:
@@ -139,6 +166,7 @@ def recognize_with_models(image_bytes: bytes, *, debug: bool = False) -> OcrResp
     _, _, blocks = detector(bgr)
     regions: list[TextRegion] = []
     detections: list[OcrDebugDetection] = []
+    filtered_detection = False
     for index, block in enumerate(blocks, start=1):
         x1, y1, x2, y2 = [int(value) for value in block.xyxy]
         x1, y1 = max(0, x1), max(0, y1)
@@ -155,7 +183,12 @@ def recognize_with_models(image_bytes: bytes, *, debug: bool = False) -> OcrResp
                 )
             continue
         crop = image.crop((x1, y1, x2, y2))
-        text = recognizer(crop).strip()
+        filter_reason = _crop_filter_reason(crop)
+        text = "" if filter_reason else recognizer(crop).strip()
+        if not filter_reason:
+            filter_reason = _text_filter_reason(text)
+        if filter_reason:
+            filtered_detection = True
         if debug:
             detections.append(
                 OcrDebugDetection(
@@ -163,10 +196,11 @@ def recognize_with_models(image_bytes: bytes, *, debug: bool = False) -> OcrResp
                     box=_box_polygon(block.xyxy),
                     cropDataUrl=_crop_data_url(crop),
                     text=text,
-                    status="recognized" if text else "empty",
+                    status="filtered" if filter_reason else "recognized" if text else "empty",
+                    filterReason=filter_reason,
                 )
             )
-        if not text:
+        if not text or filter_reason:
             continue
         regions.append(
             TextRegion(
@@ -183,8 +217,10 @@ def recognize_with_models(image_bytes: bytes, *, debug: bool = False) -> OcrResp
 
     selection_text: str | None = None
     fallback_used = False
-    retry_selection = _should_retry_selection(image.width, image.height, regions) and (
-        bool(regions) or _has_visible_ink(image)
+    retry_selection = (
+        (bool(regions) or not filtered_detection)
+        and _should_retry_selection(image.width, image.height, regions)
+        and (bool(regions) or _has_visible_ink(image))
     )
     if retry_selection:
         selection_text = recognizer(image).strip()

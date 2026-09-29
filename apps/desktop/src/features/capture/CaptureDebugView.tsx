@@ -34,7 +34,7 @@ export function CaptureDebugView({
             <h1>Capture debug</h1>
             <p>
               Exact PNG sent to OCR. Orange: final regions; cyan: raw detector
-              boxes.
+              boxes; gray: filtered boxes.
             </p>
           </div>
           <div className="capture-debug-actions">
@@ -65,11 +65,11 @@ export function CaptureDebugView({
                 >
                   {response.debug?.detections.map((detection) => (
                     <polygon
-                      className="capture-debug-detector-box"
+                      className={`capture-debug-detector-box${detection.status === "filtered" ? " filtered" : ""}`}
                       key={detection.id}
                       points={polygonPoints(detection.box)}
                     >
-                      <title>{`Detector ${detection.id}: ${detection.status}`}</title>
+                      <title>{`Detector ${detection.id}: ${detection.status}${detection.filterReason ? ` — ${detection.filterReason}` : ""}`}</title>
                     </polygon>
                   ))}
                   {response.regions.map((region) => (
@@ -137,8 +137,8 @@ export function CaptureDebugView({
                   <section className="capture-debug-detector-results">
                     <h2>Detector stage</h2>
                     <p>
-                      {response.debug.detections.length} raw box(es). Empty
-                      recognitions are shown here too.
+                      {response.debug.detections.length} raw box(es). Empty and
+                      filtered recognitions are shown here too.
                     </p>
                     {response.debug.selectionText && (
                       <p>
@@ -155,6 +155,9 @@ export function CaptureDebugView({
                           <span>
                             {detection.status} · {detection.text || "No text"}
                           </span>
+                          {detection.filterReason && (
+                            <span>Filtered: {detection.filterReason}</span>
+                          )}
                           <code>{polygonPoints(detection.box)}</code>
                           {detection.cropDataUrl && (
                             <img

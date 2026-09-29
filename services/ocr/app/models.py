@@ -35,7 +35,8 @@ class OcrDebugDetection(BaseModel):
     box: list[Point] = Field(min_length=4)
     cropDataUrl: str | None = None
     text: str
-    status: Literal["recognized", "empty", "invalid"]
+    status: Literal["recognized", "empty", "invalid", "filtered"]
+    filterReason: str | None = None
 
 
 class OcrDebug(BaseModel):
