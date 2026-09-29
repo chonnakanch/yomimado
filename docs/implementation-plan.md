@@ -483,6 +483,9 @@ Reduce manual capture work.
 Status: a one-shot **Scan manga page** action attempts a conservative
 black-and-white page crop beneath darker browser controls before OCR. If the
 image is ambiguous it uses the saved manga area or asks the reader to draw one.
+The crop looks for one contiguous page-like span, excluding sparse white text
+and thumbnails in a dark website sidebar; similarly sized competing spans
+still fall back to the saved area.
 **Set/adjust scan area** redraws the fallback, and Cmd/Ctrl+Shift+S starts the
 same scan. The saved area is keyed to display bounds and scale. This first-pass
 page detection deliberately declines light-themed or unusual layouts, and it

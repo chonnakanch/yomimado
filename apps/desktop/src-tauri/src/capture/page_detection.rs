@@ -50,19 +50,43 @@ fn detect_page_bounds(image: &RgbaImage) -> Option<PixelBounds> {
             .count();
         count * 100 >= (3 * sample_width) as usize * 10
     })?;
-    let sample_top = first_paper_row.saturating_sub((sample_height / 30).max(3));
+    let sample_top = first_paper_row;
 
     let body_height = sample_height - sample_top;
-    let columns: Vec<u32> = (0..sample_width)
+    // Use one continuous page-like span, not the first and last pale pixels on
+    // the entire screen. Sparse text and thumbnails in a dark website sidebar
+    // must not extend a manga crop across the intervening UI.
+    let page_columns: Vec<u32> = (0..sample_width)
         .filter(|&x| {
             let white = (sample_top..sample_height)
                 .filter(|&y| paper(sample.get_pixel(x, y)))
                 .count();
-            white * 100 >= body_height as usize * 4
+            white * 100 >= body_height as usize * 18
         })
         .collect();
-    let (&left, &right) = (columns.first()?, columns.last()?);
-    if right - left < sample_width * 45 / 100 {
+    let max_internal_gap = (sample_width / 12).max(2);
+    let mut spans = Vec::new();
+    let mut start = *page_columns.first()?;
+    let mut end = start;
+    for &column in page_columns.iter().skip(1) {
+        if column - end > max_internal_gap + 1 {
+            spans.push((start, end));
+            start = column;
+        }
+        end = column;
+    }
+    spans.push((start, end));
+    spans.sort_by_key(|&(start, end)| end - start);
+    let &(left, right) = spans.last()?;
+    if right - left < sample_width * 25 / 100 {
+        return None;
+    }
+    if spans
+        .iter()
+        .rev()
+        .nth(1)
+        .is_some_and(|&(start, end)| end - start >= (right - left) * 3 / 4)
+    {
         return None;
     }
 
@@ -76,11 +100,11 @@ fn detect_page_bounds(image: &RgbaImage) -> Option<PixelBounds> {
         }
     }
     let area = usize::try_from((right - left + 1) * body_height).ok()?;
-    if white * 100 < area * 12 || dark * 100 < area * 10 {
+    if white * 100 < area * 12 || dark * 100 < area * 6 {
         return None;
     }
 
-    let pad_x = (sample_width / 25).max(3);
+    let pad_x = (sample_width / 50).max(2);
     let sample_left = left.saturating_sub(pad_x);
     let sample_right = (right + pad_x + 1).min(sample_width);
     let x = (f64::from(sample_left) * f64::from(width) / f64::from(sample_width)).floor() as u32;
@@ -198,6 +222,61 @@ mod tests {
         assert!(detect_page_bounds(&webpage).is_none());
         let toolbar = RgbaImage::from_pixel(1000, 600, Rgba([40, 40, 40, 255]));
         assert!(detect_page_bounds(&toolbar).is_none());
+    }
+
+    #[test]
+    fn excludes_sparse_white_text_and_thumbnail_in_a_dark_sidebar() {
+        let mut screen = RgbaImage::from_pixel(1000, 600, Rgba([30, 30, 30, 255]));
+        for y in 100..600 {
+            for x in 250..650 {
+                screen.put_pixel(x, y, Rgba([250, 250, 250, 255]));
+            }
+        }
+        for x in (275..625).step_by(40) {
+            for y in 130..580 {
+                for offset in 0..12 {
+                    screen.put_pixel(x + offset, y, Rgba([20, 20, 20, 255]));
+                }
+            }
+        }
+        for y in [140, 210, 280] {
+            for line_y in y..y + 12 {
+                for x in 770..980 {
+                    screen.put_pixel(x, line_y, Rgba([250, 250, 250, 255]));
+                }
+            }
+        }
+        for y in 420..485 {
+            for x in 790..860 {
+                screen.put_pixel(x, y, Rgba([250, 250, 250, 255]));
+            }
+        }
+
+        let bounds = detect_page_bounds(&screen).unwrap();
+        assert!(bounds.x <= 250);
+        assert!(bounds.x + bounds.width >= 650);
+        assert!(bounds.x + bounds.width < 770);
+    }
+
+    #[test]
+    fn refuses_two_similarly_sized_page_like_spans() {
+        let mut screen = RgbaImage::from_pixel(1000, 600, Rgba([30, 30, 30, 255]));
+        for y in 100..600 {
+            for x in 100..390 {
+                screen.put_pixel(x, y, Rgba([250, 250, 250, 255]));
+            }
+            for x in 610..900 {
+                screen.put_pixel(x, y, Rgba([250, 250, 250, 255]));
+            }
+        }
+        for x in (120..380).chain(630..890).step_by(35) {
+            for y in 130..580 {
+                for offset in 0..10 {
+                    screen.put_pixel(x + offset, y, Rgba([20, 20, 20, 255]));
+                }
+            }
+        }
+        assert!(detect_page_bounds(&screen).is_none());
     }
 
     #[test]

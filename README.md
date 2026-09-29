@@ -41,8 +41,11 @@ fallback area no longer matches the browser position. It is saved locally for
 that display layout. Press `Cmd+Shift+S` on macOS or `Ctrl+Shift+S` on Windows
 to start the same one-shot scan without opening the main window. Detection is
 conservative: light-themed readers, dark or colored pages, and unusual layouts
-may need the saved area. The app does not watch for screen changes or translate
-text automatically. Close the overlay before changing pages, then scan again.
+may need the saved area. On dark sites, sparse white sidebar text and thumbnails
+are excluded from the page crop when a distinct manga image is found; if two
+page-like areas are similarly sized, the app uses the saved area instead. The
+app does not watch for screen changes or translate text automatically. Close
+the overlay before changing pages, then scan again.
 Automatic scanning is not yet manually verified on Windows or multi-monitor
 setups.
 
