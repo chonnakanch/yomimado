@@ -13,6 +13,9 @@ use tauri_plugin_global_shortcut::{
     Builder as GlobalShortcutBuilder, GlobalShortcutExt, Shortcut, ShortcutState,
 };
 
+const MANUAL_CAPTURE_SHORTCUT: &str = "CMDORCONTROL+SHIFT+O";
+const SAVED_AREA_SHORTCUT: &str = "CMDORCONTROL+SHIFT+S";
+
 struct AppState {
     capture: Arc<dyn ScreenCapture>,
 }
@@ -406,17 +409,7 @@ pub fn run() {
                 }
             }
         })
-        .plugin(
-            GlobalShortcutBuilder::new()
-                .with_handler(|app, _shortcut, event| {
-                    if event.state() == ShortcutState::Pressed {
-                        if let Err(error) = show_capture_selector(app.clone()) {
-                            eprintln!("YomiMado: {error}");
-                        }
-                    }
-                })
-                .build(),
-        )
+        .plugin(GlobalShortcutBuilder::new().build())
         .setup(|app| {
             let capture_dir = app.path().app_cache_dir()?.join("captures");
             if let Err(error) = cleanup_legacy_captures(&capture_dir) {
@@ -425,9 +418,25 @@ pub fn run() {
             app.manage(AppState {
                 capture: Arc::new(XcapScreenCapture::new()),
             });
-            let shortcut =
-                Shortcut::try_from("CMDORCONTROL+SHIFT+O").map_err(|error| error.to_string())?;
-            app.global_shortcut().register(shortcut)?;
+            let manual =
+                Shortcut::try_from(MANUAL_CAPTURE_SHORTCUT).map_err(|error| error.to_string())?;
+            app.global_shortcut().on_shortcut(manual, |app, _, event| {
+                if event.state() == ShortcutState::Pressed {
+                    if let Err(error) = show_capture_selector(app.clone()) {
+                        eprintln!("YomiMado: {error}");
+                    }
+                }
+            })?;
+            let saved_area =
+                Shortcut::try_from(SAVED_AREA_SHORTCUT).map_err(|error| error.to_string())?;
+            app.global_shortcut()
+                .on_shortcut(saved_area, |app, _, event| {
+                    if event.state() == ShortcutState::Pressed {
+                        if let Err(error) = show_saved_area_scanner(app.clone()) {
+                            eprintln!("YomiMado: {error}");
+                        }
+                    }
+                })?;
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
@@ -450,6 +459,13 @@ pub fn run() {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn manual_and_saved_area_shortcuts_are_distinct() {
+        let manual = Shortcut::try_from(MANUAL_CAPTURE_SHORTCUT).unwrap();
+        let saved_area = Shortcut::try_from(SAVED_AREA_SHORTCUT).unwrap();
+        assert_ne!(manual, saved_area);
+    }
 
     #[test]
     fn display_scan_uses_actual_selector_bounds_on_retina() {

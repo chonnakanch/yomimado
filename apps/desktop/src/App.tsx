@@ -92,7 +92,10 @@ export function App() {
         </button>
       </div>
       <p className="status">{message}</p>
-      <p className="hint">Shortcut: Cmd/Ctrl + Shift + O</p>
+      <p className="hint">
+        Shortcuts: Cmd/Ctrl + Shift + O for manual selection; Cmd/Ctrl + Shift +
+        S for the saved manga area.
+      </p>
       {showSavedWords && (
         <section className="saved-words" aria-label="Saved words">
           <div className="saved-words-heading">

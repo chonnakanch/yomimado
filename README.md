@@ -37,10 +37,11 @@ The initial capture-to-overlay slice is implemented:
 local OCR pipeline, and overlays its returned text regions. Use **Set/adjust
 scan area** when the browser moves or resizes. The area is saved locally for
 that display layout; a display resolution or scaling change asks you to draw
-it again. It does not follow a moving browser window, watch for screen changes,
-or translate text automatically. Close the overlay before changing pages, then
-scan again. The saved-area mode is not yet manually verified on Windows or
-multi-monitor setups.
+it again. Press `Cmd+Shift+S` on macOS or `Ctrl+Shift+S` on Windows to scan
+that saved area without opening the main window. It does not follow a moving
+browser window, watch for screen changes, or translate text automatically.
+Close the overlay before changing pages, then scan again. The saved-area mode
+is not yet manually verified on Windows or multi-monitor setups.
 
 ## Development
 

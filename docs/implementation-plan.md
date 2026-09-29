@@ -478,7 +478,8 @@ Reduce manual capture work.
 
 Status: a one-shot **Scan manga area** action is available. On first use, the
 reader draws a reusable manga reading area; subsequent scans crop only that
-saved screen area on the same display. **Set/adjust scan area** redraws it.
+saved screen area on the same display. **Set/adjust scan area** redraws it,
+and Cmd/Ctrl+Shift+S scans it through a dedicated global shortcut.
 The area is kept in local app webview storage, keyed to the display bounds and
 scale; display-layout changes require a new area. This excludes browser chrome
 when the reader draws around the page, but does not automatically detect manga
