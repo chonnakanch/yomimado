@@ -9,6 +9,7 @@ from functools import lru_cache
 from io import BytesIO
 from os import environ
 from pathlib import Path
+from types import SimpleNamespace
 from typing import Any
 
 from app.models import OcrDebug, OcrDebugDetection, OcrResponse, Point, TextRegion
@@ -19,6 +20,10 @@ RETRY_MIN_LONG_SIDE = 800
 RETRY_TILE_SIDES = (512, 768)
 RETRY_TILE_OVERLAP = 128
 MAX_RETRY_TILES = 8
+# Only strong segmentation activations qualify for the short-text fallback.
+# This is not a calibrated OCR confidence score.
+MASK_TEXT_THRESHOLD = 150
+MAX_MASK_CANDIDATES_PER_TILE = 20
 # Only skip crops that are almost flat; this is not an OCR confidence estimate.
 MIN_CROP_LUMINANCE_RANGE = 12
 logger = logging.getLogger(__name__)
@@ -96,20 +101,94 @@ def _retry_tiles(width: int, height: int) -> list[tuple[int, int, int, int]]:
     return []
 
 
-def _detected_blocks(detector: Any, bgr: Any, retry_tiles: list[tuple[int, int, int, int]]):
+def _mask_candidate_boxes(mask: Any, cv2: Any) -> list[tuple[int, int, int, int]]:
+    if mask is None:
+        return []
+    _, binary = cv2.threshold(mask, MASK_TEXT_THRESHOLD, 255, cv2.THRESH_BINARY)
+    _, _, stats, _ = cv2.connectedComponentsWithStats(binary, connectivity=8)
+    glyphs = sorted(
+        (
+            (int(x), int(y), int(width), int(height))
+            for x, y, width, height, area in stats[1:]
+            if area >= 20
+            and 6 <= width <= 64
+            and 6 <= height <= 64
+            and 0.3 <= width / height <= 2.5
+        ),
+        key=lambda glyph: (glyph[1], glyph[0]),
+    )
+    successors: dict[int, int] = {}
+    used_successors: set[int] = set()
+    for index, (x, y, width, height) in enumerate(glyphs):
+        center_x = x + width / 2
+        options = []
+        for next_index in range(index + 1, len(glyphs)):
+            next_x, next_y, next_width, next_height = glyphs[next_index]
+            gap = next_y - (y + height)
+            if gap > height:
+                break
+            if (
+                next_index in used_successors
+                or gap < -height / 4
+                or not 0.55 <= next_height / height <= 1.8
+                or not 0.55 <= next_width / width <= 1.8
+                or abs(next_x + next_width / 2 - center_x) > max(width, next_width) * 0.45
+            ):
+                continue
+            options.append((max(0, gap), abs(next_x + next_width / 2 - center_x), next_index))
+        if options:
+            next_index = min(options)[2]
+            successors[index] = next_index
+            used_successors.add(next_index)
+
+    boxes = []
+    for index in range(len(glyphs)):
+        if index in used_successors or index not in successors:
+            continue
+        chain = [index]
+        while chain[-1] in successors:
+            chain.append(successors[chain[-1]])
+        left = min(glyphs[item][0] for item in chain)
+        top = min(glyphs[item][1] for item in chain)
+        right = max(glyphs[item][0] + glyphs[item][2] for item in chain)
+        bottom = max(glyphs[item][1] + glyphs[item][3] for item in chain)
+        boxes.append(
+            (
+                max(0, left - 3),
+                max(0, top - 3),
+                min(mask.shape[1], right + 3),
+                min(mask.shape[0], bottom + 3),
+            )
+        )
+    return boxes[:MAX_MASK_CANDIDATES_PER_TILE]
+
+
+def _detected_blocks(
+    detector: Any, bgr: Any, retry_tiles: list[tuple[int, int, int, int]], cv2: Any
+):
     _, _, blocks = detector(bgr)
     for block in blocks:
         yield block, 0, 0, "full"
 
+    mask_candidates = []
     for x, y, tile_width, tile_height in retry_tiles:
         tile = bgr[y : y + tile_height, x : x + tile_width].copy()
         try:
-            _, _, tile_blocks = detector(tile)
+            tile_mask, _, tile_blocks = detector(tile)
         except Exception as error:  # noqa: BLE001 - optional retry must not discard the full pass
             logger.warning("Tile detector retry failed: %s", type(error).__name__)
             continue
         for block in tile_blocks:
             yield block, x, y, "tile"
+        try:
+            for box in _mask_candidate_boxes(tile_mask, cv2):
+                mask_candidates.append((box, x, y))
+        except Exception as error:  # noqa: BLE001 - optional mask retry must not discard tile boxes
+            logger.warning("Text-mask retry failed: %s", type(error).__name__)
+    # Masks can contain short glyph runs that the detector's box-grouping stage
+    # omits. Process these after regular boxes so duplicate candidates disappear.
+    for box, x, y in mask_candidates:
+        yield SimpleNamespace(xyxy=box, lines=[], vertical=True), x, y, "mask"
 
 
 def _overlap_over_smaller(
@@ -151,7 +230,11 @@ def _is_japanese_script_character(character: str) -> bool:
 
 
 def _has_plausible_japanese_text(text: str) -> bool:
-    return sum(_is_japanese_script_character(character) for character in text) >= 3
+    return _japanese_character_count(text) >= 3
+
+
+def _japanese_character_count(text: str) -> int:
+    return sum(_is_japanese_script_character(character) for character in text)
 
 
 def _has_japanese_script(text: str) -> bool:
@@ -229,7 +312,9 @@ def recognize_with_models(image_bytes: bytes, *, debug: bool = False) -> OcrResp
     seen_boxes: list[tuple[int, int, int, int]] = []
     filtered_detection = False
     index = 0
-    for block, offset_x, offset_y, detection_pass in _detected_blocks(detector, bgr, retry_tiles):
+    for block, offset_x, offset_y, detection_pass in _detected_blocks(
+        detector, bgr, retry_tiles, cv2
+    ):
         raw_x1, raw_y1, raw_x2, raw_y2 = [int(value) for value in block.xyxy]
         x1, y1 = raw_x1 + offset_x, raw_y1 + offset_y
         x2, y2 = raw_x2 + offset_x, raw_y2 + offset_y
@@ -250,7 +335,7 @@ def recognize_with_models(image_bytes: bytes, *, debug: bool = False) -> OcrResp
                 )
             continue
         box = (x1, y1, x2, y2)
-        if detection_pass == "tile" and any(
+        if detection_pass != "full" and any(
             _overlap_over_smaller(box, previous) >= 0.6 for previous in seen_boxes
         ):
             index -= 1
@@ -261,6 +346,12 @@ def recognize_with_models(image_bytes: bytes, *, debug: bool = False) -> OcrResp
         text = "" if filter_reason else recognizer(crop).strip()
         if not filter_reason:
             filter_reason = _text_filter_reason(text)
+        if (
+            detection_pass == "mask"
+            and not filter_reason
+            and not 2 <= _japanese_character_count(text) <= 3
+        ):
+            filter_reason = "Mask candidate needs two or three Japanese characters"
         if filter_reason:
             filtered_detection = True
         if debug:
@@ -312,6 +403,7 @@ def recognize_with_models(image_bytes: bytes, *, debug: bool = False) -> OcrResp
             OcrDebug(
                 detections=detections,
                 tileRetryCount=len(retry_tiles),
+                maskRetryCount=len(retry_tiles),
                 selectionText=selection_text,
                 selectionFallbackUsed=fallback_used,
             )

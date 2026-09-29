@@ -274,6 +274,77 @@ def test_large_capture_tile_retry_recovers_missed_text_without_duplicate_boxes(m
     assert [item.detectionPass for item in result.debug.detections] == ["full", "tile"]
     assert [item.id for item in result.debug.detections] == ["detection-1", "detection-2"]
     assert result.debug.tileRetryCount == 8
+    assert result.debug.maskRetryCount == 8
+
+
+def test_text_mask_retry_finds_short_text_but_recognizes_original_pixels(monkeypatch) -> None:
+    image_module = pytest.importorskip("PIL.Image")
+    image_draw = pytest.importorskip("PIL.ImageDraw")
+    cv2 = pytest.importorskip("cv2")
+    np = pytest.importorskip("numpy")
+    from app.pipeline import real_ocr
+
+    image = image_module.new("RGB", (830, 623), (230, 230, 230))
+    image_draw.Draw(image).rectangle((345, 180, 365, 226), fill=(180, 180, 180))
+    image_bytes = BytesIO()
+    image.save(image_bytes, format="PNG")
+    tiles = real_ocr._retry_tiles(830, 623)
+    calls = []
+    mask = np.zeros((512, 512), dtype=np.uint8)
+    cv2.rectangle(mask, (27, 180), (46, 199), 200, -1)
+    cv2.rectangle(mask, (27, 207), (46, 226), 200, -1)
+    overlapping_mask = np.zeros((512, 512), dtype=np.uint8)
+    cv2.rectangle(overlapping_mask, (27, 69), (46, 88), 200, -1)
+    cv2.rectangle(overlapping_mask, (27, 96), (46, 115), 200, -1)
+
+    def detector(crop):
+        calls.append(crop.copy())
+        if len(calls) == 3:
+            return mask, None, []
+        if len(calls) == 5:
+            return overlapping_mask, None, []
+        return None, None, []
+
+    recognized_pixels = []
+
+    def recognizer(crop):
+        recognized_pixels.append(crop.getpixel((0, 0)))
+        return "みて"
+
+    monkeypatch.setattr(real_ocr, "_configured_paths", lambda: (Path("."),) * 3)
+    monkeypatch.setattr(real_ocr, "_models", lambda *_paths: (detector, recognizer))
+
+    result = real_ocr.recognize_with_models(image_bytes.getvalue(), debug=True)
+    assert len(calls) == 1 + len(tiles)
+    assert result.debug.maskRetryCount == len(tiles)
+    assert [item.detectionPass for item in result.debug.detections] == ["mask"]
+    assert [region.text for region in result.regions] == ["みて"]
+    assert result.regions[0].polygon[0] == Point(x=342, y=177)
+    assert recognized_pixels == [(230, 230, 230)]
+
+    calls.clear()
+    monkeypatch.setattr(real_ocr, "_models", lambda *_paths: (detector, lambda _crop: "いっした"))
+    rejected = real_ocr.recognize_with_models(image_bytes.getvalue(), debug=True)
+    assert rejected.regions == []
+    assert rejected.debug.detections[0].status == "filtered"
+    assert rejected.debug.detections[0].filterReason == (
+        "Mask candidate needs two or three Japanese characters"
+    )
+
+
+def test_text_mask_retry_requires_aligned_glyphs_and_produces_deduplicable_box() -> None:
+    cv2 = pytest.importorskip("cv2")
+    np = pytest.importorskip("numpy")
+    from app.pipeline.real_ocr import _mask_candidate_boxes, _overlap_over_smaller
+
+    mask = np.zeros((80, 80), dtype=np.uint8)
+    cv2.rectangle(mask, (20, 10), (36, 26), 200, -1)
+    assert _mask_candidate_boxes(mask, cv2) == []
+
+    cv2.rectangle(mask, (21, 32), (37, 48), 200, -1)
+    boxes = _mask_candidate_boxes(mask, cv2)
+    assert boxes == [(17, 7, 41, 52)]
+    assert _overlap_over_smaller(boxes[0], (18, 8, 40, 51)) >= 0.6
 
 
 def test_tile_retry_is_bounded_to_small_captures_and_at_most_eight_tiles() -> None:

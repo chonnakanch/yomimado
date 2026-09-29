@@ -40,6 +40,7 @@ it("shows the exact captured image and OCR text with image-space polygons", () =
         ],
         debug: {
           tileRetryCount: 2,
+          maskRetryCount: 2,
           detections: [
             {
               id: "detection-1",
@@ -65,6 +66,18 @@ it("shows the exact captured image and OCR text with image-space polygons", () =
               status: "filtered",
               filterReason: "No Japanese characters in the recognized text",
               detectionPass: "tile",
+            },
+            {
+              id: "detection-3",
+              box: [
+                { x: 150, y: 30 },
+                { x: 180, y: 30 },
+                { x: 180, y: 90 },
+                { x: 150, y: 90 },
+              ],
+              text: "みて",
+              status: "recognized",
+              detectionPass: "mask",
             },
           ],
           selectionText: "数か月前",
@@ -102,6 +115,12 @@ it("shows the exact captured image and OCR text with image-space polygons", () =
   expect(container.textContent).toContain("Whole-selection retry");
   expect(container.textContent).toContain("tile retry");
   expect(container.textContent).toContain("Tile retry: 2 overlapping crop(s)");
+  expect(container.textContent).toContain(
+    "Text-mask retry: up to 2 tile(s) checked",
+  );
+  expect(container.textContent).toContain(
+    "text-mask retry · recognized · みて",
+  );
   expect(
     container.querySelector(".capture-debug-detector-box.filtered title")
       ?.textContent,

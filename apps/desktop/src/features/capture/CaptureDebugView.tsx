@@ -138,13 +138,19 @@ export function CaptureDebugView({
                     <h2>Detector stage</h2>
                     <p>
                       {response.debug.detections.length} candidate box(es) after
-                      duplicate tile boxes are merged. Empty and filtered
+                      duplicate retry boxes are merged. Empty and filtered
                       recognitions are shown here too.
                     </p>
                     {!!response.debug.tileRetryCount && (
                       <p>
                         Tile retry: {response.debug.tileRetryCount} overlapping
                         crop(s).
+                      </p>
+                    )}
+                    {!!response.debug.maskRetryCount && (
+                      <p>
+                        Text-mask retry: up to {response.debug.maskRetryCount}{" "}
+                        tile(s) checked.
                       </p>
                     )}
                     {response.debug.selectionText && (
@@ -162,7 +168,9 @@ export function CaptureDebugView({
                           <span>
                             {detection.detectionPass === "tile"
                               ? "tile retry"
-                              : "full image"}{" "}
+                              : detection.detectionPass === "mask"
+                                ? "text-mask retry"
+                                : "full image"}{" "}
                             · {detection.status} · {detection.text || "No text"}
                           </span>
                           {detection.filterReason && (

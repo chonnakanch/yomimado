@@ -32,12 +32,13 @@ export interface OcrDebugDetection {
   text: string;
   status: "recognized" | "empty" | "invalid" | "filtered";
   filterReason?: string;
-  detectionPass?: "full" | "tile";
+  detectionPass?: "full" | "tile" | "mask";
 }
 
 export interface OcrDebug {
   detections: OcrDebugDetection[];
   tileRetryCount?: number;
+  maskRetryCount?: number;
   selectionText?: string;
   selectionFallbackUsed: boolean;
 }

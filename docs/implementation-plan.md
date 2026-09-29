@@ -499,11 +499,16 @@ strings with no Japanese script. Capture debug retains those raw boxes, crops,
 recognized strings, and explicit rejection reasons. This is deliberately not
 a confidence filter: Manga OCR does not supply a calibrated confidence score.
 Japanese-looking OCR hallucinations in artwork remain possible.
-Medium and larger captures now also get a bounded overlapping-tile detector
-retry, making small lettering less likely to disappear when the full image is
-scaled down.
-The retry preserves full-image coordinates and labels tile results in capture
-debug. It does not guarantee detection of faint or transparent-bubble text.
+Medium and larger captures now get a bounded overlapping-tile detector retry.
+When the detector's text mask identifies aligned short glyphs that its box
+grouping omits, a text-mask retry offers those local boxes to Manga OCR. This
+does not add a second model inference pass. Recognition uses the original
+pixels, and retry boxes preserve full-image coordinates. Capture debug labels
+tile and text-mask candidates. Transparent-bubble text may still be missed;
+mask candidates are filtered but do not have calibrated confidence.
+The short `みて` text in a user-local transparent-bubble screenshot was
+recovered through this mask path with the installed detector and Manga OCR
+models; that copyrighted screenshot is not part of the repository.
 
 Current manual flow:
 
