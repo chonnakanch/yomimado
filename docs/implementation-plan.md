@@ -258,6 +258,10 @@ Draw OCR regions over the original manga with correct alignment.
 - [ ] Verify alignment across display scaling configurations.
 - [x] Support vertical text regions.
 
+The OCR overlay retrieves its region data from native in-memory state. Only
+the overlay mode is placed in the webview URL, so text-heavy page scans do not
+exceed development-server request-header limits.
+
 ## Coordinate model
 
 ```text

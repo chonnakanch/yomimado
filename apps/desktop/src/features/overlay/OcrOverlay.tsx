@@ -31,6 +31,8 @@ function polygonPoints(
 }
 
 export function OcrOverlay() {
+  const [state, setState] = useState<OverlayState | null>(null);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [activeRegionId, setActiveRegionId] = useState<string | null>(null);
   const [popupError, setPopupError] = useState<string | null>(null);
   const [viewport, setViewport] = useState({
@@ -38,11 +40,16 @@ export function OcrOverlay() {
     height: window.innerHeight,
   });
 
-  const state = JSON.parse(
-    new URLSearchParams(window.location.search).get("state") ?? "null",
-  ) as OverlayState | null;
-
   useEffect(() => {
+    let mounted = true;
+    void invoke<OverlayState>("get_overlay_state")
+      .then((overlayState) => {
+        if (mounted) setState(overlayState);
+      })
+      .catch((error) => {
+        if (mounted)
+          setLoadError(`Could not load OCR overlay: ${String(error)}`);
+      });
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
         void invoke("close_ocr_overlay");
@@ -53,11 +60,13 @@ export function OcrOverlay() {
       setViewport({ width: window.innerWidth, height: window.innerHeight });
     window.addEventListener("resize", handleResize);
     return () => {
+      mounted = false;
       window.removeEventListener("keydown", handleKeyDown);
       window.removeEventListener("resize", handleResize);
     };
   }, []);
 
+  if (loadError) return <div className="overlay-error">{loadError}</div>;
   if (!state) return null;
 
   // Convert the native physical layout into this webview's measured CSS size.

@@ -1,4 +1,5 @@
 use serde::{Deserialize, Serialize};
+use std::sync::Mutex;
 use tauri::{AppHandle, Manager, PhysicalPosition, PhysicalSize, WebviewUrl, WebviewWindowBuilder};
 
 use crate::capture::{CaptureMetadata, Rectangle};
@@ -6,6 +7,30 @@ use crate::capture::{CaptureMetadata, Rectangle};
 const POPUP_LOGICAL_WIDTH: f64 = 460.0;
 const INITIAL_POPUP_LOGICAL_HEIGHT: f64 = 320.0;
 const POPUP_SCREEN_INSET: f64 = 12.0;
+const OVERLAY_URL: &str = "index.html?mode=overlay";
+
+#[derive(Default)]
+pub struct OverlayStore(Mutex<Option<serde_json::Value>>);
+
+impl OverlayStore {
+    fn set(&self, value: serde_json::Value) -> Result<(), String> {
+        *self.0.lock().map_err(|error| error.to_string())? = Some(value);
+        Ok(())
+    }
+
+    pub fn get(&self) -> Result<serde_json::Value, String> {
+        self.0
+            .lock()
+            .map_err(|error| error.to_string())?
+            .clone()
+            .ok_or_else(|| "OCR overlay data is unavailable".into())
+    }
+
+    pub fn clear(&self) -> Result<(), String> {
+        *self.0.lock().map_err(|error| error.to_string())? = None;
+        Ok(())
+    }
+}
 
 #[derive(Serialize)]
 #[serde(rename_all = "camelCase")]
@@ -201,6 +226,7 @@ fn layout(metadata: &CaptureMetadata) -> OverlayLayout {
 
 pub fn show_overlay(
     app: &AppHandle,
+    store: &OverlayStore,
     metadata: &CaptureMetadata,
     regions: serde_json::Value,
     engine: &str,
@@ -213,29 +239,33 @@ pub fn show_overlay(
     }
     let layout = layout(metadata);
     let state = serde_json::json!({ "metadata": metadata, "regions": regions, "engine": engine, "layout": layout });
-    let serialized_state = state.to_string();
-    let encoded = urlencoding::encode(&serialized_state);
-    let window = WebviewWindowBuilder::new(
-        app,
-        "ocr-overlay",
-        WebviewUrl::App(format!("index.html?mode=overlay&state={encoded}").into()),
-    )
-    .transparent(true)
-    .decorations(false)
-    .always_on_top(true)
-    .accept_first_mouse(true)
-    .skip_taskbar(true)
-    .visible(false)
-    .build()
-    .map_err(|error| error.to_string())?;
-    window
-        .set_position(PhysicalPosition::new(layout.window_x, layout.window_y))
-        .map_err(|error| error.to_string())?;
-    window
-        .set_size(PhysicalSize::new(layout.window_width, layout.window_height))
-        .map_err(|error| error.to_string())?;
-    window.show().map_err(|error| error.to_string())?;
-    Ok(())
+    store.set(state)?;
+    let window = WebviewWindowBuilder::new(app, "ocr-overlay", WebviewUrl::App(OVERLAY_URL.into()))
+        .transparent(true)
+        .decorations(false)
+        .always_on_top(true)
+        .accept_first_mouse(true)
+        .skip_taskbar(true)
+        .visible(false)
+        .build()
+        .map_err(|error| {
+            let _ = store.clear();
+            error.to_string()
+        })?;
+    let result = (|| {
+        window
+            .set_position(PhysicalPosition::new(layout.window_x, layout.window_y))
+            .map_err(|error| error.to_string())?;
+        window
+            .set_size(PhysicalSize::new(layout.window_width, layout.window_height))
+            .map_err(|error| error.to_string())?;
+        window.show().map_err(|error| error.to_string())
+    })();
+    if result.is_err() {
+        let _ = window.close();
+        let _ = store.clear();
+    }
+    result
 }
 
 pub fn show_translation_popup(
@@ -322,6 +352,25 @@ pub fn resize_translation_popup(
 mod tests {
     use super::*;
     use crate::capture::Rectangle;
+
+    #[test]
+    fn large_ocr_state_is_kept_out_of_the_webview_url() {
+        let store = OverlayStore::default();
+        let regions: Vec<_> = (0..300)
+            .map(|id| serde_json::json!({ "id": id, "text": "日本語".repeat(100) }))
+            .collect();
+        store
+            .set(serde_json::json!({ "regions": regions }))
+            .unwrap();
+
+        assert_eq!(OVERLAY_URL, "index.html?mode=overlay");
+        assert_eq!(
+            store.get().unwrap()["regions"].as_array().unwrap().len(),
+            300
+        );
+        store.clear().unwrap();
+        assert!(store.get().is_err());
+    }
 
     #[test]
     fn translation_popup_navigation_preserves_new_ocr_text() {

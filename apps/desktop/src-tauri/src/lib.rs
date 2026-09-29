@@ -18,6 +18,7 @@ const SAVED_AREA_SHORTCUT: &str = "CMDORCONTROL+SHIFT+S";
 
 struct AppState {
     capture: Arc<dyn ScreenCapture>,
+    overlay: overlay::OverlayStore,
 }
 
 fn current_display(app: &AppHandle, window_label: &str) -> Result<DisplayInfo, String> {
@@ -117,6 +118,7 @@ fn show_capture_window(app: AppHandle, scan_query: &str) -> Result<(), String> {
     if let Some(window) = app.get_webview_window("ocr-overlay") {
         window.close().map_err(|error| error.to_string())?;
     }
+    app.state::<AppState>().overlay.clear()?;
     if let Some(window) = app.get_webview_window("translation-popup") {
         window.close().map_err(|error| error.to_string())?;
     }
@@ -379,13 +381,19 @@ async fn capture_selection(
 #[tauri::command]
 fn show_ocr_overlay(
     app: AppHandle,
+    state: tauri::State<'_, AppState>,
     metadata: CaptureMetadata,
     regions: serde_json::Value,
     engine: String,
 ) -> Result<(), String> {
-    overlay::show_overlay(&app, &metadata, regions, &engine)?;
+    overlay::show_overlay(&app, &state.overlay, &metadata, regions, &engine)?;
     eprintln!("YomiMado: OCR overlay displayed ({engine})");
     Ok(())
+}
+
+#[tauri::command]
+fn get_overlay_state(state: tauri::State<'_, AppState>) -> Result<serde_json::Value, String> {
+    state.overlay.get()
 }
 
 #[tauri::command]
@@ -409,13 +417,14 @@ fn resize_translation_popup(
 }
 
 #[tauri::command]
-fn close_ocr_overlay(app: AppHandle) -> Result<(), String> {
+fn close_ocr_overlay(app: AppHandle, state: tauri::State<'_, AppState>) -> Result<(), String> {
     if let Some(window) = app.get_webview_window("translation-popup") {
         window.close().map_err(|error| error.to_string())?;
     }
     if let Some(window) = app.get_webview_window("ocr-overlay") {
         window.close().map_err(|error| error.to_string())?;
     }
+    state.overlay.clear()?;
     Ok(())
 }
 
@@ -440,6 +449,7 @@ pub fn run() {
             }
             app.manage(AppState {
                 capture: Arc::new(XcapScreenCapture::new()),
+                overlay: overlay::OverlayStore::default(),
             });
             let manual =
                 Shortcut::try_from(MANUAL_CAPTURE_SHORTCUT).map_err(|error| error.to_string())?;
@@ -472,6 +482,7 @@ pub fn run() {
             capture_display,
             capture_auto_page,
             show_ocr_overlay,
+            get_overlay_state,
             show_translation_popup,
             resize_translation_popup,
             close_ocr_overlay
