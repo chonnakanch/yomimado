@@ -476,15 +476,13 @@ results.
 
 Reduce manual capture work.
 
-Status: a one-shot **Scan manga area** action is available. On first use, the
-reader draws a reusable manga reading area; subsequent scans crop only that
-saved screen area on the same display. **Set/adjust scan area** redraws it,
-and Cmd/Ctrl+Shift+S scans it through a dedicated global shortcut.
-The area is kept in local app webview storage, keyed to the display bounds and
-scale; display-layout changes require a new area. This excludes browser chrome
-when the reader draws around the page, but does not automatically detect manga
-content or prevent false OCR inside the chosen area. This is not continuous
-scanning or automatic manga/panel filtering.
+Status: a one-shot **Scan manga page** action attempts a conservative
+black-and-white page crop beneath darker browser controls before OCR. If the
+image is ambiguous it uses the saved manga area or asks the reader to draw one.
+**Set/adjust scan area** redraws the fallback, and Cmd/Ctrl+Shift+S starts the
+same scan. The saved area is keyed to display bounds and scale. This first-pass
+page detection deliberately declines light-themed or unusual layouts, and it
+does not eliminate false OCR within a page. It is not continuous scanning.
 
 Current manual flow:
 
@@ -504,7 +502,7 @@ OCR all relevant regions
 
 ## Tasks
 
-- [ ] automatic manga-region detection
+- [x] conservative automatic manga-region detection with saved-area fallback
 - [ ] text-region filtering
 - [ ] panel ordering where useful
 - [ ] Japanese reading-order heuristics

@@ -4,8 +4,8 @@ mod overlay;
 use std::sync::Arc;
 
 use capture::{
-    cleanup_legacy_captures, CaptureMetadata, CapturedImage, DisplayInfo, Rectangle, ScreenCapture,
-    ViewportSize, XcapScreenCapture,
+    cleanup_legacy_captures, crop_detected_page, CaptureMetadata, CapturedImage, DisplayInfo,
+    Rectangle, ScreenCapture, ViewportSize, XcapScreenCapture,
 };
 use serde::Serialize;
 use tauri::{AppHandle, Manager, PhysicalPosition, PhysicalSize, WebviewUrl, WebviewWindowBuilder};
@@ -60,8 +60,8 @@ fn show_capture_selector(app: AppHandle) -> Result<(), String> {
 }
 
 #[tauri::command]
-fn show_saved_area_scanner(app: AppHandle) -> Result<(), String> {
-    show_capture_window(app, "scan=area")
+fn show_auto_scanner(app: AppHandle) -> Result<(), String> {
+    show_capture_window(app, "scan=auto")
 }
 
 #[tauri::command]
@@ -228,6 +228,29 @@ async fn capture_display(
         captured.metadata.image_height,
     );
     Ok(captured)
+}
+
+#[tauri::command]
+async fn capture_auto_page(
+    app: AppHandle,
+    state: tauri::State<'_, AppState>,
+) -> Result<Option<CapturedImage>, String> {
+    let captured = capture_display(app, state).await?;
+    let result = tauri::async_runtime::spawn_blocking(move || crop_detected_page(captured))
+        .await
+        .map_err(|error| error.to_string())?
+        .map_err(|error| error.to_string())?;
+    if let Some(ref page) = result {
+        eprintln!(
+            "YomiMado: automatic manga page physical={:?} image={}x{}",
+            page.metadata.selection_physical_bounds,
+            page.metadata.image_width,
+            page.metadata.image_height,
+        );
+    } else {
+        eprintln!("YomiMado: manga page uncertain; use saved area fallback");
+    }
+    Ok(result)
 }
 
 fn display_capture_selection(display: &mut DisplayInfo) -> Result<Rectangle, String> {
@@ -432,7 +455,7 @@ pub fn run() {
             app.global_shortcut()
                 .on_shortcut(saved_area, |app, _, event| {
                     if event.state() == ShortcutState::Pressed {
-                        if let Err(error) = show_saved_area_scanner(app.clone()) {
+                        if let Err(error) = show_auto_scanner(app.clone()) {
                             eprintln!("YomiMado: {error}");
                         }
                     }
@@ -441,12 +464,13 @@ pub fn run() {
         })
         .invoke_handler(tauri::generate_handler![
             show_capture_selector,
-            show_saved_area_scanner,
+            show_auto_scanner,
             show_scan_area_selector,
             get_capture_surface,
             cancel_capture_selector,
             capture_selection,
             capture_display,
+            capture_auto_page,
             show_ocr_overlay,
             show_translation_popup,
             resize_translation_popup,

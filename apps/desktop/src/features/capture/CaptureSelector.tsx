@@ -26,11 +26,14 @@ const debugCaptureEnabled = import.meta.env.VITE_CAPTURE_DEBUG === "1";
 
 export function CaptureSelector() {
   const scanMode = new URLSearchParams(window.location.search).get("scan");
-  const scanArea = scanMode === "area" || scanMode === "configure";
+  const scanArea = scanMode === "auto" || scanMode === "configure";
   const [start, setStart] = useState<Point | null>(null);
   const [end, setEnd] = useState<Point | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [needsArea, setNeedsArea] = useState(scanMode === "configure");
+  const [scanSource, setScanSource] = useState<
+    "automatic" | "saved" | "manual"
+  >("manual");
   const [debugCapture, setDebugCapture] = useState<{
     captured: CaptureResult;
     response: OcrResponse | null;
@@ -54,10 +57,18 @@ export function CaptureSelector() {
   }, []);
 
   useEffect(() => {
-    if (scanMode !== "area" || scanChecked.current) return;
+    if (scanMode !== "auto" || scanChecked.current) return;
     scanChecked.current = true;
     void (async () => {
-      try {
+      captureStarted.current = true;
+      await captureAndRecognize(async () => {
+        const automatic = await invoke<CaptureResult | null>(
+          "capture_auto_page",
+        );
+        if (automatic) {
+          setScanSource("automatic");
+          return automatic;
+        }
         const surface = await invoke<CaptureSurface>("get_capture_surface");
         const viewport = {
           width: document.documentElement.clientWidth,
@@ -66,17 +77,19 @@ export function CaptureSelector() {
         const area = loadScanArea(surface);
         const selection = area && physicalToSelection(area, viewport, surface);
         if (!selection) {
+          setError(
+            "Automatic page detection was uncertain. Drag around the manga area to save it for future scans.",
+          );
           setNeedsArea(true);
-          return;
+          return null;
         }
-        captureStarted.current = true;
-        await captureAndRecognize(() =>
-          invoke<CaptureResult>("capture_selection", { selection, viewport }),
-        );
-      } catch (scanError) {
-        setError(`Unable to load scan area: ${String(scanError)}`);
-        setNeedsArea(true);
-      }
+        setScanSource("saved");
+        return invoke<CaptureResult>("capture_selection", {
+          selection,
+          viewport,
+        });
+      });
+      captureStarted.current = false;
     })();
   }, []);
 
@@ -100,7 +113,9 @@ export function CaptureSelector() {
     await getCurrentWindow().close();
   };
 
-  const captureAndRecognize = async (capture: () => Promise<CaptureResult>) => {
+  const captureAndRecognize = async (
+    capture: () => Promise<CaptureResult | null>,
+  ) => {
     document.documentElement.dataset.capturing = "true";
     try {
       // Let the transparent selector repaint before xcap takes its screenshot.
@@ -108,6 +123,10 @@ export function CaptureSelector() {
         requestAnimationFrame(() => requestAnimationFrame(() => resolve())),
       );
       const captured = await capture();
+      if (!captured) {
+        document.documentElement.dataset.capturing = "false";
+        return;
+      }
       if (debugCaptureEnabled) {
         setDebugCapture({ captured, response: null, error: null });
         document.documentElement.dataset.capturing = "false";
@@ -124,14 +143,16 @@ export function CaptureSelector() {
         );
       } else if (response.regions.length === 0) {
         document.documentElement.dataset.capturing = "false";
+        if (scanMode === "auto") setNeedsArea(true);
         setError(
-          `No text was detected in this ${scanArea ? "scan area" : "selection"}. Press Escape to close.`,
+          `No text was detected in this ${scanArea ? "scan area" : "selection"}. ${scanMode === "auto" ? "Drag a reading area to retry, or press Escape to close." : "Press Escape to close."}`,
         );
       } else {
         await showOverlay(captured, response);
       }
     } catch (captureError) {
       document.documentElement.dataset.capturing = "false";
+      if (scanMode === "auto") setNeedsArea(true);
       const message = `Capture or OCR failed: ${String(captureError)}`;
       setDebugCapture((current) =>
         current ? { ...current, error: message } : null,
@@ -144,6 +165,7 @@ export function CaptureSelector() {
     if (!start || captureStarted.current) return;
     const selection = normalizeRectangle(start, point(event));
     if (selection.width < 4 || selection.height < 4) return;
+    setError(null);
     captureStarted.current = true;
     const viewport = {
       width: event.currentTarget.clientWidth,
@@ -161,6 +183,7 @@ export function CaptureSelector() {
           return;
         }
         saveScanArea(surface, physical);
+        setScanSource("saved");
       } catch (saveError) {
         setError(`Unable to save scan area: ${String(saveError)}`);
         captureStarted.current = false;
@@ -178,6 +201,7 @@ export function CaptureSelector() {
       <CaptureDebugView
         imageDataUrl={debugCapture.captured.imageDataUrl}
         metadata={debugCapture.captured.metadata}
+        scanSource={scanSource}
         response={debugCapture.response}
         error={debugCapture.error}
         onContinue={() => {
@@ -203,7 +227,7 @@ export function CaptureSelector() {
     <div
       className="capture-selector"
       onPointerDown={
-        scanMode === "area" && !needsArea
+        scanMode === "auto" && !needsArea
           ? undefined
           : (event) => {
               event.currentTarget.setPointerCapture(event.pointerId);
@@ -213,19 +237,19 @@ export function CaptureSelector() {
             }
       }
       onPointerMove={
-        scanMode === "area" && !needsArea
+        scanMode === "auto" && !needsArea
           ? undefined
           : (event) => start && setEnd(point(event))
       }
       onPointerUp={
-        scanMode === "area" && !needsArea
+        scanMode === "auto" && !needsArea
           ? undefined
           : (event) => void finish(event)
       }
     >
       <p>
-        {scanMode === "area" && !needsArea
-          ? "Scanning saved area… Press Escape to cancel."
+        {scanMode === "auto" && !needsArea
+          ? "Finding the manga page… Press Escape to cancel."
           : scanArea
             ? "Drag around the manga reading area. It will be reused on future scans. Press Escape to cancel."
             : "Drag to capture a region. Press Escape to cancel."}

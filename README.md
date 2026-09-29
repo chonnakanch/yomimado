@@ -10,8 +10,8 @@ The initial capture-to-overlay slice is implemented:
 
 1. Press `Cmd+Shift+O` on macOS or `Ctrl+Shift+O` on Windows (or use **Select
    screen region** in the main window). For repeated manga scans, click
-   **Scan manga area**. On first use, draw the reading area once; later scans
-   reuse it without another drag.
+   **Scan manga page**. It tries a conservative automatic crop; if the page
+   is uncertain, draw a reusable reading area once as the fallback.
 2. For a selected-region capture, drag a rectangle on the current display.
 3. The Rust capture layer returns an in-memory PNG crop and scaling metadata.
 4. The app calls the local OCR service and shows its geometry in a transparent
@@ -33,15 +33,18 @@ The initial capture-to-overlay slice is implemented:
    YomiMado window to review or remove it. Saving is explicit; OCR does not
    automatically add words to your history.
 
-**Scan manga area** captures only the saved screen rectangle, runs the same
-local OCR pipeline, and overlays its returned text regions. Use **Set/adjust
-scan area** when the browser moves or resizes. The area is saved locally for
-that display layout; a display resolution or scaling change asks you to draw
-it again. Press `Cmd+Shift+S` on macOS or `Ctrl+Shift+S` on Windows to scan
-that saved area without opening the main window. It does not follow a moving
-browser window, watch for screen changes, or translate text automatically.
-Close the overlay before changing pages, then scan again. The saved-area mode
-is not yet manually verified on Windows or multi-monitor setups.
+**Scan manga page** captures the current display, looks for a large
+black-and-white manga page below darker browser controls, and sends only that
+crop to OCR. If the page boundary is uncertain, it uses the saved manga area;
+if there is none, it asks you to draw one. Use **Set/adjust scan area** if the
+fallback area no longer matches the browser position. It is saved locally for
+that display layout. Press `Cmd+Shift+S` on macOS or `Ctrl+Shift+S` on Windows
+to start the same one-shot scan without opening the main window. Detection is
+conservative: light-themed readers, dark or colored pages, and unusual layouts
+may need the saved area. The app does not watch for screen changes or translate
+text automatically. Close the overlay before changing pages, then scan again.
+Automatic scanning is not yet manually verified on Windows or multi-monitor
+setups.
 
 ## Development
 

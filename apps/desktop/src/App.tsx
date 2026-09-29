@@ -23,12 +23,12 @@ export function App() {
     }
   };
 
-  const scanSavedArea = async () => {
+  const scanMangaPage = async () => {
     try {
-      await invoke("show_saved_area_scanner");
-      setMessage("Scanning the saved manga area on this display.");
+      await invoke("show_auto_scanner");
+      setMessage("Finding the manga page; saved area is the fallback.");
     } catch (error) {
-      setMessage(`Unable to scan the manga area: ${String(error)}`);
+      setMessage(`Unable to scan the manga page: ${String(error)}`);
     }
   };
 
@@ -78,7 +78,7 @@ export function App() {
       <p>Read beyond the page.</p>
       <div className="main-actions">
         <button onClick={startCapture}>Select screen region</button>
-        <button onClick={scanSavedArea}>Scan manga area</button>
+        <button onClick={scanMangaPage}>Scan manga page</button>
         <button className="secondary-button" onClick={adjustScanArea}>
           Set/adjust scan area
         </button>
@@ -94,7 +94,7 @@ export function App() {
       <p className="status">{message}</p>
       <p className="hint">
         Shortcuts: Cmd/Ctrl + Shift + O for manual selection; Cmd/Ctrl + Shift +
-        S for the saved manga area.
+        S to scan the manga page.
       </p>
       {showSavedWords && (
         <section className="saved-words" aria-label="Saved words">

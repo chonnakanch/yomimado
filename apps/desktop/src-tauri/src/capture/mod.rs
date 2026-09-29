@@ -1,10 +1,12 @@
 mod legacy_cache;
+mod page_detection;
 mod xcap_capture;
 
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
 
 pub use legacy_cache::cleanup_legacy_captures;
+pub use page_detection::crop_detected_page;
 pub use xcap_capture::XcapScreenCapture;
 
 #[derive(Debug, Clone, Copy, Deserialize, Serialize)]

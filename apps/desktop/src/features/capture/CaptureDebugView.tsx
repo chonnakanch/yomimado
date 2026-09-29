@@ -8,6 +8,7 @@ function polygonPoints(points: Point[]): string {
 interface CaptureDebugViewProps {
   imageDataUrl: string;
   metadata: CaptureMetadata;
+  scanSource?: "automatic" | "saved" | "manual";
   response: OcrResponse | null;
   error: string | null;
   onContinue: () => void;
@@ -17,6 +18,7 @@ interface CaptureDebugViewProps {
 export function CaptureDebugView({
   imageDataUrl,
   metadata,
+  scanSource,
   response,
   error,
   onContinue,
@@ -91,6 +93,10 @@ export function CaptureDebugView({
               display scale
             </p>
             <p>Capture held in memory; no PNG saved to disk.</p>
+            {scanSource === "automatic" && (
+              <p>Automatic manga-page crop used.</p>
+            )}
+            {scanSource === "saved" && <p>Saved manga-area fallback used.</p>}
             {error && <p className="capture-debug-error">{error}</p>}
             {!response && !error && <p>Recognizing text…</p>}
             {response && (

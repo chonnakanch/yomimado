@@ -24,16 +24,16 @@ afterEach(async () => {
   vi.mocked(invoke).mockReset();
 });
 
-it("starts a one-shot saved-area scan from the main window", async () => {
+it("starts a one-shot automatic scan from the main window", async () => {
   vi.mocked(invoke).mockResolvedValue(undefined);
   await act(async () => root.render(<App />));
   await act(async () => {
     Array.from(container.querySelectorAll("button"))
-      .find((button) => button.textContent === "Scan manga area")!
+      .find((button) => button.textContent === "Scan manga page")!
       .click();
   });
-  expect(invoke).toHaveBeenCalledExactlyOnceWith("show_saved_area_scanner");
-  expect(container.textContent).toContain("Scanning the saved manga area");
+  expect(invoke).toHaveBeenCalledExactlyOnceWith("show_auto_scanner");
+  expect(container.textContent).toContain("Finding the manga page");
 });
 
 it("opens the scan-area adjustment selector", async () => {
