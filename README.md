@@ -44,6 +44,8 @@ conservative: light-themed readers, dark or colored pages, and unusual layouts
 may need the saved area. On dark sites, sparse white sidebar text and thumbnails
 are excluded from the page crop when a distinct manga image is found; if two
 page-like areas are similarly sized, the app uses the saved area instead. The
+crop also excludes a short dark site toolbar beneath a clear light page edge.
+Ambiguous dark page content is kept rather than cut off. The
 app does not watch for screen changes or translate text automatically. Close
 the overlay before changing pages, then scan again.
 Automatic scanning is not yet manually verified on Windows or multi-monitor

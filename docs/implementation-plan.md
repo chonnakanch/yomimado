@@ -489,6 +489,9 @@ and thumbnails in a dark website sidebar; similarly sized competing spans
 still fall back to the saved area. The page evidence threshold accepts fine
 line art with relatively little solid-black ink, as verified against local
 Comipo and X screenshots without adding those images to the repository.
+When a clear light page edge is followed by a short dark site toolbar at the
+bottom of the capture, the crop stops before that toolbar; ambiguous dark
+content remains included to avoid cutting off a manga panel.
 **Set/adjust scan area** redraws the fallback, and Cmd/Ctrl+Shift+S starts the
 same scan. The saved area is keyed to display bounds and scale. This first-pass
 page detection deliberately declines light-themed or unusual layouts, and it

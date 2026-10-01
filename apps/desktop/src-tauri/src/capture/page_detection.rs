@@ -21,6 +21,81 @@ fn ink(pixel: &image::Rgba<u8>) -> bool {
     r <= 90 && g <= 90 && b <= 90
 }
 
+fn trailing_dark_toolbar_start(
+    sample: &RgbaImage,
+    left: u32,
+    right: u32,
+    page_top: u32,
+) -> Option<u32> {
+    let sample_height = sample.height();
+    let span_width = usize::try_from(right - left + 1).ok()?;
+    let row_counts = |y| {
+        (left..=right).fold((0usize, 0usize), |(white, dark), x| {
+            let pixel = sample.get_pixel(x, y);
+            (
+                white + usize::from(paper(pixel)),
+                dark + usize::from(ink(pixel)),
+            )
+        })
+    };
+    let mut start = sample_height;
+    while start > page_top {
+        let (white, dark) = row_counts(start - 1);
+        if white * 100 > span_width * 8 || dark * 100 < span_width * 70 {
+            break;
+        }
+        start -= 1;
+    }
+    let band_height = sample_height - start;
+    let body_height = sample_height - page_top;
+    if band_height < (sample_height / 48).max(3)
+        || band_height > (sample_height / 9).max(4)
+        || start < page_top + body_height / 2
+    {
+        return None;
+    }
+    // A page edge is a sharp transition from light paper to a persistent dark
+    // strip. A dark final manga panel should not be cropped on this evidence.
+    let has_light_edge = start.saturating_sub(2)..start;
+    has_light_edge
+        .filter(|&y| y >= page_top)
+        .any(|y| row_counts(y).0 * 100 >= span_width * 35)
+        .then_some(start)
+}
+
+fn has_scattered_toolbar_marks(
+    image: &RgbaImage,
+    sample: &RgbaImage,
+    left: u32,
+    right: u32,
+    band_start: u32,
+) -> bool {
+    // Text and icons disappear in the small page-detection sample. Check the
+    // original pixels for several separated light marks in the dark strip;
+    // an unmarked black manga panel is not enough evidence to trim it.
+    let x1 = left * image.width() / sample.width();
+    let x2 = ((right + 1) * image.width()).div_ceil(sample.width());
+    let y1 = band_start * image.height() / sample.height();
+    let band_width = x2.saturating_sub(x1);
+    if band_width < 4 || y1 >= image.height() {
+        return false;
+    }
+    let mut bright = [0usize; 4];
+    let mut total = [0usize; 4];
+    for y in y1..image.height() {
+        for x in x1..x2.min(image.width()) {
+            let bin = (((x - x1) * 4 / band_width).min(3)) as usize;
+            total[bin] += 1;
+            let [r, g, b, _] = image.get_pixel(x, y).0;
+            bright[bin] += usize::from(r >= 160 && g >= 160 && b >= 160);
+        }
+    }
+    (0..4)
+        .filter(|&bin| total[bin] > 0 && bright[bin] * 200 >= total[bin])
+        .count()
+        >= 3
+}
+
 /// A deliberately conservative first pass for black-and-white manga pages.
 /// Ambiguous or light-themed layouts return None so the saved area can be used.
 fn detect_page_bounds(image: &RgbaImage) -> Option<PixelBounds> {
@@ -105,6 +180,9 @@ fn detect_page_bounds(image: &RgbaImage) -> Option<PixelBounds> {
         return None;
     }
 
+    let sample_bottom = trailing_dark_toolbar_start(&sample, left, right, sample_top)
+        .filter(|&start| has_scattered_toolbar_marks(image, &sample, left, right, start))
+        .unwrap_or(sample_height);
     let pad_x = (sample_width / 50).max(2);
     let sample_left = left.saturating_sub(pad_x);
     let sample_right = (right + pad_x + 1).min(sample_width);
@@ -112,11 +190,13 @@ fn detect_page_bounds(image: &RgbaImage) -> Option<PixelBounds> {
     let y = (f64::from(sample_top) * f64::from(height) / f64::from(sample_height)).floor() as u32;
     let right =
         (f64::from(sample_right) * f64::from(width) / f64::from(sample_width)).ceil() as u32;
+    let bottom =
+        (f64::from(sample_bottom) * f64::from(height) / f64::from(sample_height)).ceil() as u32;
     Some(PixelBounds {
         x,
         y,
         width: right.min(width) - x,
-        height: height - y,
+        height: bottom.min(height) - y,
     })
 }
 
@@ -210,6 +290,53 @@ mod tests {
         assert!(bounds.x <= 100 && bounds.x + bounds.width >= 900);
         assert!(bounds.y >= 60 && bounds.y <= 110);
         assert_eq!(bounds.height + bounds.y, 600);
+    }
+
+    #[test]
+    fn stops_before_a_short_dark_site_toolbar_below_the_page() {
+        let mut screen = comic_screen();
+        for y in 540..600 {
+            for x in 100..900 {
+                screen.put_pixel(x, y, Rgba([10, 10, 10, 255]));
+            }
+        }
+        // Sparse white engagement icons and counts should not make the strip
+        // look like another manga panel.
+        for x in [200, 400, 600, 800] {
+            for y in 555..570 {
+                for offset in 0..10 {
+                    screen.put_pixel(x + offset, y, Rgba([245, 245, 245, 255]));
+                }
+            }
+        }
+
+        let bounds = detect_page_bounds(&screen).unwrap();
+        assert!(bounds.y + bounds.height >= 530);
+        assert!(bounds.y + bounds.height <= 545);
+    }
+
+    #[test]
+    fn keeps_a_short_dark_final_panel_without_toolbar_marks() {
+        let mut screen = comic_screen();
+        for y in 540..600 {
+            for x in 100..900 {
+                screen.put_pixel(x, y, Rgba([10, 10, 10, 255]));
+            }
+        }
+        let bounds = detect_page_bounds(&screen).unwrap();
+        assert_eq!(bounds.y + bounds.height, 600);
+    }
+
+    #[test]
+    fn keeps_a_tall_dark_final_manga_panel() {
+        let mut screen = comic_screen();
+        for y in 400..600 {
+            for x in 100..900 {
+                screen.put_pixel(x, y, Rgba([10, 10, 10, 255]));
+            }
+        }
+        let bounds = detect_page_bounds(&screen).unwrap();
+        assert_eq!(bounds.y + bounds.height, 600);
     }
 
     #[test]
