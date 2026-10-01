@@ -5,6 +5,10 @@ import {
   listVocabularyWords,
   type SavedWord,
 } from "./lib/vocabulary-client";
+import {
+  readReadingOrderEnabled,
+  saveReadingOrderEnabled,
+} from "./lib/reading-order-setting";
 
 export function App() {
   const [message, setMessage] = useState("Ready to capture a screen region.");
@@ -13,6 +17,18 @@ export function App() {
   const [savedWordsLoading, setSavedWordsLoading] = useState(false);
   const [savedWordsError, setSavedWordsError] = useState<string | null>(null);
   const [removingWordId, setRemovingWordId] = useState<number | null>(null);
+  const [readingOrderEnabled, setReadingOrderEnabled] = useState(
+    readReadingOrderEnabled,
+  );
+
+  const updateReadingOrder = (enabled: boolean) => {
+    try {
+      saveReadingOrderEnabled(enabled);
+      setReadingOrderEnabled(enabled);
+    } catch (error) {
+      setMessage(`Unable to save reading-order setting: ${String(error)}`);
+    }
+  };
 
   const startCapture = async () => {
     try {
@@ -96,6 +112,22 @@ export function App() {
         Shortcuts: Cmd/Ctrl + Shift + O for manual selection; Cmd/Ctrl + Shift +
         S to scan the manga page.
       </p>
+      <section className="main-settings" aria-label="Reading settings">
+        <h2>Reading settings</h2>
+        <label className="setting-option">
+          <input
+            type="checkbox"
+            checked={readingOrderEnabled}
+            onChange={(event) =>
+              updateReadingOrder(event.currentTarget.checked)
+            }
+          />
+          <span>
+            <strong>Reading-order controls</strong>
+            <small>Show navigation on page scans. Off by default.</small>
+          </span>
+        </label>
+      </section>
       {showSavedWords && (
         <section className="saved-words" aria-label="Saved words">
           <div className="saved-words-heading">

@@ -48,9 +48,11 @@ crop also excludes a short dark site toolbar beneath a clear light page edge.
 Ambiguous dark page content is kept rather than cut off. The
 app does not watch for screen changes or translate text automatically. Close
 the overlay before changing pages, then scan again.
-For page scans, the overlay keeps reading order collapsed by default. Choose
-**Reading order** to show Previous/Next controls and the selected text below
-them; **Open** shows its learning popup. Hide the controls with the same button.
+Reading-order controls are off by default. Enable **Reading-order controls** in
+the main YomiMado window's Reading settings to show a fixed Previous/Next row
+with the selected text below it on page scans; **Open** shows its learning
+popup. There is no Reading order button on the manga overlay. The setting is
+saved locally and applies to new scans.
 This order uses text positions, not panel detection, so you can always click a
 region directly if the suggested order is wrong.
 Automatic scanning is not yet manually verified on Windows or multi-monitor

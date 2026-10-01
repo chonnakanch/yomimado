@@ -3,6 +3,10 @@ import { invoke } from "@tauri-apps/api/core";
 import type { CaptureMetadata } from "../../lib/coordinates";
 import { ocrPolygonToOverlay } from "../../lib/coordinates";
 import type { TextRegion } from "../../lib/ocr-types";
+import {
+  readReadingOrderEnabled,
+  readingOrderSettingKey,
+} from "../../lib/reading-order-setting";
 
 interface OverlayState {
   metadata: CaptureMetadata;
@@ -35,12 +39,27 @@ export function OcrOverlay() {
   const [state, setState] = useState<OverlayState | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [activeRegionId, setActiveRegionId] = useState<string | null>(null);
-  const [readingOrderOpen, setReadingOrderOpen] = useState(false);
+  const [readingOrderEnabled, setReadingOrderEnabled] = useState(
+    readReadingOrderEnabled,
+  );
   const [popupError, setPopupError] = useState<string | null>(null);
   const [viewport, setViewport] = useState({
     width: window.innerWidth,
     height: window.innerHeight,
   });
+
+  useEffect(() => {
+    const handleSettingChange = (event: StorageEvent) => {
+      if (event.key !== null && event.key !== readingOrderSettingKey) return;
+      const enabled = readReadingOrderEnabled();
+      setReadingOrderEnabled(enabled);
+      if (!enabled) {
+        setActiveRegionId(null);
+      }
+    };
+    window.addEventListener("storage", handleSettingChange);
+    return () => window.removeEventListener("storage", handleSettingChange);
+  }, []);
 
   useEffect(() => {
     let mounted = true;
@@ -80,8 +99,13 @@ export function OcrOverlay() {
     (viewport.height * state.metadata.scaleFactor) / state.layout.windowHeight;
   const contentWidth = state.layout.contentWidth * scaleX;
   const contentHeight = state.layout.contentHeight * scaleY;
+  const selectedRegionId =
+    activeRegionId ??
+    (state.estimatedReadingOrder && readingOrderEnabled
+      ? state.regions[0]?.id
+      : null);
   const selectedRegionIndex = state.regions.findIndex(
-    (region) => region.id === activeRegionId,
+    (region) => region.id === selectedRegionId,
   );
   const activeRegionIndex = Math.max(0, selectedRegionIndex);
 
@@ -90,16 +114,6 @@ export function OcrOverlay() {
     if (!count) return;
     const nextIndex = (activeRegionIndex + direction + count) % count;
     setActiveRegionId(state.regions[nextIndex].id);
-  };
-
-  const toggleReadingOrder = () => {
-    if (readingOrderOpen) {
-      setReadingOrderOpen(false);
-      setActiveRegionId(null);
-    } else {
-      setActiveRegionId(state.regions[activeRegionIndex].id);
-      setReadingOrderOpen(true);
-    }
   };
 
   const handleRegionClick = async (region: TextRegion) => {
@@ -135,55 +149,43 @@ export function OcrOverlay() {
         {state.regions.some((region) => region.needsReview) && (
           <span className="demo-label">Dashed gold: check OCR text</span>
         )}
-        {state.estimatedReadingOrder && state.regions.length > 0 && (
-          <>
-            <button
-              className="overlay-reading-order-toggle"
-              aria-label="Toggle reading order"
-              aria-expanded={readingOrderOpen}
-              aria-controls="overlay-reading-order-panel"
-              onClick={toggleReadingOrder}
+        {state.estimatedReadingOrder &&
+          readingOrderEnabled &&
+          state.regions.length > 0 && (
+            <div
+              className="overlay-reading-order-panel"
+              aria-label="Estimated manga reading order"
             >
-              Reading order
-            </button>
-            {readingOrderOpen && (
-              <div
-                className="overlay-reading-order-panel"
-                id="overlay-reading-order-panel"
-                aria-label="Estimated manga reading order"
-              >
-                <div className="overlay-reading-order-nav">
-                  <button
-                    aria-label="Previous text region"
-                    onClick={() => moveReadingOrder(-1)}
-                  >
-                    ‹
-                  </button>
-                  <span className="overlay-reading-order-count">
-                    {activeRegionIndex + 1}/{state.regions.length}
-                  </span>
-                  <button
-                    aria-label="Next text region"
-                    onClick={() => moveReadingOrder(1)}
-                  >
-                    ›
-                  </button>
-                  <button
-                    aria-label="Open selected text region"
-                    onClick={() =>
-                      void handleRegionClick(state.regions[activeRegionIndex])
-                    }
-                  >
-                    Open
-                  </button>
-                </div>
-                <p className="overlay-reading-order-text" aria-live="polite">
-                  {state.regions[activeRegionIndex]?.text}
-                </p>
+              <div className="overlay-reading-order-nav">
+                <button
+                  aria-label="Previous text region"
+                  onClick={() => moveReadingOrder(-1)}
+                >
+                  ‹
+                </button>
+                <span className="overlay-reading-order-count">
+                  {activeRegionIndex + 1}/{state.regions.length}
+                </span>
+                <button
+                  aria-label="Next text region"
+                  onClick={() => moveReadingOrder(1)}
+                >
+                  ›
+                </button>
+                <button
+                  aria-label="Open selected text region"
+                  onClick={() =>
+                    void handleRegionClick(state.regions[activeRegionIndex])
+                  }
+                >
+                  Open
+                </button>
               </div>
-            )}
-          </>
-        )}
+              <p className="overlay-reading-order-text" aria-live="polite">
+                {state.regions[activeRegionIndex]?.text}
+              </p>
+            </div>
+          )}
         <button
           className="close-overlay"
           onClick={() => void invoke("close_ocr_overlay")}
@@ -205,7 +207,7 @@ export function OcrOverlay() {
       >
         {state.regions.map((region, index) => (
           <polygon
-            className={`ocr-region${state.engine === "demo" ? " demo" : ""}${region.geometrySource ? " approximate" : ""}${region.needsReview ? " needs-review" : ""}${activeRegionId === region.id ? " active" : ""}`}
+            className={`ocr-region${state.engine === "demo" ? " demo" : ""}${region.geometrySource ? " approximate" : ""}${region.needsReview ? " needs-review" : ""}${selectedRegionId === region.id ? " active" : ""}`}
             key={region.id}
             points={polygonPoints(region, state.metadata, {
               width: contentWidth,
@@ -213,7 +215,7 @@ export function OcrOverlay() {
             })}
             onClick={() => void handleRegionClick(region)}
           >
-            <title>{`${state.estimatedReadingOrder ? `${index + 1}. ` : ""}${region.text} (${region.orientation}${region.geometrySource ? ", approximate area" : ""}${region.needsReview ? ", review suggested" : ""})${region.reviewReason ? ` — ${region.reviewReason}` : ""}`}</title>
+            <title>{`${state.estimatedReadingOrder && readingOrderEnabled ? `${index + 1}. ` : ""}${region.text} (${region.orientation}${region.geometrySource ? ", approximate area" : ""}${region.needsReview ? ", review suggested" : ""})${region.reviewReason ? ` — ${region.reviewReason}` : ""}`}</title>
           </polygon>
         ))}
       </svg>

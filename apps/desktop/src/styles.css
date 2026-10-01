@@ -113,6 +113,29 @@ h1 span {
   color: #9f958e;
   font-size: 0.875rem;
 }
+.main-settings {
+  border-top: 1px solid #5c5048;
+  margin-top: 1.5rem;
+  padding-top: 0.75rem;
+}
+.main-settings h2 {
+  font-size: 1rem;
+  margin: 0 0 0.6rem;
+}
+.setting-option {
+  align-items: flex-start;
+  display: flex;
+  gap: 0.65rem;
+}
+.setting-option input {
+  accent-color: #df8259;
+  margin-top: 0.2rem;
+}
+.setting-option small {
+  color: #c6bcb5;
+  display: block;
+  margin-top: 0.2rem;
+}
 .capture-selector {
   background: rgb(20 15 12 / 0.2);
   box-sizing: border-box;
@@ -378,19 +401,6 @@ h1 span {
   pointer-events: none;
   text-overflow: ellipsis;
   white-space: nowrap;
-}
-.overlay-reading-order-toggle {
-  background: rgb(37 33 30 / 0.94);
-  color: #f8f6f1;
-  font-size: 0.75rem;
-  height: 26px;
-  margin-left: 0.25rem;
-  padding: 0 0.5rem;
-  pointer-events: all;
-}
-.overlay-reading-order-toggle[aria-expanded="true"] {
-  background: #df8259;
-  color: #201512;
 }
 .overlay-reading-order-panel {
   background: rgb(37 33 30 / 0.96);

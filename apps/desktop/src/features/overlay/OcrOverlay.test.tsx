@@ -3,6 +3,10 @@ import { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { invoke } from "@tauri-apps/api/core";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
+import {
+  readingOrderSettingKey,
+  saveReadingOrderEnabled,
+} from "../../lib/reading-order-setting";
 import { OcrOverlay } from "./OcrOverlay";
 
 vi.mock("@tauri-apps/api/core", () => ({ invoke: vi.fn() }));
@@ -12,6 +16,7 @@ let root: Root;
 
 beforeEach(() => {
   Object.assign(globalThis, { IS_REACT_ACT_ENVIRONMENT: true });
+  window.localStorage.clear();
   window.history.replaceState({}, "", "/index.html?mode=overlay");
   container = document.createElement("div");
   document.body.appendChild(container);
@@ -91,7 +96,7 @@ it("loads a text-heavy OCR result from native state instead of the URL", async (
   );
   expect(container.textContent).toContain("Dashed gold: check OCR text");
   expect(container.textContent).toContain("Approximate OCR area");
-  expect(container.querySelector(".overlay-reading-order")).toBeNull();
+  expect(container.querySelector(".overlay-reading-order-panel")).toBeNull();
   expect(
     container.querySelectorAll("polygon.ocr-region.approximate"),
   ).toHaveLength(1);
@@ -149,15 +154,18 @@ it("steps through estimated scan order and opens the selected region", async () 
   });
 
   await act(async () => root.render(<OcrOverlay />));
-  const toggle = container.querySelector<HTMLButtonElement>(
-    'button[aria-label="Toggle reading order"]',
-  );
-  expect(toggle?.getAttribute("aria-expanded")).toBe("false");
   expect(container.querySelector(".overlay-reading-order-panel")).toBeNull();
   expect(container.querySelector("polygon.ocr-region.active")).toBeNull();
 
-  await act(async () => toggle?.click());
-  expect(toggle?.getAttribute("aria-expanded")).toBe("true");
+  await act(async () => {
+    saveReadingOrderEnabled(true);
+    window.dispatchEvent(
+      new StorageEvent("storage", { key: readingOrderSettingKey }),
+    );
+  });
+  expect(
+    container.querySelector(".overlay-reading-order-panel"),
+  ).not.toBeNull();
   expect(
     container.querySelector(".overlay-reading-order-count")?.textContent,
   ).toBe("1/2");
@@ -197,8 +205,12 @@ it("steps through estimated scan order and opens the selected region", async () 
     expect.objectContaining({ text: "これは長い文章ですがボタンは動きません" }),
   );
 
-  await act(async () => toggle?.click());
-  expect(toggle?.getAttribute("aria-expanded")).toBe("false");
+  await act(async () => {
+    saveReadingOrderEnabled(false);
+    window.dispatchEvent(
+      new StorageEvent("storage", { key: readingOrderSettingKey }),
+    );
+  });
   expect(container.querySelector(".overlay-reading-order-panel")).toBeNull();
   expect(container.querySelector("polygon.ocr-region.active")).toBeNull();
 });

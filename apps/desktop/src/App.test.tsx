@@ -12,9 +12,32 @@ let root: Root;
 
 beforeEach(() => {
   Object.assign(globalThis, { IS_REACT_ACT_ENVIRONMENT: true });
+  window.localStorage.clear();
   container = document.createElement("div");
   document.body.appendChild(container);
   root = createRoot(container);
+});
+
+it("keeps reading-order controls disabled until enabled in settings", async () => {
+  await act(async () => root.render(<App />));
+  const setting = container.querySelector<HTMLInputElement>(
+    'input[type="checkbox"]',
+  )!;
+  expect(setting.checked).toBe(false);
+
+  await act(async () => setting.click());
+  expect(setting.checked).toBe(true);
+  expect(window.localStorage.getItem("yomimado.reading-order.enabled.v1")).toBe(
+    "true",
+  );
+
+  await act(async () => root.unmount());
+  root = createRoot(container);
+  await act(async () => root.render(<App />));
+  expect(
+    container.querySelector<HTMLInputElement>('input[type="checkbox"]')
+      ?.checked,
+  ).toBe(true);
 });
 
 afterEach(async () => {
