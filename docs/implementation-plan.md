@@ -515,6 +515,9 @@ why each candidate was kept or filtered. This is an evidence label, not a
 calibrated confidence score; stronger artwork-versus-text discrimination still
 needs more representative local validation before it can safely reject
 Japanese-looking candidates.
+The text-mask fallback also accepts aligned small kana between larger vertical
+glyphs, so short words are less likely to split when rendered at different
+display scales. It remains a review-suggested fallback, not a confidence score.
 
 Current manual flow:
 

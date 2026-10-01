@@ -352,6 +352,25 @@ def test_text_mask_retry_requires_aligned_glyphs_and_produces_deduplicable_box()
     assert _overlap_over_smaller(boxes[0], (18, 8, 40, 51)) >= 0.6
 
 
+def test_text_mask_retry_groups_aligned_small_kana_between_full_size_glyphs() -> None:
+    cv2 = pytest.importorskip("cv2")
+    np = pytest.importorskip("numpy")
+    from app.pipeline.real_ocr import _mask_candidate_boxes
+
+    mask = np.zeros((90, 90), dtype=np.uint8)
+    cv2.rectangle(mask, (20, 10), (37, 27), 200, -1)
+    cv2.rectangle(mask, (25, 33), (32, 40), 200, -1)
+    cv2.rectangle(mask, (20, 48), (37, 65), 200, -1)
+    assert _mask_candidate_boxes(mask, cv2) == [(17, 7, 41, 69)]
+
+    # A similarly sized mark beside the text must not be joined to the column.
+    mask[:, :] = 0
+    cv2.rectangle(mask, (20, 10), (37, 27), 200, -1)
+    cv2.rectangle(mask, (50, 33), (57, 40), 200, -1)
+    cv2.rectangle(mask, (20, 48), (37, 65), 200, -1)
+    assert _mask_candidate_boxes(mask, cv2) == []
+
+
 def test_tile_retry_is_bounded_to_small_captures_and_at_most_eight_tiles() -> None:
     from app.pipeline.real_ocr import _retry_tiles
 

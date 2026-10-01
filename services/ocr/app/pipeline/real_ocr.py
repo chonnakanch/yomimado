@@ -131,8 +131,11 @@ def _mask_candidate_boxes(mask: Any, cv2: Any) -> list[tuple[int, int, int, int]
             if (
                 next_index in used_successors
                 or gap < -height / 4
-                or not 0.55 <= next_height / height <= 1.8
-                or not 0.55 <= next_width / width <= 1.8
+                # Small kana in vertical manga text can be much smaller than
+                # the characters on either side. Keep the center alignment
+                # requirement, but allow that size change in both directions.
+                or not 0.35 <= next_height / height <= 2.9
+                or not 0.35 <= next_width / width <= 2.9
                 or abs(next_x + next_width / 2 - center_x) > max(width, next_width) * 0.45
             ):
                 continue
