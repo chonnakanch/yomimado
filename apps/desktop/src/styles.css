@@ -242,6 +242,11 @@ h1 span {
   fill: rgb(159 156 151 / 0.12);
   stroke: #a7a39c;
 }
+.capture-debug-image-frame svg .capture-debug-final-region.needs-review {
+  fill: rgb(255 210 122 / 0.12);
+  stroke: #ffd27a;
+  stroke-dasharray: 5 4;
+}
 .capture-debug-results {
   border-left: 1px solid #5c5048;
   overflow: auto;
@@ -348,6 +353,16 @@ h1 span {
 }
 .ocr-region.approximate {
   stroke-dasharray: 6 5;
+}
+.ocr-region.needs-review {
+  fill: rgb(255 210 122 / 0.1);
+  stroke: #ffd27a;
+  stroke-dasharray: 5 4;
+}
+.ocr-region.needs-review:hover,
+.ocr-region.needs-review.active {
+  fill: rgb(255 210 122 / 0.25);
+  stroke: #ffbf52;
 }
 .demo-label {
   background: rgb(37 33 30 / 0.9);

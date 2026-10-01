@@ -26,6 +26,7 @@ MASK_TEXT_THRESHOLD = 150
 MAX_MASK_CANDIDATES_PER_TILE = 20
 # Only skip crops that are almost flat; this is not an OCR confidence estimate.
 MIN_CROP_LUMINANCE_RANGE = 12
+MASK_REVIEW_REASON = "Short Japanese-looking text found only in the detector mask; verify on page"
 logger = logging.getLogger(__name__)
 
 
@@ -330,6 +331,7 @@ def recognize_with_models(image_bytes: bytes, *, debug: bool = False) -> OcrResp
                         box=_box_polygon(raw_box),
                         text="",
                         status="invalid",
+                        decisionReason="Detector box lies outside the captured image",
                         detectionPass=detection_pass,
                     )
                 )
@@ -354,6 +356,14 @@ def recognize_with_models(image_bytes: bytes, *, debug: bool = False) -> OcrResp
             filter_reason = "Mask candidate needs two or three Japanese characters"
         if filter_reason:
             filtered_detection = True
+        if filter_reason:
+            decision_reason = filter_reason
+        elif not text:
+            decision_reason = "Manga OCR returned no text"
+        elif detection_pass == "mask":
+            decision_reason = MASK_REVIEW_REASON
+        else:
+            decision_reason = "Japanese script recognized inside a detector box"
         if debug:
             detections.append(
                 OcrDebugDetection(
@@ -363,6 +373,7 @@ def recognize_with_models(image_bytes: bytes, *, debug: bool = False) -> OcrResp
                     text=text,
                     status="filtered" if filter_reason else "recognized" if text else "empty",
                     filterReason=filter_reason,
+                    decisionReason=decision_reason,
                     detectionPass=detection_pass,
                 )
             )
@@ -380,6 +391,8 @@ def recognize_with_models(image_bytes: bytes, *, debug: bool = False) -> OcrResp
                 confidence=0,
                 type="other",
                 tokens=[],
+                needsReview=detection_pass == "mask",
+                reviewReason=MASK_REVIEW_REASON if detection_pass == "mask" else None,
             )
         )
 

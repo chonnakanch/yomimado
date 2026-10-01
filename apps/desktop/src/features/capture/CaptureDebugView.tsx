@@ -33,8 +33,8 @@ export function CaptureDebugView({
           <div>
             <h1>Capture debug</h1>
             <p>
-              Exact PNG sent to OCR. Orange: final regions; cyan: detector
-              candidates; gray: filtered boxes.
+              Exact PNG sent to OCR. Orange: final regions; dashed gold: review
+              suggested; cyan: detector candidates; gray: filtered boxes.
             </p>
           </div>
           <div className="capture-debug-actions">
@@ -74,11 +74,15 @@ export function CaptureDebugView({
                   ))}
                   {response.regions.map((region) => (
                     <polygon
-                      className="capture-debug-final-region"
+                      className={`capture-debug-final-region${region.needsReview ? " needs-review" : ""}`}
                       key={region.id}
                       points={polygonPoints(region.polygon)}
                     >
-                      <title>{region.text}</title>
+                      <title>
+                        {region.reviewReason
+                          ? `${region.text} — ${region.reviewReason}`
+                          : region.text}
+                      </title>
                     </polygon>
                   ))}
                 </svg>
@@ -119,7 +123,11 @@ export function CaptureDebugView({
                           : region.confidence.toFixed(2)}
                         {region.geometrySource === "selection" &&
                           " · approximate selected-area box"}
+                        {region.needsReview && " · review suggested"}
                       </span>
+                      {region.reviewReason && (
+                        <span>{region.reviewReason}</span>
+                      )}
                       <code>
                         {region.polygon
                           .map((point) => `(${point.x}, ${point.y})`)
@@ -174,8 +182,21 @@ export function CaptureDebugView({
                             · {detection.status} · {detection.text || "No text"}
                           </span>
                           {detection.filterReason && (
-                            <span>Filtered: {detection.filterReason}</span>
+                            <span>
+                              Filtered:{" "}
+                              {detection.decisionReason ??
+                                detection.filterReason}
+                            </span>
                           )}
+                          {!detection.filterReason &&
+                            detection.decisionReason && (
+                              <span>
+                                {detection.status === "recognized"
+                                  ? "Kept"
+                                  : "Reason"}
+                                : {detection.decisionReason}
+                              </span>
+                            )}
                           <code>{polygonPoints(detection.box)}</code>
                           {detection.cropDataUrl && (
                             <img

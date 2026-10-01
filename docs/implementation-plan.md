@@ -509,6 +509,12 @@ mask candidates are filtered but do not have calibrated confidence.
 The short `みて` text in a user-local transparent-bubble screenshot was
 recovered through this mask path with the installed detector and Manga OCR
 models; that copyrighted screenshot is not part of the repository.
+Text-mask-only matches are now kept clickable but marked with a dashed gold
+review outline in Capture debug and the OCR overlay. Capture debug explains
+why each candidate was kept or filtered. This is an evidence label, not a
+calibrated confidence score; stronger artwork-versus-text discrimination still
+needs more representative local validation before it can safely reject
+Japanese-looking candidates.
 
 Current manual flow:
 

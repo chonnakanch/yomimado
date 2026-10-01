@@ -28,6 +28,8 @@ class TextRegion(BaseModel):
     type: Literal["dialogue", "narration", "soundEffect", "other"]
     tokens: list[TextToken]
     geometrySource: Literal["selection"] | None = None
+    needsReview: bool = False
+    reviewReason: str | None = None
 
 
 class OcrDebugDetection(BaseModel):
@@ -37,6 +39,7 @@ class OcrDebugDetection(BaseModel):
     text: str
     status: Literal["recognized", "empty", "invalid", "filtered"]
     filterReason: str | None = None
+    decisionReason: str | None = None
     detectionPass: Literal["full", "tile", "mask"] = "full"
 
 

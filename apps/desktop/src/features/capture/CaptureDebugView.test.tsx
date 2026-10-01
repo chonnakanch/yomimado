@@ -37,6 +37,23 @@ it("shows the exact captured image and OCR text with image-space polygons", () =
             tokens: [],
             geometrySource: "selection",
           },
+          {
+            id: "region-2",
+            text: "みて",
+            polygon: [
+              { x: 150, y: 30 },
+              { x: 180, y: 30 },
+              { x: 180, y: 90 },
+              { x: 150, y: 90 },
+            ],
+            orientation: "vertical",
+            confidence: 0,
+            type: "other",
+            tokens: [],
+            needsReview: true,
+            reviewReason:
+              "Short Japanese-looking text from detector mask; verify on page",
+          },
         ],
         debug: {
           tileRetryCount: 2,
@@ -78,6 +95,8 @@ it("shows the exact captured image and OCR text with image-space polygons", () =
               text: "みて",
               status: "recognized",
               detectionPass: "mask",
+              decisionReason:
+                "Short Japanese-looking text from detector mask; verify on page",
             },
           ],
           selectionText: "数か月前",
@@ -112,6 +131,11 @@ it("shows the exact captured image and OCR text with image-space polygons", () =
   expect(container.textContent).toContain("数か月前");
   expect(container.textContent).toContain("confidence: unknown");
   expect(container.textContent).toContain("approximate selected-area box");
+  expect(container.textContent).toContain("review suggested");
+  expect(
+    container.querySelector(".capture-debug-final-region.needs-review title")
+      ?.textContent,
+  ).toContain("verify on page");
   expect(container.textContent).toContain("Whole-selection retry");
   expect(container.textContent).toContain("tile retry");
   expect(container.textContent).toContain("Tile retry: 2 overlapping crop(s)");
@@ -120,6 +144,9 @@ it("shows the exact captured image and OCR text with image-space polygons", () =
   );
   expect(container.textContent).toContain(
     "text-mask retry · recognized · みて",
+  );
+  expect(container.textContent).toContain(
+    "Kept: Short Japanese-looking text from detector mask",
   );
   expect(
     container.querySelector(".capture-debug-detector-box.filtered title")

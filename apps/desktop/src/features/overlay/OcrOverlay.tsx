@@ -107,6 +107,9 @@ export function OcrOverlay() {
         {state.regions.some(
           (region) => region.geometrySource === "selection",
         ) && <span className="demo-label">Approximate OCR area</span>}
+        {state.regions.some((region) => region.needsReview) && (
+          <span className="demo-label">Dashed gold: check OCR text</span>
+        )}
         <button
           className="close-overlay"
           onClick={() => void invoke("close_ocr_overlay")}
@@ -128,7 +131,7 @@ export function OcrOverlay() {
       >
         {state.regions.map((region) => (
           <polygon
-            className={`ocr-region${state.engine === "demo" ? " demo" : ""}${region.geometrySource === "selection" ? " approximate" : ""}${activeRegionId === region.id ? " active" : ""}`}
+            className={`ocr-region${state.engine === "demo" ? " demo" : ""}${region.geometrySource === "selection" ? " approximate" : ""}${region.needsReview ? " needs-review" : ""}${activeRegionId === region.id ? " active" : ""}`}
             key={region.id}
             points={polygonPoints(region, state.metadata, {
               width: contentWidth,
@@ -136,7 +139,7 @@ export function OcrOverlay() {
             })}
             onClick={() => void handleRegionClick(region)}
           >
-            <title>{`${region.text} (${region.orientation}${region.geometrySource === "selection" ? ", approximate area" : ""})`}</title>
+            <title>{`${region.text} (${region.orientation}${region.geometrySource === "selection" ? ", approximate area" : ""}${region.needsReview ? ", review suggested" : ""})${region.reviewReason ? ` — ${region.reviewReason}` : ""}`}</title>
           </polygon>
         ))}
       </svg>

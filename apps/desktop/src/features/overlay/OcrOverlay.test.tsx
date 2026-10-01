@@ -39,6 +39,12 @@ it("loads a text-heavy OCR result from native state instead of the URL", async (
     confidence: 0,
     type: "dialogue",
     tokens: [],
+    ...(index === 0
+      ? {
+          needsReview: true,
+          reviewReason: "Short text from detector mask; verify on page",
+        }
+      : {}),
   }));
   vi.mocked(invoke).mockResolvedValue({
     metadata: {
@@ -69,5 +75,21 @@ it("loads a text-heavy OCR result from native state instead of the URL", async (
 
   expect(invoke).toHaveBeenCalledExactlyOnceWith("get_overlay_state");
   expect(container.querySelectorAll("polygon.ocr-region")).toHaveLength(300);
+  const reviewRegion = container.querySelector(
+    "polygon.ocr-region.needs-review",
+  );
+  expect(reviewRegion).not.toBeNull();
+  expect(reviewRegion?.querySelector("title")?.textContent).toContain(
+    "verify on page",
+  );
+  expect(container.textContent).toContain("Dashed gold: check OCR text");
   expect(window.location.search).toBe("?mode=overlay");
+
+  await act(async () => {
+    reviewRegion?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+  });
+  expect(invoke).toHaveBeenCalledWith(
+    "show_translation_popup",
+    expect.objectContaining({ text: regions[0].text }),
+  );
 });

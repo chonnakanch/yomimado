@@ -270,6 +270,7 @@ def test_large_capture_tile_retry_recovers_missed_text_without_duplicate_boxes(m
     result = real_ocr.recognize_with_models(image_bytes.getvalue(), debug=True)
     assert shapes == [(1340, 830)] + [(512, 512)] * 8
     assert [region.text for region in result.regions] == ["いぶき", "みて"]
+    assert all(not region.needsReview for region in result.regions)
     assert result.regions[1].polygon[0] == Point(x=300, y=1030)
     assert [item.detectionPass for item in result.debug.detections] == ["full", "tile"]
     assert [item.id for item in result.debug.detections] == ["detection-1", "detection-2"]
@@ -320,6 +321,9 @@ def test_text_mask_retry_finds_short_text_but_recognizes_original_pixels(monkeyp
     assert [item.detectionPass for item in result.debug.detections] == ["mask"]
     assert [region.text for region in result.regions] == ["みて"]
     assert result.regions[0].polygon[0] == Point(x=342, y=177)
+    assert result.regions[0].needsReview is True
+    assert "verify on page" in result.regions[0].reviewReason
+    assert result.debug.detections[0].decisionReason == result.regions[0].reviewReason
     assert recognized_pixels == [(230, 230, 230)]
 
     calls.clear()
@@ -330,6 +334,7 @@ def test_text_mask_retry_finds_short_text_but_recognizes_original_pixels(monkeyp
     assert rejected.debug.detections[0].filterReason == (
         "Mask candidate needs two or three Japanese characters"
     )
+    assert rejected.debug.detections[0].decisionReason == rejected.debug.detections[0].filterReason
 
 
 def test_text_mask_retry_requires_aligned_glyphs_and_produces_deduplicable_box() -> None:

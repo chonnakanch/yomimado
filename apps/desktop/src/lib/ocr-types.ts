@@ -23,6 +23,8 @@ export interface TextRegion {
   type: TextRegionType;
   tokens: TextToken[];
   geometrySource?: "selection";
+  needsReview?: boolean;
+  reviewReason?: string;
 }
 
 export interface OcrDebugDetection {
@@ -32,6 +34,7 @@ export interface OcrDebugDetection {
   text: string;
   status: "recognized" | "empty" | "invalid" | "filtered";
   filterReason?: string;
+  decisionReason?: string;
   detectionPass?: "full" | "tile" | "mask";
 }
 
