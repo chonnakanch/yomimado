@@ -529,6 +529,12 @@ original pixels. Tall boxes mislabeled horizontal are eligible too. A longer
 result is shown with approximate geometry and a review marker; rejected or
 failed retries leave the original detector result unchanged. This does not run
 another detector pass or alter the existing tile budget.
+Page scans now arrange OCR regions into estimated horizontal bands, then read
+right-to-left across each band and top-to-bottom within an overlapping text
+column. The overlay offers Previous, Next, and Open controls for that order;
+clicking any region still works. This uses text geometry only, so unusual panel
+layouts may be ordered incorrectly. Panel detection and reliable page-wide
+reading-order reconstruction remain future work.
 
 Current manual flow:
 
@@ -552,7 +558,7 @@ OCR all relevant regions
 - [x] basic text-region filtering with debug reasons
 - [ ] stronger artwork-versus-text filtering without hiding uncertain dialogue
 - [ ] panel ordering where useful
-- [ ] Japanese reading-order heuristics
+- [x] initial Japanese reading-order heuristic for page-scan navigation
 - [ ] sound-effect filtering
 - [ ] incremental updates when the screen changes
 

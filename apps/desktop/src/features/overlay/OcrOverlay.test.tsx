@@ -91,6 +91,7 @@ it("loads a text-heavy OCR result from native state instead of the URL", async (
   );
   expect(container.textContent).toContain("Dashed gold: check OCR text");
   expect(container.textContent).toContain("Approximate OCR area");
+  expect(container.querySelector(".overlay-reading-order")).toBeNull();
   expect(
     container.querySelectorAll("polygon.ocr-region.approximate"),
   ).toHaveLength(1);
@@ -102,5 +103,77 @@ it("loads a text-heavy OCR result from native state instead of the URL", async (
   expect(invoke).toHaveBeenCalledWith(
     "show_translation_popup",
     expect.objectContaining({ text: regions[0].text }),
+  );
+});
+
+it("steps through estimated scan order and opens the selected region", async () => {
+  const metadata = {
+    displayId: "display",
+    displayName: "Display",
+    screenPhysicalBounds: { x: 0, y: 0, width: 1000, height: 800 },
+    selectionPhysicalBounds: { x: 0, y: 0, width: 1000, height: 800 },
+    selectionLogicalBounds: { x: 0, y: 0, width: 1000, height: 800 },
+    imageWidth: 1000,
+    imageHeight: 800,
+    scaleFactor: 1,
+  };
+  const regions = ["right", "left"].map((text, index) => ({
+    id: text,
+    text,
+    polygon: [
+      { x: index * 100, y: 10 },
+      { x: index * 100 + 40, y: 10 },
+      { x: index * 100 + 40, y: 90 },
+      { x: index * 100, y: 90 },
+    ],
+    orientation: "vertical",
+    confidence: 0,
+    type: "dialogue",
+    tokens: [],
+  }));
+  vi.mocked(invoke).mockResolvedValue({
+    metadata,
+    regions,
+    engine: "manga",
+    estimatedReadingOrder: true,
+    layout: {
+      windowWidth: 1000,
+      windowHeight: 800,
+      contentLeft: 0,
+      contentTop: 0,
+      contentWidth: 1000,
+      contentHeight: 800,
+      toolbarTop: 0,
+      toolbarHeight: 32,
+    },
+  });
+
+  await act(async () => root.render(<OcrOverlay />));
+  expect(
+    container.querySelector(".overlay-reading-order")?.textContent,
+  ).toContain("Est. 1/2 · right");
+  expect(
+    container.querySelector("polygon.ocr-region.active title")?.textContent,
+  ).toContain("1. right");
+
+  await act(async () => {
+    container
+      .querySelector<HTMLButtonElement>('button[aria-label="Next text region"]')
+      ?.click();
+  });
+  expect(
+    container.querySelector(".overlay-reading-order")?.textContent,
+  ).toContain("Est. 2/2 · left");
+
+  await act(async () => {
+    container
+      .querySelector<HTMLButtonElement>(
+        'button[aria-label="Open selected text region"]',
+      )
+      ?.click();
+  });
+  expect(invoke).toHaveBeenCalledWith(
+    "show_translation_popup",
+    expect.objectContaining({ text: "left" }),
   );
 });

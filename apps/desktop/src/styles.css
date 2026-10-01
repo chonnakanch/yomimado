@@ -379,6 +379,31 @@ h1 span {
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+.overlay-reading-order {
+  align-items: center;
+  background: rgb(37 33 30 / 0.94);
+  border-radius: 5px;
+  display: flex;
+  gap: 0.2rem;
+  margin: 0 0.25rem;
+  max-width: min(32rem, 55vw);
+  min-width: 0;
+  padding: 0.1rem;
+  pointer-events: all;
+}
+.overlay-reading-order span {
+  font-size: 0.75rem;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.overlay-reading-order button {
+  flex: none;
+  font-size: 0.75rem;
+  height: 24px;
+  padding: 0 0.35rem;
+}
 .close-overlay {
   pointer-events: all;
   flex: 0 0 26px;

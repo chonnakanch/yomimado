@@ -230,6 +230,7 @@ pub fn show_overlay(
     metadata: &CaptureMetadata,
     regions: serde_json::Value,
     engine: &str,
+    estimated_reading_order: bool,
 ) -> Result<(), String> {
     if let Some(window) = app.get_webview_window("translation-popup") {
         let _ = window.close();
@@ -238,7 +239,13 @@ pub fn show_overlay(
         let _ = window.close();
     }
     let layout = layout(metadata);
-    let state = serde_json::json!({ "metadata": metadata, "regions": regions, "engine": engine, "layout": layout });
+    let state = serde_json::json!({
+        "metadata": metadata,
+        "regions": regions,
+        "engine": engine,
+        "layout": layout,
+        "estimatedReadingOrder": estimated_reading_order,
+    });
     store.set(state)?;
     let window = WebviewWindowBuilder::new(app, "ocr-overlay", WebviewUrl::App(OVERLAY_URL.into()))
         .transparent(true)

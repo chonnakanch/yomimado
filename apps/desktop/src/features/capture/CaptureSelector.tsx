@@ -9,6 +9,7 @@ import {
 import type { Point } from "../../lib/ocr-types";
 import type { OcrResponse } from "../../lib/ocr-types";
 import { CaptureDebugView } from "./CaptureDebugView";
+import { orderMangaRegions } from "./reading-order";
 import {
   loadScanArea,
   physicalToSelection,
@@ -109,6 +110,7 @@ export function CaptureSelector() {
       metadata: captured.metadata,
       regions: response.regions,
       engine: response.engine,
+      estimatedReadingOrder: scanArea && response.engine === "manga",
     });
     await getCurrentWindow().close();
   };
@@ -131,9 +133,16 @@ export function CaptureSelector() {
         setDebugCapture({ captured, response: null, error: null });
         document.documentElement.dataset.capturing = "false";
       }
-      const response: OcrResponse = await requestOcr(captured.imageDataUrl, {
+      const rawResponse: OcrResponse = await requestOcr(captured.imageDataUrl, {
         debug: debugCaptureEnabled,
       });
+      const response =
+        scanArea && rawResponse.engine === "manga"
+          ? {
+              ...rawResponse,
+              regions: orderMangaRegions(rawResponse.regions),
+            }
+          : rawResponse;
       if (debugCaptureEnabled) {
         setDebugCapture({ captured, response, error: null });
       } else if (scanArea && response.engine === "demo") {

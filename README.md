@@ -48,6 +48,10 @@ crop also excludes a short dark site toolbar beneath a clear light page edge.
 Ambiguous dark page content is kept rather than cut off. The
 app does not watch for screen changes or translate text automatically. Close
 the overlay before changing pages, then scan again.
+For page scans, the overlay's Previous/Next controls step through an estimated
+reading order; **Open** shows the highlighted region's learning popup. This
+order uses text positions, not panel detection, so you can always click a
+region directly if the suggested order is wrong.
 Automatic scanning is not yet manually verified on Windows or multi-monitor
 setups.
 

@@ -8,6 +8,9 @@ import { CaptureSelector } from "./CaptureSelector";
 import { loadScanArea, saveScanArea, type CaptureSurface } from "./scan-area";
 
 vi.mock("@tauri-apps/api/core", () => ({ invoke: vi.fn() }));
+vi.mock("@tauri-apps/api/window", () => ({
+  getCurrentWindow: () => ({ close: vi.fn().mockResolvedValue(undefined) }),
+}));
 vi.mock("../../lib/ocr-client", () => ({ requestOcr: vi.fn() }));
 
 let container: HTMLDivElement;
@@ -100,6 +103,46 @@ it("uses a detected page directly without consulting the saved area", async () =
 
   expect(invoke).toHaveBeenCalledExactlyOnceWith("capture_auto_page");
   expect(requestOcr).toHaveBeenCalledTimes(1);
+});
+
+it("passes estimated reading order to the overlay for a page scan", async () => {
+  const makeRegion = (id: string, x: number) => ({
+    id,
+    text: id,
+    polygon: [
+      { x, y: 10 },
+      { x: x + 20, y: 10 },
+      { x: x + 20, y: 60 },
+      { x, y: 60 },
+    ],
+    orientation: "vertical" as const,
+    confidence: 0,
+    type: "dialogue" as const,
+    tokens: [],
+  });
+  vi.mocked(invoke).mockImplementation(async (command) =>
+    command === "capture_auto_page" ? captured : null,
+  );
+  vi.mocked(requestOcr).mockResolvedValue({
+    engine: "manga",
+    regions: [makeRegion("left", 20), makeRegion("right", 150)],
+  });
+
+  await act(async () => root.render(<CaptureSelector />));
+  await act(async () => {
+    await new Promise<void>((resolve) => setTimeout(resolve, 0));
+  });
+
+  expect(invoke).toHaveBeenCalledWith(
+    "show_ocr_overlay",
+    expect.objectContaining({
+      estimatedReadingOrder: true,
+      regions: [
+        expect.objectContaining({ id: "right" }),
+        expect.objectContaining({ id: "left" }),
+      ],
+    }),
+  );
 });
 
 it("asks for a scan area when none has been saved", async () => {

@@ -385,8 +385,16 @@ fn show_ocr_overlay(
     metadata: CaptureMetadata,
     regions: serde_json::Value,
     engine: String,
+    estimated_reading_order: bool,
 ) -> Result<(), String> {
-    overlay::show_overlay(&app, &state.overlay, &metadata, regions, &engine)?;
+    overlay::show_overlay(
+        &app,
+        &state.overlay,
+        &metadata,
+        regions,
+        &engine,
+        estimated_reading_order,
+    )?;
     eprintln!("YomiMado: OCR overlay displayed ({engine})");
     Ok(())
 }
