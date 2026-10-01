@@ -1,8 +1,29 @@
+import { useLayoutEffect, useRef, useState } from "react";
 import type { CaptureMetadata } from "../../lib/coordinates";
 import type { OcrResponse, Point } from "../../lib/ocr-types";
 
 function polygonPoints(points: Point[]): string {
   return points.map((point) => `${point.x},${point.y}`).join(" ");
+}
+
+export function fitCaptureDebugImage(
+  imageWidth: number,
+  imageHeight: number,
+  availableWidth: number,
+  availableHeight: number,
+) {
+  if (imageWidth <= 0 || imageHeight <= 0) {
+    return { width: 0, height: 0 };
+  }
+  const scale = Math.min(
+    1,
+    availableWidth / imageWidth,
+    availableHeight / imageHeight,
+  );
+  return {
+    width: imageWidth * scale,
+    height: imageHeight * scale,
+  };
 }
 
 interface CaptureDebugViewProps {
@@ -25,6 +46,27 @@ export function CaptureDebugView({
   onCancel,
 }: CaptureDebugViewProps) {
   const { imageWidth, imageHeight } = metadata;
+  const imageSectionRef = useRef<HTMLElement>(null);
+  const [imageSize, setImageSize] = useState({ width: 0, height: 0 });
+
+  useLayoutEffect(() => {
+    const section = imageSectionRef.current;
+    if (!section) return;
+
+    const observer = new ResizeObserver(([entry]) => {
+      if (!entry) return;
+      setImageSize(
+        fitCaptureDebugImage(
+          imageWidth,
+          imageHeight,
+          entry.contentRect.width,
+          entry.contentRect.height,
+        ),
+      );
+    });
+    observer.observe(section);
+    return () => observer.disconnect();
+  }, [imageWidth, imageHeight]);
 
   return (
     <main className="capture-debug">
@@ -51,11 +93,9 @@ export function CaptureDebugView({
           <section
             className="capture-debug-image-section"
             aria-label="Captured image"
+            ref={imageSectionRef}
           >
-            <div
-              className="capture-debug-image-frame"
-              style={{ aspectRatio: `${imageWidth} / ${imageHeight}` }}
-            >
+            <div className="capture-debug-image-frame" style={imageSize}>
               <img src={imageDataUrl} alt="Exact captured screen region" />
               {response && (
                 <svg

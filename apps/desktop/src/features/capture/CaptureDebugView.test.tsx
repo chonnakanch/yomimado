@@ -1,7 +1,22 @@
 // @vitest-environment jsdom
 import { renderToStaticMarkup } from "react-dom/server";
 import { expect, it } from "vitest";
-import { CaptureDebugView } from "./CaptureDebugView";
+import { CaptureDebugView, fitCaptureDebugImage } from "./CaptureDebugView";
+
+it("fits tall and wide captures inside the debug preview without changing aspect ratio", () => {
+  expect(fitCaptureDebugImage(1000, 2000, 900, 600)).toEqual({
+    width: 300,
+    height: 600,
+  });
+  expect(fitCaptureDebugImage(2000, 1000, 900, 600)).toEqual({
+    width: 900,
+    height: 450,
+  });
+  expect(fitCaptureDebugImage(240, 360, 900, 600)).toEqual({
+    width: 240,
+    height: 360,
+  });
+});
 
 const metadata = {
   displayId: "test",

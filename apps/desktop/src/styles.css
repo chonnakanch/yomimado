@@ -207,16 +207,18 @@ h1 span {
   min-height: 0;
 }
 .capture-debug-image-section {
+  align-items: center;
   background: #171411;
+  display: flex;
+  justify-content: center;
+  min-height: 0;
   min-width: 0;
   overflow: auto;
   padding: 1rem;
 }
 .capture-debug-image-frame {
-  margin: 0 auto;
-  max-width: 100%;
+  flex: none;
   position: relative;
-  width: 1000px;
 }
 .capture-debug-image-frame img,
 .capture-debug-image-frame svg {
@@ -300,7 +302,7 @@ h1 span {
   }
   .capture-debug-content {
     grid-template-columns: 1fr;
-    grid-template-rows: minmax(12rem, 1fr) minmax(10rem, 1fr);
+    grid-template-rows: minmax(0, 1fr) minmax(0, 1fr);
   }
   .capture-debug-results {
     border-left: 0;
