@@ -209,6 +209,18 @@ def _overlap_over_smaller(
     return (x2 - x1) * (y2 - y1) / min(box_area, other_area)
 
 
+def _mask_extends_vertical_box(
+    mask_box: tuple[int, int, int, int], previous: tuple[int, int, int, int]
+) -> bool:
+    mask_width = mask_box[2] - mask_box[0]
+    previous_width = previous[2] - previous[0]
+    return (
+        mask_box[3] - mask_box[1] >= (previous[3] - previous[1]) * 1.7
+        and mask_width <= previous_width * 1.8
+        and _overlap_over_smaller(mask_box, previous) >= 0.8
+    )
+
+
 def _should_retry_selection(width: int, height: int, regions: list[TextRegion]) -> bool:
     return (
         width <= SMALL_SELECTION_MAX_SIDE
@@ -312,6 +324,8 @@ def recognize_with_models(image_bytes: bytes, *, debug: bool = False) -> OcrResp
     bgr = cv2.cvtColor(np.asarray(image), cv2.COLOR_RGB2BGR)
     retry_tiles = _retry_tiles(image.width, image.height)
     regions: list[TextRegion] = []
+    region_boxes: list[tuple[int, int, int, int]] = []
+    region_debug_indices: list[int | None] = []
     detections: list[OcrDebugDetection] = []
     seen_boxes: list[tuple[int, int, int, int]] = []
     filtered_detection = False
@@ -340,11 +354,21 @@ def recognize_with_models(image_bytes: bytes, *, debug: bool = False) -> OcrResp
                 )
             continue
         box = (x1, y1, x2, y2)
-        if detection_pass != "full" and any(
-            _overlap_over_smaller(box, previous) >= 0.6 for previous in seen_boxes
-        ):
-            index -= 1
-            continue
+        if detection_pass != "full":
+            overlapping = [
+                previous for previous in seen_boxes if _overlap_over_smaller(box, previous) >= 0.6
+            ]
+            if overlapping and (
+                detection_pass != "mask"
+                or not all(_mask_extends_vertical_box(box, previous) for previous in overlapping)
+                or any(
+                    _overlap_over_smaller(box, previous_box) >= 0.6
+                    and _japanese_character_count(region.text) != 1
+                    for region, previous_box in zip(regions, region_boxes)
+                )
+            ):
+                index -= 1
+                continue
         seen_boxes.append(box)
         crop = image.crop((x1, y1, x2, y2))
         filter_reason = _crop_filter_reason(crop)
@@ -382,6 +406,23 @@ def recognize_with_models(image_bytes: bytes, *, debug: bool = False) -> OcrResp
             )
         if not text or filter_reason:
             continue
+        if detection_pass == "mask":
+            for previous_index in reversed(range(len(regions))):
+                if (
+                    regions[previous_index].orientation == "vertical"
+                    and _japanese_character_count(regions[previous_index].text) == 1
+                    and _mask_extends_vertical_box(box, region_boxes[previous_index])
+                ):
+                    debug_index = region_debug_indices.pop(previous_index)
+                    if debug_index is not None:
+                        previous_detection = detections[debug_index]
+                        previous_detection.status = "filtered"
+                        previous_detection.filterReason = (
+                            "Superseded by longer aligned text-mask recognition"
+                        )
+                        previous_detection.decisionReason = previous_detection.filterReason
+                    del regions[previous_index]
+                    del region_boxes[previous_index]
         regions.append(
             TextRegion(
                 id=f"region-{len(regions) + 1}",
@@ -398,6 +439,11 @@ def recognize_with_models(image_bytes: bytes, *, debug: bool = False) -> OcrResp
                 reviewReason=MASK_REVIEW_REASON if detection_pass == "mask" else None,
             )
         )
+        region_boxes.append(box)
+        region_debug_indices.append(len(detections) - 1 if debug else None)
+
+    for region_number, region in enumerate(regions, start=1):
+        region.id = f"region-{region_number}"
 
     selection_text: str | None = None
     fallback_used = False

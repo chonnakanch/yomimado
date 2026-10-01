@@ -371,6 +371,60 @@ def test_text_mask_retry_groups_aligned_small_kana_between_full_size_glyphs() ->
     assert _mask_candidate_boxes(mask, cv2) == []
 
 
+def test_longer_mask_result_replaces_partial_one_character_detector_box(monkeypatch) -> None:
+    image_module = pytest.importorskip("PIL.Image")
+    image_draw = pytest.importorskip("PIL.ImageDraw")
+    cv2 = pytest.importorskip("cv2")
+    np = pytest.importorskip("numpy")
+    from app.pipeline import real_ocr
+
+    image = image_module.new("RGB", (830, 623), "white")
+    image_draw.Draw(image).rectangle((330, 190, 348, 207), fill="black")
+    image_bytes = BytesIO()
+    image.save(image_bytes, format="PNG")
+    partial = SimpleNamespace(lines=[], xyxy=[328, 190, 350, 208], vertical=True)
+    mask = np.zeros((512, 512), dtype=np.uint8)
+    cv2.rectangle(mask, (12, 150), (29, 167), 200, -1)
+    cv2.rectangle(mask, (17, 174), (24, 181), 200, -1)
+    cv2.rectangle(mask, (12, 190), (29, 207), 200, -1)
+    calls = 0
+
+    def detector(_crop):
+        nonlocal calls
+        calls += 1
+        if calls == 1:
+            return None, None, [partial]
+        if calls == 3:
+            return mask, None, []
+        return None, None, []
+
+    monkeypatch.setattr(real_ocr, "_configured_paths", lambda: (Path("."),) * 3)
+    recognized = iter(["あ", "こっち"])
+    monkeypatch.setattr(
+        real_ocr, "_models", lambda *_paths: (detector, lambda _crop: next(recognized))
+    )
+    result = real_ocr.recognize_with_models(image_bytes.getvalue(), debug=True)
+    assert [region.text for region in result.regions] == ["こっち"]
+    assert result.regions[0].needsReview is True
+    assert result.regions[0].polygon[0] == Point(x=327, y=147)
+    assert [item.status for item in result.debug.detections] == ["filtered", "recognized"]
+    assert "Superseded" in result.debug.detections[0].filterReason
+
+    # A complete detector result must not gain a duplicate mask region.
+    calls = 0
+    monkeypatch.setattr(real_ocr, "_models", lambda *_paths: (detector, lambda _crop: "こっち"))
+    complete = real_ocr.recognize_with_models(image_bytes.getvalue(), debug=True)
+    assert [region.text for region in complete.regions] == ["こっち"]
+    assert [item.detectionPass for item in complete.debug.detections] == ["full"]
+
+    # If the larger crop still reads as one character, retain the original.
+    calls = 0
+    monkeypatch.setattr(real_ocr, "_models", lambda *_paths: (detector, lambda _crop: "あ"))
+    incomplete = real_ocr.recognize_with_models(image_bytes.getvalue(), debug=True)
+    assert [region.text for region in incomplete.regions] == ["あ"]
+    assert [item.status for item in incomplete.debug.detections] == ["recognized", "filtered"]
+
+
 def test_tile_retry_is_bounded_to_small_captures_and_at_most_eight_tiles() -> None:
     from app.pipeline.real_ocr import _retry_tiles
 

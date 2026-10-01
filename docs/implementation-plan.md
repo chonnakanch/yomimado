@@ -518,6 +518,8 @@ Japanese-looking candidates.
 The text-mask fallback also accepts aligned small kana between larger vertical
 glyphs, so short words are less likely to split when rendered at different
 display scales. It remains a review-suggested fallback, not a confidence score.
+A longer aligned mask recognition may supersede a one-character detector result
+instead of being discarded as a duplicate; the debug view records that decision.
 
 Current manual flow:
 
