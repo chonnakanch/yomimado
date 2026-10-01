@@ -45,6 +45,13 @@ it("loads a text-heavy OCR result from native state instead of the URL", async (
           reviewReason: "Short text from detector mask; verify on page",
         }
       : {}),
+    ...(index === 1
+      ? {
+          geometrySource: "expandedCrop",
+          needsReview: true,
+          reviewReason: "Expanded short vertical crop; area approximate",
+        }
+      : {}),
   }));
   vi.mocked(invoke).mockResolvedValue({
     metadata: {
@@ -83,6 +90,10 @@ it("loads a text-heavy OCR result from native state instead of the URL", async (
     "verify on page",
   );
   expect(container.textContent).toContain("Dashed gold: check OCR text");
+  expect(container.textContent).toContain("Approximate OCR area");
+  expect(
+    container.querySelectorAll("polygon.ocr-region.approximate"),
+  ).toHaveLength(1);
   expect(window.location.search).toBe("?mode=overlay");
 
   await act(async () => {

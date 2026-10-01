@@ -520,6 +520,12 @@ glyphs, so short words are less likely to split when rendered at different
 display scales. It remains a review-suggested fallback, not a confidence score.
 A longer aligned mask recognition may supersede a one-character detector result
 instead of being discarded as a duplicate; the debug view records that decision.
+When a larger automatic crop leaves a one- or two-character vertical fragment,
+OCR now makes up to six bounded recognizer-only retries on taller crops of the
+original pixels. Tall boxes mislabeled horizontal are eligible too. A longer
+result is shown with approximate geometry and a review marker; rejected or
+failed retries leave the original detector result unchanged. This does not run
+another detector pass or alter the existing tile budget.
 
 Current manual flow:
 

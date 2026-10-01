@@ -54,6 +54,23 @@ it("shows the exact captured image and OCR text with image-space polygons", () =
             reviewReason:
               "Short Japanese-looking text from detector mask; verify on page",
           },
+          {
+            id: "region-3",
+            text: "こっち",
+            polygon: [
+              { x: 100, y: 180 },
+              { x: 130, y: 180 },
+              { x: 130, y: 260 },
+              { x: 100, y: 260 },
+            ],
+            orientation: "vertical",
+            confidence: 0,
+            type: "other",
+            tokens: [],
+            geometrySource: "expandedCrop",
+            needsReview: true,
+            reviewReason: "Expanded short vertical crop; area approximate",
+          },
         ],
         debug: {
           tileRetryCount: 2,
@@ -131,6 +148,7 @@ it("shows the exact captured image and OCR text with image-space polygons", () =
   expect(container.textContent).toContain("数か月前");
   expect(container.textContent).toContain("confidence: unknown");
   expect(container.textContent).toContain("approximate selected-area box");
+  expect(container.textContent).toContain("approximate expanded-crop box");
   expect(container.textContent).toContain("review suggested");
   expect(
     container.querySelector(".capture-debug-final-region.needs-review title")

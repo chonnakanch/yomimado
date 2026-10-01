@@ -27,7 +27,7 @@ class TextRegion(BaseModel):
     confidence: float = Field(ge=0, le=1)
     type: Literal["dialogue", "narration", "soundEffect", "other"]
     tokens: list[TextToken]
-    geometrySource: Literal["selection"] | None = None
+    geometrySource: Literal["selection", "expandedCrop"] | None = None
     needsReview: bool = False
     reviewReason: str | None = None
 

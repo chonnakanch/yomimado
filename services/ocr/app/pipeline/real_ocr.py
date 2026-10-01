@@ -24,9 +24,13 @@ MAX_RETRY_TILES = 8
 # This is not a calibrated OCR confidence score.
 MASK_TEXT_THRESHOLD = 150
 MAX_MASK_CANDIDATES_PER_TILE = 20
+MAX_SHORT_VERTICAL_RETRIES = 6
 # Only skip crops that are almost flat; this is not an OCR confidence estimate.
 MIN_CROP_LUMINANCE_RANGE = 12
 MASK_REVIEW_REASON = "Short Japanese-looking text found only in the detector mask; verify on page"
+EXPANDED_REVIEW_REASON = (
+    "Short vertical text recovered from an expanded crop; area approximate—verify on page"
+)
 logger = logging.getLogger(__name__)
 
 
@@ -219,6 +223,31 @@ def _mask_extends_vertical_box(
         and mask_width <= previous_width * 1.8
         and _overlap_over_smaller(mask_box, previous) >= 0.8
     )
+
+
+def _expanded_short_vertical_box(
+    box: tuple[int, int, int, int], width: int, height: int, character_count: int
+) -> tuple[int, int, int, int]:
+    x1, y1, x2, y2 = box
+    box_width, box_height = x2 - x1, y2 - y1
+    side_padding = max(3, box_width // 3)
+    top_padding = box_height * (2 if character_count == 1 else 0.6)
+    return (
+        max(0, x1 - side_padding),
+        max(0, round(y1 - top_padding)),
+        min(width, x2 + side_padding),
+        min(height, y2 + round(box_height * 0.2)),
+    )
+
+
+def _expanded_text_adds_short_word(original: str, expanded: str) -> bool:
+    original_count = _japanese_character_count(original)
+    expanded_count = _japanese_character_count(expanded)
+    if not (original_count in (1, 2) and original_count < expanded_count <= 4):
+        return False
+    if len(expanded) > 6 or any(character.isspace() for character in expanded):
+        return False
+    return original in expanded or (original_count == 1 and expanded_count == 3)
 
 
 def _should_retry_selection(width: int, height: int, regions: list[TextRegion]) -> bool:
@@ -441,6 +470,50 @@ def recognize_with_models(image_bytes: bytes, *, debug: bool = False) -> OcrResp
         )
         region_boxes.append(box)
         region_debug_indices.append(len(detections) - 1 if debug else None)
+
+    short_retries = 0
+    if max(image.width, image.height) >= RETRY_MIN_LONG_SIDE:
+        for region_index, region in enumerate(regions):
+            character_count = _japanese_character_count(region.text)
+            box = region_boxes[region_index]
+            tall_short_box = (box[3] - box[1]) >= (box[2] - box[0]) * 1.5
+            if (
+                short_retries >= MAX_SHORT_VERTICAL_RETRIES
+                or (region.orientation != "vertical" and not tall_short_box)
+                or region.needsReview
+                or character_count not in (1, 2)
+            ):
+                continue
+            expanded_box = _expanded_short_vertical_box(
+                region_boxes[region_index], image.width, image.height, character_count
+            )
+            if any(
+                other_index != region_index
+                and _overlap_over_smaller(expanded_box, other_box) >= 0.3
+                for other_index, other_box in enumerate(region_boxes)
+            ):
+                continue
+            short_retries += 1
+            try:
+                expanded_text = recognizer(image.crop(expanded_box)).strip()
+            except Exception as error:  # noqa: BLE001 - optional retry must preserve the original
+                logger.warning("Short vertical OCR retry failed: %s", type(error).__name__)
+                continue
+            if not _expanded_text_adds_short_word(region.text, expanded_text):
+                continue
+            region.text = expanded_text
+            region.orientation = "vertical"
+            region.polygon = _box_polygon(expanded_box)
+            region.geometrySource = "expandedCrop"
+            region.needsReview = True
+            region.reviewReason = EXPANDED_REVIEW_REASON
+            region_boxes[region_index] = expanded_box
+            debug_index = region_debug_indices[region_index]
+            if debug_index is not None:
+                debug_detection = detections[debug_index]
+                debug_detection.decisionReason = (
+                    f"Expanded short vertical crop recognized {expanded_text}; area approximate"
+                )
 
     for region_number, region in enumerate(regions, start=1):
         region.id = f"region-{region_number}"

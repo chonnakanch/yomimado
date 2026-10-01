@@ -22,7 +22,7 @@ export interface TextRegion {
   confidence: number;
   type: TextRegionType;
   tokens: TextToken[];
-  geometrySource?: "selection";
+  geometrySource?: "selection" | "expandedCrop";
   needsReview?: boolean;
   reviewReason?: string;
 }

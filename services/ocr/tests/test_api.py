@@ -261,7 +261,7 @@ def test_large_capture_tile_retry_recovers_missed_text_without_duplicate_boxes(m
             return None, None, [missed]
         return None, None, []
 
-    recognized = iter(["いぶき", "みて"])
+    recognized = iter(["いぶき", "みて", "みて"])
     monkeypatch.setattr(real_ocr, "_configured_paths", lambda: (Path("."),) * 3)
     monkeypatch.setattr(
         real_ocr, "_models", lambda *_paths: (detector, lambda _crop: next(recognized))
@@ -371,6 +371,16 @@ def test_text_mask_retry_groups_aligned_small_kana_between_full_size_glyphs() ->
     assert _mask_candidate_boxes(mask, cv2) == []
 
 
+def test_expanded_short_text_requires_a_longer_plausible_reading() -> None:
+    from app.pipeline.real_ocr import _expanded_text_adds_short_word
+
+    assert _expanded_text_adds_short_word("っち", "こっち")
+    assert _expanded_text_adds_short_word("あ", "こっち")
+    assert not _expanded_text_adds_short_word("っち", "学校")
+    assert not _expanded_text_adds_short_word("あ", "学校")
+    assert not _expanded_text_adds_short_word("みて", "みて")
+
+
 def test_longer_mask_result_replaces_partial_one_character_detector_box(monkeypatch) -> None:
     image_module = pytest.importorskip("PIL.Image")
     image_draw = pytest.importorskip("PIL.ImageDraw")
@@ -423,6 +433,89 @@ def test_longer_mask_result_replaces_partial_one_character_detector_box(monkeypa
     incomplete = real_ocr.recognize_with_models(image_bytes.getvalue(), debug=True)
     assert [region.text for region in incomplete.regions] == ["あ"]
     assert [item.status for item in incomplete.debug.detections] == ["recognized", "filtered"]
+
+
+def test_tall_short_detector_box_recovers_longer_vertical_text_from_original_pixels(
+    monkeypatch,
+) -> None:
+    image_module = pytest.importorskip("PIL.Image")
+    image_draw = pytest.importorskip("PIL.ImageDraw")
+    pytest.importorskip("cv2")
+    pytest.importorskip("numpy")
+    from app.pipeline import real_ocr
+
+    image = image_module.new("RGB", (830, 623), "white")
+    image_draw.Draw(image).rectangle((330, 190, 348, 229), fill="black")
+    image_bytes = BytesIO()
+    image.save(image_bytes, format="PNG")
+    partial = SimpleNamespace(lines=[], xyxy=[328, 190, 350, 230], vertical=False)
+    crops = []
+    recognized = iter(["あ", "こっち"])
+
+    def recognizer(crop):
+        crops.append(crop.size)
+        return next(recognized)
+
+    monkeypatch.setattr(real_ocr, "_configured_paths", lambda: (Path("."),) * 3)
+    monkeypatch.setattr(
+        real_ocr,
+        "_models",
+        lambda *_paths: (
+            lambda capture: (None, None, [partial] if capture.shape[:2] == (623, 830) else []),
+            recognizer,
+        ),
+    )
+    result = real_ocr.recognize_with_models(image_bytes.getvalue(), debug=True)
+    assert crops == [(22, 40), (36, 128)]
+    assert [(region.id, region.text) for region in result.regions] == [("region-1", "こっち")]
+    assert result.regions[0].orientation == "vertical"
+    assert result.regions[0].geometrySource == "expandedCrop"
+    assert result.regions[0].needsReview is True
+    assert result.regions[0].polygon[0] == Point(x=321, y=110)
+    assert "area approximate" in result.debug.detections[0].decisionReason
+
+    # An unrelated two-character retry is not enough to replace a one-character box.
+    crops.clear()
+    recognized = iter(["あ", "学校"])
+    unchanged = real_ocr.recognize_with_models(image_bytes.getvalue())
+    assert [region.text for region in unchanged.regions] == ["あ"]
+    assert unchanged.regions[0].geometrySource is None
+
+
+def test_short_vertical_retry_failure_keeps_original_detection(monkeypatch) -> None:
+    image_module = pytest.importorskip("PIL.Image")
+    image_draw = pytest.importorskip("PIL.ImageDraw")
+    pytest.importorskip("cv2")
+    pytest.importorskip("numpy")
+    from app.pipeline import real_ocr
+
+    image = image_module.new("RGB", (830, 623), "white")
+    image_draw.Draw(image).rectangle((330, 190, 348, 229), fill="black")
+    image_bytes = BytesIO()
+    image.save(image_bytes, format="PNG")
+    partial = SimpleNamespace(lines=[], xyxy=[328, 190, 350, 230], vertical=True)
+    calls = 0
+
+    def recognizer(_crop):
+        nonlocal calls
+        calls += 1
+        if calls == 2:
+            raise RuntimeError("optional retry failed")
+        return "ち"
+
+    monkeypatch.setattr(real_ocr, "_configured_paths", lambda: (Path("."),) * 3)
+    monkeypatch.setattr(
+        real_ocr,
+        "_models",
+        lambda *_paths: (
+            lambda capture: (None, None, [partial] if capture.shape[:2] == (623, 830) else []),
+            recognizer,
+        ),
+    )
+    result = real_ocr.recognize_with_models(image_bytes.getvalue())
+    assert calls == 2
+    assert [region.text for region in result.regions] == ["ち"]
+    assert result.regions[0].needsReview is False
 
 
 def test_tile_retry_is_bounded_to_small_captures_and_at_most_eight_tiles() -> None:

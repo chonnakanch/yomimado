@@ -123,6 +123,8 @@ export function CaptureDebugView({
                           : region.confidence.toFixed(2)}
                         {region.geometrySource === "selection" &&
                           " · approximate selected-area box"}
+                        {region.geometrySource === "expandedCrop" &&
+                          " · approximate expanded-crop box"}
                         {region.needsReview && " · review suggested"}
                       </span>
                       {region.reviewReason && (
