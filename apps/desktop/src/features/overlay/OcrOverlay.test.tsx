@@ -119,7 +119,7 @@ it("steps through estimated scan order and opens the selected region", async () 
   };
   const regions = ["right", "left"].map((text, index) => ({
     id: text,
-    text,
+    text: index === 0 ? "短い" : "これは長い文章ですがボタンは動きません",
     polygon: [
       { x: index * 100, y: 10 },
       { x: index * 100 + 40, y: 10 },
@@ -149,12 +149,29 @@ it("steps through estimated scan order and opens the selected region", async () 
   });
 
   await act(async () => root.render(<OcrOverlay />));
+  const toggle = container.querySelector<HTMLButtonElement>(
+    'button[aria-label="Toggle reading order"]',
+  );
+  expect(toggle?.getAttribute("aria-expanded")).toBe("false");
+  expect(container.querySelector(".overlay-reading-order-panel")).toBeNull();
+  expect(container.querySelector("polygon.ocr-region.active")).toBeNull();
+
+  await act(async () => toggle?.click());
+  expect(toggle?.getAttribute("aria-expanded")).toBe("true");
   expect(
-    container.querySelector(".overlay-reading-order")?.textContent,
-  ).toContain("Est. 1/2 · right");
+    container.querySelector(".overlay-reading-order-count")?.textContent,
+  ).toBe("1/2");
+  expect(
+    container.querySelector(".overlay-reading-order-text")?.textContent,
+  ).toBe("短い");
+  expect(
+    container.querySelector(
+      ".overlay-reading-order-nav .overlay-reading-order-text",
+    ),
+  ).toBeNull();
   expect(
     container.querySelector("polygon.ocr-region.active title")?.textContent,
-  ).toContain("1. right");
+  ).toContain("1. 短い");
 
   await act(async () => {
     container
@@ -162,8 +179,11 @@ it("steps through estimated scan order and opens the selected region", async () 
       ?.click();
   });
   expect(
-    container.querySelector(".overlay-reading-order")?.textContent,
-  ).toContain("Est. 2/2 · left");
+    container.querySelector(".overlay-reading-order-count")?.textContent,
+  ).toBe("2/2");
+  expect(
+    container.querySelector(".overlay-reading-order-text")?.textContent,
+  ).toBe("これは長い文章ですがボタンは動きません");
 
   await act(async () => {
     container
@@ -174,6 +194,11 @@ it("steps through estimated scan order and opens the selected region", async () 
   });
   expect(invoke).toHaveBeenCalledWith(
     "show_translation_popup",
-    expect.objectContaining({ text: "left" }),
+    expect.objectContaining({ text: "これは長い文章ですがボタンは動きません" }),
   );
+
+  await act(async () => toggle?.click());
+  expect(toggle?.getAttribute("aria-expanded")).toBe("false");
+  expect(container.querySelector(".overlay-reading-order-panel")).toBeNull();
+  expect(container.querySelector("polygon.ocr-region.active")).toBeNull();
 });

@@ -35,6 +35,7 @@ export function OcrOverlay() {
   const [state, setState] = useState<OverlayState | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [activeRegionId, setActiveRegionId] = useState<string | null>(null);
+  const [readingOrderOpen, setReadingOrderOpen] = useState(false);
   const [popupError, setPopupError] = useState<string | null>(null);
   const [viewport, setViewport] = useState({
     width: window.innerWidth,
@@ -47,9 +48,6 @@ export function OcrOverlay() {
       .then((overlayState) => {
         if (mounted) {
           setState(overlayState);
-          if (overlayState.estimatedReadingOrder) {
-            setActiveRegionId(overlayState.regions[0]?.id ?? null);
-          }
         }
       })
       .catch((error) => {
@@ -94,6 +92,16 @@ export function OcrOverlay() {
     setActiveRegionId(state.regions[nextIndex].id);
   };
 
+  const toggleReadingOrder = () => {
+    if (readingOrderOpen) {
+      setReadingOrderOpen(false);
+      setActiveRegionId(null);
+    } else {
+      setActiveRegionId(state.regions[activeRegionIndex].id);
+      setReadingOrderOpen(true);
+    }
+  };
+
   const handleRegionClick = async (region: TextRegion) => {
     setActiveRegionId(region.id);
     setPopupError(null);
@@ -128,38 +136,53 @@ export function OcrOverlay() {
           <span className="demo-label">Dashed gold: check OCR text</span>
         )}
         {state.estimatedReadingOrder && state.regions.length > 0 && (
-          <div
-            className="overlay-reading-order"
-            aria-label="Estimated manga reading order"
-          >
+          <>
             <button
-              aria-label="Previous text region"
-              onClick={() => moveReadingOrder(-1)}
+              className="overlay-reading-order-toggle"
+              aria-label="Toggle reading order"
+              aria-expanded={readingOrderOpen}
+              aria-controls="overlay-reading-order-panel"
+              onClick={toggleReadingOrder}
             >
-              ‹
+              Reading order
             </button>
-            <span
-              aria-live="polite"
-              title="Estimated from text positions; click any region to correct the sequence"
-            >
-              Est. {activeRegionIndex + 1}/{state.regions.length} ·{" "}
-              {state.regions[activeRegionIndex]?.text}
-            </span>
-            <button
-              aria-label="Next text region"
-              onClick={() => moveReadingOrder(1)}
-            >
-              ›
-            </button>
-            <button
-              aria-label="Open selected text region"
-              onClick={() =>
-                void handleRegionClick(state.regions[activeRegionIndex])
-              }
-            >
-              Open
-            </button>
-          </div>
+            {readingOrderOpen && (
+              <div
+                className="overlay-reading-order-panel"
+                id="overlay-reading-order-panel"
+                aria-label="Estimated manga reading order"
+              >
+                <div className="overlay-reading-order-nav">
+                  <button
+                    aria-label="Previous text region"
+                    onClick={() => moveReadingOrder(-1)}
+                  >
+                    ‹
+                  </button>
+                  <span className="overlay-reading-order-count">
+                    {activeRegionIndex + 1}/{state.regions.length}
+                  </span>
+                  <button
+                    aria-label="Next text region"
+                    onClick={() => moveReadingOrder(1)}
+                  >
+                    ›
+                  </button>
+                  <button
+                    aria-label="Open selected text region"
+                    onClick={() =>
+                      void handleRegionClick(state.regions[activeRegionIndex])
+                    }
+                  >
+                    Open
+                  </button>
+                </div>
+                <p className="overlay-reading-order-text" aria-live="polite">
+                  {state.regions[activeRegionIndex]?.text}
+                </p>
+              </div>
+            )}
+          </>
         )}
         <button
           className="close-overlay"

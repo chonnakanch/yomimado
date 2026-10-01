@@ -531,10 +531,11 @@ failed retries leave the original detector result unchanged. This does not run
 another detector pass or alter the existing tile budget.
 Page scans now arrange OCR regions into estimated horizontal bands, then read
 right-to-left across each band and top-to-bottom within an overlapping text
-column. The overlay offers Previous, Next, and Open controls for that order;
-clicking any region still works. This uses text geometry only, so unusual panel
-layouts may be ordered incorrectly. Panel detection and reliable page-wide
-reading-order reconstruction remain future work.
+column. The overlay keeps these controls collapsed by default; a Reading order
+toggle reveals a fixed navigation row with the selected text below it. Clicking
+any region still works. This uses text geometry only, so unusual panel layouts
+may be ordered incorrectly. Panel detection and reliable page-wide reading-order
+reconstruction remain future work.
 
 Current manual flow:
 
