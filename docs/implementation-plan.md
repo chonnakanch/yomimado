@@ -636,3 +636,12 @@ Before any public release:
 - [ ] document local model/data download behavior
 - [ ] document macOS permissions
 - [ ] document Windows installation/runtime requirements
+
+# After the first release — UI redesign discussion
+
+- [ ] Review the released app's main window, capture flow, OCR overlay, and learning popups with the user.
+- [ ] Agree on the redesign goals and visual direction before creating mockups or changing the UI.
+
+This is a post-v1 discussion, not a requirement for the first release. Keep the
+current UI stable while finishing and validating v1; do not assume a design or
+implement a redesign until that discussion happens.
