@@ -8,17 +8,28 @@ Build a small vertical slice first. Do not implement future features before the 
 
 ## Current status
 
-The desktop and OCR service build and pass automated tests. The capture flow,
-coordinate transform, and transparent overlay still need manual validation on
-macOS Retina and scaled Windows displays. Without user-local detector and
-recognizer models, the OCR service returns a labeled demo boundary for the
-selected area. Phase 1 and Phase 2 are not complete until their respective
-"Done when" criteria below are verified with actual captures and real OCR.
+Status audit (2026-10-02): the capture → local OCR → interactive overlay →
+learning-popup flow works with user-installed models on macOS and has been
+manually exercised on a Retina display. The desktop (53), Rust (34), and OCR
+service (47) automated tests pass. These tests do not replace the remaining
+Windows and left-of-primary alignment checks. Without user-local detector and
+recognizer models, OCR returns a labeled demo boundary, not recognized text.
+Translation is on-demand with a separately installed local model; missing-model
+errors are shown rather than inventing a result.
 
-At the user's request, an on-demand local translation slice is being added
-before those manual OCR/overlay checks are complete. This does not mark the
-earlier phases complete. Translation requires a separately installed local
-model; the no-model path shows a setup error rather than inventing a result.
+| Phase | Current state | Main remaining work |
+| --- | --- | --- |
+| 0 — Bootstrap | App, service, shared contract, and docs exist | Choose/add the project `LICENSE` |
+| 1 — Capture | Implemented and manually tried on macOS Retina and two differently shaped monitors | Windows scaled-display manual test with a packaged pre-release build |
+| 2 — OCR | Local detector/recognizer and geometry work with installed models | Reproducible detector/model pins; OCR-quality limits below; no calibrated confidence available |
+| 3 — Integration | Capture-to-OCR client flow works | Request/result correlation IDs |
+| 4 — Overlay | Interactive overlay and two-monitor layout tested on macOS | Windows scaling and left-of-primary alignment checks |
+| 5 — Tokenization | Selected-region tokenization works | No required core task open |
+| 6 — Dictionary | Local word/kanji lookup works | Optional result cache; packaging/data updates |
+| 7 — Translation | Explicit local translation and SQLite cache work | Surrounding-sentence context |
+| 8 — Kanji | Select a kanji from a popup word | Direct on-page character hit boxes/crop fallback |
+| 9 — Learning | Save, review, and remove words/sentences | Anki export deferred; other learning extras |
+| 10 — Page scan | One-shot crop/filter/OCR and opt-in reading order work | Stronger filtering, panel order, SFX handling, incremental scans |
 
 ---
 
@@ -30,25 +41,29 @@ Create the smallest repository structure capable of building a Tauri desktop app
 
 ## Tasks
 
-- [ ] Initialize git repository if needed.
+- [x] Initialize git repository.
 - [x] Create Tauri 2 desktop app.
 - [x] Create React + TypeScript frontend.
 - [x] Create Rust native layer.
 - [x] Create Python OCR service skeleton.
 - [x] Create shared TypeScript domain types.
-- [ ] Add project license and third-party license directory.
+- [ ] Choose and add the project `LICENSE` file.
+- [x] Create `THIRD_PARTY_LICENSES/` with initial dependency notices (full release notices still pending).
 - [x] Add basic README with project purpose and current status.
-- [ ] Add docs from this design package.
+- [x] Add the initial design and implementation-plan docs.
 
 ## Done when
 
 ```text
 Desktop app launches.
 Python OCR service can start independently.
-Frontend can call a trivial health endpoint.
+Frontend can reach the local service over HTTP; the service has a tested health endpoint.
 ```
 
 Do not add actual OCR dependencies yet if doing so blocks basic project setup.
+
+Status: the desktop and Python service are in place and the health endpoint is
+tested. The project license has not yet been selected or added.
 
 ---
 
@@ -94,12 +109,16 @@ image captured
 - [x] unit tests for rectangle normalization
 - [x] unit tests for negative monitor origins
 - [x] tests for 1x / 2x scale conversions
-- [ ] manual test on one macOS Retina display
-- [ ] manual test on Windows with non-100% display scaling
+- [x] manual test on one macOS Retina display
+- [ ] manual test on Windows with non-100% display scaling (planned with a packaged pre-release build)
 
 ## Done when
 
 A user can select the Japanese text shown in the supplied screenshots and save/capture an image that visually matches the selected screen region.
+
+Status: the flow is implemented and the user has exercised it on macOS Retina.
+The Windows non-100% scaling check is still open; Windows capture has not been
+manually signed off for this milestone.
 
 ---
 
@@ -129,15 +148,15 @@ recognized Japanese
 
 - [x] Add a local comic-text-detector adapter (model and checkout are user-supplied).
 - [x] Add optional Manga OCR dependency (model is user-supplied).
-- [ ] Pin Python/model dependency versions.
+- [ ] Pin the detector checkout, model assets, and remaining Python runtime dependencies reproducibly (`manga-ocr` itself is pinned).
 - [x] Implement image input adapter.
 - [x] Implement text-region detection adapter.
 - [x] Implement Manga OCR recognition adapter.
-- [ ] Add recognition confidence where available.
+- [x] Show recognition confidence as unknown when Manga OCR provides no calibrated score; do not derive one from heuristics.
 - [x] Preserve polygon/bounding-box geometry.
 - [x] Detect or infer orientation.
 - [ ] Add a `soundEffect`/dialogue/etc. field when feasible; do not block the milestone if type classification is not ready.
-- [x] Implement `POST /api/v1/ocr` (structured placeholder until OCR dependencies are selected).
+- [x] Implement `POST /api/v1/ocr` (real local OCR when models are configured; labeled demo response otherwise).
 - [x] Add `/health` endpoint.
 - [x] Add structured error responses.
 - [x] Add opt-in detector-box/crop diagnostics for local OCR debugging.
@@ -211,6 +230,14 @@ The two screenshots supplied during design should be treated as private/manual v
 
 The OCR service can accept a captured image and return structured Japanese text regions with reliable coordinates for representative manga input.
 
+Status: real local OCR and geometry have been exercised on user-local manga
+captures, including vertical text and transparent-bubble recovery. Detection
+and recognition still miss some text. Manga OCR does not provide a calibrated
+confidence value, so no numeric recognition-confidence feature is planned for
+the current provider. The API uses zero as an unknown sentinel, while the UI
+labels it "unknown" and uses review markers where geometry is approximate.
+Text-type classification is not implemented, so regions currently use `other`.
+
 ---
 
 # Phase 3 — Shared OCR contract + frontend integration
@@ -222,7 +249,7 @@ Make the desktop application consume OCR results without knowing Python implemen
 ## Tasks
 
 - [x] Define shared TypeScript types.
-- [ ] Implement Rust/API client boundary.
+- [x] Implement a frontend OCR HTTP client boundary independent of Python internals.
 - [x] Send captured image to local OCR service.
 - [x] Parse OCR response.
 - [x] Show processing state.
@@ -238,6 +265,10 @@ hotkey → capture → OCR → structured frontend result
 ```
 
 without hardcoded test JSON.
+
+Status: the capture selector sends image data to the local OCR client, parses
+structured regions, and shows an overlay. Region IDs exist, but a separate
+request/result correlation ID is not yet carried through the pipeline.
 
 ---
 
@@ -256,7 +287,7 @@ Draw OCR regions over the original manga with correct alignment.
 - [x] Render hover/active state.
 - [x] Make region clickable.
 - [x] Dismiss overlay cleanly.
-- [ ] Verify alignment across display scaling configurations.
+- [ ] Verify alignment across the full supported display-scaling matrix.
 - [x] Support vertical text regions.
 
 The OCR overlay retrieves its region data from native in-memory state. Only
@@ -279,17 +310,24 @@ Do not put coordinate math directly into UI components. Create one transformatio
 
 ## Required manual tests
 
-- [ ] macOS Retina
+- [x] macOS Retina (user-tested)
 - [ ] macOS non-Retina if available
-- [ ] Windows 100%
-- [ ] Windows 125%
-- [ ] Windows 150%
-- [ ] two-monitor layout
+- [ ] Windows 100% (planned with a packaged pre-release build)
+- [ ] Windows 125% (planned with a packaged pre-release build)
+- [ ] Windows 150% (planned with a packaged pre-release build)
+- [x] two-monitor layout with different aspect ratios (user-tested on macOS)
 - [ ] monitor placed to the left of primary display
 
 ## Done when
 
 The user can see interactive OCR regions exactly over the Japanese text on the original screen, without visible drift at supported scaling configurations.
+
+Status: interactive alignment has been exercised on macOS Retina and the user
+tested two monitors with different aspect ratios. A scan targets the monitor
+containing the main app window at scan start; this is the intended current
+behavior. Windows and left-of-primary checks still need explicit manual
+verification. Tests cover coordinate transforms but cannot prove physical-screen
+alignment.
 
 ---
 
@@ -412,7 +450,12 @@ interface TranslationProvider {
 
 ## Done when
 
-A user can click a recognized sentence and explicitly request a contextual translation.
+A user can click a recognized sentence and explicitly request its translation.
+
+Status: on-demand local translation, source preservation, caching, and error
+display are implemented. The provider currently receives the selected text
+only; surrounding OCR context is not sent, so translation is not guaranteed to
+resolve ambiguous meaning from the page.
 
 ---
 
@@ -462,7 +505,7 @@ The user can select an individual kanji from recognized text and receive useful 
 - [x] save sentence (explicit local save with optional requested translation)
 - [x] review saved words in the main window and remove entries
 - [x] review saved sentences in the main window and remove entries
-- [ ] Anki export
+- [ ] Anki export (deferred at the user's request)
 - [ ] grammar explanation
 - [ ] furigana overlay
 - [ ] pitch-accent integration
@@ -540,20 +583,20 @@ Clicking any region still works. The preference is stored locally. This uses
 text geometry only, so unusual panel layouts may be ordered incorrectly. Panel
 detection and reliable page-wide reading-order reconstruction remain future work.
 
-Current manual flow:
+Current one-shot flow:
 
 ```text
-select area → OCR
+scan display → auto-crop page or use saved area → OCR → overlay
 ```
 
-Future flow:
+Future incremental flow (not implemented):
 
 ```text
-screen capture
+screen changes
      ↓
-automatic text detection
+incremental detection
      ↓
-OCR all relevant regions
+update affected OCR regions
 ```
 
 ## Tasks
@@ -634,15 +677,23 @@ Before any public release:
 - [ ] verify model weights/licenses
 - [ ] verify dictionary/data licenses
 - [ ] update `THIRD_PARTY_LICENSES/`
-- [ ] avoid copyrighted manga fixtures in git
-- [ ] document local model/data download behavior
-- [ ] document macOS permissions
+- [x] keep copyrighted manga fixtures out of git (current tracked test assets)
+- [x] document local model/data setup behavior
+- [x] document macOS permissions
 - [ ] document Windows installation/runtime requirements
 
 # After the first release — UI redesign discussion
 
 - [ ] Review the released app's main window, capture flow, OCR overlay, and learning popups with the user.
 - [ ] Agree on the redesign goals and visual direction before creating mockups or changing the UI.
+- [ ] Discuss a Jisho-inspired learning-popup layout: prominent word and reading,
+  clearly grouped meanings, and compact kanji details (meanings and on/kun
+  readings). Use it as visual inspiration, not a pixel-for-pixel copy.
+- [ ] Keep the popup usable on smaller screens with stacked sections and
+  scrolling. Do not include a Wikipedia section.
+- [ ] Consider supplementary tags such as common-word status and JLPT level
+  only where YomiMado has a suitable, attributed data source; do not invent
+  levels or make them a prerequisite for the layout redesign.
 
 This is a post-v1 discussion, not a requirement for the first release. Keep the
 current UI stable while finishing and validating v1; do not assume a design or
