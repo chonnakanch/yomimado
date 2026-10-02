@@ -234,6 +234,74 @@ it("shows local word analysis while translating only after a click", async () =>
   expect(container.textContent).toContain("Saved");
 });
 
+it("saves a sentence without translating and can later include requested translation", async () => {
+  const text = "今日はいい日だ。";
+  const state = encodeURIComponent(JSON.stringify({ text, demo: false }));
+  window.history.replaceState({}, "", `/?mode=translation&state=${state}`);
+  const fetch = vi.fn((url: string, options?: RequestInit) => {
+    if (url.endsWith("/tokenize"))
+      return Promise.resolve(
+        new Response(JSON.stringify({ sourceText: text, tokens: [] })),
+      );
+    if (url.endsWith("/sentences")) {
+      const input = JSON.parse(options?.body as string) as {
+        sourceText: string;
+        translatedText?: string;
+      };
+      return Promise.resolve(
+        new Response(
+          JSON.stringify({
+            id: 1,
+            sourceText: input.sourceText,
+            translatedText: input.translatedText ?? null,
+            createdAt: "2026-09-28T12:00:00+00:00",
+          }),
+        ),
+      );
+    }
+    if (url.endsWith("/translate"))
+      return Promise.resolve(
+        new Response(
+          JSON.stringify({
+            sourceText: text,
+            translatedText: "It's a good day.",
+            provider: "test-local-model",
+            cached: false,
+          }),
+        ),
+      );
+    throw new Error(`Unexpected request: ${url}`);
+  });
+  vi.stubGlobal("fetch", fetch);
+
+  await act(async () => root.render(<TranslationPopup />));
+  await act(async () => {
+    container
+      .querySelector<HTMLButtonElement>(".sentence-save-actions button")!
+      .click();
+  });
+  expect(fetch).toHaveBeenCalledTimes(2);
+  expect(fetch.mock.calls[1][0]).toContain("/sentences");
+  expect(JSON.parse(fetch.mock.calls[1][1]!.body as string)).toEqual({
+    sourceText: text,
+  });
+  expect(container.textContent).toContain("Sentence saved locally.");
+
+  await act(async () => {
+    container.querySelector<HTMLButtonElement>(".translate-button")!.click();
+  });
+  expect(container.textContent).not.toContain("Sentence saved locally.");
+  await act(async () => {
+    container
+      .querySelector<HTMLButtonElement>(".sentence-save-actions button")!
+      .click();
+  });
+  expect(JSON.parse(fetch.mock.calls[3][1]!.body as string)).toEqual({
+    sourceText: text,
+    translatedText: "It's a good day.",
+  });
+});
+
 it("keeps punctuation as sentence context but not as selectable words", async () => {
   const text = "今日!?学校";
   const state = encodeURIComponent(JSON.stringify({ text, demo: false }));

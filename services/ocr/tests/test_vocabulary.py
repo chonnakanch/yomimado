@@ -98,3 +98,62 @@ def test_vocabulary_cors_allows_app_origin() -> None:
         )
         assert response.status_code == 200
         assert response.headers["access-control-allow-origin"] == "tauri://localhost"
+
+
+def test_save_list_update_and_delete_sentence(tmp_path: Path, monkeypatch) -> None:
+    database = tmp_path / "vocabulary.sqlite3"
+    monkeypatch.setattr(vocabulary_api, "store", VocabularyStore(database))
+    client = TestClient(app)
+    assert client.get("/api/v1/sentences").json() == {"sentences": []}
+
+    saved = client.post("/api/v1/sentences", json={"sourceText": "  今日はいい日だ。  "})
+    assert saved.status_code == 200
+    sentence = saved.json()
+    assert sentence["sourceText"] == "今日はいい日だ。"
+    assert sentence["translatedText"] is None
+    assert sentence["createdAt"]
+
+    revised = client.post(
+        "/api/v1/sentences",
+        json={"sourceText": "今日はいい日だ。", "translatedText": "It's a good day."},
+    )
+    assert revised.status_code == 200
+    assert revised.json()["id"] == sentence["id"]
+    assert revised.json()["createdAt"] == sentence["createdAt"]
+    assert revised.json()["translatedText"] == "It's a good day."
+
+    without_translation = client.post("/api/v1/sentences", json={"sourceText": "今日はいい日だ。"})
+    assert without_translation.json()["translatedText"] == "It's a good day."
+    assert len(client.get("/api/v1/sentences").json()["sentences"]) == 1
+    assert len(VocabularyStore(database).list_sentences()) == 1
+
+    assert client.delete(f"/api/v1/sentences/{sentence['id']}").status_code == 204
+    assert client.get("/api/v1/sentences").json() == {"sentences": []}
+    assert client.delete(f"/api/v1/sentences/{sentence['id']}").status_code == 404
+
+
+def test_rejects_blank_or_oversized_sentence(tmp_path: Path, monkeypatch) -> None:
+    monkeypatch.setattr(vocabulary_api, "store", VocabularyStore(tmp_path / "words.sqlite3"))
+    client = TestClient(app)
+    for payload in (
+        {"sourceText": "   "},
+        {"sourceText": "今日はいい日だ。", "translatedText": "   "},
+        {"sourceText": "x" * 2001},
+        {"sourceText": "今日はいい日だ。", "translatedText": "x" * 4001},
+    ):
+        assert client.post("/api/v1/sentences", json=payload).status_code == 422
+    assert client.delete("/api/v1/sentences/0").status_code == 422
+
+
+def test_sentence_cors_allows_app_origin() -> None:
+    client = TestClient(app)
+    for method in ("GET", "POST", "DELETE"):
+        response = client.options(
+            "/api/v1/sentences",
+            headers={
+                "Origin": "tauri://localhost",
+                "Access-Control-Request-Method": method,
+            },
+        )
+        assert response.status_code == 200
+        assert response.headers["access-control-allow-origin"] == "tauri://localhost"

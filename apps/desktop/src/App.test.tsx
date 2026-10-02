@@ -117,3 +117,53 @@ it("shows saved words and removes one only after confirmation", async () => {
   expect(fetch.mock.calls[1][1]).toEqual({ method: "DELETE" });
   expect(container.textContent).toContain("No saved words yet");
 });
+
+it("shows saved sentences and removes one only after confirmation", async () => {
+  const sentence = {
+    id: 3,
+    sourceText: "今日はいい日だ。",
+    translatedText: "It's a good day.",
+    createdAt: "2026-09-28T12:00:00+00:00",
+  };
+  const fetch = vi.fn((_url: string, options?: RequestInit) => {
+    if (options?.method === "DELETE")
+      return Promise.resolve(new Response(null, { status: 204 }));
+    return Promise.resolve(
+      new Response(JSON.stringify({ sentences: [sentence] })),
+    );
+  });
+  vi.stubGlobal("fetch", fetch);
+  const confirm = vi.fn().mockReturnValue(false);
+  vi.stubGlobal("confirm", confirm);
+
+  await act(async () => root.render(<App />));
+  expect(fetch).not.toHaveBeenCalled();
+  await act(async () => {
+    Array.from(container.querySelectorAll("button"))
+      .find((button) => button.textContent === "Saved sentences")!
+      .click();
+  });
+  expect(container.textContent).toContain("今日はいい日だ。");
+  expect(container.textContent).toContain("It's a good day.");
+
+  await act(async () => {
+    container
+      .querySelector<HTMLButtonElement>(
+        '[aria-label="Remove saved sentence 3"]',
+      )!
+      .click();
+  });
+  expect(confirm).toHaveBeenCalled();
+  expect(fetch).toHaveBeenCalledTimes(1);
+
+  confirm.mockReturnValue(true);
+  await act(async () => {
+    container
+      .querySelector<HTMLButtonElement>(
+        '[aria-label="Remove saved sentence 3"]',
+      )!
+      .click();
+  });
+  expect(fetch.mock.calls[1][1]).toEqual({ method: "DELETE" });
+  expect(container.textContent).toContain("No saved sentences yet");
+});

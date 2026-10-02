@@ -9,6 +9,11 @@ import {
   readReadingOrderEnabled,
   saveReadingOrderEnabled,
 } from "./lib/reading-order-setting";
+import {
+  deleteSavedSentence,
+  listSavedSentences,
+  type SavedSentence,
+} from "./lib/sentence-client";
 
 export function App() {
   const [message, setMessage] = useState("Ready to capture a screen region.");
@@ -17,6 +22,13 @@ export function App() {
   const [savedWordsLoading, setSavedWordsLoading] = useState(false);
   const [savedWordsError, setSavedWordsError] = useState<string | null>(null);
   const [removingWordId, setRemovingWordId] = useState<number | null>(null);
+  const [showSavedSentences, setShowSavedSentences] = useState(false);
+  const [savedSentences, setSavedSentences] = useState<SavedSentence[]>([]);
+  const [sentencesLoading, setSentencesLoading] = useState(false);
+  const [sentencesError, setSentencesError] = useState<string | null>(null);
+  const [removingSentenceId, setRemovingSentenceId] = useState<number | null>(
+    null,
+  );
   const [readingOrderEnabled, setReadingOrderEnabled] = useState(
     readReadingOrderEnabled,
   );
@@ -86,6 +98,35 @@ export function App() {
     }
   };
 
+  const loadSavedSentences = async () => {
+    setShowSavedSentences(true);
+    setSentencesLoading(true);
+    setSentencesError(null);
+    try {
+      setSavedSentences(await listSavedSentences());
+    } catch (error) {
+      setSentencesError(String(error).replace(/^Error: /, ""));
+    } finally {
+      setSentencesLoading(false);
+    }
+  };
+
+  const removeSentence = async (sentence: SavedSentence) => {
+    if (!window.confirm("Remove this saved sentence?")) return;
+    setRemovingSentenceId(sentence.id);
+    setSentencesError(null);
+    try {
+      await deleteSavedSentence(sentence.id);
+      setSavedSentences((previous) =>
+        previous.filter((item) => item.id !== sentence.id),
+      );
+    } catch (error) {
+      setSentencesError(String(error).replace(/^Error: /, ""));
+    } finally {
+      setRemovingSentenceId(null);
+    }
+  };
+
   return (
     <main className="main-window">
       <h1>
@@ -105,6 +146,16 @@ export function App() {
           }
         >
           {showSavedWords ? "Hide saved words" : "Saved words"}
+        </button>
+        <button
+          className="secondary-button"
+          onClick={() =>
+            showSavedSentences
+              ? setShowSavedSentences(false)
+              : void loadSavedSentences()
+          }
+        >
+          {showSavedSentences ? "Hide saved sentences" : "Saved sentences"}
         </button>
       </div>
       <p className="status">{message}</p>
@@ -200,6 +251,54 @@ export function App() {
                     · CC BY-SA 4.0
                   </small>
                 )}
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+      {showSavedSentences && (
+        <section className="saved-words" aria-label="Saved sentences">
+          <div className="saved-words-heading">
+            <h2>Saved sentences</h2>
+            <button
+              className="secondary-button"
+              onClick={() => void loadSavedSentences()}
+              disabled={sentencesLoading}
+            >
+              Refresh
+            </button>
+          </div>
+          {sentencesLoading && <p>Loading saved sentences…</p>}
+          {sentencesError && (
+            <p className="translation-error" role="alert">
+              {sentencesError}
+            </p>
+          )}
+          {!sentencesLoading &&
+            !sentencesError &&
+            savedSentences.length === 0 && (
+              <p>No saved sentences yet. Save one in the learning popup.</p>
+            )}
+          <ul className="saved-word-list">
+            {savedSentences.map((sentence) => (
+              <li key={sentence.id}>
+                <div className="saved-word-top">
+                  <strong lang="ja">{sentence.sourceText}</strong>
+                  <button
+                    className="secondary-button"
+                    disabled={removingSentenceId === sentence.id}
+                    onClick={() => void removeSentence(sentence)}
+                    aria-label={`Remove saved sentence ${sentence.id}`}
+                  >
+                    {removingSentenceId === sentence.id
+                      ? "Removing…"
+                      : "Remove"}
+                  </button>
+                </div>
+                {sentence.translatedText && <p>{sentence.translatedText}</p>}
+                <small>
+                  Saved {new Date(sentence.createdAt).toLocaleString()}
+                </small>
               </li>
             ))}
           </ul>

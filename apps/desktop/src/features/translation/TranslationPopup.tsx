@@ -14,6 +14,7 @@ import {
 } from "../../lib/kanji-client";
 import { requestWord, type WordEntry } from "../../lib/word-client";
 import { saveVocabularyWord } from "../../lib/vocabulary-client";
+import { saveSentence } from "../../lib/sentence-client";
 import type { TextToken } from "../../lib/ocr-types";
 
 interface PopupState {
@@ -61,6 +62,12 @@ export function TranslationPopup() {
   const [result, setResult] = useState<TranslationResult | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [savingSentence, setSavingSentence] = useState(false);
+  const [sentenceSaved, setSentenceSaved] = useState(false);
+  const [sentenceSaveError, setSentenceSaveError] = useState<string | null>(
+    null,
+  );
+  const sentenceSaveRequestId = useRef(0);
   const [tokens, setTokens] = useState<TextToken[] | null>(null);
   const [tokenError, setTokenError] = useState<string | null>(null);
   const [tokenLoading, setTokenLoading] = useState(false);
@@ -211,10 +218,32 @@ export function TranslationPopup() {
     setResult(null);
     try {
       setResult(await requestTranslation(source));
+      setSentenceSaved(false);
     } catch (requestError) {
       setError(String(requestError).replace(/^Error: /, ""));
     } finally {
       setLoading(false);
+    }
+  };
+
+  const saveCurrentSentence = async () => {
+    const requestId = ++sentenceSaveRequestId.current;
+    setSavingSentence(true);
+    setSentenceSaved(false);
+    setSentenceSaveError(null);
+    try {
+      await saveSentence({
+        sourceText: source,
+        ...(result?.sourceText === source.trim() && {
+          translatedText: result.translatedText,
+        }),
+      });
+      if (requestId === sentenceSaveRequestId.current) setSentenceSaved(true);
+    } catch (requestError) {
+      if (requestId === sentenceSaveRequestId.current)
+        setSentenceSaveError(String(requestError).replace(/^Error: /, ""));
+    } finally {
+      if (requestId === sentenceSaveRequestId.current) setSavingSentence(false);
     }
   };
 
@@ -299,6 +328,10 @@ export function TranslationPopup() {
             setSource(event.target.value);
             setResult(null);
             setError(null);
+            sentenceSaveRequestId.current++;
+            setSavingSentence(false);
+            setSentenceSaved(false);
+            setSentenceSaveError(null);
             setTokens(null);
             setSelectedTokenIndex(null);
             wordRequestId.current++;
@@ -553,6 +586,23 @@ export function TranslationPopup() {
                 )}
               </div>
             )}
+        </div>
+        <div className="sentence-save-actions">
+          <button
+            className="save-word-button"
+            onClick={() => void saveCurrentSentence()}
+            disabled={savingSentence || !source.trim()}
+          >
+            {savingSentence ? "Saving sentence…" : "Save sentence"}
+          </button>
+          {sentenceSaved && (
+            <small role="status">Sentence saved locally.</small>
+          )}
+          {sentenceSaveError && (
+            <small className="translation-error" role="alert">
+              {sentenceSaveError}
+            </small>
+          )}
         </div>
         <button
           className="translate-button"

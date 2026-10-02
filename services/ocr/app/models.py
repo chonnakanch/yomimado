@@ -130,6 +130,22 @@ class SavedWordsResponse(BaseModel):
     words: list[SavedWord]
 
 
+class SaveSentenceRequest(BaseModel):
+    sourceText: str = Field(min_length=1, max_length=2000)
+    translatedText: str | None = Field(default=None, max_length=4000)
+
+
+class SavedSentence(BaseModel):
+    id: int
+    sourceText: str
+    translatedText: str | None
+    createdAt: str
+
+
+class SavedSentencesResponse(BaseModel):
+    sentences: list[SavedSentence]
+
+
 class KanjiExamplesRequest(BaseModel):
     character: str = Field(min_length=1, max_length=1)
     excludeWord: str = Field(default="", max_length=100)

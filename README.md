@@ -32,6 +32,10 @@ The initial capture-to-overlay slice is implemented:
    without meaning** if no entry was found). Open **Saved words** in the main
    YomiMado window to review or remove it. Saving is explicit; OCR does not
    automatically add words to your history.
+7. To keep the whole Japanese sentence, choose **Save sentence** in the popup.
+   If you have already requested a local translation, saving also keeps that
+   English result. Open **Saved sentences** in the main window to review or
+   remove it. Saving a sentence does not start translation.
 
 **Scan manga page** captures the current display, looks for a large
 black-and-white manga page below darker browser controls, and sends only that
@@ -197,14 +201,16 @@ sentence context. The separate **Translate locally** action remains optional.
 If JMdict is missing, the popup shows the expected setup path and other
 learning features continue to work.
 
-Saved vocabulary is stored separately from disposable captures/cache in
+Saved words and sentences are stored separately from disposable captures/cache in
 `~/Library/Application Support/YomiMado/vocabulary.sqlite3` on macOS or
 `%APPDATA%\YomiMado\vocabulary.sqlite3` on Windows. Override this with
-`YOMIMADO_VOCAB_DB` before starting the OCR service. The saved record contains
-the chosen dictionary entry's possible meanings and the Japanese source
-sentence, but no screenshot or automatically generated translation. The same
-word and sentence can be saved again to update its meanings without creating a
-duplicate. Restart the OCR service after updating to a version with this API.
+`YOMIMADO_VOCAB_DB` before starting the OCR service. A saved word contains
+the chosen dictionary entry's possible meanings and its Japanese source text.
+A separately saved sentence contains Japanese text and, optionally, a
+translation the reader already requested. Neither record contains a screenshot
+or an automatically generated translation. Re-saving the same word/context or
+sentence updates its record without creating a duplicate. Restart the OCR
+service after updating to a version with this API.
 
 JMdict is copyright the Electronic Dictionary Research and Development Group,
 provided under [CC BY-SA 4.0 and the EDRDG dictionary licence](https://www.edrdg.org/edrdg/licence.html).

@@ -459,8 +459,9 @@ The user can select an individual kanji from recognized text and receive useful 
 
 - [x] vocabulary history (explicitly saved words in local SQLite)
 - [x] save word (chosen JMdict entry and source sentence)
-- [ ] save sentence
+- [x] save sentence (explicit local save with optional requested translation)
 - [x] review saved words in the main window and remove entries
+- [x] review saved sentences in the main window and remove entries
 - [ ] Anki export
 - [ ] grammar explanation
 - [ ] furigana overlay
@@ -468,10 +469,11 @@ The user can select an individual kanji from recognized text and receive useful 
 
 These should be implemented only after the core capture/OCR/selection interaction is stable.
 
-Status: the first learning-history slice is available. Saving is an explicit
-action on a selected dictionary entry, and the main window lists/removes saved
-words. This is not spaced repetition, Anki export, or automatic saving of OCR
-results.
+Status: words and sentences can be saved explicitly in the local SQLite
+database. A sentence may include an English translation only after the reader
+requests translation and saves again. The main window lists and removes saved
+words and sentences separately. This is not spaced repetition, Anki export, or
+automatic saving of OCR results.
 
 ---
 

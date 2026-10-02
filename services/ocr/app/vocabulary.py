@@ -10,7 +10,7 @@ from datetime import datetime, timezone
 from os import environ
 from pathlib import Path
 
-from app.models import SavedWord, SaveWordRequest
+from app.models import SavedSentence, SavedWord, SaveSentenceRequest, SaveWordRequest
 
 
 def default_vocabulary_path() -> Path:
@@ -38,6 +38,15 @@ def _saved_word(row: sqlite3.Row) -> SavedWord:
     )
 
 
+def _saved_sentence(row: sqlite3.Row) -> SavedSentence:
+    return SavedSentence(
+        id=row["id"],
+        sourceText=row["source_text"],
+        translatedText=row["translated_text"],
+        createdAt=row["created_at"],
+    )
+
+
 class VocabularyStore:
     def __init__(self, path: Path):
         self.path = path
@@ -56,6 +65,14 @@ class VocabularyStore:
                 source_text TEXT NOT NULL,
                 created_at TEXT NOT NULL,
                 UNIQUE(surface, reading, source_text)
+            )"""
+        )
+        connection.execute(
+            """CREATE TABLE IF NOT EXISTS saved_sentences (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                source_text TEXT NOT NULL UNIQUE,
+                translated_text TEXT,
+                created_at TEXT NOT NULL
             )"""
         )
         return connection
@@ -106,4 +123,46 @@ class VocabularyStore:
     def delete(self, word_id: int) -> bool:
         with closing(self._connect()) as connection, connection:
             result = connection.execute("DELETE FROM saved_words WHERE id = ?", (word_id,))
+            return result.rowcount > 0
+
+    def save_sentence(self, request: SaveSentenceRequest) -> SavedSentence:
+        source_text = request.sourceText.strip()
+        translated_text = request.translatedText.strip() if request.translatedText else None
+        if not source_text:
+            raise ValueError("A source sentence is required")
+        if request.translatedText is not None and not translated_text:
+            raise ValueError("A saved translation cannot be blank")
+        with closing(self._connect()) as connection, connection:
+            connection.execute(
+                """INSERT INTO saved_sentences
+                   (source_text, translated_text, created_at)
+                   VALUES (?, ?, ?)
+                   ON CONFLICT(source_text)
+                   DO UPDATE SET translated_text = COALESCE(
+                       excluded.translated_text, saved_sentences.translated_text
+                   )""",
+                (
+                    source_text,
+                    translated_text,
+                    datetime.now(timezone.utc).isoformat(timespec="seconds"),
+                ),
+            )
+            row = connection.execute(
+                "SELECT * FROM saved_sentences WHERE source_text = ?",
+                (source_text,),
+            ).fetchone()
+            if row is None:
+                raise sqlite3.DatabaseError("Saved sentence could not be read back")
+            return _saved_sentence(row)
+
+    def list_sentences(self) -> list[SavedSentence]:
+        with closing(self._connect()) as connection, connection:
+            rows = connection.execute(
+                "SELECT * FROM saved_sentences ORDER BY created_at DESC, id DESC"
+            ).fetchall()
+            return [_saved_sentence(row) for row in rows]
+
+    def delete_sentence(self, sentence_id: int) -> bool:
+        with closing(self._connect()) as connection, connection:
+            result = connection.execute("DELETE FROM saved_sentences WHERE id = ?", (sentence_id,))
             return result.rowcount > 0
