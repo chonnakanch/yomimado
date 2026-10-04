@@ -679,9 +679,12 @@ Before any public release:
 - [ ] verify model weights/licenses
 - [ ] verify dictionary/data licenses
 - [ ] update `THIRD_PARTY_LICENSES/`
-- [ ] build and test a self-contained macOS pre-release with the bundled OCR
-  service, models, and dictionaries; do not distribute it until the detector
-  weight's redistribution terms and all bundled notices are resolved
+- [x] build and smoke-test a private, self-contained Apple Silicon `.app` with
+  the bundled OCR service, models, and dictionaries (health, OCR, JMdict,
+  KANJIDIC2, Sudachi, and local translation)
+- [ ] distribute the macOS pre-release only after the detector weight's
+  redistribution terms and all bundled notices are resolved; signing and
+  notarization are still pending
 - [x] keep copyrighted manga fixtures out of git (current tracked test assets)
 - [x] document local model/data setup behavior
 - [x] document macOS permissions

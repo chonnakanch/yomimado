@@ -10,3 +10,5 @@ __pycache__/
 services/ocr/local-fixtures/
 services/ocr/local-models/
 services/ocr/local-dictionaries/
+services/ocr/build/
+apps/desktop/src-tauri/resources/ocr/

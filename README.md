@@ -9,6 +9,12 @@ dictionaries, and other third-party components retain their separate licenses;
 see [third-party notices](THIRD_PARTY_LICENSES/README.md). This is an
 open-source personal project, not a personal-use-only restriction.
 
+The local detector uses code from
+[comic-text-detector](https://github.com/dmMaze/comic-text-detector) and an ONNX
+model published by
+[manga-image-translator](https://github.com/zyddnys/manga-image-translator/releases/tag/beta-0.2.1).
+See the [model and dictionary credits](THIRD_PARTY_LICENSES/MODEL_CREDITS.md).
+
 ## Current milestone
 
 The initial capture-to-overlay slice is implemented:
@@ -64,8 +70,8 @@ popup. There is no Reading order button on the manga overlay. The setting is
 saved locally and applies to new scans.
 This order uses text positions, not panel detection, so you can always click a
 region directly if the suggested order is wrong.
-Automatic scanning is not yet manually verified on Windows or multi-monitor
-setups.
+Automatic scanning is not yet manually verified on Windows. It has been tested
+on two macOS displays with different scaling.
 
 ## Development
 
@@ -122,12 +128,50 @@ return a screenshot containing only the desktop background instead of the
 visible windows. The placeholder OCR endpoint does not download models or send
 images over the network.
 
-## Local OCR models (optional)
+## Private macOS pre-release build
+
+An Apple Silicon `.app` can now be built with the local OCR service, detector,
+Manga OCR, Sudachi, JMdict, KANJIDIC2, and on-demand translation model inside
+the app bundle. This is a **private test build**, not a public download: the
+detector model's redistribution terms and final bundled dependency notices
+still need review. It is unsigned and not notarized. Do not upload or share
+the generated app yet.
+
+First install the service's build dependencies in its virtual environment:
+
+```sh
+cd services/ocr
+.venv/bin/python -m pip install -e '.[ocr,tokenization,translation,macos-build]'
+```
+
+The build uses the existing user-local detector checkout and model under
+`services/ocr/local-models/`, the two dictionary files under
+`services/ocr/local-dictionaries/`, and the pinned Manga OCR model revision
+from the local Hugging Face cache. It does not download models or dictionaries.
+Run from the repository root:
+
+```sh
+./scripts/build-macos-prerelease.sh
+```
+
+The result is `apps/desktop/src-tauri/target/release/bundle/macos/YomiMado.app`
+(about 2.2 GB in the first test build). The app starts its bundled service on
+`127.0.0.1:8766`, separate from the development service on port 8765. Only one
+packaged instance can use that port at a time. The release service stores the
+JMdict index, saved vocabulary, and translation cache in YomiMado's macOS
+Application Support directory rather than inside the app bundle. macOS Screen
+Recording permission is still required for captures.
+
+This first build targets Apple Silicon only. An Intel build, signing,
+notarization, a DMG, complete third-party license texts, and a public download
+are separate release tasks.
+
+## Local OCR models (development mode)
 
 The service supports a user-local checkout of
 [comic-text-detector](https://github.com/dmMaze/comic-text-detector) and a local
 [Manga OCR](https://github.com/kha-white/manga-ocr) model directory. These are
-not bundled or downloaded by YomiMado. Install the detector checkout's own
+not bundled or downloaded in development mode. Install the detector checkout's own
 requirements and then install `manga-ocr==0.1.16` with
 `pip install -e '.[ocr]'` from `services/ocr`. Set these paths before starting
 Uvicorn:

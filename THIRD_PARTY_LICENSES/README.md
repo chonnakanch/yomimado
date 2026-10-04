@@ -5,6 +5,9 @@ software and assets needed for the first **self-contained macOS package**. It
 is an audit, not yet the complete set of license texts for a distributable
 build. Do not describe the package as release-ready until the open items below
 are closed and the final bundle has been inspected.
+The private Apple Silicon test bundle includes the assets below and the
+[explicit model/dictionary credits](MODEL_CREDITS.md); it must not be uploaded
+or redistributed while those gates remain open.
 
 | Component | Intended package use | License evidence | Status |
 | --- | --- | --- | --- |

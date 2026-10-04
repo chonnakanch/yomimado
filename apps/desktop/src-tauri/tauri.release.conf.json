@@ -1,0 +1,12 @@
+{
+  "app": {
+    "security": {
+      "csp": "default-src 'self'; connect-src ipc: http://ipc.localhost http://127.0.0.1:8766; img-src 'self' data: blob:; style-src 'self' 'unsafe-inline'"
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": ["app"],
+    "resources": { "resources/ocr": "ocr" }
+  }
+}

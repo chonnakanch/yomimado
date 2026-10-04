@@ -1,7 +1,8 @@
 mod capture;
 mod overlay;
 
-use std::sync::Arc;
+use std::process::Child;
+use std::sync::{Arc, Mutex};
 
 use capture::{
     cleanup_legacy_captures, crop_detected_page, CaptureMetadata, CapturedImage, DisplayInfo,
@@ -19,6 +20,38 @@ const SAVED_AREA_SHORTCUT: &str = "CMDORCONTROL+SHIFT+S";
 struct AppState {
     capture: Arc<dyn ScreenCapture>,
     overlay: overlay::OverlayStore,
+    service: Mutex<Option<Child>>,
+}
+
+#[cfg(all(not(debug_assertions), target_os = "macos"))]
+fn start_bundled_service(app: &tauri::App) -> Result<Child, Box<dyn std::error::Error>> {
+    use std::process::Command;
+
+    let resources = app.path().resource_dir()?.join("ocr");
+    let assets = resources.join("assets");
+    let data = app.path().app_data_dir()?;
+    std::fs::create_dir_all(&data)?;
+    let child = Command::new(resources.join("runtime/yomimado-ocr"))
+        .env("YOMIMADO_OCR_PORT", "8766")
+        .env("YOMIMADO_DETECTOR_REPO", assets.join("comic-text-detector"))
+        .env(
+            "YOMIMADO_DETECTOR_MODEL",
+            assets.join("comictextdetector.pt.onnx"),
+        )
+        .env("YOMIMADO_MANGA_OCR_MODEL", assets.join("manga-ocr-base"))
+        .env("YOMIMADO_TRANSLATION_MODEL", assets.join("opus-mt-ja-en"))
+        .env("YOMIMADO_JMDICT", assets.join("JMdict_e.gz"))
+        .env("YOMIMADO_KANJIDIC2", assets.join("kanjidic2.xml.gz"))
+        .env("YOMIMADO_JMDICT_INDEX", data.join("jmdict-index.sqlite3"))
+        .env("YOMIMADO_VOCAB_DB", data.join("vocabulary.sqlite3"))
+        .env(
+            "YOMIMADO_TRANSLATION_CACHE",
+            data.join("translation.sqlite3"),
+        )
+        .env("HF_HUB_OFFLINE", "1")
+        .env("TRANSFORMERS_OFFLINE", "1")
+        .spawn()?;
+    Ok(child)
 }
 
 fn current_display(app: &AppHandle, window_label: &str) -> Result<DisplayInfo, String> {
@@ -455,9 +488,14 @@ pub fn run() {
             if let Err(error) = cleanup_legacy_captures(&capture_dir) {
                 eprintln!("YomiMado: could not clear legacy capture cache: {error}");
             }
+            #[cfg(all(not(debug_assertions), target_os = "macos"))]
+            let service = Some(start_bundled_service(app)?);
+            #[cfg(any(debug_assertions, not(target_os = "macos")))]
+            let service = None;
             app.manage(AppState {
                 capture: Arc::new(XcapScreenCapture::new()),
                 overlay: overlay::OverlayStore::default(),
+                service: Mutex::new(service),
             });
             let manual =
                 Shortcut::try_from(MANUAL_CAPTURE_SHORTCUT).map_err(|error| error.to_string())?;
@@ -495,8 +533,18 @@ pub fn run() {
             resize_translation_popup,
             close_ocr_overlay
         ])
-        .run(tauri::generate_context!())
-        .expect("error while running YomiMado");
+        .build(tauri::generate_context!())
+        .expect("error while building YomiMado")
+        .run(|app, event| {
+            if matches!(event, tauri::RunEvent::Exit) {
+                if let Ok(mut service) = app.state::<AppState>().service.lock() {
+                    if let Some(mut child) = service.take() {
+                        let _ = child.kill();
+                        let _ = child.wait();
+                    }
+                }
+            }
+        });
 }
 
 #[cfg(test)]
