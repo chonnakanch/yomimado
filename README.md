@@ -130,12 +130,12 @@ images over the network.
 
 ## Private macOS pre-release build
 
-An Apple Silicon `.app` can now be built with the local OCR service, detector,
-Manga OCR, Sudachi, JMdict, KANJIDIC2, and on-demand translation model inside
-the app bundle. This is a **private test build**, not a public download: the
-detector model's redistribution terms and final bundled dependency notices
-still need review. It is unsigned and not notarized. Do not upload or share
-the generated app yet.
+An Apple Silicon `.app` can now be built with the local OCR service, detector
+code, Manga OCR, Sudachi, JMdict, KANJIDIC2, and on-demand translation model
+inside the app bundle. The detector's ONNX weight file is **not bundled**.
+This is still a **private test build**, not a public download: final bundled
+dependency notices need review. It is unsigned and not notarized. Do not
+upload or share the generated app yet.
 
 First install the service's build dependencies in its virtual environment:
 
@@ -144,7 +144,7 @@ cd services/ocr
 .venv/bin/python -m pip install -e '.[ocr,tokenization,translation,macos-build]'
 ```
 
-The build uses the existing user-local detector checkout and model under
+The build uses the existing user-local detector checkout under
 `services/ocr/local-models/`, the two dictionary files under
 `services/ocr/local-dictionaries/`, and the pinned Manga OCR model revision
 from the local Hugging Face cache. It does not download models or dictionaries.
@@ -154,17 +154,27 @@ Run from the repository root:
 ./scripts/build-macos-prerelease.sh
 ```
 
-The result is `apps/desktop/src-tauri/target/release/bundle/macos/YomiMado.app`
-(about 2.2 GB in the first test build). The app starts its bundled service on
+The result is `apps/desktop/src-tauri/target/release/bundle/macos/YomiMado.app`.
+The app starts its bundled service on
 `127.0.0.1:8766`, separate from the development service on port 8765. Only one
 packaged instance can use that port at a time. The release service stores the
 JMdict index, saved vocabulary, and translation cache in YomiMado's macOS
 Application Support directory rather than inside the app bundle. macOS Screen
 Recording permission is still required for captures.
 
+Before scanning with the package, obtain `comictextdetector.pt.onnx` yourself
+from the [original publisher's beta-0.2.1 release](https://github.com/zyddnys/manga-image-translator/releases/tag/beta-0.2.1).
+In YomiMado's main window, choose **Select detector model file** and pick the
+downloaded ONNX file. YomiMado verifies its SHA-256 checksum and copies it to
+its own Application Support data under `models/`; the app never downloads the
+file or adds it to the bundle. An incorrect file is rejected. The original
+model remains in your Downloads folder until you remove it yourself.
+
 This first build targets Apple Silicon only. An Intel build, signing,
 notarization, a DMG, complete third-party license texts, and a public download
-are separate release tasks.
+are separate release tasks. If model redistribution terms are later clarified,
+a bundled-model build can be reconsidered; manual installation is the default
+for the first public release.
 
 ## Local OCR models (development mode)
 

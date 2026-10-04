@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import {
   deleteVocabularyWord,
@@ -15,8 +15,19 @@ import {
   type SavedSentence,
 } from "./lib/sentence-client";
 
+interface DetectorModelStatus {
+  required: boolean;
+  installed: boolean;
+}
+
 export function App() {
   const [message, setMessage] = useState("Ready to capture a screen region.");
+  const [detectorModel, setDetectorModel] =
+    useState<DetectorModelStatus | null>(null);
+  const [detectorModelError, setDetectorModelError] = useState<string | null>(
+    null,
+  );
+  const [installingDetectorModel, setInstallingDetectorModel] = useState(false);
   const [showSavedWords, setShowSavedWords] = useState(false);
   const [savedWords, setSavedWords] = useState<SavedWord[]>([]);
   const [savedWordsLoading, setSavedWordsLoading] = useState(false);
@@ -32,6 +43,30 @@ export function App() {
   const [readingOrderEnabled, setReadingOrderEnabled] = useState(
     readReadingOrderEnabled,
   );
+
+  useEffect(() => {
+    void invoke<DetectorModelStatus>("detector_model_status")
+      .then(setDetectorModel)
+      .catch((error) => setDetectorModelError(String(error)));
+  }, []);
+
+  const installDetectorModel = async () => {
+    setInstallingDetectorModel(true);
+    setDetectorModelError(null);
+    try {
+      const updated = await invoke<DetectorModelStatus | null>(
+        "install_detector_model",
+      );
+      if (updated) {
+        setDetectorModel(updated);
+        setMessage("Detector model installed. You can scan manga now.");
+      }
+    } catch (error) {
+      setDetectorModelError(String(error).replace(/^Error: /, ""));
+    } finally {
+      setInstallingDetectorModel(false);
+    }
+  };
 
   const updateReadingOrder = (enabled: boolean) => {
     try {
@@ -133,10 +168,66 @@ export function App() {
         YomiMado <span>読み窓</span>
       </h1>
       <p>Read beyond the page.</p>
+      {detectorModel?.required && (
+        <section className="model-setup" aria-label="Detector model setup">
+          <h2>Detector model</h2>
+          {detectorModel.installed ? (
+            <p>Installed on this Mac. Manga scanning is ready.</p>
+          ) : (
+            <p>
+              Download <code>comictextdetector.pt.onnx</code> from the{" "}
+              <a
+                href="https://github.com/zyddnys/manga-image-translator/releases/tag/beta-0.2.1"
+                target="_blank"
+                rel="noreferrer"
+              >
+                original release page
+              </a>
+              , then select the downloaded file. YomiMado checks it and stores a
+              private copy in its app data. Nothing is downloaded by the app.
+            </p>
+          )}
+          <button
+            className="secondary-button"
+            onClick={() => void installDetectorModel()}
+            disabled={installingDetectorModel}
+          >
+            {installingDetectorModel
+              ? "Checking model…"
+              : detectorModel.installed
+                ? "Replace detector model"
+                : "Select detector model file"}
+          </button>
+          {detectorModelError && (
+            <p className="translation-error" role="alert">
+              {detectorModelError}
+            </p>
+          )}
+        </section>
+      )}
+      {detectorModelError && !detectorModel?.required && (
+        <p className="translation-error" role="alert">
+          Unable to check detector model setup: {detectorModelError}
+        </p>
+      )}
       <div className="main-actions">
-        <button onClick={startCapture}>Select screen region</button>
-        <button onClick={scanMangaPage}>Scan manga page</button>
-        <button className="secondary-button" onClick={adjustScanArea}>
+        <button
+          onClick={startCapture}
+          disabled={detectorModel?.required && !detectorModel.installed}
+        >
+          Select screen region
+        </button>
+        <button
+          onClick={scanMangaPage}
+          disabled={detectorModel?.required && !detectorModel.installed}
+        >
+          Scan manga page
+        </button>
+        <button
+          className="secondary-button"
+          onClick={adjustScanArea}
+          disabled={detectorModel?.required && !detectorModel.installed}
+        >
           Set/adjust scan area
         </button>
         <button

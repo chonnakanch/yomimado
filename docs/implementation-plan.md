@@ -682,9 +682,13 @@ Before any public release:
 - [x] build and smoke-test a private, self-contained Apple Silicon `.app` with
   the bundled OCR service, models, and dictionaries (health, OCR, JMdict,
   KANJIDIC2, Sudachi, and local translation)
-- [ ] distribute the macOS pre-release only after the detector weight's
-  redistribution terms and all bundled notices are resolved; signing and
-  notarization are still pending
+- [x] rebuild and smoke-test an Apple Silicon `.app` that omits the detector
+  ONNX weights and blocks scanning until setup
+- [ ] manually import the publisher's ONNX file in the packaged app and verify
+  that a scan works afterward
+- [ ] distribute the macOS pre-release only after verifying the detector
+  weights are absent and all remaining bundled notices are resolved; signing
+  and notarization are still pending
 - [x] keep copyrighted manga fixtures out of git (current tracked test assets)
 - [x] document local model/data setup behavior
 - [x] document macOS permissions

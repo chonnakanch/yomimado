@@ -24,6 +24,27 @@ button {
   font-weight: 700;
   padding: 0.8rem 1rem;
 }
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+.model-setup {
+  border: 1px solid #8f604c;
+  border-radius: 8px;
+  margin: 1rem 0;
+  padding: 0.75rem;
+}
+.model-setup h2 {
+  font-size: 1rem;
+  margin: 0;
+}
+.model-setup p {
+  color: #c6bcb5;
+  line-height: 1.4;
+}
+.model-setup a {
+  color: #ffab83;
+}
 .main-window {
   margin: 0 auto;
   max-width: 32rem;

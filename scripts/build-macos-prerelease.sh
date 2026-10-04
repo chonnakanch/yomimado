@@ -8,8 +8,6 @@ resource_parent="$desktop_dir/src-tauri/resources"
 resource_dir="$resource_parent/ocr"
 python_bin="${YOMIMADO_BUILD_PYTHON:-$service_dir/.venv/bin/python}"
 detector_repo="$service_dir/local-models/comic-text-detector"
-detector_model="$service_dir/local-models/comictextdetector.pt.onnx"
-detector_sha256="1a86ace74961413cbd650002e7bb4dcec4980ffa21b2f19b86933372071d718f"
 translation_model="$service_dir/local-models/opus-mt-ja-en"
 dictionary_dir="$service_dir/local-dictionaries"
 model_revision="aa6573bd10b0d446cbf622e29c3e084914df9741"
@@ -18,7 +16,7 @@ if [[ "$(uname -s)" != "Darwin" || "$(uname -m)" != "arm64" ]]; then
   echo "This first pre-release build requires an Apple Silicon Mac." >&2
   exit 1
 fi
-for required in "$python_bin" "$detector_repo/inference.py" "$detector_model" \
+for required in "$python_bin" "$detector_repo/inference.py" \
   "$translation_model/pytorch_model.bin" "$dictionary_dir/JMdict_e.gz" \
   "$dictionary_dir/kanjidic2.xml.gz"; do
   if [[ ! -e "$required" ]]; then
@@ -26,11 +24,6 @@ for required in "$python_bin" "$detector_repo/inference.py" "$detector_model" \
     exit 1
   fi
 done
-actual_detector_sha256="$(shasum -a 256 "$detector_model" | awk '{print $1}')"
-if [[ "$actual_detector_sha256" != "$detector_sha256" ]]; then
-  echo "Detector model checksum differs from the audited beta-0.2.1 asset." >&2
-  exit 1
-fi
 if ! "$python_bin" -m PyInstaller --version >/dev/null 2>&1; then
   echo "Install PyInstaller 6.16.0 into $python_bin before building." >&2
   exit 1
@@ -73,8 +66,8 @@ mkdir -p "$staging/runtime" "$staging/assets/comic-text-detector" \
   "$staging/notices"
 cp -R "$service_dir/dist/yomimado-ocr/." "$staging/runtime/"
 rsync -a --exclude .git --exclude __pycache__ --exclude '*.pyc' \
+  --exclude '*.onnx' \
   "$detector_repo/" "$staging/assets/comic-text-detector/"
-cp "$detector_model" "$staging/assets/"
 cp -RL "$manga_model/." "$staging/assets/manga-ocr-base/"
 for name in README.md config.json generation_config.json pytorch_model.bin \
   source.spm target.spm tokenizer_config.json vocab.json; do
@@ -87,7 +80,7 @@ cp "$repo_root/LICENSE" "$repo_root/THIRD_PARTY_LICENSES/README.md" \
   "$staging/notices/"
 (
   cd "$staging/assets"
-  shasum -a 256 comictextdetector.pt.onnx manga-ocr-base/pytorch_model.bin \
+  shasum -a 256 manga-ocr-base/pytorch_model.bin \
     opus-mt-ja-en/pytorch_model.bin JMdict_e.gz kanjidic2.xml.gz
 ) > "$staging/notices/asset-checksums.txt"
 
@@ -106,4 +99,5 @@ VITE_OCR_URL=http://127.0.0.1:8766 npm run tauri build -- \
   --config src-tauri/tauri.release.conf.json --bundles app
 
 echo "Local macOS test bundle: $desktop_dir/src-tauri/target/release/bundle/macos/YomiMado.app"
-echo "Private test only: detector weight redistribution terms and final notices remain open."
+echo "Detector ONNX weights are not bundled; select your own copy in YomiMado."
+echo "Private test only until all remaining bundled notices and release gates are resolved."

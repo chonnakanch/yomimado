@@ -1,4 +1,5 @@
 mod capture;
+mod detector_model;
 mod overlay;
 
 use std::process::Child;
@@ -36,7 +37,7 @@ fn start_bundled_service(app: &tauri::App) -> Result<Child, Box<dyn std::error::
         .env("YOMIMADO_DETECTOR_REPO", assets.join("comic-text-detector"))
         .env(
             "YOMIMADO_DETECTOR_MODEL",
-            assets.join("comictextdetector.pt.onnx"),
+            detector_model::installed_path(app.handle())?,
         )
         .env("YOMIMADO_MANGA_OCR_MODEL", assets.join("manga-ocr-base"))
         .env("YOMIMADO_TRANSLATION_MODEL", assets.join("opus-mt-ja-en"))
@@ -136,6 +137,7 @@ fn get_capture_surface(app: AppHandle) -> Result<CaptureSurface, String> {
 }
 
 fn show_capture_window(app: AppHandle, scan_query: &str) -> Result<(), String> {
+    detector_model::ensure_available(&app)?;
     #[cfg(target_os = "macos")]
     {
         let access = core_graphics::access::ScreenCaptureAccess;
@@ -483,6 +485,7 @@ pub fn run() {
             }
         })
         .plugin(GlobalShortcutBuilder::new().build())
+        .plugin(tauri_plugin_dialog::init())
         .setup(|app| {
             let capture_dir = app.path().app_cache_dir()?.join("captures");
             if let Err(error) = cleanup_legacy_captures(&capture_dir) {
@@ -519,6 +522,8 @@ pub fn run() {
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
+            detector_model::detector_model_status,
+            detector_model::install_detector_model,
             show_capture_selector,
             show_auto_scanner,
             show_scan_area_selector,

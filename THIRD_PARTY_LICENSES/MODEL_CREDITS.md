@@ -6,8 +6,9 @@ YomiMado's local manga text detector uses source from
 [zyddnys/manga-image-translator beta-0.2.1 release](https://github.com/zyddnys/manga-image-translator/releases/tag/beta-0.2.1).
 Credit for the detector model belongs to its creators and publishers; YomiMado
 does not claim ownership of it. The release page does not explicitly state
-redistribution terms for the weight file, so the current bundled build is for
-private local testing only, not public distribution.
+redistribution terms for the weight file. YomiMado's package therefore omits
+the ONNX weights and asks each user to select a copy obtained from the original
+publisher. The app validates the file checksum before storing a local copy.
 
 Japanese text recognition uses
 [kha-white/manga-ocr-base](https://huggingface.co/kha-white/manga-ocr-base)

@@ -12,6 +12,7 @@ let root: Root;
 
 beforeEach(() => {
   Object.assign(globalThis, { IS_REACT_ACT_ENVIRONMENT: true });
+  vi.mocked(invoke).mockResolvedValue(undefined);
   window.localStorage.clear();
   container = document.createElement("div");
   document.body.appendChild(container);
@@ -55,7 +56,7 @@ it("starts a one-shot automatic scan from the main window", async () => {
       .find((button) => button.textContent === "Scan manga page")!
       .click();
   });
-  expect(invoke).toHaveBeenCalledExactlyOnceWith("show_auto_scanner");
+  expect(invoke).toHaveBeenCalledWith("show_auto_scanner");
   expect(container.textContent).toContain("Finding the manga page");
 });
 
@@ -67,7 +68,39 @@ it("opens the scan-area adjustment selector", async () => {
       .find((button) => button.textContent === "Set/adjust scan area")!
       .click();
   });
-  expect(invoke).toHaveBeenCalledExactlyOnceWith("show_scan_area_selector");
+  expect(invoke).toHaveBeenCalledWith("show_scan_area_selector");
+});
+
+it("requires manual detector installation before packaged scans", async () => {
+  vi.mocked(invoke).mockImplementation(async (command) => {
+    if (command === "detector_model_status") {
+      return { required: true, installed: false };
+    }
+    if (command === "install_detector_model") {
+      return { required: true, installed: true };
+    }
+    return undefined;
+  });
+  await act(async () => root.render(<App />));
+  expect(container.textContent).toContain("original release page");
+  expect(
+    Array.from(container.querySelectorAll("button")).find(
+      (button) => button.textContent === "Scan manga page",
+    )?.disabled,
+  ).toBe(true);
+
+  await act(async () => {
+    Array.from(container.querySelectorAll("button"))
+      .find((button) => button.textContent === "Select detector model file")!
+      .click();
+  });
+  expect(invoke).toHaveBeenCalledWith("install_detector_model");
+  expect(container.textContent).toContain("Manga scanning is ready");
+  expect(
+    Array.from(container.querySelectorAll("button")).find(
+      (button) => button.textContent === "Scan manga page",
+    )?.disabled,
+  ).toBe(false);
 });
 
 it("shows saved words and removes one only after confirmation", async () => {
