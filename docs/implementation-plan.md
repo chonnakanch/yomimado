@@ -47,7 +47,7 @@ Create the smallest repository structure capable of building a Tauri desktop app
 - [x] Create Rust native layer.
 - [x] Create Python OCR service skeleton.
 - [x] Create shared TypeScript domain types.
-- [ ] Choose and add the project `LICENSE` file.
+- [x] Choose and add the project `LICENSE` file (GPL-3.0-only).
 - [x] Create `THIRD_PARTY_LICENSES/` with initial dependency notices (full release notices still pending).
 - [x] Add basic README with project purpose and current status.
 - [x] Add the initial design and implementation-plan docs.
@@ -62,8 +62,10 @@ Frontend can reach the local service over HTTP; the service has a tested health 
 
 Do not add actual OCR dependencies yet if doing so blocks basic project setup.
 
-Status: the desktop and Python service are in place and the health endpoint is
-tested. The project license has not yet been selected or added.
+Status: the desktop and Python service are in place, the health endpoint is
+tested, and the project source is licensed under GPL-3.0-only. Third-party
+assets and packaged-release notices are tracked separately under release
+hygiene.
 
 ---
 
@@ -677,6 +679,9 @@ Before any public release:
 - [ ] verify model weights/licenses
 - [ ] verify dictionary/data licenses
 - [ ] update `THIRD_PARTY_LICENSES/`
+- [ ] build and test a self-contained macOS pre-release with the bundled OCR
+  service, models, and dictionaries; do not distribute it until the detector
+  weight's redistribution terms and all bundled notices are resolved
 - [x] keep copyrighted manga fixtures out of git (current tracked test assets)
 - [x] document local model/data setup behavior
 - [x] document macOS permissions

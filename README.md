@@ -4,6 +4,11 @@ YomiMado is a local-first desktop assistant for reading Japanese manga already
 visible on screen. It preserves the original image and adds an interactive OCR
 overlay rather than replacing text.
 
+YomiMado's own source code is licensed under [GPL-3.0-only](LICENSE). Models,
+dictionaries, and other third-party components retain their separate licenses;
+see [third-party notices](THIRD_PARTY_LICENSES/README.md). This is an
+open-source personal project, not a personal-use-only restriction.
+
 ## Current milestone
 
 The initial capture-to-overlay slice is implemented:

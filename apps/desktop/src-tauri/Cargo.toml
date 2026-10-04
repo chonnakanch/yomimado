@@ -2,6 +2,7 @@
 name = "yomimado"
 version = "0.1.0"
 description = "A local-first Japanese manga reading assistant"
+license = "GPL-3.0-only"
 edition = "2021"
 
 [lib]
