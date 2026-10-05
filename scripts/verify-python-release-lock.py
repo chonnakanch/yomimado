@@ -7,6 +7,7 @@ import importlib.metadata
 import json
 import re
 import ssl
+import subprocess
 import sys
 from pathlib import Path
 
@@ -85,8 +86,86 @@ def verify_runtime(base: Path, source: Path) -> None:
             raise ValueError("Runtime source archive checksum mismatch")
 
 
+NUMPY_SOURCE_SHA256 = "2a02aba9ed12e4ac4eb3ea9421c420301a0c6460d9830d74a9df87efa4912010"
+
+
+def numpy_recipe_digest(recipe: Path) -> str:
+    block = (
+        recipe.read_text()
+        .split("if $prepare_numpy; then\n", 1)[1]
+        .split("\nif $prepare_runtime; then", 1)[0]
+    )
+    return hashlib.sha256(block.encode()).hexdigest()
+
+
+def verify_numpy(site: Path, source: Path, configuration: dict) -> None:
+    record = json.loads((source / "build-record.json").read_text())
+    if (
+        record.get("version") != "1.26.4"
+        or record.get("sourceSha256") != NUMPY_SOURCE_SHA256
+    ):
+        raise ValueError("NumPy source version/checksum differs from reviewed input")
+    if record.get("recipeSha256") != numpy_recipe_digest(
+        LOCK.parents[2] / "scripts/build-macos-prerelease.sh"
+    ):
+        raise ValueError("NumPy build recipe changed; prepare NumPy again")
+    if (
+        configuration.get("Build Dependencies", {}).get("blas", {}).get("name")
+        != "accelerate"
+    ):
+        raise ValueError("Release NumPy requires system Accelerate BLAS")
+    if record.get("mesonArgs") != [
+        "-Dblas=accelerate",
+        "-Dlapack=accelerate",
+        "-Duse-ilp64=true",
+        "-Dallow-noblas=false",
+    ]:
+        raise ValueError("NumPy build options differ from the Accelerate recipe")
+    paths = {p.relative_to(site).as_posix(): p for p in site.rglob("*.so")}
+    if set(record["binaries"]) != set(paths) or not paths:
+        raise ValueError("NumPy binary coverage differs from build record")
+    for relative, path in paths.items():
+        if (
+            hashlib.sha256(path.read_bytes()).hexdigest()
+            != record["binaries"][relative]
+        ):
+            raise ValueError("NumPy binary differs from its source build")
+        links = subprocess.check_output(
+            ["otool", "-L", str(path)], text=True
+        ).splitlines()[1:]
+        if any(
+            not line.strip().startswith(("/usr/lib/", "/System/Library/"))
+            for line in links
+        ):
+            raise ValueError("NumPy links a non-system native library")
+    if list(site.rglob("*.dylib")):
+        raise ValueError("NumPy contains bundled native runtime libraries")
+    notice = site.parent / "numpy-1.26.4.dist-info/LICENSE.txt"
+    if hashlib.sha256(notice.read_bytes()).hexdigest() != record["noticeSha256"]:
+        raise ValueError("NumPy embedded notices differ from source build")
+    if (
+        hashlib.sha256((source / "numpy-1.26.4.tar.gz").read_bytes()).hexdigest()
+        != NUMPY_SOURCE_SHA256
+    ):
+        raise ValueError("NumPy original source archive checksum mismatch")
+
+
 def main() -> int:
     errors = []
+    try:
+        import numpy
+
+        verify_numpy(
+            Path(numpy.__file__).parent,
+            LOCK.parent / "build/numpy-source",
+            numpy.__config__.CONFIG,
+        )
+    except (ValueError, KeyError, OSError, IndexError) as error:
+        errors.append(str(error))
+    if sys.argv[1:] == ["--numpy-only"]:
+        for error in errors:
+            print(error, file=sys.stderr)
+        return 1 if errors else 0
     if sys.version_info[:3] != (3, 11, 17):
         errors.append("The macOS release build requires source-built Python 3.11.17.")
     else:

@@ -685,6 +685,8 @@ Before any public release:
   is recorded in `docs/macos-source-review.md`
 - [x] replace the OpenCV wheel with a source-pinned image/ONNX-only build;
   disable unused video dependencies and preserve its exact source/build notices
+- [x] replace NumPy 1.26.4 with a source-pinned Accelerate build; remove
+  its four OpenBLAS/GCC/libquadmath dylibs and preserve embedded notices
 - [x] collect checksum-verified Rust/JavaScript and available Python source
   candidates; add the missing full libquadmath LGPL notice. The native-source
   and complete corresponding-source review below remain open.
@@ -712,7 +714,7 @@ Before any public release:
       and Apple notarization are optional, with explicit per-app Gatekeeper steps
 - [ ] finish native source/notice clearance, final package inspection and
       installed-app testing on the existing Mac before the public pre-release;
-      59 of 152 unique native inputs have recorded source/notice evidence
+      72 of 148 unique native inputs have recorded source/notice evidence
 - Fresh-macOS install testing was skipped at the maintainer's request on
   2026-10-05 because no clean Mac is available; disclose this unverified case.
   Exact-DMG verification, model import and Screen Recording tests remain required.

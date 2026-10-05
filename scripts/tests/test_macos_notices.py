@@ -32,6 +32,9 @@ class NoticeSupplementTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temporary:
             output = Path(temporary)
             original = "licenses/python/numpy-1.26.4/LICENSE.txt"
+            path = output / original
+            path.parent.mkdir(parents=True)
+            path.write_text("libquadmath: LGPL-2.1-or-later original notice")
             component = {
                 "name": "numpy",
                 "version": "1.26.4",
@@ -44,6 +47,20 @@ class NoticeSupplementTests(unittest.TestCase):
             self.assertIn("Version 2.1, February 1999", full)
             self.assertIn("END OF TERMS AND CONDITIONS", full)
 
+    def test_accelerate_numpy_does_not_claim_libquadmath_is_bundled(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            output = Path(temporary)
+            (output / "LICENSE.txt").write_text(
+                "NumPy BSD and embedded permissive notices"
+            )
+            component = {
+                "name": "numpy",
+                "version": "1.26.4",
+                "noticeFiles": ["LICENSE.txt"],
+            }
+            notices.supplement_python_notices(output, component)
+            self.assertEqual(component["noticeFiles"], ["LICENSE.txt"])
+
     def test_tampered_supplement_rejected(self):
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
@@ -53,13 +70,142 @@ class NoticeSupplementTests(unittest.TestCase):
                     {"lgpl-2.1": {"files": [{"path": "fake.txt", "sha256": "wrong"}]}}
                 )
             )
+            (root / "numpy-notice.txt").write_text("libquadmath: LGPL-2.1-or-later")
             with (
                 patch.object(notices, "UPSTREAM", root),
                 self.assertRaisesRegex(ValueError, "checksum mismatch"),
             ):
                 notices.supplement_python_notices(
-                    root, {"name": "numpy", "version": "1.26.4", "noticeFiles": []}
+                    root,
+                    {
+                        "name": "numpy",
+                        "version": "1.26.4",
+                        "noticeFiles": ["numpy-notice.txt"],
+                    },
                 )
+
+
+class NumPyProvenanceTests(unittest.TestCase):
+    def setUp(self):
+        temporary = tempfile.TemporaryDirectory()
+        self.addCleanup(temporary.cleanup)
+        self.root = Path(temporary.name)
+        self.site = self.root / "site/numpy"
+        self.site.mkdir(parents=True)
+        self.source = self.root / "source"
+        self.source.mkdir()
+        binary = self.site / "core.so"
+        binary.write_bytes(b"built NumPy")
+        self.source_file = self.source / "numpy-1.26.4.tar.gz"
+        self.source_file.write_bytes(b"pinned source")
+        self.notice = self.site.parent / "numpy-1.26.4.dist-info/LICENSE.txt"
+        self.notice.parent.mkdir()
+        self.notice.write_text("BSD, MIT, Zlib and embedded original notices")
+        self.config = {"Build Dependencies": {"blas": {"name": "accelerate"}}}
+        self.record = {
+            "version": "1.26.4",
+            "sourceSha256": hashlib.sha256(self.source_file.read_bytes()).hexdigest(),
+            "recipeSha256": runtime.numpy_recipe_digest(
+                runtime.LOCK.parents[2] / "scripts/build-macos-prerelease.sh"
+            ),
+            "mesonArgs": [
+                "-Dblas=accelerate",
+                "-Dlapack=accelerate",
+                "-Duse-ilp64=true",
+                "-Dallow-noblas=false",
+            ],
+            "binaries": {"core.so": hashlib.sha256(binary.read_bytes()).hexdigest()},
+            "noticeSha256": hashlib.sha256(self.notice.read_bytes()).hexdigest(),
+            "configuration": self.config,
+        }
+        self.write_record()
+        pinned = patch.object(
+            runtime, "NUMPY_SOURCE_SHA256", self.record["sourceSha256"]
+        )
+        pinned.start()
+        self.addCleanup(pinned.stop)
+        links = patch.object(
+            runtime.subprocess,
+            "check_output",
+            return_value="core.so:\n\t/System/Library/Frameworks/Accelerate.framework/Accelerate (compatibility version 1.0.0)\n",
+        )
+        links.start()
+        self.addCleanup(links.stop)
+
+    def write_record(self):
+        (self.source / "build-record.json").write_text(json.dumps(self.record))
+
+    def check(self):
+        runtime.verify_numpy(self.site, self.source, self.config)
+
+    def test_accelerate_source_build_passes(self):
+        self.check()
+
+    def test_wrong_blas_and_external_link_rejected(self):
+        self.config["Build Dependencies"]["blas"]["name"] = "openblas"
+        with self.assertRaisesRegex(ValueError, "Accelerate BLAS"):
+            self.check()
+        self.config["Build Dependencies"]["blas"]["name"] = "accelerate"
+        with (
+            patch.object(
+                runtime.subprocess,
+                "check_output",
+                return_value="core.so:\n\t@rpath/libquadmath.dylib (version)\n",
+            ),
+            self.assertRaisesRegex(ValueError, "non-system"),
+        ):
+            self.check()
+
+    def test_replaced_binary_and_extra_library_rejected(self):
+        (self.site / "core.so").write_bytes(b"stock wheel")
+        with self.assertRaisesRegex(ValueError, "differs from its source build"):
+            self.check()
+        (self.site / "core.so").write_bytes(b"built NumPy")
+        (self.site / "libquadmath.dylib").write_bytes(b"unreviewed library")
+        with self.assertRaisesRegex(ValueError, "bundled native runtime"):
+            self.check()
+
+    def test_notice_and_source_tampering_rejected(self):
+        self.notice.write_text("missing embedded notices")
+        with self.assertRaisesRegex(ValueError, "embedded notices"):
+            self.check()
+        self.notice.write_text("BSD, MIT, Zlib and embedded original notices")
+        self.source_file.write_bytes(b"another source")
+        with self.assertRaisesRegex(ValueError, "original source"):
+            self.check()
+
+    def test_missing_binary_and_modified_recipe_rejected(self):
+        (self.site / "extra.so").write_bytes(b"unrecorded")
+        with self.assertRaisesRegex(ValueError, "coverage"):
+            self.check()
+        (self.site / "extra.so").unlink()
+        self.record["recipeSha256"] = "modified"
+        self.write_record()
+        with self.assertRaisesRegex(ValueError, "recipe changed"):
+            self.check()
+
+    def test_frozen_provenance_and_notice_checks(self):
+        self.record["sourceSha256"] = (
+            "2a02aba9ed12e4ac4eb3ea9421c420301a0c6460d9830d74a9df87efa4912010"
+        )
+        notices_path = self.root / "notices"
+        notice = notices_path / "licenses/python/numpy-1.26.4/LICENSE.txt"
+        notice.parent.mkdir(parents=True)
+        notice.write_bytes(self.notice.read_bytes())
+        inputs = [
+            {
+                "buildInput": "site-packages/numpy/core.so",
+                "buildInputSha256": self.record["binaries"]["core.so"],
+            }
+        ]
+        bundle.verify_numpy_provenance(self.record, inputs, notices_path)
+        inputs[0]["buildInputSha256"] = "stock wheel"
+        with self.assertRaisesRegex(ValueError, "Frozen NumPy input"):
+            bundle.verify_numpy_provenance(self.record, inputs, notices_path)
+        inputs[0]["buildInputSha256"] = self.record["binaries"]["core.so"]
+        notice.write_text("modified")
+        with self.assertRaisesRegex(ValueError, "embedded notices"):
+            bundle.verify_numpy_provenance(self.record, inputs, notices_path)
 
 
 class RuntimeProvenanceTests(unittest.TestCase):

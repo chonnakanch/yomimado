@@ -43,6 +43,7 @@ REQUIRED_NOTICES = (
     "project-revision.txt",
     "opencv-build.json",
     "python-build.json",
+    "numpy-build.json",
     "opencv-source-changes.diff",
     "assets/Apache-2.0.txt",
     "assets/CC-BY-SA-4.0.txt",
@@ -57,6 +58,41 @@ def sha256_file(path: Path) -> str:
         for chunk in iter(lambda: stream.read(1024 * 1024), b""):
             digest.update(chunk)
     return digest.hexdigest()
+
+
+def verify_numpy_provenance(record: dict, binaries: list[dict], notices: Path) -> None:
+    if (
+        record.get("version") != "1.26.4"
+        or record.get("sourceSha256")
+        != "2a02aba9ed12e4ac4eb3ea9421c420301a0c6460d9830d74a9df87efa4912010"
+        or record.get("configuration", {})
+        .get("Build Dependencies", {})
+        .get("blas", {})
+        .get("name")
+        != "accelerate"
+        or record.get("mesonArgs")
+        != [
+            "-Dblas=accelerate",
+            "-Dlapack=accelerate",
+            "-Duse-ilp64=true",
+            "-Dallow-noblas=false",
+        ]
+    ):
+        raise ValueError("Bundled NumPy differs from source-pinned Accelerate build")
+    frozen = [
+        item
+        for item in binaries
+        if item["buildInput"].startswith("site-packages/numpy/")
+    ]
+    if not frozen:
+        raise ValueError("Missing source-built NumPy input provenance")
+    for item in frozen:
+        relative = item["buildInput"].removeprefix("site-packages/numpy/")
+        if record["binaries"].get(relative) != item["buildInputSha256"]:
+            raise ValueError("Frozen NumPy input differs from its source build")
+    path = notices / "licenses/python/numpy-1.26.4/LICENSE.txt"
+    if not path.is_file() or sha256_file(path) != record["noticeSha256"]:
+        raise ValueError("Bundled NumPy embedded notices differ from source build")
 
 
 def verify_python_provenance(record: dict, binaries: list[dict], notices: Path) -> None:
@@ -204,6 +240,14 @@ def verify(app: Path) -> list[str]:
                 )
             except (ValueError, KeyError) as error:
                 errors.append(str(error))
+        numpy_record = notices / "numpy-build.json"
+        if numpy_record.is_file():
+            try:
+                verify_numpy_provenance(
+                    json.loads(numpy_record.read_text()), binaries, notices
+                )
+            except (ValueError, KeyError) as error:
+                errors.append(str(error))
         opencv_record = notices / "opencv-build.json"
         if opencv_record.is_file():
             try:
@@ -249,6 +293,10 @@ def verify(app: Path) -> list[str]:
         listed = {binary["path"] for binary in binaries}
         internal = resources / "runtime/_internal"
         for path in internal.rglob("*"):
+            if path.is_relative_to(internal / "numpy") and path.suffix == ".dylib":
+                errors.append(
+                    f"Prohibited bundled NumPy library: {path.relative_to(internal)}"
+                )
             if VIDEO_LIBRARY.match(path.name):
                 errors.append(
                     f"Prohibited video dependency: {path.relative_to(internal)}"

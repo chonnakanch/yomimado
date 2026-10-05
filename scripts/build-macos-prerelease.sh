@@ -14,21 +14,106 @@ model_revision="aa6573bd10b0d446cbf622e29c3e084914df9741"
 release=false
 signed_release=false
 prepare_runtime=false
+prepare_numpy=false
 case "${1:-}" in
   "") ;;
   --release) release=true ;;
   --developer-id-release) release=true; signed_release=true ;;
   --prepare-runtime) prepare_runtime=true ;;
-  *) echo "Usage: $0 [--release|--developer-id-release|--prepare-runtime]" >&2; exit 1 ;;
+  --prepare-numpy) prepare_numpy=true ;;
+  *) echo "Usage: $0 [--release|--developer-id-release|--prepare-runtime|--prepare-numpy]" >&2; exit 1 ;;
 esac
 if [[ $# -gt 1 ]]; then
-  echo "Usage: $0 [--release|--developer-id-release|--prepare-runtime]" >&2
+  echo "Usage: $0 [--release|--developer-id-release|--prepare-runtime|--prepare-numpy]" >&2
   exit 1
 fi
 
 if [[ "$(uname -s)" != "Darwin" || "$(uname -m)" != "arm64" ]]; then
   echo "This first pre-release build requires an Apple Silicon Mac." >&2
   exit 1
+fi
+if $prepare_numpy; then
+  "$python_bin" - "$repo_root" <<'PYNUMPY'
+import base64, csv, hashlib, io, json, os, re, shutil, subprocess, sys, tarfile, zipfile
+from pathlib import Path
+root = Path(sys.argv[1]).resolve()
+output = root / "services/ocr/build/numpy-source"
+output.mkdir(parents=True, exist_ok=True)
+original = root / "services/ocr/build/source-delivery/python/numpy-1.26.4.tar.gz"
+archive = output / original.name
+expected = "2a02aba9ed12e4ac4eb3ea9421c420301a0c6460d9830d74a9df87efa4912010"
+if not archive.exists():
+    if original.exists():
+        shutil.copyfile(original, archive)
+    else:
+        import urllib.request
+        with urllib.request.urlopen("https://pypi.org/pypi/numpy/1.26.4/json", timeout=60) as response:
+            metadata = json.load(response)
+        entry = next(item for item in metadata["urls"] if item["filename"] == archive.name)
+        if entry["digests"]["sha256"] != expected or not entry["url"].startswith("https://files.pythonhosted.org/"):
+            raise ValueError("Unexpected NumPy source registry record")
+        urllib.request.urlretrieve(entry["url"], archive)
+hashfile = lambda p: hashlib.sha256(p.read_bytes()).hexdigest()
+if hashfile(archive) != expected:
+    raise ValueError("NumPy source archive checksum mismatch")
+source = output / "numpy-1.26.4"
+if source.exists():
+    shutil.rmtree(source)
+with tarfile.open(archive) as bundle:
+    for member in bundle.getmembers():
+        if member.issym() or member.islnk() or not (output / member.name).resolve().is_relative_to(output):
+            raise ValueError("Unsafe NumPy source archive")
+    bundle.extractall(output)
+# Keep build tools outside the inventoried/frozen release environment.
+build_env = root / "services/ocr/build/numpy-build-venv"
+subprocess.run([sys.executable, "-m", "venv", str(build_env)], check=True)
+build_python = str(build_env / "bin/python")
+tools = ["Cython==3.0.8", "meson-python==0.15.0", "meson==1.3.2", "ninja==1.11.1.1", "packaging==26.3", "pyproject-metadata==0.7.1"]
+subprocess.run([build_python, "-m", "pip", "install", "--no-deps", *tools], check=True)
+env = os.environ.copy()
+env.update(MACOSX_DEPLOYMENT_TARGET="14.0", CC=subprocess.check_output(["xcrun", "--find", "clang"], text=True).strip(), CXX=subprocess.check_output(["xcrun", "--find", "clang++"], text=True).strip(), SDKROOT=subprocess.check_output(["xcrun", "--show-sdk-path"], text=True).strip())
+env["PATH"] = str(build_env / "bin") + os.pathsep + env["PATH"]
+args = ["-Dblas=accelerate", "-Dlapack=accelerate", "-Duse-ilp64=true", "-Dallow-noblas=false"]
+wheels = output / "wheels"
+wheels.mkdir(exist_ok=True)
+subprocess.run([build_python, "-m", "pip", "wheel", "--no-build-isolation", "--no-deps", str(source), "--wheel-dir", str(wheels), *["--config-settings=setup-args=" + arg for arg in args], "--config-settings=compile-args=-j4"], env=env, check=True)
+wheel = next(wheels.glob("numpy-1.26.4-*.whl"))
+# Preserve embedded licences rather than the public wheel's unused GCC notice.
+texts = [source / "LICENSES_bundled.txt"]
+texts.extend(p for p in source.rglob("*") if p.is_file() and p.name.lower().startswith(("license", "copying")) and (p.is_relative_to(source / "numpy") or p.is_relative_to(source / "tools/npy_tempita")))
+notice = (source / "LICENSE.txt").read_text()
+for path in sorted(set(texts)):
+    notice += "\n\n--- " + path.relative_to(source).as_posix() + " ---\n" + path.read_text()
+for relative in ["numpy/core/src/multiarray/dragon4.c", "numpy/fft/_pocketfft.c"]:
+    comments = re.findall(r"/\*.*?\*/", (source / relative).read_text(), re.S)
+    notice += "\n\n--- " + relative + " ---\n" + "\n".join(c for c in comments if "Copyright" in c or "copyright" in c)
+with zipfile.ZipFile(wheel) as bundle:
+    contents = {name: bundle.read(name) for name in bundle.namelist() if not name.endswith("/")}
+license_name = next(name for name in contents if name.endswith(".dist-info/LICENSE.txt"))
+contents[license_name] = notice.encode()
+record_name = next(name for name in contents if name.endswith(".dist-info/RECORD"))
+record_csv = io.StringIO()
+writer = csv.writer(record_csv, lineterminator="\n")
+for name, data in contents.items():
+    writer.writerow([name, "" if name == record_name else "sha256=" + base64.urlsafe_b64encode(hashlib.sha256(data).digest()).rstrip(b"=").decode(), "" if name == record_name else len(data)])
+contents[record_name] = record_csv.getvalue().encode()
+with zipfile.ZipFile(wheel, "w", zipfile.ZIP_DEFLATED) as bundle:
+    for name, data in contents.items():
+        bundle.writestr(name, data)
+subprocess.run([sys.executable, "-m", "pip", "install", "--no-deps", "--force-reinstall", str(wheel)], check=True)
+import numpy
+site = Path(numpy.__file__).parent
+recipe = (root / "scripts/build-macos-prerelease.sh").read_text().split("if $prepare_numpy; then\n", 1)[1].split("\nif $prepare_runtime; then", 1)[0]
+record = {"version": "1.26.4", "sourceSha256": expected, "recipeSha256": hashlib.sha256(recipe.encode()).hexdigest(), "buildTools": tools, "mesonArgs": args, "compiler": subprocess.check_output([env["CC"], "--version"], text=True).strip(), "sdk": subprocess.check_output(["xcrun", "--show-sdk-version"], text=True).strip(), "wheel": wheel.name, "wheelSha256": hashfile(wheel), "binaries": {p.relative_to(site).as_posix(): hashfile(p) for p in sorted(site.rglob("*.so"))}, "noticeSha256": hashlib.sha256(notice.encode()).hexdigest(), "configuration": numpy.__config__.CONFIG}
+(output / "build-record.json").write_text(json.dumps(record, indent=2) + "\n")
+(output / "NOTICE.txt").write_text(notice)
+with tarfile.open(output / "numpy-source-delivery.tar.gz", "w:gz") as bundle:
+    for path in [archive, output / "build-record.json", output / "NOTICE.txt", root / "scripts/build-macos-prerelease.sh"]:
+        bundle.add(path, arcname="numpy-source-delivery/" + path.name)
+print("NumPy built against system Accelerate; original source, recipe, notices and binary hashes retained.")
+PYNUMPY
+  "$python_bin" "$repo_root/scripts/verify-python-release-lock.py" --numpy-only
+  exit 0
 fi
 if $prepare_runtime; then
   python_bin="$service_dir/build/release-venv/bin/python"
@@ -157,6 +242,7 @@ PY
   "$python_bin" -m pip install --no-deps --force-reinstall "$service_dir/build/opencv-source/$wheel"
   "$python_bin" -m pip install --no-build-isolation --no-deps "$service_dir"
   "$python_bin" -m pip check
+  bash "$repo_root/scripts/build-macos-prerelease.sh" --prepare-numpy
   "$python_bin" "$repo_root/scripts/verify-python-release-lock.py"
   echo "Release runtime prepared. Build a private DMG before attempting --release."
   exit 0
@@ -270,6 +356,7 @@ cp "$repo_root/LICENSE" "$repo_root/THIRD_PARTY_LICENSES/README.md" \
 cp "$repo_root/docs/dictionary-updates.md" "$staging/notices/"
 cp "$repo_root/docs/macos-source-review.md" "$staging/notices/"
 cp "$opencv_record" "$staging/notices/opencv-build.json"
+cp "$service_dir/build/numpy-source/build-record.json" "$staging/notices/numpy-build.json"
 cp "$service_dir/build/python-source/build-record.json" "$staging/notices/python-build.json"
 cp "$service_dir/build/opencv-source/source-changes.diff" "$staging/notices/opencv-source-changes.diff"
 (

@@ -35,6 +35,7 @@ manga-ocr==0.1.16
 MarkupSafe==3.0.3
 mpmath==1.3.0
 networkx==3.2.1
+# Rebuilt against system Accelerate via --prepare-numpy; binary record required.
 numpy==1.26.4
 opencv-python==4.11.0.86+yomimado.1
 packaging==26.3

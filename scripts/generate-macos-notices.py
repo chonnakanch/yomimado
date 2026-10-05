@@ -273,6 +273,11 @@ def supplement_python_notices(notices: Path, component: dict) -> None:
     group = PYTHON_SUPPLEMENT_GROUPS.get(component["name"].lower())
     if not group:
         return
+    if component["name"].lower() == "numpy" and not any(
+        "libquadmath" in (notices / relative).read_text()
+        for relative in component["noticeFiles"]
+    ):
+        return
     files, base = upstream_files(group)
     destination = (
         notices

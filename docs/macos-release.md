@@ -24,8 +24,10 @@ incomplete candidate.
       3.5.9/liblzma 5.8.4; preserve original sources and embedded notices.
 - [x] Replace the FFmpeg-bearing OpenCV wheel with a source-pinned image/ONNX
       build; preserve its static notices and exact changes/build recipe.
-- [x] Record verified native source/notice evidence for those two builds:
-      **59 of 152 unique native inputs**. See the
+- [x] Replace NumPy's public wheel with an exact-source Accelerate build;
+      remove its OpenBLAS/GCC/libquadmath dylibs and retain embedded notices.
+- [x] Record verified native source/notice evidence for the runtime, OpenCV and NumPy builds:
+      **72 of 148 unique native inputs**. See the
       [technical review record](../THIRD_PARTY_LICENSES/macos-native-review.json).
 - [x] Exclude detector weights and sample artwork/fonts; preserve EDRDG/model
       credits and dictionary update instructions.
@@ -34,8 +36,7 @@ incomplete candidate.
 - [x] Make the hobby candidate explicit and fail closed on missing source
       clearance, incorrect distribution metadata or failed bundle/smoke checks.
 - [ ] Complete the remaining native source/notice review and final delivery
-      review. **93 unique native inputs** remain, including NumPy/GCC/OpenBLAS,
-      Pillow/torchvision codecs, PyTorch, GEOS and wandb tools. Package source
+      review. **76 unique native inputs** remain, including Pillow/torchvision codecs, PyTorch, GEOS and wandb tools. Package source
       candidates are not final clearance; see [source review](macos-source-review.md).
 - [ ] Build a source-cleared hobby candidate from a clean commit; verify that
       exact mounted DMG and its frozen service, then retain its SHA-256.
@@ -54,7 +55,8 @@ incomplete candidate.
 ## Development-Mac verification — 2026-10-05
 
 - Previous baseline: 55 desktop and 36 Rust tests passed. The OpenCV change
-  passes 47 OCR-service tests. The hobby/source preparation passes 54 release-tool
+  passes 47 OCR-service tests. NumPy numerical suites pass 1,820 tests (12
+  skipped, 1 expected failure). The hobby/source preparation passes 61 release-tool
   tests, including altered interpreter, frozen-input, recipe and licence rejection
   cases. All seven selected CPython test groups pass (2,114 tests run, 124
   skipped): SSL, LZMA, hashing, SQLite, ctypes, decimal and Expat.
@@ -66,15 +68,15 @@ incomplete candidate.
   geometry, Sudachi, JMdict, KANJIDIC2, explicit translation, and saved word,
   sentence and translation-cache persistence across a service restart.
 - Inventory: 369 software/source components (280 Rust, 80 Python, 5 JavaScript,
-  detector, CPython, OpenSSL and liblzma source), 152 unique native input binaries
-  plus 36 aliases (188 paths, down from 310). Corresponding-source worksheet:
-  522 entries, still unreviewed as a complete delivery.
+  detector, CPython, OpenSSL and liblzma source), 148 unique native input binaries
+  plus 32 aliases (180 paths, down from 310). Corresponding-source worksheet:
+  518 entries, still unreviewed as a complete delivery.
 - Dependency source candidates cover 366 entries with 85 independently hashed
   archives. Their report matches the regenerated inventory hashes. The collector
   also exports the exact clean project commit and filtered detector source.
   Complete source-delivery review and native/PyTorch provenance remain pending.
-- Full libquadmath LGPL text in the rebuilt mounted DMG matches its pinned
-  upstream notice. Cargo source archives include the original crate archives
+- The former NumPy wheel received its missing full libquadmath LGPL text;
+  the current Accelerate build contains no libquadmath and omits that supplement. Cargo source archives include the original crate archives
   and vendor tree; their current hashes are in `source-candidates.json`.
 - OpenCV source delivery SHA-256:
   `b426f96f5620aa310dd0971d0a247e5b0d81f880412aed43d665f141f9fd3f12`.
@@ -83,15 +85,20 @@ incomplete candidate.
   the user's ONNX model loads and performs inference. System-Cocoa highgui
   remains solely for the detector's unused `imshow` import.
 - Python/OpenSSL/liblzma source delivery SHA-256:
-  `929cff6c903e74d0c4bf16a27a8544dd31bbf77bb6f0bce91558c037fa660137`.
+  `09c6431422ba61a844cead37b06075ade65486b559b40fdc981f04a4240079cc`.
   The runtime build entrypoint, three original archives and 11 licence/notice
   texts are retained; frozen interpreter inputs match the recorded hashes.
+- NumPy source delivery SHA-256:
+  `ad1d14405aab335a1449aa2b512581c1de70619de435e2b88736e7d6235d6dcc`.
+  Original NumPy 1.26.4 source, compiler/SDK, pinned build tools, Accelerate
+  options, notice aggregation and installed/frozen input hashes are verified.
 - Bundled JMdict/KANJIDIC2 header dates: **2026-09-27**.
 - Private DMG SHA-256:
-  `5c730340eab6cccd666f2f467f5b381321fa8806abad7e437ef85e58ad1556db`.
+  `3750db3829ba9356778c9c6be8e634375494f840c0b2a9cc459268dd155871cf`.
   This artifact was built from the preparation working tree based on
-  `a5b1738`; its metadata identifies it as `private-test` and it is
-  not a public candidate. The release path requires a clean committed tree.
+  `c3be4ee`; its metadata identifies it as `private-test` and it is
+  not a public candidate. The embedded review document predates the final
+  NumPy technical record; final release packaging must regenerate it. The release path requires a clean committed tree.
 
 These private-build results do not clear the remaining source-delivery or
 installed-app gates. Fresh-machine behavior remains unverified.
@@ -108,8 +115,10 @@ rtk bash scripts/build-macos-prerelease.sh
 
 Preparation downloads checksum-pinned CPython 3.11.17, OpenSSL 3.5.9 and XZ
 5.8.4 sources, builds Python against static OpenSSL/liblzma, and installs the
-locked packages plus the custom OpenCV wheel in
-`services/ocr/build/release-venv`. The development `.venv` is separate.
+locked packages plus source-built NumPy and the custom OpenCV wheel in
+`services/ocr/build/release-venv`. The development `.venv` is separate. The standalone
+`--prepare-numpy` option rebuilds only NumPy, using a separate build-tool
+virtual environment. See the [NumPy recipe](macos-numpy.md).
 The default build refuses Apple's Xcode interpreter or a runtime whose
 recorded binary/notice/source hashes differ. Keep the ignored
 `build/python-source/` records and archives for the corresponding-source

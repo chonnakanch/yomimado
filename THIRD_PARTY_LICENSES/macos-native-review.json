@@ -10,7 +10,7 @@
         "source:OpenSSL@3.5.9"
       ],
       "archive": "python-source-delivery.tar.gz",
-      "sha256": "929cff6c903e74d0c4bf16a27a8544dd31bbf77bb6f0bce91558c037fa660137",
+      "sha256": "09c6431422ba61a844cead37b06075ade65486b559b40fdc981f04a4240079cc",
       "licenseEvidence": "Source-built CPython 3.11.17 (PSF-2.0 plus retained embedded notices), static OpenSSL 3.5.9 (Apache-2.0) and liblzma 5.8.4 (0BSD). Original upstream tarball hashes, unchanged compile commands, 11 source notice texts and installed binary hashes verified. XZ tools/scripts are not built; OpenSSL providers are disabled.",
       "noticeFiles": {
         "licenses/source/CPython-3.11.17/CPython-LICENSE.txt": "3b2f81fe21d181c499c59a256c8e1968455d6689d269aa85373bfb6af41da3bf",
@@ -273,6 +273,69 @@
         {
           "id": "native:cv2/cv2.abi3.so",
           "buildInputSha256": "3185bd355fede359d7ea07adb4880eb60a73879de1143ccb4bba412cdcf71039"
+        }
+      ]
+    },
+    {
+      "components": ["python:numpy@1.26.4"],
+      "archive": "numpy-source-delivery.tar.gz",
+      "sha256": "ad1d14405aab335a1449aa2b512581c1de70619de435e2b88736e7d6235d6dcc",
+      "licenseEvidence": "NumPy 1.26.4 original sdist SHA-256 verified. Unmodified source compiled with system Accelerate BLAS/LAPACK, ILP64 enabled, Clang/Xcode SDK and pinned isolated build tools. Retained NumPy BSD-3-Clause, MIT, Zlib and other embedded permissive notices (including pocketfft, dragon4 and random generators); wheel licence aggregation and RECORD update are captured by the recipe. The previous OpenBLAS/GCC/libquadmath libraries are absent, so their source/relink obligations do not apply to this replacement. All compiled installed inputs link only macOS system libraries.",
+      "noticeFiles": {
+        "licenses/python/numpy-1.26.4/LICENSE.txt": "cc3518e8366857bfc0622d85e11e3ddea7467e837367d4dbd2aaf6edafe44b55"
+      },
+      "nativeInputs": [
+        {
+          "id": "native:numpy/core/_multiarray_tests.cpython-311-darwin.so",
+          "buildInputSha256": "cfddd9f5e5205836928feb3e55fde2b9b5c70501a078338f239e117b997ac27c"
+        },
+        {
+          "id": "native:numpy/core/_multiarray_umath.cpython-311-darwin.so",
+          "buildInputSha256": "97407cb5a1f8c278a9206777e2adfb5ea242611d9546300d6601ea73e74d7ee1"
+        },
+        {
+          "id": "native:numpy/fft/_pocketfft_internal.cpython-311-darwin.so",
+          "buildInputSha256": "7c3cd2b99109cd43ebe19d14aa40c19a190ad32a2fe85b8fa574936167699b39"
+        },
+        {
+          "id": "native:numpy/linalg/_umath_linalg.cpython-311-darwin.so",
+          "buildInputSha256": "97f09af3163c55259d62b5ef6802c1c6687fe8ef2da650909f7e96cb1c4f7594"
+        },
+        {
+          "id": "native:numpy/random/_bounded_integers.cpython-311-darwin.so",
+          "buildInputSha256": "10e08f4a73e5d43279c6cdca0ef191e036cea8d5679eda1238002661b2bb0fb8"
+        },
+        {
+          "id": "native:numpy/random/_common.cpython-311-darwin.so",
+          "buildInputSha256": "9cb1bbb13318e3331b7b37340808510ec59fc0f20c2c616c9a89a5916dcb386f"
+        },
+        {
+          "id": "native:numpy/random/_generator.cpython-311-darwin.so",
+          "buildInputSha256": "4aba25307bfafaa55e7e34ecf210dc24c1776d67956fce345dced618a9156e14"
+        },
+        {
+          "id": "native:numpy/random/_mt19937.cpython-311-darwin.so",
+          "buildInputSha256": "0523c11bec84a345c46c7062668feeb2b6902058699b78df7ddd448e6cfabe9b"
+        },
+        {
+          "id": "native:numpy/random/_pcg64.cpython-311-darwin.so",
+          "buildInputSha256": "0f5f3487098c9138523082fe41818d53c72b411cb74e0317b0bfc3e723cfef01"
+        },
+        {
+          "id": "native:numpy/random/_philox.cpython-311-darwin.so",
+          "buildInputSha256": "38120ffa3212b0cacfc707a086a7c179dc893b20085bd51e0843d9df1ece7d05"
+        },
+        {
+          "id": "native:numpy/random/_sfc64.cpython-311-darwin.so",
+          "buildInputSha256": "bd473724266df333e37b553aeab849960e7c37740e1727e31fb4c94f62b04e8e"
+        },
+        {
+          "id": "native:numpy/random/bit_generator.cpython-311-darwin.so",
+          "buildInputSha256": "04ef894fedc7b17fdfb1941c8a62c80ac9f98032d470a604179613df039483e8"
+        },
+        {
+          "id": "native:numpy/random/mtrand.cpython-311-darwin.so",
+          "buildInputSha256": "0e46eeec3fd67a97f1d58700b6076b4b3ff0860ecfafee84d7f09d81cf768be5"
         }
       ]
     }

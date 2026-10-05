@@ -55,14 +55,14 @@ from an OpenCV-only source archive or successful runtime smoke.
 The follow-up inspection of the 2026-10-05 inputs identifies these concrete
 remaining items:
 
-| Input                                            | Evidence and next action                                                                                                                                                                                                                                                                                                                               |
-| ------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| CPython 3.11.17 / OpenSSL 3.5.9 / liblzma 5.8.4  | Replaces Xcode Python 3.9.6 and LibreSSL. Original sources are checksum-pinned, build steps are tracked, OpenSSL/liblzma are static, and embedded notices plus binary hashes are retained. The rebuilt DMG and seven selected standard-library test groups pass. Review the original tarballs/build record in the final delivery.                      |
-| NumPy 1.26.4                                     | Its bundled notice explicitly labels libquadmath **LGPL-2.1-or-later**, separately from libgcc/libgfortran's GCC runtime exception. The full LGPL 2.1 text was missing from that notice and is now added by the generator with a pinned upstream checksum. Exact GCC/OpenBLAS source/build provenance and replacement/relink instructions remain open. |
-| torchvision 0.23.0                               | Its wheel contains only its own BSD notice while bundling libc++, JPEG, PNG, WebP/sharpyuv and zlib libraries. Runtime queries report PNG 1.6.39, WebP 1.3.2 and zlib 1.2.13; these establish versions, not patches/build provenance. Obtain the matching native notices and build inputs.                                                             |
-| PyTorch 2.8.0 / torchvision 0.23.0               | Neither exact PyPI release offers an sdist. A top-level GitHub archive alone omits submodule sources; resolve the wheel's source revision, complete submodule tree and packaging recipe.                                                                                                                                                               |
-| wandb 0.26.1                                     | Its package notice is MIT, but its three native inputs include Go/Rust tools. Inspect their embedded dependencies/build records and notices. Its sdist alone does not establish the compiled tools' complete sources.                                                                                                                                  |
-| Pillow, Shapely/GEOS and other native extensions | Existing wheel notices are preserved; verify exact native/static input versions, patches and build recipes against the recorded binary hashes.                                                                                                                                                                                                         |
+| Input                                            | Evidence and next action                                                                                                                                                                                                                                                                                                          |
+| ------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| CPython 3.11.17 / OpenSSL 3.5.9 / liblzma 5.8.4  | Replaces Xcode Python 3.9.6 and LibreSSL. Original sources are checksum-pinned, build steps are tracked, OpenSSL/liblzma are static, and embedded notices plus binary hashes are retained. The rebuilt DMG and seven selected standard-library test groups pass. Review the original tarballs/build record in the final delivery. |
+| NumPy 1.26.4                                     | Public-wheel OpenBLAS/GCC/libquadmath inputs replaced with a source-pinned system-Accelerate build. Original sdist, exact build options, compiler/SDK, embedded notice aggregation and installed/frozen binary hashes retained. No bundled GCC runtimes remain in NumPy. See [the recipe](macos-numpy.md).                        |
+| torchvision 0.23.0                               | Its wheel contains only its own BSD notice while bundling libc++, JPEG, PNG, WebP/sharpyuv and zlib libraries. Runtime queries report PNG 1.6.39, WebP 1.3.2 and zlib 1.2.13; these establish versions, not patches/build provenance. Obtain the matching native notices and build inputs.                                        |
+| PyTorch 2.8.0 / torchvision 0.23.0               | Neither exact PyPI release offers an sdist. A top-level GitHub archive alone omits submodule sources; resolve the wheel's source revision, complete submodule tree and packaging recipe.                                                                                                                                          |
+| wandb 0.26.1                                     | Its package notice is MIT, but its three native inputs include Go/Rust tools. Inspect their embedded dependencies/build records and notices. Its sdist alone does not establish the compiled tools' complete sources.                                                                                                             |
+| Pillow, Shapely/GEOS and other native extensions | Existing wheel notices are preserved; verify exact native/static input versions, patches and build recipes against the recorded binary hashes.                                                                                                                                                                                    |
 
 ### PyTorch/torchvision source evidence collected
 
@@ -129,8 +129,9 @@ and detector/CPython/OpenSSL/liblzma sources. The `source-candidates.json` repor
 with complete delivery review still pending. The tracked
 [technical native review](../THIRD_PARTY_LICENSES/macos-native-review.json)
 binds source archives, retained notices and original binary inputs for 58
-CPython/static OpenSSL/liblzma inputs plus the custom OpenCV input. The collector
-reuses those 59 completed reviews only when all hashes match, leaving 93 native
+CPython/static OpenSSL/liblzma inputs, the custom OpenCV input and 13 source-built
+NumPy inputs. The collector reuses these 72 completed reviews only when all hashes
+match, leaving 76 native
 inputs unresolved; changed inputs require review again. The project
 and filtered detector exports are additional candidates, not review sign-offs.
 Regenerate it when the package/native inventories change.
@@ -165,10 +166,10 @@ Review these groups explicitly:
   Python certifi and the MPL-covered parts of tqdm. Deliver the exact covered
   source and preserve notices. `cargo vendor --locked --offline` can provide
   the locked Rust sources; review Python source distributions separately.
-- NumPy's bundled GCC runtimes: preserve GPLv3 and GCC Runtime Library
-  Exception text, verify the exception's applicability and the wheel's bundled
-  notices. Review libquadmath's separate LGPL-2.1-or-later source/relink terms.
-  Do not assume a GPL runtime means all application code has that licence.
+- NumPy uses system Accelerate; the former GCC/OpenBLAS/libquadmath libraries
+  are absent. Preserve its exact source and embedded permissive notices. If
+  reverting to a public wheel, review the GCC runtime exception and the separate
+  libquadmath LGPL source/relink requirements again.
 - PyInstaller 6.16.0: preserve `COPYING.txt`, including its bootloader exception.
   Python interpreter and wheels: preserve their notices; review nested native
   code, statically linked components and data, including MeCab/UniDic, OpenBLAS,

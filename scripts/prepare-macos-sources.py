@@ -204,6 +204,17 @@ def candidate(item: dict, path: Path, output: Path, checksum: str, origin: str) 
 
 
 def python_archive(item: dict, output: Path) -> dict:
+    if item["name"].lower() == "numpy":
+        path = ROOT / "services/ocr/build/numpy-source/numpy-source-delivery.tar.gz"
+        target = output / path.name
+        shutil.copyfile(path, target)
+        return candidate(
+            item,
+            target,
+            output,
+            digest(target),
+            "source-pinned Accelerate NumPy build record and original sdist",
+        )
     if item["name"].lower() == "opencv-python":
         path = ROOT / "services/ocr/build/opencv-source/opencv-source-delivery.tar.gz"
         expected = "b426f96f5620aa310dd0971d0a247e5b0d81f880412aed43d665f141f9fd3f12"

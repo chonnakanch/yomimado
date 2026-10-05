@@ -63,8 +63,9 @@ The previous public OpenCV wheel included GPLv3-or-later FFmpeg despite its
 LGPL notice. The macOS release now requires a source-pinned custom OpenCV build
 with those video dependencies disabled, exact static notices and a matching
 source archive. See [the OpenCV recipe](../docs/macos-opencv.md) and
-[the detailed source review](../docs/macos-source-review.md). Other native
-sources, build recipes and notices still require final review.
+[the detailed source review](../docs/macos-source-review.md). NumPy now also uses a source-pinned Accelerate build, removing its public-wheel
+OpenBLAS/GCC/libquadmath libraries; see [its recipe](../docs/macos-numpy.md).
+Other native sources, build recipes and notices still require final review.
 The release build requires a reviewed, hashed source delivery covering all
 package/native inventory entries. The default private build has no source
 clearance and must not be published.
