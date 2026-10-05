@@ -677,8 +677,11 @@ Before any public release:
 
 - [x] pin the current Apple Silicon Python build environment and check it at
   build time; Cargo and npm already use tracked lockfiles
-- [ ] complete a final human review of the generated dependency licence
-  inventory and corresponding-source obligations
+- [x] audit the generated package inventory and add detector/bootloader plus
+  native binary provenance; the native FFmpeg GPL/LGPL notice mismatch is
+  recorded in `docs/macos-source-review.md`
+- [ ] clear the native licence/corresponding-source gap and complete final
+  review of source archives, native notices, build recipes and compatibility
 - [x] verify bundled model-weight licensing and pin both weight checksums;
   require separate user installation for the detector ONNX file, whose
   redistribution terms are not explicit
@@ -699,8 +702,9 @@ Before any public release:
   testing on the development Mac
 - [ ] finish final package inspection, Developer ID signing/notarization, and
   clean-Mac install testing before distributing the first macOS pre-release;
-  the detector weights are already absent and the strict notice inventory
-  passes, but Apple credentials are not yet installed on this Mac
+  the detector weights are absent; a fail-closed signing/notarization path
+  and clean-Mac protocol are prepared, but native-source clearance, a Developer
+  ID identity/notary Keychain profile, and clean-Mac evidence remain required
 - [ ] link the exact corresponding source revision and full notices alongside
   the public GitHub Release
 - [ ] add an automated GitHub Actions build after the macOS pre-release reaches

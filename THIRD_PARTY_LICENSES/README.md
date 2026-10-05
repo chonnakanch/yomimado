@@ -3,8 +3,10 @@
 YomiMado's own source is GPL-3.0-only. This file tracks the separately licensed
 software and assets needed for the first macOS package. The build now creates
 `THIRD_PARTY_SOFTWARE.md`, a machine-readable manifest, and copied license
-texts from its actual dependency inputs. A strict check fails the build if a
-listed software component lacks a license identifier or notice file. This is
+texts from its actual dependency inputs. A strict package-notice check fails the build if a
+listed software component lacks a license identifier or notice file. Native
+binaries have a separate provenance inventory and source-delivery release
+gate; a package-notice pass does not clear their terms. This is
 an inventory, not a legal opinion; inspect the final bundle before publishing.
 The private Apple Silicon test bundle includes the assets below except the
 detector ONNX weights, and retains [explicit model/dictionary credits](MODEL_CREDITS.md)
@@ -50,3 +52,14 @@ source URLs and SHA-256 digests are in `upstream/sources.json`.
 3. Complete Apple Developer ID signing, notarization, and a clean-Mac install
    test before a direct public download. Until then the `.app` is for private
    local testing only.
+
+## Native/source audit — 2026-10-05
+
+The private OpenCV wheel includes GPLv3-or-later FFmpeg and additional native
+libraries not covered by its package-level Apache identifier. Its FFmpeg
+LGPL notice conflicts with the actual binary configuration. Public distribution
+is blocked pending exact native sources, build recipes and notices (or a
+verified replacement runtime). See [the detailed source review](../docs/macos-source-review.md).
+The release build requires a reviewed, hashed source delivery covering all
+package/native inventory entries. The default private build has no source
+clearance and must not be published.

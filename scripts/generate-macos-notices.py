@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import argparse
 import ast
+import ctypes
 import hashlib
 import json
 import re
@@ -44,6 +45,7 @@ PYTHON_LICENSE_OVERRIDES = {
     "sentencepiece": "Apache-2.0",
     "torchsummary": "MIT",
     "wandb": "MIT",
+    "pyinstaller": "GPL-2.0-or-later WITH Bootloader-exception",
 }
 
 
@@ -263,6 +265,8 @@ def python_license(distribution: metadata.Distribution) -> str:
 
 def inventory_python(components: list[dict], notices: Path) -> set[str]:
     included, unmapped = packaged_python_distributions()
+    # The bootloader is linked into the executable, not represented by imports.
+    included.add("pyinstaller")
     for distribution in sorted(
         metadata.distributions(path=[str(SITE_PACKAGES)]),
         key=lambda item: (item.metadata["Name"] or "").lower(),
@@ -299,6 +303,80 @@ def inventory_python(components: list[dict], notices: Path) -> set[str]:
     return unmapped
 
 
+def inventory_native(notices: Path) -> None:
+    """Record binary provenance separately from wheel-level licence labels.
+
+    A wheel's licence does not necessarily cover its bundled shared libraries.
+    Keep the original input digest (before relocation/signing) and avoid leaking
+    the builder's absolute paths. These entries require a source/notice review.
+    """
+    analysis = ROOT / "services/ocr/build/pyinstaller/yomimado-ocr/Analysis-00.toc"
+    toc = ast.literal_eval(analysis.read_text())
+    binaries = {}
+    for section in toc:
+        if not isinstance(section, list):
+            continue
+        for entry in section:
+            if not isinstance(entry, tuple) or len(entry) < 3:
+                continue
+            destination, source, kind = entry[:3]
+            if kind not in {"BINARY", "EXTENSION", "DATA"}:
+                continue
+            path = Path(source)
+            if kind == "DATA":
+                with path.open("rb") as stream:
+                    if stream.read(4) not in {
+                        b"\xfe\xed\xfa\xce",
+                        b"\xce\xfa\xed\xfe",
+                        b"\xfe\xed\xfa\xcf",
+                        b"\xcf\xfa\xed\xfe",
+                        b"\xca\xfe\xba\xbe",
+                        b"\xbe\xba\xfe\xca",
+                        b"\xca\xfe\xba\xbf",
+                        b"\xbf\xba\xfe\xca",
+                    }:
+                        continue
+            try:
+                origin = "site-packages/" + str(path.relative_to(SITE_PACKAGES))
+            except ValueError:
+                origin = "interpreter/" + path.name
+            binaries[destination] = {
+                "id": "native:" + destination,
+                "path": destination,
+                "buildInput": origin,
+                "buildInputSha256": hashlib.sha256(path.read_bytes()).hexdigest(),
+            }
+            if path.name.startswith("libavcodec.") and sys.platform == "darwin":
+                library = ctypes.CDLL(str(path))
+                for field, symbol in (
+                    ("reportedLicense", "avcodec_license"),
+                    ("reportedConfiguration", "avcodec_configuration"),
+                ):
+                    function = getattr(library, symbol)
+                    function.restype = ctypes.c_char_p
+                    binaries[destination][field] = function().decode()
+    # Tauri materializes some PyInstaller symlink aliases as regular resource
+    # files. Record aliases too, without inventing a second upstream component.
+    internal = ROOT / "services/ocr/dist/yomimado-ocr/_internal"
+    for path in internal.rglob("*"):
+        if not path.is_symlink() or not path.is_file():
+            continue
+        target = str(path.resolve().relative_to(internal.resolve()))
+        if target not in binaries:
+            continue
+        alias = str(path.relative_to(internal))
+        binaries[alias] = {
+            **binaries[target],
+            "id": "native:" + alias,
+            "path": alias,
+            "aliasOf": target,
+        }
+    (notices / "native-libraries.json").write_text(
+        json.dumps({"binaries": [binaries[k] for k in sorted(binaries)]}, indent=2)
+        + "\n"
+    )
+
+
 def write_index(
     notices: Path, components: list[dict], unmapped: set[str]
 ) -> list[dict]:
@@ -316,6 +394,9 @@ def write_index(
         "Generated from the exact local macOS build inputs. The inventory is",
         "conservative: frozen Python dependencies may include optional code.",
         "Model and dictionary credits are in `MODEL_CREDITS.md`.",
+        "Native binary provenance is in `native-libraries.json`. Package notices",
+        "do not clear nested native licences or corresponding-source obligations;",
+        "see `macos-source-review.md` and the release source-delivery gate.",
         "",
         f"Components: {len(components)}. Missing or unresolved notices: {len(gaps)}.",
         "",
@@ -355,6 +436,24 @@ def main() -> int:
     inventory_rust(components, notices)
     inventory_javascript(components, notices)
     unmapped = inventory_python(components, notices)
+    detector = ROOT / "services/ocr/local-models/comic-text-detector"
+    revision = subprocess.check_output(
+        ["git", "rev-parse", "HEAD"], cwd=detector, text=True
+    ).strip()
+    if subprocess.check_output(["git", "status", "--porcelain"], cwd=detector):
+        raise ValueError("Detector checkout must be clean for release provenance")
+    add_component(
+        components,
+        notices,
+        "source",
+        "comic-text-detector",
+        revision,
+        "GPL-3.0 (see LICENSE)",
+        "https://github.com/dmMaze/comic-text-detector",
+        [detector / "LICENSE"],
+        detector,
+    )
+    inventory_native(notices)
     components.sort(
         key=lambda item: (item["ecosystem"], item["name"].lower(), item["version"])
     )
@@ -363,7 +462,13 @@ def main() -> int:
     )
     gaps = write_index(notices, components, unmapped)
     print(
-        f"Inventoried {len(components)} third-party packages; {len(gaps)} need review."
+        f"Inventoried {len(components)} third-party packages; {len(gaps)} missing package notices."
+    )
+    native_count = len(
+        json.loads((notices / "native-libraries.json").read_text())["binaries"]
+    )
+    print(
+        f"Native binary inputs: {native_count}; separate source/licence review required."
     )
     for item in gaps:
         print(

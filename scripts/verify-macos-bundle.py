@@ -11,6 +11,17 @@ from pathlib import Path
 
 from PIL import Image
 
+MACHO = {
+    b"\xfe\xed\xfa\xce",
+    b"\xce\xfa\xed\xfe",
+    b"\xfe\xed\xfa\xcf",
+    b"\xcf\xfa\xed\xfe",
+    b"\xca\xfe\xba\xbe",
+    b"\xbe\xba\xfe\xca",
+    b"\xca\xfe\xba\xbf",
+    b"\xbf\xba\xfe\xca",
+}
+
 EXPECTED_ASSETS = (
     "manga-ocr-base/pytorch_model.bin",
     "opus-mt-ja-en/pytorch_model.bin",
@@ -26,6 +37,9 @@ REQUIRED_NOTICES = (
     "upstream-notice-sources.json",
     "asset-checksums.txt",
     "dictionary-updates.md",
+    "macos-source-review.md",
+    "native-libraries.json",
+    "project-revision.txt",
     "assets/Apache-2.0.txt",
     "assets/CC-BY-SA-4.0.txt",
     "assets/EDRDG-dictionary-licence.html",
@@ -118,6 +132,28 @@ def verify(app: Path) -> list[str]:
             for relative in item["noticeFiles"]:
                 if not (notices / relative).is_file():
                     errors.append(f"Missing component notice: {relative}")
+    native = notices / "native-libraries.json"
+    if native.is_file():
+        binaries = json.loads(native.read_text())["binaries"]
+        if not binaries:
+            errors.append("Empty native binary inventory")
+        for binary in binaries:
+            path = (resources / "runtime/_internal" / binary["path"]).resolve()
+            if not path.is_relative_to(resources.resolve()) or not path.is_file():
+                errors.append(f"Missing/unsafe native runtime path: {binary['path']}")
+        listed = {binary["path"] for binary in binaries}
+        internal = resources / "runtime/_internal"
+        for path in internal.rglob("*"):
+            if not path.is_file() or path.is_symlink():
+                continue
+            with path.open("rb") as stream:
+                if (
+                    stream.read(4) in MACHO
+                    and str(path.relative_to(internal)) not in listed
+                ):
+                    errors.append(
+                        f"Unlisted native runtime binary: {path.relative_to(internal)}"
+                    )
     return errors
 
 

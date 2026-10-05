@@ -11,10 +11,35 @@ detector_repo="$service_dir/local-models/comic-text-detector"
 translation_model="$service_dir/local-models/opus-mt-ja-en"
 dictionary_dir="$service_dir/local-dictionaries"
 model_revision="aa6573bd10b0d446cbf622e29c3e084914df9741"
+release=false
+case "${1:-}" in
+  "") ;;
+  --release) release=true ;;
+  *) echo "Usage: $0 [--release]" >&2; exit 1 ;;
+esac
+if [[ $# -gt 1 ]]; then
+  echo "Usage: $0 [--release]" >&2
+  exit 1
+fi
 
 if [[ "$(uname -s)" != "Darwin" || "$(uname -m)" != "arm64" ]]; then
   echo "This first pre-release build requires an Apple Silicon Mac." >&2
   exit 1
+fi
+if $release; then
+  "$python_bin" "$repo_root/scripts/macos-release.py" preflight
+  if [[ -z "${YOMIMADO_SOURCE_DIR:-}" || ! -d "$YOMIMADO_SOURCE_DIR" ]]; then
+    echo "Set YOMIMADO_SOURCE_DIR to the reviewed corresponding-source delivery." >&2
+    exit 1
+  fi
+  if [[ -z "${YOMIMADO_SMOKE_DETECTOR_MODEL:-}" || ! -f "$YOMIMADO_SMOKE_DETECTOR_MODEL" ]]; then
+    echo "Set YOMIMADO_SMOKE_DETECTOR_MODEL to your separately installed ONNX file." >&2
+    exit 1
+  fi
+  if [[ -n "$(git -C "$repo_root" status --porcelain)" ]]; then
+    echo "Commit all release changes before building; the release tree must be clean." >&2
+    exit 1
+  fi
 fi
 for required in "$python_bin" "$detector_repo/inference.py" \
   "$translation_model/pytorch_model.bin" "$dictionary_dir/JMdict_e.gz" \
@@ -75,6 +100,7 @@ require_sha256 "$translation_model/pytorch_model.bin" \
 
 mkdir -p "$resource_parent"
 staging="$(mktemp -d "$resource_parent/.ocr-stage.XXXXXX")"
+trap '[[ ! -d "$staging" ]] || rm -rf "$staging"' EXIT
 mkdir -p "$staging/runtime" "$staging/assets/comic-text-detector" \
   "$staging/assets/manga-ocr-base" "$staging/assets/opus-mt-ja-en" \
   "$staging/notices"
@@ -100,6 +126,7 @@ cp "$repo_root/LICENSE" "$repo_root/THIRD_PARTY_LICENSES/README.md" \
   "$repo_root/THIRD_PARTY_LICENSES/ASSET_NOTICES.md" \
   "$staging/notices/"
 cp "$repo_root/docs/dictionary-updates.md" "$staging/notices/"
+cp "$repo_root/docs/macos-source-review.md" "$staging/notices/"
 (
   cd "$staging/assets"
   shasum -a 256 manga-ocr-base/pytorch_model.bin \
@@ -107,6 +134,17 @@ cp "$repo_root/docs/dictionary-updates.md" "$staging/notices/"
 ) > "$staging/notices/asset-checksums.txt"
 "$python_bin" "$repo_root/scripts/generate-macos-notices.py" \
   "$staging/notices" --strict
+git -C "$repo_root" rev-parse HEAD > "$staging/notices/project-revision.txt"
+if $release; then
+  if [[ -d "$YOMIMADO_SOURCE_DIR/native-notices" ]]; then
+    cp -R "$YOMIMADO_SOURCE_DIR/native-notices" "$staging/notices/"
+  fi
+  "$python_bin" "$repo_root/scripts/macos-release.py" verify-sources \
+    "$staging/notices" --source-dir "$YOMIMADO_SOURCE_DIR" \
+    --revision "$(cat "$staging/notices/project-revision.txt")"
+  cp "$YOMIMADO_SOURCE_DIR/source-delivery.json" "$staging/notices/"
+  "$python_bin" "$repo_root/scripts/macos-release.py" sign-runtime "$staging/runtime"
+fi
 
 # Replace only the ignored, generated bundle input; never touch user models.
 if [[ "$resource_dir" != "$repo_root/apps/desktop/src-tauri/resources/ocr" ]]; then
@@ -119,7 +157,60 @@ fi
 mv "$staging" "$resource_dir"
 
 cd "$desktop_dir"
-VITE_OCR_URL=http://127.0.0.1:8766 npm run tauri build -- \
+if $release; then
+  # Use the Keychain profile below for explicit notarization. Tauri's default
+  # path may merely warn when notarization variables are missing. Do not mix
+  # environment-based certificate import with an already installed identity.
+  env -u APPLE_API_ISSUER -u APPLE_API_KEY -u APPLE_API_KEY_PATH \
+    -u APPLE_ID -u APPLE_PASSWORD -u APPLE_TEAM_ID \
+    -u APPLE_CERTIFICATE -u APPLE_CERTIFICATE_PASSWORD \
+    VITE_OCR_URL=http://127.0.0.1:8766 npm run tauri build -- \
+    --config src-tauri/tauri.release.conf.json --bundles app
+  app="$desktop_dir/src-tauri/target/release/bundle/macos/YomiMado.app"
+  final_output="$desktop_dir/src-tauri/target/release/bundle/releasable"
+  mkdir -p "$final_output"
+  output="$(mktemp -d "$desktop_dir/src-tauri/target/release/bundle/.release-stage.XXXXXX")"
+  trap '[[ ! -d "$staging" ]] || rm -rf "$staging"; [[ ! -d "$output" ]] || rm -rf "$output"' EXIT
+  "$python_bin" "$repo_root/scripts/verify-macos-bundle.py" "$app"
+  # Sign any native resources the Tauri bundler doesn't traverse, then seal
+  # the outer app. No --deep signing and no library-validation exemption.
+  "$python_bin" "$repo_root/scripts/macos-release.py" sign-runtime "$app/Contents"
+  codesign --force --timestamp --options runtime --sign "$APPLE_SIGNING_IDENTITY" "$app"
+  archive="$output/YomiMado-notary.zip"
+  ditto -c -k --keepParent "$app" "$archive"
+  "$python_bin" "$repo_root/scripts/macos-release.py" notarize "$archive"
+  xcrun stapler staple "$app"
+  "$python_bin" "$repo_root/scripts/macos-release.py" verify-app "$app"
+  image_stage="$(mktemp -d "$resource_parent/.dmg-stage.XXXXXX")"
+  trap '[[ ! -d "$staging" ]] || rm -rf "$staging"; [[ ! -d "$image_stage" ]] || rm -rf "$image_stage"; [[ ! -d "$output" ]] || rm -rf "$output"' EXIT
+  ditto "$app" "$image_stage/YomiMado.app"
+  ln -s /Applications "$image_stage/Applications"
+  dmg="$output/YomiMado_$("$python_bin" -c 'import json; print(json.load(open("src-tauri/tauri.conf.json"))["version"])')_aarch64.dmg"
+  hdiutil create -ov -format UDZO -volname YomiMado -srcfolder "$image_stage" "$dmg"
+  codesign --force --timestamp --sign "$APPLE_SIGNING_IDENTITY" "$dmg"
+  "$python_bin" "$repo_root/scripts/macos-release.py" notarize "$dmg"
+  xcrun stapler staple "$dmg"
+  bash "$repo_root/scripts/verify-macos-dmg.sh" "$dmg" "$python_bin" --release
+  (cd "$output"; shasum -a 256 "$(basename "$dmg")") > "$dmg.sha256"
+  if [[ -n "$(git -C "$repo_root" status --porcelain)" || \
+        "$(git -C "$repo_root" rev-parse HEAD)" != "$(cat "$resource_dir/notices/project-revision.txt")" ]]; then
+    echo "The source tree changed during the release build; rebuild from a clean commit." >&2
+    exit 1
+  fi
+  # Expose candidate files only after every verification and smoke succeeds.
+  # Keep notarization reports; the temporary ZIP is not a release asset.
+  for artifact in "$dmg" "$dmg.sha256" "$dmg.notarization.json" "$archive.notarization.json"; do
+    mv "$artifact" "$final_output/"
+  done
+  dmg="$final_output/$(basename "$dmg")"
+  echo "Verified signed/notarized candidate (clean-Mac gate still required): $dmg"
+  exit 0
+fi
+# Private builds should not pick up signing/notary credentials accidentally.
+env -u APPLE_SIGNING_IDENTITY -u APPLE_CERTIFICATE -u APPLE_CERTIFICATE_PASSWORD \
+  -u APPLE_API_ISSUER -u APPLE_API_KEY -u APPLE_API_KEY_PATH \
+  -u APPLE_ID -u APPLE_PASSWORD -u APPLE_TEAM_ID \
+  VITE_OCR_URL=http://127.0.0.1:8766 npm run tauri build -- \
   --config src-tauri/tauri.release.conf.json --bundles dmg
 
 for dmg in "$desktop_dir"/src-tauri/target/release/bundle/dmg/YomiMado_*.dmg; do
