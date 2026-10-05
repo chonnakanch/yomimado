@@ -137,11 +137,14 @@ This is still a **private test build**, not a public download. The build now
 requires a complete generated dependency-notice inventory, but the app is not
 Developer ID signed or notarized. Do not upload or share the generated DMG yet.
 
-First install the service's build dependencies in its virtual environment:
+First install the pinned Apple Silicon Python build environment into its
+virtual environment, then install YomiMado's local service package without
+re-resolving those dependencies:
 
 ```sh
 cd services/ocr
-.venv/bin/python -m pip install -e '.[ocr,tokenization,translation,macos-build]'
+.venv/bin/python -m pip install -r requirements-macos-release.txt
+.venv/bin/python -m pip install --no-build-isolation --no-deps -e .
 ```
 
 The build uses the existing user-local detector checkout under

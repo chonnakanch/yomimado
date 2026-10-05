@@ -107,7 +107,13 @@ def verify(app: Path) -> list[str]:
         if not components:
             errors.append("Empty third-party software manifest")
         for item in components:
-            if item["license"] == "UNKNOWN" or not item["noticeFiles"]:
+            license_summary = item["license"]
+            if (
+                license_summary == "UNKNOWN"
+                or "\n" in license_summary
+                or len(license_summary) > 120
+                or not item["noticeFiles"]
+            ):
                 errors.append(f"Missing licence for {item['ecosystem']} {item['name']}")
             for relative in item["noticeFiles"]:
                 if not (notices / relative).is_file():

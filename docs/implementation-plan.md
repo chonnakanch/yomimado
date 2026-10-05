@@ -675,7 +675,10 @@ At that point, the architecture has been validated and the Japanese-learning lay
 
 Before any public release:
 
-- [ ] verify dependency versions and licenses
+- [x] pin the current Apple Silicon Python build environment and check it at
+  build time; Cargo and npm already use tracked lockfiles
+- [ ] complete a final human review of the generated dependency licence
+  inventory and corresponding-source obligations
 - [x] verify bundled model-weight licensing and pin both weight checksums;
   require separate user installation for the detector ONNX file, whose
   redistribution terms are not explicit
@@ -698,6 +701,8 @@ Before any public release:
   clean-Mac install testing before distributing the first macOS pre-release;
   the detector weights are already absent and the strict notice inventory
   passes, but Apple credentials are not yet installed on this Mac
+- [ ] link the exact corresponding source revision and full notices alongside
+  the public GitHub Release
 - [ ] add an automated GitHub Actions build after the macOS pre-release reaches
   a releasable, signed and notarized state; never upload the current private
   test bundle

@@ -30,8 +30,9 @@ comply with the dictionary's ShareAlike terms.
 
 Other direct runtime software includes Tauri, the global-shortcut plugin,
 xcap, core-graphics, React, FastAPI, Uvicorn, Transformers, PyTorch,
-SentencePiece, and their resolved dependencies. The Python environment,
-Cargo.lock, and package-lock.json determine the exact bundled versions. A
+SentencePiece, and their resolved dependencies. The pinned Python
+`requirements-macos-release.txt`, Cargo.lock, and package-lock.json determine
+the exact bundled versions. A
 final distributable package includes a generated, verified inventory and
 license/notice texts for the **actual** compiled and frozen dependencies, not
 only this direct-dependency summary. Missing wheel/crate notice files are

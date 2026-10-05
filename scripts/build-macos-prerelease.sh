@@ -28,6 +28,7 @@ if ! "$python_bin" -m PyInstaller --version >/dev/null 2>&1; then
   echo "Install PyInstaller 6.16.0 into $python_bin before building." >&2
   exit 1
 fi
+"$python_bin" "$repo_root/scripts/verify-python-release-lock.py"
 export PYINSTALLER_CONFIG_DIR="$service_dir/build/pyinstaller-cache"
 mkdir -p "$PYINSTALLER_CONFIG_DIR"
 

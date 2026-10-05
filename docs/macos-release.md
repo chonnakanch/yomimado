@@ -9,6 +9,9 @@ release or upload it as a downloadable CI artifact.
 ## Completed automated checks
 
 - The build uses fixed Manga OCR and translation-model weight SHA-256 values.
+- The build checks the installed Python packages against
+  `services/ocr/requirements-macos-release.txt`; Rust and JavaScript use
+  their tracked lockfiles.
 - Detector ONNX weights are user-installed and must not appear in the bundle.
 - `scripts/generate-macos-notices.py --strict` inventories compiled/frozen
   dependencies and places a notice file for each one in the bundle.
@@ -34,9 +37,13 @@ release or upload it as a downloadable CI artifact.
    `codesign --verify --deep --strict` and `spctl --assess --type execute`.
 3. Inspect the exact signed DMG again with `scripts/verify-macos-dmg.sh` and
    run OCR, JMdict/KANJIDIC2, saved-data, and translation smoke tests on it.
-4. Test first launch, model import, Screen Recording permission, and app
-   update on a clean Apple Silicon macOS installation. Document the install
+4. Test first launch, model import, and Screen Recording permission on a clean
+   Apple Silicon macOS installation. Document the install
    instructions and the dictionary refresh date in release notes.
+5. Publish the corresponding source for the exact binary revision alongside
+   the GitHub Release, with the GPL-3.0-only project licence and bundled
+   third-party notices. Review the generated manifest before publishing;
+   automated completeness checks are not a legal compatibility opinion.
 
 Only after these gates pass should a GitHub Actions workflow automatically
 build downloadable macOS artifacts. It must fail closed when signing or

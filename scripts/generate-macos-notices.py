@@ -40,8 +40,10 @@ RUST_NOTICE_GROUPS = {
     "tauri-plugin": "tauri",
 }
 PYTHON_LICENSE_OVERRIDES = {
+    "manga-ocr": "Apache-2.0",
     "sentencepiece": "Apache-2.0",
     "torchsummary": "MIT",
+    "wandb": "MIT",
 }
 
 
@@ -241,7 +243,12 @@ def python_license(distribution: metadata.Distribution) -> str:
     if expression:
         return expression
     legacy = distribution.metadata.get("License")
-    if legacy and legacy.upper() != "UNKNOWN":
+    if (
+        legacy
+        and "\n" not in legacy
+        and len(legacy) <= 120
+        and legacy.upper() != "UNKNOWN"
+    ):
         return legacy
     classifiers = distribution.metadata.get_all("Classifier", [])
     for marker, label in (
@@ -298,7 +305,10 @@ def write_index(
     gaps = [
         item
         for item in components
-        if item["license"] == "UNKNOWN" or not item["noticeFiles"]
+        if item["license"] == "UNKNOWN"
+        or not item["noticeFiles"]
+        or "\n" in item["license"]
+        or len(item["license"]) > 120
     ]
     lines = [
         "# Third-party software notices",
