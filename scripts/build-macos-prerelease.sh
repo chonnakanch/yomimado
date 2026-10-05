@@ -210,7 +210,7 @@ if $release; then
     mv "$artifact" "$final_output/"
   done
   dmg="$final_output/$(basename "$dmg")"
-  echo "Verified signed/notarized candidate (clean-Mac gate still required): $dmg"
+  echo "Verified signed/notarized candidate (installed-app manual checks still required): $dmg"
   exit 0
 fi
 # Private builds should not pick up signing/notary credentials accidentally.

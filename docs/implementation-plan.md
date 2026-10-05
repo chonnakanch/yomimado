@@ -703,10 +703,14 @@ Before any public release:
   checks and local OCR, dictionary, kanji, tokenization, and translation smoke
   testing on the development Mac
 - [ ] finish final package inspection, Developer ID signing/notarization, and
-  clean-Mac install testing before distributing the first macOS pre-release;
+  installed-app testing on the existing Mac before distributing the first macOS pre-release;
   the detector weights are absent; a fail-closed signing/notarization path
-  and clean-Mac protocol are prepared, but native-source clearance, a Developer
-  ID identity/notary Keychain profile, and clean-Mac evidence remain required
+  and manual test protocol are prepared, but native-source clearance, a Developer
+  ID identity/notary Keychain profile, and installed-app evidence remain required
+- Fresh-macOS install testing was skipped at the maintainer's request on
+  2026-10-05 because no clean Mac is available; disclose this unverified case
+  in the pre-release notes. This waiver does not waive signing/notarization,
+  exact-DMG verification, model import or Screen Recording testing.
 - [ ] link the exact corresponding source revision and full notices alongside
   the public GitHub Release
 - [ ] add an automated GitHub Actions build after the macOS pre-release reaches

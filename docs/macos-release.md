@@ -9,31 +9,35 @@ remain user-installed.
 ## Status — 2026-10-05
 
 - [x] Private DMG builds; previous mounted bundle passed OCR, dictionaries,
-  kanji, tokenization and translation on the development Mac.
+      kanji, tokenization and translation on the development Mac.
 - [x] Pin the Python environment and model checksums; use Cargo/npm lockfiles.
 - [x] Exclude detector weights and example artwork/fonts; preserve EDRDG/model
-  notices and dictionary update instructions.
+      notices and dictionary update instructions.
 - [x] Audit package inventory and add missing detector/bootloader records and
-  native binary provenance. See [source review](macos-source-review.md).
+      native binary provenance. See [source review](macos-source-review.md).
 - [x] Prepare a separate fail-closed `--release` path, nested signing, explicit
-  notarization/stapling and signature/source verification.
+      notarization/stapling and signature/source verification.
 - [x] Set macOS 14 minimum from actual frozen binaries; check architecture
-  and deployment targets in the mounted DMG.
+      and deployment targets in the mounted DMG.
 - [x] Replace the public OpenCV wheel with a source-pinned image/ONNX-only
-  build, retaining ONNX detection/geometry and removing the FFmpeg dependency
-  chain. Preserve static notices and generate its matching source archive.
+      build, retaining ONNX detection/geometry and removing the FFmpeg dependency
+      chain. Preserve static notices and generate its matching source archive.
 - [ ] Complete native licence/source delivery for the remaining frozen
-  interpreter/libraries and all software components. The OpenCV replacement
-  and package inventory pass do not clear this entire gate.
+      interpreter/libraries and all software components. The OpenCV replacement
+      and package inventory pass do not clear this entire gate.
 - [ ] Install a Developer ID Application signing identity and authenticate a
-  `notarytool` Keychain profile. Current Mac: **0 valid signing identities**.
+      `notarytool` Keychain profile. Apple Developer account is available; signing
+      is not configured. Last local check: **0 valid signing identities**.
 - [ ] Build and verify the signed/notarized candidate and run the frozen-service
-  smoke on that exact DMG.
-- [ ] Complete the [clean-Mac test record](macos-clean-mac-test.md).
+      smoke on that exact DMG.
+- Fresh-macOS install test: **skipped at the maintainer's request on
+  2026-10-05**; no clean Mac is available. This is a waiver, not a passed test.
+- [ ] Complete the remaining [installed-app test record](macos-clean-mac-test.md)
+      on the existing Mac: Gatekeeper launch, model import and Screen Recording.
 - [ ] Publish source archives, notices, hashes, dictionary refresh dates and
-  release notes alongside the verified DMG.
+      release notes alongside the verified DMG.
 - [ ] Only then implement the GitHub Actions release workflow. No workflow or
-  unsigned fallback artifact has been added.
+      unsigned fallback artifact has been added.
 
 ## Development-Mac verification — 2026-10-05
 
@@ -62,9 +66,11 @@ remain user-installed.
   `fdee23512844e81e761891cbddd2ad471447da56`; it is unsigned/private and is
   not a public candidate. The release path requires a clean committed tree.
 
-These results do not clear the native-source, signing/notarization or clean-Mac
-checks above. Cold frozen startup gets a bounded 180-second allowance; the
-smoke surfaces startup diagnostics and cleans its process group/test volume.
+These results do not clear the native-source, signing/notarization or remaining
+installed-app checks above. Fresh-machine behavior remains unverified and must
+be disclosed in the pre-release notes. Cold frozen startup gets a bounded
+180-second allowance; the smoke surfaces startup diagnostics and cleans its
+process group/test volume.
 
 ## Credentials — local Keychain only
 
@@ -138,9 +144,9 @@ must pass:
 
 Accepted-submission IDs/status and final DMG SHA-256 are saved alongside the
 candidate under ignored `target/release/bundle/releasable/`. These do not
-replace the clean-Mac/manual gate. Signed execution is still unverified until
-credentials are available: if hardened-runtime loading fails, diagnose the
-exact library/signature before adding any entitlement.
+replace the remaining installed-app/manual gate. Signed execution is still
+unverified until credentials are available: if hardened-runtime loading fails,
+diagnose the exact library/signature before adding any entitlement.
 
 To re-verify the exact candidate:
 
@@ -161,7 +167,8 @@ geometry, Sudachi, JMdict/KANJIDIC2, translation, and saved word/sentence/cache
 survival across a service restart. It runs the frozen service outside the repo
 and does not touch existing app learning data. It does not prove GUI first
 launch, Keychain/Gatekeeper behavior or Screen Recording permission; use the
-clean-Mac record for those. The detector remains outside the app and source pack.
+installed-app record for those. The detector remains outside the app and source
+pack.
 
 ## Future GitHub Actions gate
 
@@ -179,8 +186,10 @@ cleanup. Require all certificate/password/team/notary inputs before building;
 never fall back to unsigned/ad-hoc output. Reuse the release/source verifiers
 and frozen smoke; upload only the exact verified DMG, source archives, notices
 and hashes after all jobs succeed. Verify the artifact digest when transferring
-between jobs. Capture clean-Mac sign-off for changes affecting packaging,
-permissions, runtime or signing. Keep Windows as a separate milestone.
+between jobs. Capture installed-app sign-off for changes affecting packaging,
+permissions, runtime or signing. Retain the explicit fresh-machine test waiver
+and unverified limitation until that test is actually performed. Keep Windows
+as a separate milestone.
 
 References: [Apple notarization workflow](https://developer.apple.com/documentation/security/customizing-the-notarization-workflow),
 [Tauri macOS signing](https://v2.tauri.app/distribute/sign/macos/),

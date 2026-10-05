@@ -180,8 +180,10 @@ file or adds it to the bundle. An incorrect file is rejected. The original
 model remains in your Downloads folder until you remove it yourself.
 
 This first build targets Apple Silicon only. An Intel build, Developer ID
-signing, notarization, a clean-Mac install test, and a public download are
-separate release tasks. If model redistribution terms are later clarified,
+signing, notarization, installed-app testing, and a public download are
+separate release tasks. Fresh-macOS installation testing was skipped by the
+maintainer; installation on a clean machine remains unverified.
+If model redistribution terms are later clarified,
 a bundled-model build can be reconsidered; manual installation is the default
 for the first public release. See the [macOS release gate](docs/macos-release.md)
 for the remaining checks and the subsequent GitHub Actions build.

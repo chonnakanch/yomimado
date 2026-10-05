@@ -49,9 +49,11 @@ source URLs and SHA-256 digests are in `upstream/sources.json`.
    publisher, or use a replacement asset with explicit distributable terms.
 2. Recheck the final package's generated software/asset manifests and tests,
    including model SHA-256 values and dictionary refresh date.
-3. Complete Apple Developer ID signing, notarization, and a clean-Mac install
-   test before a direct public download. Until then the `.app` is for private
-   local testing only.
+3. Complete Apple Developer ID signing, notarization, and the remaining
+   installed-app tests before a direct public download. The fresh-macOS test
+   was skipped by the maintainer on 2026-10-05; disclose that limitation as
+   described in the [release checklist](../docs/macos-release.md). Until the
+   remaining gates pass, the `.app` is for private local testing only.
 
 ## Native/source audit — 2026-10-05
 

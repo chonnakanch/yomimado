@@ -61,7 +61,8 @@ SDK and build location can change output hashes; the build is source-pinned,
 not claimed to produce byte-identical wheels across machines.
 
 Public release still requires the complete native/source review, Developer ID
-signing, notarization and clean-Mac evidence in [the release checklist](macos-release.md).
+signing, notarization and the remaining installed-app evidence in
+[the release checklist](macos-release.md), which records the fresh-macOS test waiver.
 
 References: [OpenCV build options](https://docs.opencv.org/4.x/db/d05/tutorial_config_reference.html),
 [opencv-python source build](https://github.com/opencv/opencv-python/tree/4.11.0.86).
