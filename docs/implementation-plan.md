@@ -677,6 +677,9 @@ Before any public release:
 
 - [x] pin the current Apple Silicon Python build environment and check it at
   build time; Cargo and npm already use tracked lockfiles
+- [x] replace Xcode Python with source-built CPython 3.11.17 and static OpenSSL
+  3.5.9/liblzma 5.8.4; preserve original sources, recipes and embedded notices
+  in the isolated release runtime. Final source-delivery review remains open
 - [x] audit the generated package inventory and add detector/bootloader plus
   native binary provenance; the former native FFmpeg GPL/LGPL notice mismatch
   is recorded in `docs/macos-source-review.md`

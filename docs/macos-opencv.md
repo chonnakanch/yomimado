@@ -7,19 +7,21 @@ proof that FFmpeg is absent.
 
 ## Build and install
 
-On Apple Silicon with Python 3.9 and Xcode command-line tools:
+On Apple Silicon with source-built Python 3.11.17 and Xcode command-line tools:
 
 ```sh
-rtk services/ocr/.venv/bin/python scripts/build-opencv-macos.py
-rtk services/ocr/.venv/bin/python -m pip install --no-deps --force-reinstall services/ocr/build/opencv-source/opencv_python-4.11.0.86+yomimado.1-cp39-cp39-macosx_14_0_arm64.whl
-rtk services/ocr/.venv/bin/python scripts/opencv_release.py services/ocr/build/opencv-source/build-record.json
-rtk services/ocr/.venv/bin/python scripts/verify-python-release-lock.py
+rtk services/ocr/build/release-venv/bin/python scripts/build-opencv-macos.py
+rtk services/ocr/build/release-venv/bin/python -m pip install --no-deps --force-reinstall services/ocr/build/opencv-source/opencv_python-4.11.0.86+yomimado.1-cp311-cp311-macosx_14_0_arm64.whl
+rtk services/ocr/build/release-venv/bin/python scripts/opencv_release.py services/ocr/build/opencv-source/build-record.json
+rtk services/ocr/build/release-venv/bin/python scripts/verify-python-release-lock.py
 ```
 
-For a new environment, install the custom wheel first, then
+For a new environment, use `build-macos-prerelease.sh --prepare-runtime`
+from [the release checklist](macos-release.md); it builds and installs the
+interpreter and OpenCV together. It installs the packages from
 `services/ocr/requirements-macos-release.txt` and the OCR project with
 `--no-deps`. Build tools are installed separately in the ignored
-`services/ocr/build/opencv-venv`; they are not added to the frozen OCR runtime.
+`services/ocr/build/opencv-venv-py311`; they are not added to the frozen OCR runtime.
 The build log is `services/ocr/build/opencv-source/build.log`.
 
 The script pins the source archive SHA-256 and tool versions, rebuilds from

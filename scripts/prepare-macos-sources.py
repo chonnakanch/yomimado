@@ -206,7 +206,7 @@ def candidate(item: dict, path: Path, output: Path, checksum: str, origin: str) 
 def python_archive(item: dict, output: Path) -> dict:
     if item["name"].lower() == "opencv-python":
         path = ROOT / "services/ocr/build/opencv-source/opencv-source-delivery.tar.gz"
-        expected = "4785a866097d6963d47c128fbb80da10f0592ac6c15b23a2fc29bb9d82754d7f"
+        expected = "b426f96f5620aa310dd0971d0a247e5b0d81f880412aed43d665f141f9fd3f12"
         if digest(path) != expected:
             raise ValueError("OpenCV source delivery differs from reviewed input")
         target = output / path.name
@@ -395,7 +395,24 @@ def main() -> int:
     for item in components:
         if item["ecosystem"] == "source":
             try:
-                report["candidates"].append(detector_archive(item, output))
+                if item["name"] in {"CPython", "OpenSSL", "liblzma"}:
+                    path = (
+                        ROOT
+                        / "services/ocr/build/python-source/python-source-delivery.tar.gz"
+                    )
+                    target = output / path.name
+                    shutil.copyfile(path, target)
+                    report["candidates"].append(
+                        candidate(
+                            item,
+                            target,
+                            output,
+                            digest(target),
+                            "pinned Python/OpenSSL/liblzma build record and original archives",
+                        )
+                    )
+                else:
+                    report["candidates"].append(detector_archive(item, output))
             except (ValueError, OSError, subprocess.CalledProcessError) as error:
                 report["unresolved"].append(
                     {

@@ -6,25 +6,157 @@ service_dir="$repo_root/services/ocr"
 desktop_dir="$repo_root/apps/desktop"
 resource_parent="$desktop_dir/src-tauri/resources"
 resource_dir="$resource_parent/ocr"
-python_bin="${YOMIMADO_BUILD_PYTHON:-$service_dir/.venv/bin/python}"
+python_bin="${YOMIMADO_BUILD_PYTHON:-$service_dir/build/release-venv/bin/python}"
 detector_repo="$service_dir/local-models/comic-text-detector"
 translation_model="$service_dir/local-models/opus-mt-ja-en"
 dictionary_dir="$service_dir/local-dictionaries"
 model_revision="aa6573bd10b0d446cbf622e29c3e084914df9741"
 release=false
+prepare_runtime=false
 case "${1:-}" in
   "") ;;
   --release) release=true ;;
-  *) echo "Usage: $0 [--release]" >&2; exit 1 ;;
+  --prepare-runtime) prepare_runtime=true ;;
+  *) echo "Usage: $0 [--release|--prepare-runtime]" >&2; exit 1 ;;
 esac
 if [[ $# -gt 1 ]]; then
-  echo "Usage: $0 [--release]" >&2
+  echo "Usage: $0 [--release|--prepare-runtime]" >&2
   exit 1
 fi
 
 if [[ "$(uname -s)" != "Darwin" || "$(uname -m)" != "arm64" ]]; then
   echo "This first pre-release build requires an Apple Silicon Mac." >&2
   exit 1
+fi
+if $prepare_runtime; then
+  python_bin="$service_dir/build/release-venv/bin/python"
+  bootstrap="${YOMIMADO_BOOTSTRAP_PYTHON:-/usr/bin/python3}"
+  python_source_root="$service_dir/build/python-source"
+  python_runtime_prefix="$service_dir/build/python-runtime"
+  openssl_runtime_prefix="$python_runtime_prefix/openssl"
+  lzma_runtime_prefix="$python_runtime_prefix/lzma"
+  mkdir -p "$python_source_root"
+  "$bootstrap" - "$python_source_root" <<'PY'
+import hashlib, json, shutil, sys, tarfile, urllib.request
+from pathlib import Path
+root = Path(sys.argv[1]).resolve()
+sources = [
+    ("Python-3.11.17.tgz", "https://www.python.org/ftp/python/3.11.17/Python-3.11.17.tgz", "53cdee63ac4bf12387b7b33a53d3b1f8f4941cad73807a7b4fe91bb001ef004a", "Python-3.11.17"),
+    ("openssl-3.5.9.tar.gz", "https://github.com/openssl/openssl/releases/download/openssl-3.5.9/openssl-3.5.9.tar.gz", "603f5602e2eef00d77fbd429d34dcd5822bb301757a1bc9cdb24c670f1eb859a", "openssl-3.5.9"),
+    ("xz-5.8.4.tar.gz", "https://github.com/tukaani-project/xz/releases/download/v5.8.4/xz-5.8.4.tar.gz", "0014c7886930454fe8bd4228665b51af55eeae560ea135c9c4cd33f55b2591d9", "xz-5.8.4"),
+]
+for name, url, expected, directory in sources:
+    path = root / name
+    if not path.exists():
+        temporary = path.with_suffix(".part")
+        urllib.request.urlretrieve(url, temporary)
+        if hashlib.sha256(temporary.read_bytes()).hexdigest() != expected:
+            raise ValueError("Runtime source download checksum mismatch")
+        temporary.replace(path)
+    if hashlib.sha256(path.read_bytes()).hexdigest() != expected:
+        raise ValueError("Runtime source checksum mismatch")
+    if (root / directory).exists():
+        shutil.rmtree(root / directory)
+    with tarfile.open(path) as bundle:
+        for member in bundle.getmembers():
+            if member.issym() or member.islnk() or not (root / member.name).resolve().is_relative_to(root):
+                raise ValueError("Unsafe runtime source archive")
+        bundle.extractall(root)
+(root / "sources.json").write_text(json.dumps([
+    {"filename": name, "url": url, "sha256": digest}
+    for name, url, digest, _ in sources
+], indent=2) + "\n")
+PY
+  export MACOSX_DEPLOYMENT_TARGET=14.0
+  export SDKROOT="$(xcrun --sdk macosx --show-sdk-path)"
+  export CC="$(xcrun --sdk macosx --find clang)"
+  export CXX="$(xcrun --sdk macosx --find clang++)"
+  export CFLAGS="-O2 -mmacosx-version-min=14.0 -arch arm64"
+  export LDFLAGS="-mmacosx-version-min=14.0 -arch arm64"
+  (
+    cd "$python_source_root/openssl-3.5.9"
+    ./Configure darwin64-arm64-cc no-shared no-tests no-module no-legacy \
+      --prefix="$openssl_runtime_prefix" --openssldir="$openssl_runtime_prefix/ssl"
+    make -j4
+    make install_sw
+    cd "$python_source_root/xz-5.8.4"
+    ./configure --prefix="$lzma_runtime_prefix" --disable-shared --enable-static \
+      --disable-xz --disable-xzdec --disable-lzmadec --disable-lzmainfo \
+      --disable-scripts --disable-doc --disable-nls
+    make -j4
+    make check
+    make install
+    cd "$python_source_root/Python-3.11.17"
+    LIBLZMA_CFLAGS="-I$lzma_runtime_prefix/include" LIBLZMA_LIBS="$lzma_runtime_prefix/lib/liblzma.a" \
+      ./configure --prefix="$python_runtime_prefix" --enable-shared \
+      --without-static-libpython --with-openssl="$openssl_runtime_prefix" \
+      --with-openssl-rpath=no --without-readline --with-ensurepip=install
+    make -j4
+    make install
+  ) > "$python_source_root/build.log" 2>&1
+  "$python_runtime_prefix/bin/python3.11" - "$repo_root" <<'PY'
+import hashlib, json, re, shutil, subprocess, sys, sysconfig, tarfile
+from pathlib import Path
+root = Path(sys.argv[1]).resolve()
+source = root / "services/ocr/build/python-source"
+base = Path(sys.base_prefix)
+hashfile = lambda p: hashlib.sha256(p.read_bytes()).hexdigest()
+notices = source / "notices"
+notices.mkdir(exist_ok=True)
+for name, path in {
+    "CPython-LICENSE.txt": source / "Python-3.11.17/LICENSE",
+    "Expat-COPYING.txt": source / "Python-3.11.17/Modules/expat/COPYING",
+    "SHA3-LICENSE.txt": source / "Python-3.11.17/Modules/_sha3/LICENSE",
+    "OpenSSL-LICENSE.txt": source / "openssl-3.5.9/LICENSE.txt",
+    "liblzma-LICENSE.txt": source / "xz-5.8.4/COPYING.0BSD",
+    "XZ-COPYING.txt": source / "xz-5.8.4/COPYING",
+}.items():
+    shutil.copy2(path, notices / name)
+for name, relative in {
+    "libmpdec-COPYRIGHT.txt": "Modules/_decimal/libmpdec/mpdecimal.c",
+    "Mersenne-Twister-NOTICE.txt": "Modules/_randommodule.c",
+    "BLAKE2-NOTICE.txt": "Modules/_blake2/impl/blake2.h",
+    "dtoa-NOTICE.txt": "Python/dtoa.c",
+    "SipHash-NOTICE.txt": "Python/pyhash.c",
+}.items():
+    text = (source / "Python-3.11.17" / relative).read_text()
+    comments = re.findall(r"/\*.*?\*/", text, re.S)
+    matches = [comment for comment in comments if "Copyright" in comment or "public domain" in comment]
+    if not matches:
+        raise ValueError("Missing embedded runtime notice: " + relative)
+    (notices / name).write_text("\n\n".join(matches) + "\n")
+record = {
+    "pythonVersion": "3.11.17", "opensslVersion": "3.5.9", "lzmaVersion": "5.8.4",
+    "sources": json.loads((source / "sources.json").read_text()),
+    "recipeSha256": hashfile(root / "scripts/build-macos-prerelease.sh"),
+    "configureArgs": sysconfig.get_config_var("CONFIG_ARGS").replace(str(root), "$PROJECT_ROOT"),
+    "compiler": subprocess.check_output(["clang", "--version"], text=True).strip(),
+    "sdk": subprocess.check_output(["xcrun", "--show-sdk-version"], text=True).strip(),
+    "binaries": {str(p.relative_to(base)): hashfile(p) for p in [
+        base / "bin/python3.11", base / "lib/libpython3.11.dylib",
+        *sorted(base.glob("lib/python3.11/lib-dynload/*.so"))]},
+    "noticeHashes": {p.name: hashfile(p) for p in sorted(notices.iterdir())},
+}
+(source / "build-record.json").write_text(json.dumps(record, indent=2) + "\n")
+with tarfile.open(source / "python-source-delivery.tar.gz", "w:gz") as bundle:
+    for p in [*(source / item["filename"] for item in record["sources"]),
+              source / "build-record.json", root / "scripts/build-macos-prerelease.sh", notices]:
+        bundle.add(p, arcname="python-source-delivery/" + p.name)
+print("Source-controlled Python/OpenSSL built; original sources, recipe, hashes and notices recorded.")
+PY
+  "$python_runtime_prefix/bin/python3.11" -c 'import ssl, lzma, sqlite3, ctypes; assert lzma.decompress(lzma.compress(b"runtime check")) == b"runtime check"'
+  "$python_runtime_prefix/bin/python3.11" -m venv "$service_dir/build/release-venv"
+  sed '/^opencv-python==/d' "$service_dir/requirements-macos-release.txt" > "$python_source_root/requirements-without-opencv.txt"
+  "$python_bin" -m pip install --no-deps -r "$python_source_root/requirements-without-opencv.txt"
+  export SSL_CERT_FILE="$("$python_bin" -c 'import certifi; print(certifi.where())')"
+  "$python_bin" "$repo_root/scripts/build-opencv-macos.py" --jobs 4
+  wheel="$("$python_bin" -c 'import json,sys; print(json.load(open(sys.argv[1]))["wheel"])' "$service_dir/build/opencv-source/build-record.json")"
+  "$python_bin" -m pip install --no-deps --force-reinstall "$service_dir/build/opencv-source/$wheel"
+  "$python_bin" -m pip install --no-build-isolation --no-deps "$service_dir"
+  "$python_bin" -m pip check
+  "$python_bin" "$repo_root/scripts/verify-python-release-lock.py"
+  echo "Release runtime prepared. Build a private DMG before attempting --release."
+  exit 0
 fi
 if $release; then
   "$python_bin" "$repo_root/scripts/macos-release.py" preflight
@@ -133,6 +265,7 @@ cp "$repo_root/LICENSE" "$repo_root/THIRD_PARTY_LICENSES/README.md" \
 cp "$repo_root/docs/dictionary-updates.md" "$staging/notices/"
 cp "$repo_root/docs/macos-source-review.md" "$staging/notices/"
 cp "$opencv_record" "$staging/notices/opencv-build.json"
+cp "$service_dir/build/python-source/build-record.json" "$staging/notices/python-build.json"
 cp "$service_dir/build/opencv-source/source-changes.diff" "$staging/notices/opencv-source-changes.diff"
 (
   cd "$staging/assets"

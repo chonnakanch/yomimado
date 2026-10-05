@@ -47,21 +47,45 @@ to clear its historical FFmpeg build.
 ## Remaining native/source review
 
 This resolves the identified OpenCV/FFmpeg input gap only. The complete release
-source delivery below remains unreviewed, including the Python interpreter and
-other frozen native dependencies. Do not mark the whole licence gate cleared
+source delivery below remains unreviewed, including other frozen native
+dependencies. Python is now source-built; the complete archive still needs
+final delivery review. Do not mark the whole licence gate cleared
 from an OpenCV-only source archive or successful runtime smoke.
 
 The follow-up inspection of the 2026-10-05 inputs identifies these concrete
 remaining items:
 
-| Input                                            | Evidence and next action                                                                                                                                                                                                                                                                                                                                               |
-| ------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Xcode Python 3.9.6                               | Its `sysconfig` records Apple-specific changes, private SDK build paths and LibreSSL 2.8.3/TrustEvaluationAgent configuration. Stock CPython 3.9.6 source is not evidence for this build. Obtain matching Apple source/patches and public rebuild instructions, or replace this interpreter with a source-controlled release build and repeat the freeze/smoke checks. |
-| NumPy 1.26.4                                     | Its bundled notice explicitly labels libquadmath **LGPL-2.1-or-later**, separately from libgcc/libgfortran's GCC runtime exception. The full LGPL 2.1 text was missing from that notice and is now added by the generator with a pinned upstream checksum. Exact GCC/OpenBLAS source/build provenance and replacement/relink instructions remain open.                 |
-| torchvision 0.23.0                               | Its wheel contains only its own BSD notice while bundling libc++, JPEG, PNG, WebP/sharpyuv and zlib libraries. Runtime queries report PNG 1.6.39, WebP 1.3.2 and zlib 1.2.13; these establish versions, not patches/build provenance. Obtain the matching native notices and build inputs.                                                                             |
-| PyTorch 2.8.0 / torchvision 0.23.0               | Neither exact PyPI release offers an sdist. A top-level GitHub archive alone omits submodule sources; resolve the wheel's source revision, complete submodule tree and packaging recipe.                                                                                                                                                                               |
-| wandb 0.26.1                                     | Its package notice is MIT, but its three native inputs include Go/Rust tools. Inspect their embedded dependencies/build records and notices. Its sdist alone does not establish the compiled tools' complete sources.                                                                                                                                                  |
-| Pillow, Shapely/GEOS and other native extensions | Existing wheel notices are preserved; verify exact native/static input versions, patches and build recipes against the recorded binary hashes.                                                                                                                                                                                                                         |
+| Input                                            | Evidence and next action                                                                                                                                                                                                                                                                                                                               |
+| ------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| CPython 3.11.17 / OpenSSL 3.5.9 / liblzma 5.8.4  | Replaces Xcode Python 3.9.6 and LibreSSL. Original sources are checksum-pinned, build steps are tracked, OpenSSL/liblzma are static, and embedded notices plus binary hashes are retained. The rebuilt DMG and seven selected standard-library test groups pass. Review the original tarballs/build record in the final delivery.                      |
+| NumPy 1.26.4                                     | Its bundled notice explicitly labels libquadmath **LGPL-2.1-or-later**, separately from libgcc/libgfortran's GCC runtime exception. The full LGPL 2.1 text was missing from that notice and is now added by the generator with a pinned upstream checksum. Exact GCC/OpenBLAS source/build provenance and replacement/relink instructions remain open. |
+| torchvision 0.23.0                               | Its wheel contains only its own BSD notice while bundling libc++, JPEG, PNG, WebP/sharpyuv and zlib libraries. Runtime queries report PNG 1.6.39, WebP 1.3.2 and zlib 1.2.13; these establish versions, not patches/build provenance. Obtain the matching native notices and build inputs.                                                             |
+| PyTorch 2.8.0 / torchvision 0.23.0               | Neither exact PyPI release offers an sdist. A top-level GitHub archive alone omits submodule sources; resolve the wheel's source revision, complete submodule tree and packaging recipe.                                                                                                                                                               |
+| wandb 0.26.1                                     | Its package notice is MIT, but its three native inputs include Go/Rust tools. Inspect their embedded dependencies/build records and notices. Its sdist alone does not establish the compiled tools' complete sources.                                                                                                                                  |
+| Pillow, Shapely/GEOS and other native extensions | Existing wheel notices are preserved; verify exact native/static input versions, patches and build recipes against the recorded binary hashes.                                                                                                                                                                                                         |
+
+### PyTorch/torchvision source evidence collected
+
+The installed Python 3.11 wheels report PyTorch commit
+`a1cb3cc05d46d198467bebbb6e8fba50a325d4e7` and torchvision commit
+`824e8c8726b65fd9d5abdc9702f81c2b0c4c0dc8`. Private candidates under
+`services/ocr/build/source-delivery/` contain those exact Git trees.
+`pytorch-2.8.0-source-candidate.tar.gz` includes 68 repositories: the root
+and initialized CPU/MPS dependency submodules, recursively. Seven top-level
+Android/CUDA/Vulkan/ROCm submodules remain uninitialized and are explicitly
+listed in its `YOMIMADO-SOURCE-CANDIDATE.json`; it is not presented as a full
+upstream source tree. `torchvision-0.23.0-source-candidate.tar.gz` contains
+the exact root tree and its packaging scripts.
+
+These are additional private candidates outside the registry-sdist report.
+Their adjacent `*-source-candidate.json` records include revisions and archive
+hashes. Inspect source-pack examples/data before any redistribution. Historical
+wheel build inputs remain unresolved: torchvision's pinned packaging script
+installs several Conda codec packages without exact build pins; its macOS
+workflow references a moving `pytorch/test-infra` branch. Matching libc++,
+JPEG/PNG/WebP/zlib and PyTorch OpenMP source/build provenance still needs
+verification or a controlled replacement build. A source commit or successful
+smoke alone does not resolve those binary inputs.
 
 ## Source candidate preparation
 
@@ -76,14 +100,19 @@ rtk cargo vendor --locked /absolute/path/yomimado/services/ocr/build/source-deli
 Then run from the repository root:
 
 ```sh
-rtk services/ocr/.venv/bin/python scripts/prepare-macos-sources.py apps/desktop/src-tauri/resources/ocr/notices services/ocr/build/source-delivery --cargo-vendor services/ocr/build/source-delivery/cargo-vendor
+rtk services/ocr/build/release-venv/bin/python scripts/prepare-macos-sources.py apps/desktop/src-tauri/resources/ocr/notices services/ocr/build/source-delivery --cargo-vendor services/ocr/build/source-delivery/cargo-vendor
 ```
 
 The collector checks vendored files against checksum-verified original `.crate`
 archives and Cargo.lock, includes all original crate archives, verifies npm
 tarballs against lockfile SHA-512 integrity, and downloads exact PyPI sdists
 against registry SHA-256 values. Cached archives with changed hashes are
-rejected. The custom OpenCV source delivery is separately pinned. Preserve the
+rejected. The custom OpenCV source delivery is separately pinned. CPython,
+OpenSSL and
+liblzma candidates share the runtime source archive with original tarballs and
+build records. Run downloads with `SSL_CERT_FILE` pointing to the release
+environment's pinned certifi bundle if the shell has no CA bundle configured.
+Preserve the
 original Cargo cache until preparation completes; it supplies the `.crate`
 archives used to verify the vendor tree. The collector also exports the exact
 project commit when the checkout is clean, and the exact detector revision
@@ -95,9 +124,9 @@ for source export. Commit preparation changes and rerun to export the project.
 The local collection covers **280 Rust components** (569 crates in the full
 cross-platform lockfile), **5 JavaScript packages**, and **78 of 80 Python
 packages**, including the custom OpenCV delivery. PyTorch/torchvision remain
-unresolved. The inventory has 366 components: 280 Rust, 80 Python, 5 JavaScript
-and the detector source. The `source-candidates.json` report remains unreviewed,
-with 149 native entries and complete delivery review still pending. The project
+unresolved. The inventory has 369 components: 280 Rust, 80 Python, 5 JavaScript,
+and detector/CPython/OpenSSL/liblzma sources. The `source-candidates.json` report remains unreviewed,
+with 152 native entries and complete delivery review still pending. The project
 and filtered detector exports are additional candidates, not review sign-offs.
 Regenerate it when the package/native inventories change.
 

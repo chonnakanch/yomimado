@@ -42,6 +42,7 @@ REQUIRED_NOTICES = (
     "native-libraries.json",
     "project-revision.txt",
     "opencv-build.json",
+    "python-build.json",
     "opencv-source-changes.diff",
     "assets/Apache-2.0.txt",
     "assets/CC-BY-SA-4.0.txt",
@@ -56,6 +57,62 @@ def sha256_file(path: Path) -> str:
         for chunk in iter(lambda: stream.read(1024 * 1024), b""):
             digest.update(chunk)
     return digest.hexdigest()
+
+
+def verify_python_provenance(record: dict, binaries: list[dict], notices: Path) -> None:
+    if (
+        record.get("pythonVersion") != "3.11.17"
+        or record.get("opensslVersion") != "3.5.9"
+        or record.get("lzmaVersion") != "5.8.4"
+    ):
+        raise ValueError("Bundled Python/OpenSSL versions differ from source build")
+    if set(record["noticeHashes"]) != {
+        "CPython-LICENSE.txt",
+        "OpenSSL-LICENSE.txt",
+        "Expat-COPYING.txt",
+        "libmpdec-COPYRIGHT.txt",
+        "SHA3-LICENSE.txt",
+        "Mersenne-Twister-NOTICE.txt",
+        "BLAKE2-NOTICE.txt",
+        "dtoa-NOTICE.txt",
+        "SipHash-NOTICE.txt",
+        "liblzma-LICENSE.txt",
+        "XZ-COPYING.txt",
+    }:
+        raise ValueError("Bundled runtime notice coverage is incomplete")
+    inputs = {
+        "interpreter/" + Path(name).name: digest
+        for name, digest in record["binaries"].items()
+    }
+    frozen = [
+        item for item in binaries if item["buildInput"].startswith("interpreter/")
+    ]
+    if not frozen or not any(
+        item["buildInput"] == "interpreter/libpython3.11.dylib" for item in frozen
+    ):
+        raise ValueError("Missing source-built Python input provenance")
+    for item in frozen:
+        if inputs.get(item["buildInput"]) != item["buildInputSha256"]:
+            raise ValueError(
+                "Frozen Python input differs from its source build: "
+                + item["buildInput"]
+            )
+    for name, expected in record["noticeHashes"].items():
+        component = "CPython-3.11.17"
+        if name == "OpenSSL-LICENSE.txt":
+            component = "OpenSSL-3.5.9"
+        elif name in {"liblzma-LICENSE.txt", "XZ-COPYING.txt"}:
+            component = "liblzma-5.8.4"
+        base = notices / "licenses/source" / component
+        path = (base / name).resolve()
+        if (
+            not path.is_relative_to(base.resolve())
+            or not path.is_file()
+            or sha256_file(path) != expected
+        ):
+            raise ValueError(
+                "Bundled runtime notice differs from source build: " + name
+            )
 
 
 def verify(app: Path) -> list[str]:
@@ -139,6 +196,14 @@ def verify(app: Path) -> list[str]:
     native = notices / "native-libraries.json"
     if native.is_file():
         binaries = json.loads(native.read_text())["binaries"]
+        python_record = notices / "python-build.json"
+        if python_record.is_file():
+            try:
+                verify_python_provenance(
+                    json.loads(python_record.read_text()), binaries, notices
+                )
+            except (ValueError, KeyError) as error:
+                errors.append(str(error))
         opencv_record = notices / "opencv-build.json"
         if opencv_record.is_file():
             try:

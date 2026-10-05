@@ -3,7 +3,7 @@ set -euo pipefail
 
 repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 dmg="${1:?Pass a DMG path}"
-python_bin="${2:-$repo_root/services/ocr/.venv/bin/python}"
+python_bin="${2:-$repo_root/services/ocr/build/release-venv/bin/python}"
 mode="${3:---private}"
 case "$mode" in
   --private|--private-smoke|--release) ;;

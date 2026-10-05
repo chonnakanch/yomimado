@@ -1,6 +1,6 @@
 """Build the source-pinned, image/ONNX-only OpenCV wheel for macOS releases.
 
-Run with Python 3.9 on Apple Silicon. Build tools live in an ignored venv;
+Run with Python 3.11 on Apple Silicon. Build tools live in an ignored venv;
 the OCR environment is changed only by explicitly installing the resulting wheel.
 """
 
@@ -47,9 +47,9 @@ def main() -> int:
     if (
         platform.system() != "Darwin"
         or platform.machine() != "arm64"
-        or sys.version_info[:2] != (3, 9)
+        or sys.version_info[:2] != (3, 11)
     ):
-        parser.error("Requires Apple Silicon macOS with Python 3.9")
+        parser.error("Requires Apple Silicon macOS with Python 3.11")
     if args.jobs < 1:
         parser.error("--jobs must be positive")
     BUILD.mkdir(parents=True, exist_ok=True)
@@ -75,7 +75,7 @@ def main() -> int:
             ):
                 raise ValueError(f"Unsafe source archive member: {member.name}")
         tar.extractall(BUILD)
-    build_venv = ROOT / "services/ocr/build/opencv-venv"
+    build_venv = ROOT / "services/ocr/build/opencv-venv-py311"
     if not (build_venv / "bin/python").exists():
         venv.create(build_venv, with_pip=True)
     python = str(build_venv / "bin/python")
@@ -184,6 +184,7 @@ def main() -> int:
         BUILD / "CMakeCache.txt",
     )
     record = {
+        "pythonVersion": sys.version.split()[0],
         "version": VERSION,
         "sourceUrl": SOURCE_URL,
         "sourceSha256": SOURCE_SHA256,
@@ -237,7 +238,7 @@ def main() -> int:
     shutil.copytree(modifications, delivery / "modifications", dirs_exist_ok=True)
     (delivery / "BUILD.md").write_text(
         "# YomiMado image/ONNX-only OpenCV\n\n"
-        "Use the matching YomiMado project source and Python 3.9 on an Apple Silicon Mac.\n"
+        "Use the matching YomiMado project source and Python 3.11 on an Apple Silicon Mac.\n"
         "Place the enclosed original source tarball in services/ocr/build/opencv-source/.\n"
         "Run python3 scripts/build-opencv-macos.py from the project root.\n"
         "The enclosed recipe copies match scripts/ in the project source.\n"

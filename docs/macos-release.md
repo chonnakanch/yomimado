@@ -11,6 +11,9 @@ remain user-installed.
 - [x] Private DMG builds; previous mounted bundle passed OCR, dictionaries,
       kanji, tokenization and translation on the development Mac.
 - [x] Pin the Python environment and model checksums; use Cargo/npm lockfiles.
+- [x] Replace Xcode Python with source-built CPython 3.11.17 and static OpenSSL
+      3.5.9/liblzma 5.8.4. Capture original sources, recipe and embedded notices;
+      repeat the frozen DMG smoke with that isolated runtime.
 - [x] Exclude detector weights and example artwork/fonts; preserve EDRDG/model
       notices and dictionary update instructions.
 - [x] Audit package inventory and add missing detector/bootloader records and
@@ -46,8 +49,10 @@ remain user-installed.
 ## Development-Mac verification — 2026-10-05
 
 - Previous baseline: 55 desktop and 36 Rust tests passed. The OpenCV change
-  passes 47 OCR-service tests. Source/notice preparation passes 41 release-tool
-  tests, including forged Cargo file-checksum and tampered LGPL rejection cases.
+  passes 47 OCR-service tests. Runtime/source preparation passes 48 release-tool
+  tests, including altered interpreter, frozen-input, recipe and licence rejection
+  cases. All seven selected CPython test groups pass (2,114 tests run, 124
+  skipped): SSL, LZMA, hashing, SQLite, ctypes, decimal and Expat.
 - Frontend production build, Rust formatting, Python lint/format, Prettier and
   shell syntax checks passed. The private Apple Silicon native build completed.
 - The rebuilt private DMG passed disk-image, asset/notice, native inventory,
@@ -55,11 +60,11 @@ remain user-installed.
 - Its mounted frozen service passed synthetic vertical `学校へ` OCR with
   geometry, Sudachi, JMdict, KANJIDIC2, explicit translation, and saved word,
   sentence and translation-cache persistence across a service restart.
-- Inventory: 366 software/source components (280 Rust, 80 Python, 5 JavaScript,
-  detector source), 149 unique native input binaries
-  plus 38 aliases (187 paths, down from 310). Corresponding-source worksheet:
-  516 entries, still unreviewed as a complete delivery.
-- Dependency source candidates cover 363 entries with 84 independently hashed
+- Inventory: 369 software/source components (280 Rust, 80 Python, 5 JavaScript,
+  detector, CPython, OpenSSL and liblzma source), 152 unique native input binaries
+  plus 36 aliases (188 paths, down from 310). Corresponding-source worksheet:
+  522 entries, still unreviewed as a complete delivery.
+- Dependency source candidates cover 366 entries with 85 independently hashed
   archives. Their report matches the regenerated inventory hashes. The collector
   also exports the exact clean project commit and filtered detector source.
   Complete source-delivery review and native/PyTorch provenance remain pending.
@@ -67,16 +72,20 @@ remain user-installed.
   upstream notice. Cargo source archives include the original crate archives
   and vendor tree; their current hashes are in `source-candidates.json`.
 - OpenCV source delivery SHA-256:
-  `4785a866097d6963d47c128fbb80da10f0592ac6c15b23a2fc29bb9d82754d7f`.
+  `b426f96f5620aa310dd0971d0a247e5b0d81f880412aed43d665f141f9fd3f12`.
   Its original source, exact modifications, recipe copies and build record
   match. The installed custom wheel has no video APIs/external dylib links;
   the user's ONNX model loads and performs inference. System-Cocoa highgui
   remains solely for the detector's unused `imshow` import.
+- Python/OpenSSL/liblzma source delivery SHA-256:
+  `48357066ab8e871775b20d92fb50e5cd5e61b7df0cd198b11c8b721d403e97ab`.
+  The runtime build entrypoint, three original archives and 11 licence/notice
+  texts are retained; frozen interpreter inputs match the recorded hashes.
 - Bundled JMdict/KANJIDIC2 header dates: **2026-09-27**.
 - Private DMG SHA-256:
-  `bf5a4b8ffc583fbae79f0cc4d5365d80dce7c5004ee88cf1119c5eb87f9da3bc`.
+  `8177974553d91d5399c2ef57fe8c674e30d1609bbdd206a3f03a9a531cf672dc`.
   This artifact was built from the preparation working tree based on
-  `0d6df02`; it is unsigned/private and is
+  `9da9c0f`; it is unsigned/private and is
   not a public candidate. The release path requires a clean committed tree.
 
 These results do not clear the native-source, signing/notarization or remaining
@@ -84,6 +93,38 @@ installed-app checks above. Fresh-machine behavior remains unverified and must
 be disclosed in the pre-release notes. Cold frozen startup gets a bounded
 180-second allowance; the smoke surfaces startup diagnostics and cleans its
 process group/test volume.
+
+## Source-built release runtime
+
+Prepare the isolated runtime once on Apple Silicon with Xcode command-line
+tools. This uses the existing build entrypoint:
+
+```sh
+rtk bash scripts/build-macos-prerelease.sh --prepare-runtime
+rtk bash scripts/build-macos-prerelease.sh
+```
+
+Preparation downloads checksum-pinned CPython 3.11.17, OpenSSL 3.5.9 and XZ
+5.8.4 sources, builds Python against static OpenSSL/liblzma, and installs the
+locked packages plus the custom OpenCV wheel in
+`services/ocr/build/release-venv`. The development `.venv` is separate.
+The default build refuses Apple's Xcode interpreter or a runtime whose
+recorded binary/notice/source hashes differ. Keep the ignored
+`build/python-source/` records and archives for the corresponding-source
+review. The mounted-bundle verifier compares frozen interpreter input hashes
+and embedded notices with that record. Signing/relocation changes final bytes.
+
+The source archive contains original release tarballs, the exact build
+entrypoint and binary/notice records. Preserve CPython's licence and the
+embedded Expat, libmpdec, SHA3, BLAKE2, Mersenne Twister, dtoa and SipHash notices,
+plus OpenSSL and liblzma terms. Only liblzma is linked; XZ command-line tools
+and scripts are disabled. SSL certificate lookups for build downloads use the
+pinned certifi package after installation. Other wheel-native sources and final
+delivery review remain separate release gates.
+
+Upstream releases: [CPython 3.11.17](https://www.python.org/downloads/release/python-31117/),
+[OpenSSL sources](https://openssl-library.org/source/),
+[XZ 5.8.4](https://github.com/tukaani-project/xz/releases/tag/v5.8.4).
 
 ## Credentials — local Keychain only
 
@@ -120,7 +161,7 @@ set these **non-secret selectors** in the build Terminal:
 export APPLE_SIGNING_IDENTITY='Developer ID Application: YOUR NAME (TEAMID1234)'
 export YOMIMADO_APPLE_TEAM_ID='TEAMID1234'
 export YOMIMADO_NOTARY_PROFILE='YomiMado-notary'
-rtk services/ocr/.venv/bin/python scripts/macos-release.py preflight
+rtk services/ocr/build/release-venv/bin/python scripts/macos-release.py preflight
 ```
 
 Replace the example team and identity with real values. Preflight checks the
@@ -138,7 +179,7 @@ gap first. After committing release changes, generate an exact review worksheet
 from the regenerated notices:
 
 ```sh
-rtk services/ocr/.venv/bin/python scripts/macos-release.py source-template apps/desktop/src-tauri/resources/ocr/notices --revision "$(rtk git rev-parse HEAD)" > /private/tmp/source-delivery.json
+rtk services/ocr/build/release-venv/bin/python scripts/macos-release.py source-template apps/desktop/src-tauri/resources/ocr/notices --revision "$(rtk git rev-parse HEAD)" > /private/tmp/source-delivery.json
 ```
 
 Move/fill that worksheet in your local source delivery directory, with actual
@@ -180,14 +221,14 @@ diagnose the exact library/signature before adding any entitlement.
 To re-verify the exact candidate:
 
 ```sh
-rtk bash scripts/verify-macos-dmg.sh /absolute/path/YomiMado_0.1.0_aarch64.dmg services/ocr/.venv/bin/python --release
+rtk bash scripts/verify-macos-dmg.sh /absolute/path/YomiMado_0.1.0_aarch64.dmg services/ocr/build/release-venv/bin/python --release
 ```
 
 Mount read-only using Disk Utility or `hdiutil attach`, then point this at the
 mounted app and your separately obtained detector file:
 
 ```sh
-rtk services/ocr/.venv/bin/python scripts/smoke-macos-bundle.py /Volumes/YomiMado/YomiMado.app --detector-model /absolute/user/path/comictextdetector.pt.onnx
+rtk services/ocr/build/release-venv/bin/python scripts/smoke-macos-bundle.py /Volumes/YomiMado/YomiMado.app --detector-model /absolute/user/path/comictextdetector.pt.onnx
 ```
 
 The smoke uses temporary databases, an empty Hugging Face cache, offline model

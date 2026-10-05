@@ -402,6 +402,55 @@ def inventory_native(notices: Path) -> None:
     )
 
 
+def inventory_interpreter(components: list[dict], notices: Path) -> None:
+    source = ROOT / "services/ocr/build/python-source"
+    add_component(
+        components,
+        notices,
+        "source",
+        "CPython",
+        "3.11.17",
+        "PSF-2.0 (embedded third-party terms in notices)",
+        "https://www.python.org/downloads/release/python-31117/",
+        [
+            source / "notices" / name
+            for name in (
+                "CPython-LICENSE.txt",
+                "Expat-COPYING.txt",
+                "libmpdec-COPYRIGHT.txt",
+                "SHA3-LICENSE.txt",
+                "Mersenne-Twister-NOTICE.txt",
+                "BLAKE2-NOTICE.txt",
+                "dtoa-NOTICE.txt",
+                "SipHash-NOTICE.txt",
+            )
+        ],
+        source / "notices",
+    )
+    add_component(
+        components,
+        notices,
+        "source",
+        "OpenSSL",
+        "3.5.9",
+        "Apache-2.0",
+        "https://openssl-library.org/source/",
+        [source / "notices/OpenSSL-LICENSE.txt"],
+        source / "notices",
+    )
+    add_component(
+        components,
+        notices,
+        "source",
+        "liblzma",
+        "5.8.4",
+        "0BSD",
+        "https://github.com/tukaani-project/xz/releases/tag/v5.8.4",
+        [source / "notices/liblzma-LICENSE.txt", source / "notices/XZ-COPYING.txt"],
+        source / "notices",
+    )
+
+
 def write_index(
     notices: Path, components: list[dict], unmapped: set[str]
 ) -> list[dict]:
@@ -479,6 +528,7 @@ def main() -> int:
         detector,
     )
     inventory_native(notices)
+    inventory_interpreter(components, notices)
     components.sort(
         key=lambda item: (item["ecosystem"], item["name"].lower(), item["version"])
     )
