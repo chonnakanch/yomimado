@@ -34,6 +34,11 @@ PYTHON_NOTICE_GROUPS = {
     "tokenizers": "tokenizers",
     "torchsummary": "torchsummary",
 }
+PYTHON_SUPPLEMENT_GROUPS = {
+    # NumPy's wheel names libquadmath's LGPL-2.1-or-later terms but includes
+    # only a short notice/link. Keep its copyright plus the full LGPL text.
+    "numpy": "lgpl-2.1",
+}
 RUST_NOTICE_GROUPS = {
     "alloc-stdlib": "alloc-stdlib",
     "defmt-parser": "defmt",
@@ -264,6 +269,24 @@ def python_license(distribution: metadata.Distribution) -> str:
     return "see notice" if license_files(Path(distribution._path)) else "UNKNOWN"
 
 
+def supplement_python_notices(notices: Path, component: dict) -> None:
+    group = PYTHON_SUPPLEMENT_GROUPS.get(component["name"].lower())
+    if not group:
+        return
+    files, base = upstream_files(group)
+    destination = (
+        notices
+        / "licenses/python"
+        / safe_name(f"{component['name']}-{component['version']}")
+        / "supplemental"
+    )
+    for source in files:
+        target = destination / source.relative_to(base)
+        target.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(source, target)
+        component["noticeFiles"].append(str(target.relative_to(notices)))
+
+
 def inventory_python(components: list[dict], notices: Path) -> set[str]:
     included, unmapped = packaged_python_distributions()
     # The bootloader is linked into the executable, not represented by imports.
@@ -301,6 +324,7 @@ def inventory_python(components: list[dict], notices: Path) -> set[str]:
             if distribution.metadata.get("Author")
             else [],
         )
+        supplement_python_notices(notices, components[-1])
     return unmapped
 
 

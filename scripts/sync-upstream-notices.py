@@ -28,6 +28,7 @@ SOURCES = {
     ),
     "defmt": ("knurling-rs", "defmt", ["LICENSE-MIT", "LICENSE-APACHE"]),
     "selectors": ("spdx", "license-list-data", ["text/MPL-2.0.txt"]),
+    "lgpl-2.1": ("spdx", "license-list-data", ["text/LGPL-2.1-only.txt"]),
     "tauri": ("tauri-apps", "tauri", ["LICENSE-MIT", "LICENSE-APACHE-2.0"]),
     "unic": ("open-i18n", "rust-unic", ["LICENSE-MIT", "LICENSE-APACHE"]),
 }
@@ -71,7 +72,9 @@ def main() -> None:
             data = request(url)
             data.decode("utf-8")
             filename = Path(path).name
-            if group == "selectors":
+            if group == "lgpl-2.1":
+                filename = "LICENSE-LGPL-2.1.txt"
+            elif group == "selectors":
                 filename = f"LICENSE-{filename}"
             destination = OUTPUT / group / filename
             destination.parent.mkdir(parents=True, exist_ok=True)

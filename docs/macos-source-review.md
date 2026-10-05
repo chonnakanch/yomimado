@@ -51,6 +51,64 @@ source delivery below remains unreviewed, including the Python interpreter and
 other frozen native dependencies. Do not mark the whole licence gate cleared
 from an OpenCV-only source archive or successful runtime smoke.
 
+The follow-up inspection of the 2026-10-05 inputs identifies these concrete
+remaining items:
+
+| Input                                            | Evidence and next action                                                                                                                                                                                                                                                                                                                                               |
+| ------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Xcode Python 3.9.6                               | Its `sysconfig` records Apple-specific changes, private SDK build paths and LibreSSL 2.8.3/TrustEvaluationAgent configuration. Stock CPython 3.9.6 source is not evidence for this build. Obtain matching Apple source/patches and public rebuild instructions, or replace this interpreter with a source-controlled release build and repeat the freeze/smoke checks. |
+| NumPy 1.26.4                                     | Its bundled notice explicitly labels libquadmath **LGPL-2.1-or-later**, separately from libgcc/libgfortran's GCC runtime exception. The full LGPL 2.1 text was missing from that notice and is now added by the generator with a pinned upstream checksum. Exact GCC/OpenBLAS source/build provenance and replacement/relink instructions remain open.                 |
+| torchvision 0.23.0                               | Its wheel contains only its own BSD notice while bundling libc++, JPEG, PNG, WebP/sharpyuv and zlib libraries. Runtime queries report PNG 1.6.39, WebP 1.3.2 and zlib 1.2.13; these establish versions, not patches/build provenance. Obtain the matching native notices and build inputs.                                                                             |
+| PyTorch 2.8.0 / torchvision 0.23.0               | Neither exact PyPI release offers an sdist. A top-level GitHub archive alone omits submodule sources; resolve the wheel's source revision, complete submodule tree and packaging recipe.                                                                                                                                                                               |
+| wandb 0.26.1                                     | Its package notice is MIT, but its three native inputs include Go/Rust tools. Inspect their embedded dependencies/build records and notices. Its sdist alone does not establish the compiled tools' complete sources.                                                                                                                                                  |
+| Pillow, Shapely/GEOS and other native extensions | Existing wheel notices are preserved; verify exact native/static input versions, patches and build recipes against the recorded binary hashes.                                                                                                                                                                                                                         |
+
+## Source candidate preparation
+
+`scripts/prepare-macos-sources.py` gathers data for review without installing
+packages or executing source archives. First vendor the complete Cargo lockfile
+from `apps/desktop/src-tauri` (network access may be needed for non-macOS crates):
+
+```sh
+rtk cargo vendor --locked /absolute/path/yomimado/services/ocr/build/source-delivery/cargo-vendor
+```
+
+Then run from the repository root:
+
+```sh
+rtk services/ocr/.venv/bin/python scripts/prepare-macos-sources.py apps/desktop/src-tauri/resources/ocr/notices services/ocr/build/source-delivery --cargo-vendor services/ocr/build/source-delivery/cargo-vendor
+```
+
+The collector checks vendored files against checksum-verified original `.crate`
+archives and Cargo.lock, includes all original crate archives, verifies npm
+tarballs against lockfile SHA-512 integrity, and downloads exact PyPI sdists
+against registry SHA-256 values. Cached archives with changed hashes are
+rejected. The custom OpenCV source delivery is separately pinned. Preserve the
+original Cargo cache until preparation completes; it supplies the `.crate`
+archives used to verify the vendor tree. The collector also exports the exact
+project commit when the checkout is clean, and the exact detector revision
+with all source code preserved. Detector weights, notebooks and example
+artwork/fonts are omitted; `detector-source-omissions.json` lists those omissions
+and is checksum-linked from the candidate record. Dirty checkouts are rejected
+for source export. Commit preparation changes and rerun to export the project.
+
+The local collection covers **280 Rust components** (569 crates in the full
+cross-platform lockfile), **5 JavaScript packages**, and **78 of 80 Python
+packages**, including the custom OpenCV delivery. PyTorch/torchvision remain
+unresolved. The inventory has 366 components: 280 Rust, 80 Python, 5 JavaScript
+and the detector source. The `source-candidates.json` report remains unreviewed,
+with 149 native entries and complete delivery review still pending. The project
+and filtered detector exports are additional candidates, not review sign-offs.
+Regenerate it when the package/native inventories change.
+
+These are private source candidates, not public release assets. Raw upstream
+archives can contain extra data/example artwork; inspect their terms and omit
+unneeded uncleared assets while documenting modifications before assembling
+the final delivery. Preserve notices, exact code, needed submodules and build
+inputs. The collector never creates `source-delivery.json`, a reviewer sign-off
+or native licence clearance. The release validator still rejects an incomplete
+or unreviewed delivery.
+
 ## Delivery alongside the GitHub Release
 
 Use GPLv3 section 6(d): offer the source with equivalent free access alongside
@@ -75,7 +133,8 @@ Review these groups explicitly:
   the locked Rust sources; review Python source distributions separately.
 - NumPy's bundled GCC runtimes: preserve GPLv3 and GCC Runtime Library
   Exception text, verify the exception's applicability and the wheel's bundled
-  notices. Do not assume a GPL runtime means all application code has that licence.
+  notices. Review libquadmath's separate LGPL-2.1-or-later source/relink terms.
+  Do not assume a GPL runtime means all application code has that licence.
 - PyInstaller 6.16.0: preserve `COPYING.txt`, including its bootloader exception.
   Python interpreter and wheels: preserve their notices; review nested native
   code, statically linked components and data, including MeCab/UniDic, OpenBLAS,

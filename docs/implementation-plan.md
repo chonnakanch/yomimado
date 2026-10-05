@@ -682,6 +682,9 @@ Before any public release:
   is recorded in `docs/macos-source-review.md`
 - [x] replace the OpenCV wheel with a source-pinned image/ONNX-only build;
   disable unused video dependencies and preserve its exact source/build notices
+- [x] collect checksum-verified Rust/JavaScript and available Python source
+  candidates; add the missing full libquadmath LGPL notice. The native-source
+  and complete corresponding-source review below remain open.
 - [ ] clear the native licence/corresponding-source gap and complete final
   review of source archives, native notices, build recipes and compatibility
 - [x] verify bundled model-weight licensing and pin both weight checksums;

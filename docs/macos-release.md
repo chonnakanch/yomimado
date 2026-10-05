@@ -25,6 +25,10 @@ remain user-installed.
 - [ ] Complete native licence/source delivery for the remaining frozen
       interpreter/libraries and all software components. The OpenCV replacement
       and package inventory pass do not clear this entire gate.
+- [x] Gather checksum-verified source candidates for the locked Rust/JavaScript
+      inputs and available Python sdists; add the missing full libquadmath LGPL
+      text. Final native sources/build recipes and source-delivery review remain
+      open; see [the follow-up audit](macos-source-review.md).
 - [ ] Install a Developer ID Application signing identity and authenticate a
       `notarytool` Keychain profile. Apple Developer account is available; signing
       is not configured. Last local check: **0 valid signing identities**.
@@ -42,7 +46,8 @@ remain user-installed.
 ## Development-Mac verification — 2026-10-05
 
 - Previous baseline: 55 desktop and 36 Rust tests passed. The OpenCV change
-  passes 47 OCR-service and 27 release-gate tests.
+  passes 47 OCR-service tests. Source/notice preparation passes 41 release-tool
+  tests, including forged Cargo file-checksum and tampered LGPL rejection cases.
 - Frontend production build, Rust formatting, Python lint/format, Prettier and
   shell syntax checks passed. The private Apple Silicon native build completed.
 - The rebuilt private DMG passed disk-image, asset/notice, native inventory,
@@ -50,9 +55,17 @@ remain user-installed.
 - Its mounted frozen service passed synthetic vertical `学校へ` OCR with
   geometry, Sudachi, JMdict, KANJIDIC2, explicit translation, and saved word,
   sentence and translation-cache persistence across a service restart.
-- Inventory: 366 software/source components, 149 unique native input binaries
+- Inventory: 366 software/source components (280 Rust, 80 Python, 5 JavaScript,
+  detector source), 149 unique native input binaries
   plus 38 aliases (187 paths, down from 310). Corresponding-source worksheet:
   516 entries, still unreviewed as a complete delivery.
+- Dependency source candidates cover 363 entries with 84 independently hashed
+  archives. Their report matches the regenerated inventory hashes. The collector
+  also exports the exact clean project commit and filtered detector source.
+  Complete source-delivery review and native/PyTorch provenance remain pending.
+- Full libquadmath LGPL text in the rebuilt mounted DMG matches its pinned
+  upstream notice. Cargo source archives include the original crate archives
+  and vendor tree; their current hashes are in `source-candidates.json`.
 - OpenCV source delivery SHA-256:
   `4785a866097d6963d47c128fbb80da10f0592ac6c15b23a2fc29bb9d82754d7f`.
   Its original source, exact modifications, recipe copies and build record
@@ -61,9 +74,9 @@ remain user-installed.
   remains solely for the detector's unused `imshow` import.
 - Bundled JMdict/KANJIDIC2 header dates: **2026-09-27**.
 - Private DMG SHA-256:
-  `e5921f240ab8246f91d7622583a59c238869a60f08c61bcd95d255f5c3373f15`.
+  `bf5a4b8ffc583fbae79f0cc4d5365d80dce7c5004ee88cf1119c5eb87f9da3bc`.
   This artifact was built from the preparation working tree based on
-  `fdee23512844e81e761891cbddd2ad471447da56`; it is unsigned/private and is
+  `0d6df02`; it is unsigned/private and is
   not a public candidate. The release path requires a clean committed tree.
 
 These results do not clear the native-source, signing/notarization or remaining
@@ -79,6 +92,22 @@ certificate, including its associated private key, installed through Keychain
 Access. Create the CSR/private key locally and install the issued certificate;
 never send keys/passwords in chat or put them in this repository. A Developer
 ID Installer certificate is not needed for this DMG (it is for signed PKGs).
+
+The account is available but local signing setup remains pending. Complete
+these steps yourself on the build Mac:
+
+1. In Keychain Access, choose Certificate Assistant → Request a Certificate
+   from a Certificate Authority. Enter your email and a key name, leave the CA
+   email blank, and save the CSR outside the repository. The private key stays
+   in your Keychain. See [Apple's CSR instructions](https://developer.apple.com/help/account/certificates/create-a-certificate-signing-request/).
+2. In the Developer account's Certificates, Identifiers & Profiles, create a
+   **Developer ID Application** certificate using that CSR. Apple's manual
+   certificate flow requires the Account Holder role. Download the `.cer` and
+   double-click it to install; confirm the matching private key in Keychain's
+   My Certificates. See [Apple's certificate instructions](https://developer.apple.com/help/account/certificates/create-developer-id-certificates/).
+3. Run `rtk security find-identity -v -p codesigning` locally. It must list a
+   valid Developer ID Application identity. Then configure notarization below.
+   Keep keys, credentials and account details out of chat and git.
 
 Use `xcrun notarytool store-credentials YomiMado-notary` in your own Terminal
 and answer its local interactive prompts. An App Store Connect API key or an

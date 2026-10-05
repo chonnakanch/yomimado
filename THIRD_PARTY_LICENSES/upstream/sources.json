@@ -173,5 +173,16 @@
         "sha256": "32f413afcc4295151e77d25202c5c5d81ef621b46f947da1c3bde13256dc0d5f"
       }
     ]
+  },
+  "lgpl-2.1": {
+    "project": "spdx/license-list-data",
+    "commit": "31ba1a50e5397e00a304dbadc76531740e89ee48",
+    "files": [
+      {
+        "path": "lgpl-2.1/LICENSE-LGPL-2.1.txt",
+        "source": "https://raw.githubusercontent.com/spdx/license-list-data/31ba1a50e5397e00a304dbadc76531740e89ee48/text/LGPL-2.1-only.txt",
+        "sha256": "5749785c8bdefafcb5d798270ed0a967036fe2ca63dcedade1627565dfef81d2"
+      }
+    ]
   }
 }
