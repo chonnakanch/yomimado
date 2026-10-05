@@ -6,8 +6,8 @@ dmg="${1:?Pass a DMG path}"
 python_bin="${2:-$repo_root/services/ocr/build/release-venv/bin/python}"
 mode="${3:---private}"
 case "$mode" in
-  --private|--private-smoke|--release) ;;
-  *) echo "Expected --private, --private-smoke or --release" >&2; exit 1 ;;
+  --private|--private-smoke|--hobby-release|--release) ;;
+  *) echo "Expected --private, --private-smoke, --hobby-release or --release" >&2; exit 1 ;;
 esac
 
 if [[ ! -f "$dmg" ]]; then
@@ -37,8 +37,13 @@ hdiutil attach -readonly -nobrowse -mountpoint "$mount_dir" "$dmg"
 "$python_bin" "$repo_root/scripts/macos-release.py" verify-platform "$mount_dir/YomiMado.app"
 if [[ "$mode" == --release ]]; then
   "$python_bin" "$repo_root/scripts/macos-release.py" verify-app "$mount_dir/YomiMado.app"
+fi
+if [[ "$mode" == --release || "$mode" == --hobby-release ]]; then
   : "${YOMIMADO_SOURCE_DIR:?Set the corresponding-source delivery directory}"
   notices="$mount_dir/YomiMado.app/Contents/Resources/ocr/notices"
+  if [[ "$mode" == --hobby-release ]]; then
+    "$python_bin" "$repo_root/scripts/macos-release.py" verify-hobby "$notices"
+  fi
   cmp "$notices/source-delivery.json" "$YOMIMADO_SOURCE_DIR/source-delivery.json"
   "$python_bin" "$repo_root/scripts/macos-release.py" verify-sources "$notices" \
     --source-dir "$YOMIMADO_SOURCE_DIR" --revision "$(cat "$notices/project-revision.txt")"

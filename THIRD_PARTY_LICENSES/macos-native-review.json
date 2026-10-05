@@ -1,0 +1,280 @@
+{
+  "reviewScope": "Technical source/notice verification for these built inputs only; complete release-delivery review remains pending.",
+  "verifiedBy": "Codex",
+  "verifiedOn": "2026-10-05",
+  "groups": [
+    {
+      "components": [
+        "source:CPython@3.11.17",
+        "source:liblzma@5.8.4",
+        "source:OpenSSL@3.5.9"
+      ],
+      "archive": "python-source-delivery.tar.gz",
+      "sha256": "929cff6c903e74d0c4bf16a27a8544dd31bbf77bb6f0bce91558c037fa660137",
+      "licenseEvidence": "Source-built CPython 3.11.17 (PSF-2.0 plus retained embedded notices), static OpenSSL 3.5.9 (Apache-2.0) and liblzma 5.8.4 (0BSD). Original upstream tarball hashes, unchanged compile commands, 11 source notice texts and installed binary hashes verified. XZ tools/scripts are not built; OpenSSL providers are disabled.",
+      "noticeFiles": {
+        "licenses/source/CPython-3.11.17/CPython-LICENSE.txt": "3b2f81fe21d181c499c59a256c8e1968455d6689d269aa85373bfb6af41da3bf",
+        "licenses/source/CPython-3.11.17/Expat-COPYING.txt": "31b15de82aa19a845156169a17a5488bf597e561b2c318d159ed583139b25e87",
+        "licenses/source/CPython-3.11.17/libmpdec-COPYRIGHT.txt": "b07528d8b1dbf1e2d2741052996f0876e23342ce2d30d0effa39c5457716c25a",
+        "licenses/source/CPython-3.11.17/SHA3-LICENSE.txt": "4633fc5859344c6f244939c27700fb941d12c4636215a8eccde17d9a6d1dcb0d",
+        "licenses/source/CPython-3.11.17/Mersenne-Twister-NOTICE.txt": "1d206a24fea37f9cf578b1fb80c07fa8d6aca00ea03448fad4be1e916e730f49",
+        "licenses/source/CPython-3.11.17/BLAKE2-NOTICE.txt": "a27d7169aa4b7db350c5e46da87184c4b7a8ac8e4d86dce38845fdffd789d7b5",
+        "licenses/source/CPython-3.11.17/dtoa-NOTICE.txt": "d04360743ae3338bb08ab2106b51e24309e3ca4b1c6b1186139531ade351b7e3",
+        "licenses/source/CPython-3.11.17/SipHash-NOTICE.txt": "32a0c9f75757316ca119ef21c18d687983e11782c60264448b33c7be6ab1f329",
+        "licenses/source/liblzma-5.8.4/liblzma-LICENSE.txt": "0b01625d853911cd0e2e088dcfb743261034a091bb379246cb25a14cc4c74bf1",
+        "licenses/source/liblzma-5.8.4/XZ-COPYING.txt": "616a3ad264ce29b8f1cb97e53037b139d406899ca8d1f799651e17bfa09830b8",
+        "licenses/source/OpenSSL-3.5.9/OpenSSL-LICENSE.txt": "7d5450cb2d142651b8afa315b5f238efc805dad827d91ba367d8516bc9d49e7a"
+      },
+      "nativeInputs": [
+        {
+          "id": "native:libpython3.11.dylib",
+          "buildInputSha256": "19bfd97ab8846abdc9720c4d508b89b72c436abd120d93b07674f6263945d31c"
+        },
+        {
+          "id": "native:python3.11/lib-dynload/_asyncio.cpython-311-darwin.so",
+          "buildInputSha256": "de192cb521d63f0af8aaa05318bd162f6d376cf78c8d1a1860842f3d2d06f24c"
+        },
+        {
+          "id": "native:python3.11/lib-dynload/_bisect.cpython-311-darwin.so",
+          "buildInputSha256": "6418a0bd7483f81a40dcbc56bb0ef7289f24e0365c91a8a09c2a0aa1b43832c0"
+        },
+        {
+          "id": "native:python3.11/lib-dynload/_blake2.cpython-311-darwin.so",
+          "buildInputSha256": "1644a5a59c0de7e4d4706196ccd367d84453752888bc90dd84707d0bdec0a22f"
+        },
+        {
+          "id": "native:python3.11/lib-dynload/_bz2.cpython-311-darwin.so",
+          "buildInputSha256": "f047d1d5a1ac9dcde4b5a20e6a1dc906ee984b79b44073ee4203827825f5aa4b"
+        },
+        {
+          "id": "native:python3.11/lib-dynload/_codecs_cn.cpython-311-darwin.so",
+          "buildInputSha256": "1451b2bbc64aede5da86df6f937dcfb3d5f4744719e5a158e64f1d42988df946"
+        },
+        {
+          "id": "native:python3.11/lib-dynload/_codecs_hk.cpython-311-darwin.so",
+          "buildInputSha256": "644f4a110b5c296091fd42782e2646ce2e8599f7374b8a6ddbfc72b08695b821"
+        },
+        {
+          "id": "native:python3.11/lib-dynload/_codecs_iso2022.cpython-311-darwin.so",
+          "buildInputSha256": "a2031f9eaddfc6b57b371599e65049da71f07c4c72806c860ca33bb9e98e5d72"
+        },
+        {
+          "id": "native:python3.11/lib-dynload/_codecs_jp.cpython-311-darwin.so",
+          "buildInputSha256": "36c29e9ae84192246620014333d1b6949b1c765889ed79858424fe076a63fb0d"
+        },
+        {
+          "id": "native:python3.11/lib-dynload/_codecs_kr.cpython-311-darwin.so",
+          "buildInputSha256": "3ef2f3e4d0441f1a7907ac774019f4da859b7cf9d30da92cc3a4192f50e46ea9"
+        },
+        {
+          "id": "native:python3.11/lib-dynload/_codecs_tw.cpython-311-darwin.so",
+          "buildInputSha256": "fd57c82d1376ca93cbcff3bebaef698689e24eeb519e52e0552fdbfdc5dbb50f"
+        },
+        {
+          "id": "native:python3.11/lib-dynload/_contextvars.cpython-311-darwin.so",
+          "buildInputSha256": "e892d86b1d614139591e1d225bdd3235fd737faa796bccc6b66630a65d65d68f"
+        },
+        {
+          "id": "native:python3.11/lib-dynload/_csv.cpython-311-darwin.so",
+          "buildInputSha256": "a1ad69f6e857fec418d5b33e54bdd271e8d88c0add1a97bc81caf9366959ee7e"
+        },
+        {
+          "id": "native:python3.11/lib-dynload/_ctypes.cpython-311-darwin.so",
+          "buildInputSha256": "dce3118cbbbffbc3eacb7e2de90f63b8df39cef8664ba8ace69421d144e98aa1"
+        },
+        {
+          "id": "native:python3.11/lib-dynload/_datetime.cpython-311-darwin.so",
+          "buildInputSha256": "08c0b9a67b1f8140c2aebc198df191b8b3864b2fa5096bf5969fb23ef39e7aa6"
+        },
+        {
+          "id": "native:python3.11/lib-dynload/_decimal.cpython-311-darwin.so",
+          "buildInputSha256": "7610553ee6e37739c2b6c9eb9b1ec771ed62133d9071205c5062c0a7afda2eb6"
+        },
+        {
+          "id": "native:python3.11/lib-dynload/_elementtree.cpython-311-darwin.so",
+          "buildInputSha256": "95863a0f21c92bff1120e37ccca99d3860431dc18fc0d92a70b040ad3f18358f"
+        },
+        {
+          "id": "native:python3.11/lib-dynload/_hashlib.cpython-311-darwin.so",
+          "buildInputSha256": "f932f91cf89e8c99fb88308201019012cc9e4c436be29940e431767bbfc9d797"
+        },
+        {
+          "id": "native:python3.11/lib-dynload/_heapq.cpython-311-darwin.so",
+          "buildInputSha256": "f9e9fa1652e957c520b4291c43f654b3988c842a1c69ec07bbf31f0b04228546"
+        },
+        {
+          "id": "native:python3.11/lib-dynload/_json.cpython-311-darwin.so",
+          "buildInputSha256": "00aa419ab8837321e7e52be22e97057afa1a526370b58684b2513434cb161490"
+        },
+        {
+          "id": "native:python3.11/lib-dynload/_lsprof.cpython-311-darwin.so",
+          "buildInputSha256": "19bba1b33b4317b15a388cd7b2386aa3db0e781d99fe18e7a3b727fd2e50071f"
+        },
+        {
+          "id": "native:python3.11/lib-dynload/_lzma.cpython-311-darwin.so",
+          "buildInputSha256": "ca870e5d4c99c3ba236125b00ee7cfd15f6b9a4a210d3adf66dd523c2964e1b9"
+        },
+        {
+          "id": "native:python3.11/lib-dynload/_md5.cpython-311-darwin.so",
+          "buildInputSha256": "7c2bb27c1ad241d0fcd75bc21510747a3a61b25974320fc65a1f8809c7551e38"
+        },
+        {
+          "id": "native:python3.11/lib-dynload/_multibytecodec.cpython-311-darwin.so",
+          "buildInputSha256": "8ee3d9d2c32bcc198b53b9bb37ded3fdad44b5dd36b8f2dd7b31d74c4861e6ea"
+        },
+        {
+          "id": "native:python3.11/lib-dynload/_multiprocessing.cpython-311-darwin.so",
+          "buildInputSha256": "c55841adcde212b932ae01f539ce8bf93f32e65fd066a38c1f8a8353deeb6796"
+        },
+        {
+          "id": "native:python3.11/lib-dynload/_opcode.cpython-311-darwin.so",
+          "buildInputSha256": "9c6e35c17ba3308146fdcdf78b723dc109e57d4888afda9542b1aa17cec8dafe"
+        },
+        {
+          "id": "native:python3.11/lib-dynload/_pickle.cpython-311-darwin.so",
+          "buildInputSha256": "ab83dfb25f377685aee6afff04723aa5608d3652a23e8225eea9a210eff5b524"
+        },
+        {
+          "id": "native:python3.11/lib-dynload/_posixshmem.cpython-311-darwin.so",
+          "buildInputSha256": "0be141a016c2cf5e72a135a4af1e89204f0f8e29f727565bb17f978d22d8c446"
+        },
+        {
+          "id": "native:python3.11/lib-dynload/_posixsubprocess.cpython-311-darwin.so",
+          "buildInputSha256": "3ee072127c78a183f36520c9e36b18a08e59f26bc85a771586b9e3f8cdb34089"
+        },
+        {
+          "id": "native:python3.11/lib-dynload/_queue.cpython-311-darwin.so",
+          "buildInputSha256": "c0e769dc8c2c0013e0e01020ed8ca581cc170d2adcad22df6fbf8b878b9af45a"
+        },
+        {
+          "id": "native:python3.11/lib-dynload/_random.cpython-311-darwin.so",
+          "buildInputSha256": "6bb28016faef5cd67af4d144f2faf49f634ee466c913aa88349600a19cb45047"
+        },
+        {
+          "id": "native:python3.11/lib-dynload/_scproxy.cpython-311-darwin.so",
+          "buildInputSha256": "ff750b05eb31da235750b44c73fb33e456c3a4c57efb4a7d5f2edbc5599b012c"
+        },
+        {
+          "id": "native:python3.11/lib-dynload/_sha1.cpython-311-darwin.so",
+          "buildInputSha256": "787316a6e0447da28306774bf52343d66b7113a1a9d8fa2722a74338e01bf112"
+        },
+        {
+          "id": "native:python3.11/lib-dynload/_sha256.cpython-311-darwin.so",
+          "buildInputSha256": "d001bed2618ce98ba2867b522552ebc41d9a320c95cbd06064103869793ca2a1"
+        },
+        {
+          "id": "native:python3.11/lib-dynload/_sha3.cpython-311-darwin.so",
+          "buildInputSha256": "fd57c703fb751cab2b85bd30dfe03d27cba5016f6e80b29c45d12f2da2b7d786"
+        },
+        {
+          "id": "native:python3.11/lib-dynload/_sha512.cpython-311-darwin.so",
+          "buildInputSha256": "5bbbc841fcaea75f59b822b305a893d09021e2dda1657e4bc65c653455ccb704"
+        },
+        {
+          "id": "native:python3.11/lib-dynload/_socket.cpython-311-darwin.so",
+          "buildInputSha256": "0da7999bb1c626d79a9826e44194e59d3089468d0ffe56d79ae701582a371baf"
+        },
+        {
+          "id": "native:python3.11/lib-dynload/_sqlite3.cpython-311-darwin.so",
+          "buildInputSha256": "2dab0d7f74812b9165d9da90689daea5bc0b2fd9fdf9c15deac3ad250a8a012a"
+        },
+        {
+          "id": "native:python3.11/lib-dynload/_ssl.cpython-311-darwin.so",
+          "buildInputSha256": "9adde7971139dadc246ecfdfe3506345660fcc66bfcc13d6ec7b7ad11f5998ce"
+        },
+        {
+          "id": "native:python3.11/lib-dynload/_statistics.cpython-311-darwin.so",
+          "buildInputSha256": "6f84c41dcf9eaf72f9561ab6e903873234fc866084c5ab96967dc77a5a2354bf"
+        },
+        {
+          "id": "native:python3.11/lib-dynload/_struct.cpython-311-darwin.so",
+          "buildInputSha256": "2e205941ff3cdb0f03f22c09c3e6957c4ffbffade07d927090ba4e89923f870f"
+        },
+        {
+          "id": "native:python3.11/lib-dynload/_typing.cpython-311-darwin.so",
+          "buildInputSha256": "ece7ef11865a511e4bbdb49fd6e4d7edc50afdfa42da21f38d8f133c241e2832"
+        },
+        {
+          "id": "native:python3.11/lib-dynload/_uuid.cpython-311-darwin.so",
+          "buildInputSha256": "add3419ef393f6464ffdf0477ff6b654df05e83c7d94ba1795133a47b1373967"
+        },
+        {
+          "id": "native:python3.11/lib-dynload/_zoneinfo.cpython-311-darwin.so",
+          "buildInputSha256": "626fd1a55810134f49b32ccfe520d150ff522f25a98d0a84d3c3ec46be00677c"
+        },
+        {
+          "id": "native:python3.11/lib-dynload/array.cpython-311-darwin.so",
+          "buildInputSha256": "0c57dfa521353ed4e3999261fb9823d18f5b3a39b4c455238526a8c117ed11e6"
+        },
+        {
+          "id": "native:python3.11/lib-dynload/binascii.cpython-311-darwin.so",
+          "buildInputSha256": "794fbdab724bbfbf0d9c985982fc1594477e6a1339e1cf73d1f4d20ae57e4ff6"
+        },
+        {
+          "id": "native:python3.11/lib-dynload/cmath.cpython-311-darwin.so",
+          "buildInputSha256": "4d8ff2137c55b03a9391f10ab83fab2f3af520fc6ecf6eea10d1c4d45ce5ec7e"
+        },
+        {
+          "id": "native:python3.11/lib-dynload/fcntl.cpython-311-darwin.so",
+          "buildInputSha256": "78a682c4f52a0341bf06664d77a8fd462c2b96902cad74ac6d49cc26a8fca2d2"
+        },
+        {
+          "id": "native:python3.11/lib-dynload/grp.cpython-311-darwin.so",
+          "buildInputSha256": "bcb3d9ba6e52a5183b3445e06f78487ce92d7d40ea3e013597157b6fffe96104"
+        },
+        {
+          "id": "native:python3.11/lib-dynload/math.cpython-311-darwin.so",
+          "buildInputSha256": "acb23fe0f899f1989f1db543d2ec6ecbf836e27a57d90872e2d48f89dca7e1a7"
+        },
+        {
+          "id": "native:python3.11/lib-dynload/mmap.cpython-311-darwin.so",
+          "buildInputSha256": "58c5ac26b91e85e59b179c461181e27a5eef580bf888d9138848aa5f47042494"
+        },
+        {
+          "id": "native:python3.11/lib-dynload/pyexpat.cpython-311-darwin.so",
+          "buildInputSha256": "e0111659381ec3c31d5a84b3cd0b2f864f38df17e2b02cf5be5d995cec6f0735"
+        },
+        {
+          "id": "native:python3.11/lib-dynload/resource.cpython-311-darwin.so",
+          "buildInputSha256": "9dcf7b3b2e9ad8df57df86181d88444e539f2c396ad4a6574b7ad6a62eb9be7b"
+        },
+        {
+          "id": "native:python3.11/lib-dynload/select.cpython-311-darwin.so",
+          "buildInputSha256": "be54769eec32a97dedc830666b6c0c692c67664159c611ff250e27a4dec2e78a"
+        },
+        {
+          "id": "native:python3.11/lib-dynload/syslog.cpython-311-darwin.so",
+          "buildInputSha256": "657d01d13cb64e51bf4a3afec3a760212a8da9a19acd5cac24c1b940ab08fa1f"
+        },
+        {
+          "id": "native:python3.11/lib-dynload/termios.cpython-311-darwin.so",
+          "buildInputSha256": "196efa0dc6df6503d202cbe48b252b25374fa1d296c7d7e5b5d47565bb03d1c1"
+        },
+        {
+          "id": "native:python3.11/lib-dynload/unicodedata.cpython-311-darwin.so",
+          "buildInputSha256": "7f5b4fbff1ce8b5d7452079b6ad23ec1771ed58607f3a1e9e49267ef358f0277"
+        },
+        {
+          "id": "native:python3.11/lib-dynload/zlib.cpython-311-darwin.so",
+          "buildInputSha256": "75e653e81e43d4bae663e43f14ec7633c2ab1339efa8475194c7af4aa4d3ecf3"
+        }
+      ]
+    },
+    {
+      "components": ["python:opencv-python@4.11.0.86+yomimado.1"],
+      "archive": "opencv-source-delivery.tar.gz",
+      "sha256": "b426f96f5620aa310dd0971d0a247e5b0d81f880412aed43d665f141f9fd3f12",
+      "licenseEvidence": "Custom opencv-python 4.11.0.86+yomimado.1: Apache-2.0 OpenCV and MIT Python packaging; retained zlib, libpng, libjpeg-turbo and protobuf notices. Original sdist, exact version/notice modifications and static build recipe retained. FFmpeg and video modules disabled; installed binary and build configuration verified.",
+      "noticeFiles": {
+        "licenses/python/opencv-python-4.11.0.86+yomimado.1/licenses/LICENSE-3RD-PARTY.txt": "387df94ddd766c9d91aaf457c807f5cf61c641fcfa23582397c1e7a5ca2943c0",
+        "licenses/python/opencv-python-4.11.0.86+yomimado.1/licenses/LICENSE.txt": "09d719058e782ac7bc71ba21c944e1136cde2bb957c0e888121f0218d6b5f02c"
+      },
+      "nativeInputs": [
+        {
+          "id": "native:cv2/cv2.abi3.so",
+          "buildInputSha256": "3185bd355fede359d7ea07adb4880eb60a73879de1143ccb4bba412cdcf71039"
+        }
+      ]
+    }
+  ]
+}

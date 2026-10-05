@@ -1,55 +1,60 @@
 # First macOS pre-release gate
 
-Distribution: an **Apple Silicon DMG on GitHub Releases**, for macOS **14 or
-later**, outside the Mac App Store. The default output of
-`scripts/build-macos-prerelease.sh` is a **private test artifact**. Do not upload
-it to a Release or as a downloadable CI artifact. Detector ONNX weights must
-remain user-installed.
+Distribution: a downloadable **Apple Silicon DMG on GitHub Releases**, for
+macOS **14 or later**, outside the Mac App Store.
+
+On 2026-10-05 the maintainer chose a free **unnotarized hobby release**.
+Developer ID signing and Apple notarization are optional and are no longer
+release gates. This replaces the earlier signed-only distribution requirement.
+Users must explicitly allow the app through macOS Gatekeeper. Apple Silicon
+binaries may carry local ad-hoc signatures; these do not identify a publisher
+or provide Apple notarization. Detector ONNX weights remain **user-installed**.
+
+The default build remains a **private test artifact**. `--release` is the
+explicit hobby candidate path, with source and exact-DMG checks. Neither path
+publishes anything automatically. Do not upload a private build or an
+incomplete candidate.
 
 ## Status — 2026-10-05
 
-- [x] Private DMG builds; previous mounted bundle passed OCR, dictionaries,
-      kanji, tokenization and translation on the development Mac.
-- [x] Pin the Python environment and model checksums; use Cargo/npm lockfiles.
+- [x] Private DMG builds and passes mounted-bundle OCR, dictionary, kanji,
+      tokenization, translation and persistence smoke tests on the development Mac.
+- [x] Pin runtime, package versions and model hashes; use Cargo/npm lockfiles.
 - [x] Replace Xcode Python with source-built CPython 3.11.17 and static OpenSSL
-      3.5.9/liblzma 5.8.4. Capture original sources, recipe and embedded notices;
-      repeat the frozen DMG smoke with that isolated runtime.
-- [x] Exclude detector weights and example artwork/fonts; preserve EDRDG/model
-      notices and dictionary update instructions.
-- [x] Audit package inventory and add missing detector/bootloader records and
-      native binary provenance. See [source review](macos-source-review.md).
-- [x] Prepare a separate fail-closed `--release` path, nested signing, explicit
-      notarization/stapling and signature/source verification.
-- [x] Set macOS 14 minimum from actual frozen binaries; check architecture
-      and deployment targets in the mounted DMG.
-- [x] Replace the public OpenCV wheel with a source-pinned image/ONNX-only
-      build, retaining ONNX detection/geometry and removing the FFmpeg dependency
-      chain. Preserve static notices and generate its matching source archive.
-- [ ] Complete native licence/source delivery for the remaining frozen
-      interpreter/libraries and all software components. The OpenCV replacement
-      and package inventory pass do not clear this entire gate.
-- [x] Gather checksum-verified source candidates for the locked Rust/JavaScript
-      inputs and available Python sdists; add the missing full libquadmath LGPL
-      text. Final native sources/build recipes and source-delivery review remain
-      open; see [the follow-up audit](macos-source-review.md).
-- [ ] Install a Developer ID Application signing identity and authenticate a
-      `notarytool` Keychain profile. Apple Developer account is available; signing
-      is not configured. Last local check: **0 valid signing identities**.
-- [ ] Build and verify the signed/notarized candidate and run the frozen-service
-      smoke on that exact DMG.
-- Fresh-macOS install test: **skipped at the maintainer's request on
-  2026-10-05**; no clean Mac is available. This is a waiver, not a passed test.
-- [ ] Complete the remaining [installed-app test record](macos-clean-mac-test.md)
-      on the existing Mac: Gatekeeper launch, model import and Screen Recording.
-- [ ] Publish source archives, notices, hashes, dictionary refresh dates and
-      release notes alongside the verified DMG.
-- [ ] Only then implement the GitHub Actions release workflow. No workflow or
-      unsigned fallback artifact has been added.
+      3.5.9/liblzma 5.8.4; preserve original sources and embedded notices.
+- [x] Replace the FFmpeg-bearing OpenCV wheel with a source-pinned image/ONNX
+      build; preserve its static notices and exact changes/build recipe.
+- [x] Record verified native source/notice evidence for those two builds:
+      **59 of 152 unique native inputs**. See the
+      [technical review record](../THIRD_PARTY_LICENSES/macos-native-review.json).
+- [x] Exclude detector weights and sample artwork/fonts; preserve EDRDG/model
+      credits and dictionary update instructions.
+- [x] Gather checksum-verified dependency source candidates and add the missing
+      full libquadmath LGPL licence text.
+- [x] Make the hobby candidate explicit and fail closed on missing source
+      clearance, incorrect distribution metadata or failed bundle/smoke checks.
+- [ ] Complete the remaining native source/notice review and final delivery
+      review. **93 unique native inputs** remain, including NumPy/GCC/OpenBLAS,
+      Pillow/torchvision codecs, PyTorch, GEOS and wandb tools. Package source
+      candidates are not final clearance; see [source review](macos-source-review.md).
+- [ ] Build a source-cleared hobby candidate from a clean commit; verify that
+      exact mounted DMG and its frozen service, then retain its SHA-256.
+- Fresh-macOS installation: **skipped at the maintainer's request on 2026-10-05**;
+  no clean Mac is available. This is a waiver, not a passed test.
+- [ ] Complete the [existing-Mac installed-app record](macos-clean-mac-test.md):
+      browser quarantine, per-app Gatekeeper approval, model import and Screen
+      Recording. Preserve existing learning data and permissions.
+- [x] Draft [pre-release notes](macos-prerelease-notes.md) with installation,
+      detector import, permissions, data credits and known limitations.
+- [ ] Finalize release notes with unnotarized status, install steps, fresh-Mac
+      limitation, source commit, dictionary dates, download links and hashes.
+- [ ] Publish the verified DMG, matching source delivery and notices together.
+- [ ] Only after the installer gates pass, add the GitHub Actions release build.
 
 ## Development-Mac verification — 2026-10-05
 
 - Previous baseline: 55 desktop and 36 Rust tests passed. The OpenCV change
-  passes 47 OCR-service tests. Runtime/source preparation passes 48 release-tool
+  passes 47 OCR-service tests. The hobby/source preparation passes 54 release-tool
   tests, including altered interpreter, frozen-input, recipe and licence rejection
   cases. All seven selected CPython test groups pass (2,114 tests run, 124
   skipped): SSL, LZMA, hashing, SQLite, ctypes, decimal and Expat.
@@ -78,21 +83,18 @@ remain user-installed.
   the user's ONNX model loads and performs inference. System-Cocoa highgui
   remains solely for the detector's unused `imshow` import.
 - Python/OpenSSL/liblzma source delivery SHA-256:
-  `48357066ab8e871775b20d92fb50e5cd5e61b7df0cd198b11c8b721d403e97ab`.
+  `929cff6c903e74d0c4bf16a27a8544dd31bbf77bb6f0bce91558c037fa660137`.
   The runtime build entrypoint, three original archives and 11 licence/notice
   texts are retained; frozen interpreter inputs match the recorded hashes.
 - Bundled JMdict/KANJIDIC2 header dates: **2026-09-27**.
 - Private DMG SHA-256:
-  `8177974553d91d5399c2ef57fe8c674e30d1609bbdd206a3f03a9a531cf672dc`.
+  `5c730340eab6cccd666f2f467f5b381321fa8806abad7e437ef85e58ad1556db`.
   This artifact was built from the preparation working tree based on
-  `9da9c0f`; it is unsigned/private and is
+  `a5b1738`; its metadata identifies it as `private-test` and it is
   not a public candidate. The release path requires a clean committed tree.
 
-These results do not clear the native-source, signing/notarization or remaining
-installed-app checks above. Fresh-machine behavior remains unverified and must
-be disclosed in the pre-release notes. Cold frozen startup gets a bounded
-180-second allowance; the smoke surfaces startup diagnostics and cleans its
-process group/test volume.
+These private-build results do not clear the remaining source-delivery or
+installed-app gates. Fresh-machine behavior remains unverified.
 
 ## Source-built release runtime
 
@@ -112,7 +114,9 @@ The default build refuses Apple's Xcode interpreter or a runtime whose
 recorded binary/notice/source hashes differ. Keep the ignored
 `build/python-source/` records and archives for the corresponding-source
 review. The mounted-bundle verifier compares frozen interpreter input hashes
-and embedded notices with that record. Signing/relocation changes final bytes.
+and embedded notices with that record. Relocation and local ad-hoc signatures can change final bytes.
+The runtime fingerprint covers only the preparation block; changing packaging
+commands does not force a native rebuild. Original compile inputs remain bound.
 
 The source archive contains original release tarballs, the exact build
 entrypoint and binary/notice records. Preserve CPython's licence and the
@@ -126,141 +130,75 @@ Upstream releases: [CPython 3.11.17](https://www.python.org/downloads/release/py
 [OpenSSL sources](https://openssl-library.org/source/),
 [XZ 5.8.4](https://github.com/tukaani-project/xz/releases/tag/v5.8.4).
 
-## Credentials — local Keychain only
+## Source preparation and hobby candidate
 
-Use an Apple Developer Program account with a **Developer ID Application**
-certificate, including its associated private key, installed through Keychain
-Access. Create the CSR/private key locally and install the issued certificate;
-never send keys/passwords in chat or put them in this repository. A Developer
-ID Installer certificate is not needed for this DMG (it is for signed PKGs).
-
-The account is available but local signing setup remains pending. Complete
-these steps yourself on the build Mac:
-
-1. In Keychain Access, choose Certificate Assistant → Request a Certificate
-   from a Certificate Authority. Enter your email and a key name, leave the CA
-   email blank, and save the CSR outside the repository. The private key stays
-   in your Keychain. See [Apple's CSR instructions](https://developer.apple.com/help/account/certificates/create-a-certificate-signing-request/).
-2. In the Developer account's Certificates, Identifiers & Profiles, create a
-   **Developer ID Application** certificate using that CSR. Apple's manual
-   certificate flow requires the Account Holder role. Download the `.cer` and
-   double-click it to install; confirm the matching private key in Keychain's
-   My Certificates. See [Apple's certificate instructions](https://developer.apple.com/help/account/certificates/create-developer-id-certificates/).
-3. Run `rtk security find-identity -v -p codesigning` locally. It must list a
-   valid Developer ID Application identity. Then configure notarization below.
-   Keep keys, credentials and account details out of chat and git.
-
-Use `xcrun notarytool store-credentials YomiMado-notary` in your own Terminal
-and answer its local interactive prompts. An App Store Connect API key or an
-Apple ID app-specific password may authenticate notarization; keep any API key
-file outside the repository. Do not put a password on a shell command line or
-record it in shell history. Store credentials in the Keychain profile, then
-set these **non-secret selectors** in the build Terminal:
-
-```sh
-export APPLE_SIGNING_IDENTITY='Developer ID Application: YOUR NAME (TEAMID1234)'
-export YOMIMADO_APPLE_TEAM_ID='TEAMID1234'
-export YOMIMADO_NOTARY_PROFILE='YomiMado-notary'
-rtk services/ocr/build/release-venv/bin/python scripts/macos-release.py preflight
-```
-
-Replace the example team and identity with real values. Preflight checks the
-identity type/team, Keychain availability and notary authentication before
-building. It prints no credential-tool output on failure. The release uses
-`notarytool --keychain-profile`; it suppresses Tauri's separate environment
-notary path, which can warn and continue when unauthenticated. All failures
-stop the release script. Do not retry with ad-hoc signing, bypass Gatekeeper,
-disable SIP, or clear quarantine to obtain a release sign-off.
-
-## Source preparation and signed candidate
-
-Read [the source review](macos-source-review.md) and resolve its native-input
-gap first. After committing release changes, generate an exact review worksheet
-from the regenerated notices:
+Read [the source review](macos-source-review.md). Generate a worksheet from the
+actual regenerated inventory and clean source commit:
 
 ```sh
 rtk services/ocr/build/release-venv/bin/python scripts/macos-release.py source-template apps/desktop/src-tauri/resources/ocr/notices --revision "$(rtk git rev-parse HEAD)" > /private/tmp/source-delivery.json
 ```
 
-Move/fill that worksheet in your local source delivery directory, with actual
-source archives, their hashes, native notice additions, `BUILD.md`, and the
-reviewer/date. No entry may remain a placeholder. It covers the entire
-conservative inventory, including native code; it is bound to both inventory
-hashes and the exact project commit. Set `YOMIMADO_SOURCE_DIR` to this directory
-(outside git). Set `YOMIMADO_SMOKE_DETECTOR_MODEL` to your separately installed
-ONNX file for the frozen smoke (it is never copied into the bundle). The build
-rejects a dirty project/detector tree. The validator
-checks records/files/hashes; the reviewer must inspect source contents,
-patches/build recipes and licence compatibility.
+Complete it in an ignored local source-delivery directory, with verified source
+archives, hashes, licence/notice evidence, `BUILD.md` and final reviewer/date.
+The technical native-review record can supply completed evidence; it does not
+approve the whole delivery. The current conservative worksheet covers every
+software/native entry. It must not contain placeholders.
+
+Set `YOMIMADO_SOURCE_DIR` to that reviewed directory and
+`YOMIMADO_SMOKE_DETECTOR_MODEL` to your separately installed ONNX file.
+The detector remains outside the app and source delivery. Then run:
 
 ```sh
 rtk bash scripts/build-macos-prerelease.sh --release
 ```
 
-The release path signs every Mach-O runtime binary and framework inside out,
-then seals the app with a secure timestamp and hardened runtime. It adds no
-library-validation or unsigned-memory exemptions. Apple must accept an app ZIP
-submission; the app ticket is stapled and validated. The DMG is then created,
-signed, separately submitted, accepted and stapled. The final mounted bundle
-must pass:
+This path requires no Apple account, key or password. It strips Apple signing
+credentials from the bundle command, records `unnotarized-hobby` distribution
+metadata, checks the clean project/detector revision and source delivery, and
+runs the mounted DMG verifier plus frozen-service smoke. Candidate files are
+copied to ignored `target/release/bundle/releasable/` only after success. Missing
+source clearance or a failed check stops the build; it never falls back to the
+private artifact. Manual installed-app sign-off is still required.
 
-- expected Developer ID authority/team and timestamp for all nested Mach-O code;
-- Apple Silicon slices and compatible minimum deployment targets;
-- `codesign --verify --deep --strict`, app/DMG `stapler validate`, and app/DMG
-  `spctl` assessments;
-- strict asset/notice checks, no detector weights/artwork and source-delivery
-  equality/coverage/hashes;
-- the frozen-service smoke on that exact mounted signed app.
-
-Accepted-submission IDs/status and final DMG SHA-256 are saved alongside the
-candidate under ignored `target/release/bundle/releasable/`. These do not
-replace the remaining installed-app/manual gate. Signed execution is still
-unverified until credentials are available: if hardened-runtime loading fails,
-diagnose the exact library/signature before adding any entitlement.
-
-To re-verify the exact candidate:
+Reverify a candidate with the same reviewed source directory and detector path:
 
 ```sh
-rtk bash scripts/verify-macos-dmg.sh /absolute/path/YomiMado_0.1.0_aarch64.dmg services/ocr/build/release-venv/bin/python --release
+rtk bash scripts/verify-macos-dmg.sh /absolute/path/YomiMado_0.1.0_aarch64.dmg services/ocr/build/release-venv/bin/python --hobby-release
 ```
 
-Mount read-only using Disk Utility or `hdiutil attach`, then point this at the
-mounted app and your separately obtained detector file:
+The frozen smoke runs outside the repository with temporary databases, an empty
+Hugging Face cache and offline model flags. It checks real vertical `学校へ`
+OCR geometry, Sudachi, JMdict/KANJIDIC2, explicit translation and saved
+word/sentence/cache persistence after restart. It does not prove Finder launch,
+Gatekeeper approval, model-import UI or Screen Recording; those need the
+installed-app record.
 
-```sh
-rtk services/ocr/build/release-venv/bin/python scripts/smoke-macos-bundle.py /Volumes/YomiMado/YomiMado.app --detector-model /absolute/user/path/comictextdetector.pt.onnx
-```
+For a browser-downloaded unnotarized app, follow Apple's per-app **Open Anyway**
+flow in System Settings → Privacy & Security after the initial block. Do not
+remove quarantine or globally disable Gatekeeper to claim a pass. A damaged or
+malware warning requires investigation. See
+[Apple's instructions](https://support.apple.com/en-us/102445).
 
-The smoke uses temporary databases, an empty Hugging Face cache, offline model
-flags and a generated vertical `学校へ` image. It exercises health, real OCR
-geometry, Sudachi, JMdict/KANJIDIC2, translation, and saved word/sentence/cache
-survival across a service restart. It runs the frozen service outside the repo
-and does not touch existing app learning data. It does not prove GUI first
-launch, Keychain/Gatekeeper behavior or Screen Recording permission; use the
-installed-app record for those. The detector remains outside the app and source
-pack.
+## Optional Developer ID build
+
+The existing `--developer-id-release` path remains available if the maintainer
+later chooses paid Apple distribution. It requires a local Developer ID
+Application identity and authenticated notarytool Keychain profile. Its nested
+signatures, Apple acceptance, stapling and Gatekeeper assessments remain strict;
+it cannot fall back to a hobby build. Setup is optional for this release.
+Keep all private keys/passwords out of chat, source control and command history.
 
 ## Future GitHub Actions gate
 
-Do not implement or activate a Release-artifact workflow until the preceding
-installer gates have passed. Then use a protected release environment with
-required reviewer approval and signing/notary secrets available only to trusted
-tag/manual runs. Never expose them to pull-request code or fork builds.
-
-Use commit-pinned actions and read-only default token permissions; grant
-`contents: write` only to the publish job after verification. Import the
-encrypted Developer ID `.p12` into an ephemeral keychain, authenticate
-notarytool with environment secrets/API key files in runner temp, mask sensitive
-values, disable shell tracing, and clean keychains/key files in an always-run
-cleanup. Require all certificate/password/team/notary inputs before building;
-never fall back to unsigned/ad-hoc output. Reuse the release/source verifiers
-and frozen smoke; upload only the exact verified DMG, source archives, notices
-and hashes after all jobs succeed. Verify the artifact digest when transferring
-between jobs. Capture installed-app sign-off for changes affecting packaging,
-permissions, runtime or signing. Retain the explicit fresh-machine test waiver
-and unverified limitation until that test is actually performed. Keep Windows
-as a separate milestone.
-
-References: [Apple notarization workflow](https://developer.apple.com/documentation/security/customizing-the-notarization-workflow),
-[Tauri macOS signing](https://v2.tauri.app/distribute/sign/macos/),
-[PyInstaller 6.16.0 signing](https://pyinstaller.org/en/v6.16.0/feature-notes.html#macos-binary-code-signing).
+Do not implement or activate a Release-artifact workflow until source clearance,
+exact-DMG verification and installed-app sign-off are complete. The hobby target
+needs no signing/notarization secrets. Use pinned actions, read-only default
+permissions and a protected release environment with approval for publishing.
+Grant `contents: write` only to the publish job. Build from an exact clean
+commit, reuse source/bundle/distribution verifiers and the frozen smoke, and
+verify artifact digests between jobs. Upload only the verified DMG, matching
+source delivery, notices and hashes after all required jobs succeed. Never
+publish private outputs or detector weights. Keep the fresh-Mac waiver in the
+release notes and require renewed installed-app checks when packaging or
+permissions change. Windows remains a separate milestone.

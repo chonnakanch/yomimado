@@ -34,6 +34,16 @@ NOTICES = {
 }
 
 
+def runtime_recipe_digest(recipe: Path) -> str:
+    text = recipe.read_text()
+    if "if $prepare_runtime; then\n" not in text or "\nif $release; then" not in text:
+        raise ValueError("Missing runtime recipe boundaries")
+    block = text.split("if $prepare_runtime; then\n", 1)[1].split(
+        "\nif $release; then", 1
+    )[0]
+    return hashlib.sha256(block.encode()).hexdigest()
+
+
 def verify_runtime(base: Path, source: Path) -> None:
     record = json.loads((source / "build-record.json").read_text())
     if (
@@ -45,7 +55,10 @@ def verify_runtime(base: Path, source: Path) -> None:
     if {item["filename"]: item["sha256"] for item in record["sources"]} != SOURCES:
         raise ValueError("Runtime source pins differ from the reviewed releases")
     recipe = LOCK.parents[2] / "scripts/build-macos-prerelease.sh"
-    if hashlib.sha256(recipe.read_bytes()).hexdigest() != record["recipeSha256"]:
+    if (
+        record.get("recipeScope") != "prepare-runtime"
+        or runtime_recipe_digest(recipe) != record["recipeSha256"]
+    ):
         raise ValueError("Runtime build recipe changed; prepare the runtime again")
     expected = {"bin/python3.11", "lib/libpython3.11.dylib"}
     expected.update(

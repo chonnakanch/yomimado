@@ -12,15 +12,17 @@ translation_model="$service_dir/local-models/opus-mt-ja-en"
 dictionary_dir="$service_dir/local-dictionaries"
 model_revision="aa6573bd10b0d446cbf622e29c3e084914df9741"
 release=false
+signed_release=false
 prepare_runtime=false
 case "${1:-}" in
   "") ;;
   --release) release=true ;;
+  --developer-id-release) release=true; signed_release=true ;;
   --prepare-runtime) prepare_runtime=true ;;
-  *) echo "Usage: $0 [--release|--prepare-runtime]" >&2; exit 1 ;;
+  *) echo "Usage: $0 [--release|--developer-id-release|--prepare-runtime]" >&2; exit 1 ;;
 esac
 if [[ $# -gt 1 ]]; then
-  echo "Usage: $0 [--release|--prepare-runtime]" >&2
+  echo "Usage: $0 [--release|--developer-id-release|--prepare-runtime]" >&2
   exit 1
 fi
 
@@ -128,7 +130,8 @@ for name, relative in {
 record = {
     "pythonVersion": "3.11.17", "opensslVersion": "3.5.9", "lzmaVersion": "5.8.4",
     "sources": json.loads((source / "sources.json").read_text()),
-    "recipeSha256": hashfile(root / "scripts/build-macos-prerelease.sh"),
+    "recipeScope": "prepare-runtime",
+    "recipeSha256": hashlib.sha256((root / "scripts/build-macos-prerelease.sh").read_text().split("if $prepare_runtime; then\n", 1)[1].split("\nif $release; then", 1)[0].encode()).hexdigest(),
     "configureArgs": sysconfig.get_config_var("CONFIG_ARGS").replace(str(root), "$PROJECT_ROOT"),
     "compiler": subprocess.check_output(["clang", "--version"], text=True).strip(),
     "sdk": subprocess.check_output(["xcrun", "--show-sdk-version"], text=True).strip(),
@@ -159,7 +162,9 @@ PY
   exit 0
 fi
 if $release; then
-  "$python_bin" "$repo_root/scripts/macos-release.py" preflight
+  if $signed_release; then
+    "$python_bin" "$repo_root/scripts/macos-release.py" preflight
+  fi
   if [[ -z "${YOMIMADO_SOURCE_DIR:-}" || ! -d "$YOMIMADO_SOURCE_DIR" ]]; then
     echo "Set YOMIMADO_SOURCE_DIR to the reviewed corresponding-source delivery." >&2
     exit 1
@@ -274,6 +279,16 @@ cp "$service_dir/build/opencv-source/source-changes.diff" "$staging/notices/open
 ) > "$staging/notices/asset-checksums.txt"
 "$python_bin" "$repo_root/scripts/generate-macos-notices.py" \
   "$staging/notices" --strict
+"$python_bin" - "$staging/notices/distribution.json" "$release" "$signed_release" <<'PY'
+import json, sys
+from pathlib import Path
+signed = sys.argv[3] == "true"
+mode = "developer-id" if signed else ("unnotarized-hobby" if sys.argv[2] == "true" else "private-test")
+Path(sys.argv[1]).write_text(json.dumps({
+    "mode": mode, "developerIdSigned": signed, "appleNotarized": signed,
+    "manualGatekeeperApproval": not signed,
+}, indent=2) + "\n")
+PY
 git -C "$repo_root" rev-parse HEAD > "$staging/notices/project-revision.txt"
 if $release; then
   if [[ -d "$YOMIMADO_SOURCE_DIR/native-notices" ]]; then
@@ -283,7 +298,9 @@ if $release; then
     "$staging/notices" --source-dir "$YOMIMADO_SOURCE_DIR" \
     --revision "$(cat "$staging/notices/project-revision.txt")"
   cp "$YOMIMADO_SOURCE_DIR/source-delivery.json" "$staging/notices/"
-  "$python_bin" "$repo_root/scripts/macos-release.py" sign-runtime "$staging/runtime"
+  if $signed_release; then
+    "$python_bin" "$repo_root/scripts/macos-release.py" sign-runtime "$staging/runtime"
+  fi
 fi
 
 # Replace only the ignored, generated bundle input; never touch user models.
@@ -297,7 +314,7 @@ fi
 mv "$staging" "$resource_dir"
 
 cd "$desktop_dir"
-if $release; then
+if $signed_release; then
   # Use the Keychain profile below for explicit notarization. Tauri's default
   # path may merely warn when notarization variables are missing. Do not mix
   # environment-based certificate import with an already installed identity.
@@ -346,7 +363,7 @@ if $release; then
   echo "Verified signed/notarized candidate (installed-app manual checks still required): $dmg"
   exit 0
 fi
-# Private builds should not pick up signing/notary credentials accidentally.
+# Private and unnotarized hobby builds do not use signing/notary credentials.
 env -u APPLE_SIGNING_IDENTITY -u APPLE_CERTIFICATE -u APPLE_CERTIFICATE_PASSWORD \
   -u APPLE_API_ISSUER -u APPLE_API_KEY -u APPLE_API_KEY_PATH \
   -u APPLE_ID -u APPLE_PASSWORD -u APPLE_TEAM_ID \
@@ -358,8 +375,24 @@ for dmg in "$desktop_dir"/src-tauri/target/release/bundle/dmg/YomiMado_*.dmg; do
     echo "Missing macOS disk image installer." >&2
     exit 1
   fi
-  bash "$repo_root/scripts/verify-macos-dmg.sh" "$dmg" "$python_bin"
-  echo "Local macOS test installer: $dmg"
+  if $release; then
+    bash "$repo_root/scripts/verify-macos-dmg.sh" "$dmg" "$python_bin" --hobby-release
+    if [[ -n "$(git -C "$repo_root" status --porcelain)" || \
+          "$(git -C "$repo_root" rev-parse HEAD)" != "$(cat "$resource_dir/notices/project-revision.txt")" ]]; then
+      echo "The source tree changed during the release build; rebuild from a clean commit." >&2
+      exit 1
+    fi
+    final_output="$desktop_dir/src-tauri/target/release/bundle/releasable"
+    mkdir -p "$final_output"
+    cp "$dmg" "$final_output/"
+    (cd "$final_output"; shasum -a 256 "$(basename "$dmg")") > "$final_output/$(basename "$dmg").sha256"
+    echo "Verified unnotarized candidate (installed-app manual checks still required): $final_output/$(basename "$dmg")"
+  else
+    bash "$repo_root/scripts/verify-macos-dmg.sh" "$dmg" "$python_bin"
+    echo "Local macOS test installer: $dmg"
+  fi
 done
 echo "Detector ONNX weights are not bundled; select your own copy in YomiMado."
-echo "Private test only until signing, notarization, and remaining release gates are resolved."
+if ! $release; then
+  echo "Private test only until source clearance and remaining installed-app release gates are resolved."
+fi

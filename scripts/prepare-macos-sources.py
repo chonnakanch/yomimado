@@ -346,6 +346,53 @@ def detector_archive(item: dict, output: Path) -> dict:
     return record
 
 
+def apply_native_reviews(
+    notices: Path, output: Path, binaries: list[dict], report: dict, review_path: Path
+) -> set[str]:
+    """Reuse explicit, hash-bound technical reviews without approving a release."""
+    if not review_path.exists():
+        return set()
+    reviews = json.loads(review_path.read_text())
+    inputs = {item["id"]: item for item in binaries if not item.get("aliasOf")}
+    reviewed = set()
+    for group in reviews["groups"]:
+        archive = (output / group["archive"]).resolve()
+        if (
+            not archive.is_relative_to(output.resolve())
+            or digest(archive) != group["sha256"]
+        ):
+            raise ValueError("Reviewed native source archive differs from evidence")
+        if not group.get("licenseEvidence") or not group.get("noticeFiles"):
+            raise ValueError("Native review lacks licence/notice evidence")
+        for relative, expected in group["noticeFiles"].items():
+            path = (notices / relative).resolve()
+            if not path.is_relative_to(notices.resolve()) or digest(path) != expected:
+                raise ValueError("Reviewed native notice differs from evidence")
+        for entry in group["nativeInputs"]:
+            key = entry["id"]
+            if (
+                key in reviewed
+                or key not in inputs
+                or inputs[key]["buildInputSha256"] != entry["buildInputSha256"]
+            ):
+                raise ValueError("Reviewed native input differs from evidence")
+            reviewed.add(key)
+            report["candidates"].append(
+                {
+                    "id": key,
+                    "archive": group["archive"],
+                    "sha256": group["sha256"],
+                    "origin": group["licenseEvidence"],
+                    "status": "source-and-notice-evidence-verified",
+                    "noticeFiles": list(group["noticeFiles"]),
+                    "buildInputSha256": entry["buildInputSha256"],
+                }
+            )
+    report["nativeReviewRecordSha256"] = digest(review_path)
+    report["nativeEvidenceVerified"] = len(reviewed)
+    return reviewed
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("notices", type=Path)
@@ -420,8 +467,16 @@ def main() -> int:
                         "reason": str(error),
                     }
                 )
-    for binary in json.loads((args.notices / manifests[1]).read_text())["binaries"]:
-        if not binary.get("aliasOf"):
+    binaries = json.loads((args.notices / manifests[1]).read_text())["binaries"]
+    reviewed = apply_native_reviews(
+        args.notices,
+        output,
+        binaries,
+        report,
+        ROOT / "THIRD_PARTY_LICENSES/macos-native-review.json",
+    )
+    for binary in binaries:
+        if not binary.get("aliasOf") and binary["id"] not in reviewed:
             report["unresolved"].append(
                 {
                     "id": binary["id"],

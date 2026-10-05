@@ -51,6 +51,81 @@ class SourceTests(unittest.TestCase):
     def write_checksums(self):
         (self.crate / ".cargo-checksum.json").write_text(json.dumps(self.checksums))
 
+    def native_review_fixture(self):
+        archive = self.root / "native.tar.gz"
+        archive.write_bytes(b"original sources and build recipe")
+        notices = self.root / "notices"
+        notices.mkdir()
+        notice = notices / "LICENSE"
+        notice.write_text("MIT licence and original attribution")
+        group = {
+            "archive": archive.name,
+            "sha256": sources.digest(archive),
+            "licenseEvidence": "Inspected original source and retained MIT notice",
+            "noticeFiles": {"LICENSE": sources.digest(notice)},
+            "nativeInputs": [{"id": "native:test", "buildInputSha256": "input"}],
+        }
+        review = self.root / "review.json"
+        review.write_text(json.dumps({"groups": [group]}))
+        binaries = [{"id": "native:test", "buildInputSha256": "input"}]
+        return archive, notices, group, review, binaries
+
+    def test_native_review_is_hash_bound_and_does_not_approve_release(self):
+        _, notices, _, review, binaries = self.native_review_fixture()
+        report = {"status": "unreviewed", "candidates": []}
+        result = sources.apply_native_reviews(
+            notices, self.root, binaries, report, review
+        )
+        self.assertEqual(result, {"native:test"})
+        self.assertEqual(report["nativeEvidenceVerified"], 1)
+        self.assertEqual(report["status"], "unreviewed")
+        self.assertNotIn("reviewer", report)
+
+    def test_native_review_rejects_changed_source_notice_and_input(self):
+        archive, notices, _, review, binaries = self.native_review_fixture()
+        archive.write_bytes(b"changed")
+        with self.assertRaisesRegex(ValueError, "source archive"):
+            sources.apply_native_reviews(
+                notices, self.root, binaries, {"candidates": []}, review
+            )
+        archive.write_bytes(b"original sources and build recipe")
+        (notices / "LICENSE").write_text("changed")
+        with self.assertRaisesRegex(ValueError, "native notice"):
+            sources.apply_native_reviews(
+                notices, self.root, binaries, {"candidates": []}, review
+            )
+        (notices / "LICENSE").write_text("MIT licence and original attribution")
+        binaries[0]["buildInputSha256"] = "changed"
+        with self.assertRaisesRegex(ValueError, "native input"):
+            sources.apply_native_reviews(
+                notices, self.root, binaries, {"candidates": []}, review
+            )
+
+    def test_native_review_requires_licence_and_notice_evidence(self):
+        _, notices, group, review, binaries = self.native_review_fixture()
+        for field in ("licenseEvidence", "noticeFiles"):
+            altered = {**group, field: None}
+            review.write_text(json.dumps({"groups": [altered]}))
+            with self.assertRaisesRegex(ValueError, "licence/notice evidence"):
+                sources.apply_native_reviews(
+                    notices, self.root, binaries, {"candidates": []}, review
+                )
+
+    def test_native_review_rejects_duplicate_inputs_and_path_escape(self):
+        _, notices, group, review, binaries = self.native_review_fixture()
+        group["nativeInputs"] *= 2
+        review.write_text(json.dumps({"groups": [group]}))
+        with self.assertRaisesRegex(ValueError, "native input"):
+            sources.apply_native_reviews(
+                notices, self.root, binaries, {"candidates": []}, review
+            )
+        group["archive"] = "../outside.tar.gz"
+        review.write_text(json.dumps({"groups": [group]}))
+        with self.assertRaisesRegex(ValueError, "source archive"):
+            sources.apply_native_reviews(
+                notices, self.root, binaries, {"candidates": []}, review
+            )
+
     def test_complete_vendor_matches_lock(self):
         result = sources.validate_vendor(self.vendor, self.lock)
         self.assertEqual(result, {("test-crate", "1.0.0"): self.crate})

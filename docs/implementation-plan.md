@@ -708,20 +708,18 @@ Before any public release:
   download from GitHub Releases; its contained app passes strict asset/notice
   checks and local OCR, dictionary, kanji, tokenization, and translation smoke
   testing on the development Mac
-- [ ] finish final package inspection, Developer ID signing/notarization, and
-  installed-app testing on the existing Mac before distributing the first macOS pre-release;
-  the detector weights are absent; a fail-closed signing/notarization path
-  and manual test protocol are prepared, but native-source clearance, a Developer
-  ID identity/notary Keychain profile, and installed-app evidence remain required
+- [x] choose a free unnotarized hobby DMG on 2026-10-05; Developer ID signing
+      and Apple notarization are optional, with explicit per-app Gatekeeper steps
+- [ ] finish native source/notice clearance, final package inspection and
+      installed-app testing on the existing Mac before the public pre-release;
+      59 of 152 unique native inputs have recorded source/notice evidence
 - Fresh-macOS install testing was skipped at the maintainer's request on
-  2026-10-05 because no clean Mac is available; disclose this unverified case
-  in the pre-release notes. This waiver does not waive signing/notarization,
-  exact-DMG verification, model import or Screen Recording testing.
+  2026-10-05 because no clean Mac is available; disclose this unverified case.
+  Exact-DMG verification, model import and Screen Recording tests remain required.
 - [ ] link the exact corresponding source revision and full notices alongside
-  the public GitHub Release
-- [ ] add an automated GitHub Actions build after the macOS pre-release reaches
-  a releasable, signed and notarized state; never upload the current private
-  test bundle
+      the public GitHub Release
+- [ ] add the GitHub Actions build after the hobby installer is releasable;
+      never upload the private test bundle or detector weights
 - [x] keep copyrighted manga fixtures out of git (current tracked test assets)
 - [x] document local model/data setup behavior
 - [x] document macOS permissions

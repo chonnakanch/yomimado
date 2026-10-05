@@ -126,7 +126,12 @@ cross-platform lockfile), **5 JavaScript packages**, and **78 of 80 Python
 packages**, including the custom OpenCV delivery. PyTorch/torchvision remain
 unresolved. The inventory has 369 components: 280 Rust, 80 Python, 5 JavaScript,
 and detector/CPython/OpenSSL/liblzma sources. The `source-candidates.json` report remains unreviewed,
-with 152 native entries and complete delivery review still pending. The project
+with complete delivery review still pending. The tracked
+[technical native review](../THIRD_PARTY_LICENSES/macos-native-review.json)
+binds source archives, retained notices and original binary inputs for 58
+CPython/static OpenSSL/liblzma inputs plus the custom OpenCV input. The collector
+reuses those 59 completed reviews only when all hashes match, leaving 93 native
+inputs unresolved; changed inputs require review again. The project
 and filtered detector exports are additional candidates, not review sign-offs.
 Regenerate it when the package/native inventories change.
 
@@ -135,7 +140,7 @@ archives can contain extra data/example artwork; inspect their terms and omit
 unneeded uncleared assets while documenting modifications before assembling
 the final delivery. Preserve notices, exact code, needed submodules and build
 inputs. The collector never creates `source-delivery.json`, a reviewer sign-off
-or native licence clearance. The release validator still rejects an incomplete
+or complete native licence clearance. The release validator still rejects an incomplete
 or unreviewed delivery.
 
 ## Delivery alongside the GitHub Release

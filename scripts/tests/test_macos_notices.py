@@ -75,11 +75,10 @@ class RuntimeProvenanceTests(unittest.TestCase):
             "opensslVersion": "3.5.9",
             "lzmaVersion": "5.8.4",
             "sources": [],
-            "recipeSha256": hashlib.sha256(
-                (
-                    runtime.LOCK.parents[2] / "scripts/build-macos-prerelease.sh"
-                ).read_bytes()
-            ).hexdigest(),
+            "recipeScope": "prepare-runtime",
+            "recipeSha256": runtime.runtime_recipe_digest(
+                runtime.LOCK.parents[2] / "scripts/build-macos-prerelease.sh"
+            ),
             "binaries": {},
             "noticeHashes": {},
         }
@@ -151,6 +150,21 @@ class RuntimeProvenanceTests(unittest.TestCase):
         self.write_record()
         with self.assertRaisesRegex(ValueError, "recipe changed"):
             runtime.verify_runtime(self.base, self.source)
+
+    def test_packaging_changes_do_not_invalidate_runtime_recipe(self):
+        recipe = self.root / "recipe.sh"
+        recipe.write_text(
+            "flags before\nif $prepare_runtime; then\ncompile runtime\nif $release; then\npackage app"
+        )
+        original = runtime.runtime_recipe_digest(recipe)
+        recipe.write_text(
+            recipe.read_text().replace("package app", "package hobby app")
+        )
+        self.assertEqual(runtime.runtime_recipe_digest(recipe), original)
+        recipe.write_text(
+            recipe.read_text().replace("compile runtime", "different runtime flags")
+        )
+        self.assertNotEqual(runtime.runtime_recipe_digest(recipe), original)
 
     def test_missing_notice_rejected(self):
         del self.record["noticeHashes"]["libmpdec-COPYRIGHT.txt"]

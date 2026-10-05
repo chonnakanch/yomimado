@@ -109,6 +109,17 @@ def verify_sources(notices: Path, source_dir: Path, revision: str) -> None:
         )
 
 
+def verify_hobby(notices: Path) -> None:
+    metadata = json.loads((notices / "distribution.json").read_text())
+    if metadata != {
+        "mode": "unnotarized-hobby",
+        "developerIdSigned": False,
+        "appleNotarized": False,
+        "manualGatekeeperApproval": True,
+    }:
+        raise ValueError("Not an explicitly unnotarized hobby candidate")
+
+
 def preflight() -> None:
     if sys.platform != "darwin":
         raise ValueError("Release signing requires macOS")
@@ -250,6 +261,7 @@ def main() -> int:
             "notarize",
             "source-template",
             "verify-sources",
+            "verify-hobby",
         ],
     )
     parser.add_argument("path", type=Path, nargs="?")
@@ -265,6 +277,8 @@ def main() -> int:
             sign_runtime(args.path)
         elif args.action == "verify-platform":
             verify_platform(args.path)
+        elif args.action == "verify-hobby":
+            verify_hobby(args.path)
         elif args.action == "notarize":
             profile = os.environ.get("YOMIMADO_NOTARY_PROFILE")
             if not profile:

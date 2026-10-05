@@ -112,6 +112,28 @@ class SourceDeliveryTests(unittest.TestCase):
 
 
 class SigningTests(unittest.TestCase):
+    def test_hobby_candidate_needs_explicit_unnotarized_metadata(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            notices = Path(temporary)
+            path = notices / "distribution.json"
+            metadata = {
+                "mode": "unnotarized-hobby",
+                "developerIdSigned": False,
+                "appleNotarized": False,
+                "manualGatekeeperApproval": True,
+            }
+            path.write_text(json.dumps(metadata))
+            release.verify_hobby(notices)
+            for key, value in [
+                ("mode", "private-test"),
+                ("appleNotarized", True),
+                ("developerIdSigned", True),
+                ("manualGatekeeperApproval", False),
+            ]:
+                path.write_text(json.dumps({**metadata, key: value}))
+                with self.assertRaisesRegex(ValueError, "explicitly unnotarized"):
+                    release.verify_hobby(notices)
+
     def test_rejected_notarization_returns_failure(self):
         with tempfile.TemporaryDirectory() as temporary:
             artifact = Path(temporary) / "test.dmg"

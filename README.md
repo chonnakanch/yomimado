@@ -133,18 +133,17 @@ images over the network.
 An Apple Silicon `.dmg` can now be built with the local OCR service, detector
 code, Manga OCR, Sudachi, JMdict, KANJIDIC2, and on-demand translation model
 inside the app bundle. The detector's ONNX weight file is **not bundled**.
-This is still a **private test build**, not a public download. The build now
-requires a complete generated dependency-notice inventory, but the app is not
-Developer ID signed or notarized. Do not upload or share the generated DMG yet.
+The default output remains a **private test build**. The intended public target
+is a free **unnotarized hobby DMG**; users will need macOS's per-app Gatekeeper
+approval. Developer ID and Apple notarization are optional. Do not upload the
+private DMG: source clearance and installed-app checks remain open.
 
-First install the pinned Apple Silicon Python build environment into its
-virtual environment, then install YomiMado's local service package without
-re-resolving those dependencies:
+Prepare the isolated source-built Python release environment from the repository
+root, then build (the development `.venv` is separate):
 
 ```sh
-cd services/ocr
-.venv/bin/python -m pip install -r requirements-macos-release.txt
-.venv/bin/python -m pip install --no-build-isolation --no-deps -e .
+rtk bash scripts/build-macos-prerelease.sh --prepare-runtime
+rtk bash scripts/build-macos-prerelease.sh
 ```
 
 The build uses the existing user-local detector checkout under
@@ -154,7 +153,7 @@ from the local Hugging Face cache. It does not download models or dictionaries.
 Run from the repository root:
 
 ```sh
-./scripts/build-macos-prerelease.sh
+rtk bash scripts/build-macos-prerelease.sh
 ```
 
 The private installer is
@@ -179,9 +178,8 @@ its own Application Support data under `models/`; the app never downloads the
 file or adds it to the bundle. An incorrect file is rejected. The original
 model remains in your Downloads folder until you remove it yourself.
 
-This first build targets Apple Silicon only. An Intel build, Developer ID
-signing, notarization, installed-app testing, and a public download are
-separate release tasks. Fresh-macOS installation testing was skipped by the
+This first build targets Apple Silicon only. An Intel build is a separate task;
+source clearance and installed-app testing precede the public hobby download. Fresh-macOS installation testing was skipped by the
 maintainer; installation on a clean machine remains unverified.
 If model redistribution terms are later clarified,
 a bundled-model build can be reconsidered; manual installation is the default
