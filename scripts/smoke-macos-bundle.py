@@ -13,7 +13,7 @@ import sys
 import tempfile
 import time
 from pathlib import Path
-from urllib.error import URLError
+from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
 
 from PIL import Image, ImageDraw, ImageFont
@@ -75,8 +75,15 @@ def main() -> None:
                 data=body,
                 headers={"Content-Type": content_type},
             )
-            with urlopen(req, timeout=240) as response:
-                return json.load(response)
+            try:
+                with urlopen(req, timeout=240) as response:
+                    return json.load(response)
+            except HTTPError as error:
+                # Only synthetic test text is sent by this smoke. Preserve the
+                # API's diagnostic instead of reporting an opaque status code.
+                raise RuntimeError(
+                    f"{path}: HTTP {error.code}: {error.read().decode()}"
+                ) from error
 
         def check(condition: bool, message: str) -> None:
             if not condition:

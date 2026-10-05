@@ -55,11 +55,12 @@ source URLs and SHA-256 digests are in `upstream/sources.json`.
 
 ## Native/source audit — 2026-10-05
 
-The private OpenCV wheel includes GPLv3-or-later FFmpeg and additional native
-libraries not covered by its package-level Apache identifier. Its FFmpeg
-LGPL notice conflicts with the actual binary configuration. Public distribution
-is blocked pending exact native sources, build recipes and notices (or a
-verified replacement runtime). See [the detailed source review](../docs/macos-source-review.md).
+The previous public OpenCV wheel included GPLv3-or-later FFmpeg despite its
+LGPL notice. The macOS release now requires a source-pinned custom OpenCV build
+with those video dependencies disabled, exact static notices and a matching
+source archive. See [the OpenCV recipe](../docs/macos-opencv.md) and
+[the detailed source review](../docs/macos-source-review.md). Other native
+sources, build recipes and notices still require final review.
 The release build requires a reviewed, hashed source delivery covering all
 package/native inventory entries. The default private build has no source
 clearance and must not be published.

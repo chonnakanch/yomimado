@@ -678,8 +678,10 @@ Before any public release:
 - [x] pin the current Apple Silicon Python build environment and check it at
   build time; Cargo and npm already use tracked lockfiles
 - [x] audit the generated package inventory and add detector/bootloader plus
-  native binary provenance; the native FFmpeg GPL/LGPL notice mismatch is
-  recorded in `docs/macos-source-review.md`
+  native binary provenance; the former native FFmpeg GPL/LGPL notice mismatch
+  is recorded in `docs/macos-source-review.md`
+- [x] replace the OpenCV wheel with a source-pinned image/ONNX-only build;
+  disable unused video dependencies and preserve its exact source/build notices
 - [ ] clear the native licence/corresponding-source gap and complete final
   review of source archives, native notices, build recipes and compatibility
 - [x] verify bundled model-weight licensing and pin both weight checksums;

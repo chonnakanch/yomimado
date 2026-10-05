@@ -54,6 +54,11 @@ if ! "$python_bin" -m PyInstaller --version >/dev/null 2>&1; then
   exit 1
 fi
 "$python_bin" "$repo_root/scripts/verify-python-release-lock.py"
+opencv_record="$service_dir/build/opencv-source/build-record.json"
+"$python_bin" "$repo_root/scripts/opencv_release.py" "$opencv_record"
+# The detector imports imshow even for ONNX-only inference. Check its source
+# imports before freezing so an incompatible minimal OpenCV fails early.
+"$python_bin" -c 'import sys; sys.path.insert(0, sys.argv[1]); from inference import TextDetector; print("Detector source imports with release OpenCV.")' "$detector_repo"
 export PYINSTALLER_CONFIG_DIR="$service_dir/build/pyinstaller-cache"
 mkdir -p "$PYINSTALLER_CONFIG_DIR"
 
@@ -127,6 +132,8 @@ cp "$repo_root/LICENSE" "$repo_root/THIRD_PARTY_LICENSES/README.md" \
   "$staging/notices/"
 cp "$repo_root/docs/dictionary-updates.md" "$staging/notices/"
 cp "$repo_root/docs/macos-source-review.md" "$staging/notices/"
+cp "$opencv_record" "$staging/notices/opencv-build.json"
+cp "$service_dir/build/opencv-source/source-changes.diff" "$staging/notices/opencv-source-changes.diff"
 (
   cd "$staging/assets"
   shasum -a 256 manga-ocr-base/pytorch_model.bin \

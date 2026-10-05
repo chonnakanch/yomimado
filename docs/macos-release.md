@@ -19,10 +19,12 @@ remain user-installed.
   notarization/stapling and signature/source verification.
 - [x] Set macOS 14 minimum from actual frozen binaries; check architecture
   and deployment targets in the mounted DMG.
-- [ ] Resolve native licence/source delivery: the installed OpenCV wheel embeds
-  **GPLv3-or-later FFmpeg**, despite its LGPL notice. Review all nested native
-  libraries and deliver exact sources/build recipes/notices. The old package
-  inventory pass does not clear this gate.
+- [x] Replace the public OpenCV wheel with a source-pinned image/ONNX-only
+  build, retaining ONNX detection/geometry and removing the FFmpeg dependency
+  chain. Preserve static notices and generate its matching source archive.
+- [ ] Complete native licence/source delivery for the remaining frozen
+  interpreter/libraries and all software components. The OpenCV replacement
+  and package inventory pass do not clear this entire gate.
 - [ ] Install a Developer ID Application signing identity and authenticate a
   `notarytool` Keychain profile. Current Mac: **0 valid signing identities**.
 - [ ] Build and verify the signed/notarized candidate and run the frozen-service
@@ -35,7 +37,8 @@ remain user-installed.
 
 ## Development-Mac verification — 2026-10-05
 
-- 55 desktop, 36 Rust, 47 OCR-service and 18 release-gate tests passed.
+- Previous baseline: 55 desktop and 36 Rust tests passed. The OpenCV change
+  passes 47 OCR-service and 27 release-gate tests.
 - Frontend production build, Rust formatting, Python lint/format, Prettier and
   shell syntax checks passed. The private Apple Silicon native build completed.
 - The rebuilt private DMG passed disk-image, asset/notice, native inventory,
@@ -43,13 +46,20 @@ remain user-installed.
 - Its mounted frozen service passed synthetic vertical `学校へ` OCR with
   geometry, Sudachi, JMdict, KANJIDIC2, explicit translation, and saved word,
   sentence and translation-cache persistence across a service restart.
-- Inventory: 366 software/source components, 214 unique native input binaries
-  plus 96 aliases. Corresponding-source worksheet: 581 entries, still unreviewed.
+- Inventory: 366 software/source components, 149 unique native input binaries
+  plus 38 aliases (187 paths, down from 310). Corresponding-source worksheet:
+  516 entries, still unreviewed as a complete delivery.
+- OpenCV source delivery SHA-256:
+  `4785a866097d6963d47c128fbb80da10f0592ac6c15b23a2fc29bb9d82754d7f`.
+  Its original source, exact modifications, recipe copies and build record
+  match. The installed custom wheel has no video APIs/external dylib links;
+  the user's ONNX model loads and performs inference. System-Cocoa highgui
+  remains solely for the detector's unused `imshow` import.
 - Bundled JMdict/KANJIDIC2 header dates: **2026-09-27**.
 - Private DMG SHA-256:
-  `57ab60a1185139040cb69b75a20bbde8b86d9863cf1adc0643fef91093b0d059`.
+  `e5921f240ab8246f91d7622583a59c238869a60f08c61bcd95d255f5c3373f15`.
   This artifact was built from the preparation working tree based on
-  `bd8ca73d09b592658a5bf5f05866dc2868e0ee65`; it is unsigned/private and is
+  `fdee23512844e81e761891cbddd2ad471447da56`; it is unsigned/private and is
   not a public candidate. The release path requires a clean committed tree.
 
 These results do not clear the native-source, signing/notarization or clean-Mac

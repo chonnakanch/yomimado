@@ -41,6 +41,7 @@ RUST_NOTICE_GROUPS = {
     "tauri-plugin": "tauri",
 }
 PYTHON_LICENSE_OVERRIDES = {
+    "opencv-python": "Apache-2.0 AND MIT (static dependency notices included)",
     "manga-ocr": "Apache-2.0",
     "sentencepiece": "Apache-2.0",
     "torchsummary": "MIT",

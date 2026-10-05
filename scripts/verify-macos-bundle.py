@@ -9,6 +9,7 @@ import plistlib
 import sys
 from pathlib import Path
 
+from opencv_release import VIDEO_LIBRARY, verify_record
 from PIL import Image
 
 MACHO = {
@@ -40,6 +41,8 @@ REQUIRED_NOTICES = (
     "macos-source-review.md",
     "native-libraries.json",
     "project-revision.txt",
+    "opencv-build.json",
+    "opencv-source-changes.diff",
     "assets/Apache-2.0.txt",
     "assets/CC-BY-SA-4.0.txt",
     "assets/EDRDG-dictionary-licence.html",
@@ -116,6 +119,7 @@ def verify(app: Path) -> list[str]:
                 errors.append(f"Asset checksum mismatch: {name}")
 
     manifest = notices / "third-party-manifest.json"
+    components = []
     if manifest.is_file():
         components = json.loads(manifest.read_text())["components"]
         if not components:
@@ -135,6 +139,42 @@ def verify(app: Path) -> list[str]:
     native = notices / "native-libraries.json"
     if native.is_file():
         binaries = json.loads(native.read_text())["binaries"]
+        opencv_record = notices / "opencv-build.json"
+        if opencv_record.is_file():
+            try:
+                record = json.loads(opencv_record.read_text())
+                verify_record(record)
+                opencv_notices = [
+                    notices / relative
+                    for component in components
+                    if component["name"] == "opencv-python"
+                    for relative in component["noticeFiles"]
+                    if Path(relative).name == "LICENSE-3RD-PARTY.txt"
+                ]
+                if not opencv_notices or any(
+                    not path.is_file()
+                    or sha256_file(path)
+                    != record["modifiedFiles"]["LICENSE-3RD-PARTY.txt"]
+                    for path in opencv_notices
+                ):
+                    errors.append(
+                        "Bundled OpenCV static notices do not match source build"
+                    )
+                opencv_inputs = [
+                    item
+                    for item in binaries
+                    if item["buildInput"].startswith("site-packages/cv2/")
+                    and item["path"].endswith(".so")
+                ]
+                if not opencv_inputs or any(
+                    item["buildInputSha256"] != record["binarySha256"]
+                    for item in opencv_inputs
+                ):
+                    errors.append(
+                        "Frozen OpenCV input does not match source build provenance"
+                    )
+            except (ValueError, KeyError) as error:
+                errors.append(str(error))
         if not binaries:
             errors.append("Empty native binary inventory")
         for binary in binaries:
@@ -144,6 +184,10 @@ def verify(app: Path) -> list[str]:
         listed = {binary["path"] for binary in binaries}
         internal = resources / "runtime/_internal"
         for path in internal.rglob("*"):
+            if VIDEO_LIBRARY.match(path.name):
+                errors.append(
+                    f"Prohibited video dependency: {path.relative_to(internal)}"
+                )
             if not path.is_file() or path.is_symlink():
                 continue
             with path.open("rb") as stream:

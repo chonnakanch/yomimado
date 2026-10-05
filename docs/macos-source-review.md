@@ -8,9 +8,9 @@ generator adds detector/bootloader records and `native-libraries.json`, with
 original binary-input hashes and paths relative to their wheel/interpreter.
 Signing changes binary hashes; these are provenance hashes, not final DMG hashes.
 
-## Concrete gap
+## OpenCV gap resolved by replacement
 
-The installed `opencv-python==4.11.0.86` contains FFmpeg 7.1 libraries and
+The previous public `opencv-python==4.11.0.86` wheel contained FFmpeg 7.1 libraries and
 `libx264.164.dylib`, `libx265.212.dylib`, GnuTLS and many other shared libraries.
 Its `LICENSE-3RD-PARTY.txt` describes FFmpeg as LGPL, but querying the actual
 `avcodec_license()` returns **GPL version 3 or later**. Its
@@ -26,8 +26,30 @@ exact source revision. Deliver the GPL/LGPL corresponding source and build
 information. Alternatively, replace the OpenCV build with a verified build
 without these optional video dependencies, then repeat the whole native audit,
 bundle build and smoke tests. Do not simply delete dylibs: OpenCV links them.
-Do not relabel this FFmpeg build LGPL or use a current Homebrew formula as
+Do not relabel that FFmpeg build LGPL or use a current Homebrew formula as
 proof of its historical build inputs.
+
+The release now requires the custom `4.11.0.86+yomimado.1` build described in
+[the OpenCV recipe](macos-opencv.md). Its source archive is SHA-256 pinned;
+videoio/FFmpeg/GStreamer/AVFoundation are disabled. System-Cocoa highgui remains
+for the detector's unused `imshow` import. The installed wheel
+passes exact module/static-dependency, absent video API, binary/notice hash
+and system-only dynamic-link checks. Static dependencies are zlib 1.3.1,
+libjpeg-turbo 3.0.3, libpng 1.6.43 and protobuf 3.19.1, from the same source
+archive. The generated notices preserve their texts plus OpenCV's module
+author notices, SoftFloat and MSCR; the wrapper's MIT text is retained.
+The original archive, two version/notice changes, build recipe and binary
+record are assembled into an ignored local `opencv-source-delivery.tar.gz`.
+The final DMG rejects these removed video libraries and requires matching
+OpenCV build provenance. This replaces the uncertain wheel rather than trying
+to clear its historical FFmpeg build.
+
+## Remaining native/source review
+
+This resolves the identified OpenCV/FFmpeg input gap only. The complete release
+source delivery below remains unreviewed, including the Python interpreter and
+other frozen native dependencies. Do not mark the whole licence gate cleared
+from an OpenCV-only source archive or successful runtime smoke.
 
 ## Delivery alongside the GitHub Release
 
