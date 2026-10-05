@@ -71,6 +71,23 @@ it("opens the scan-area adjustment selector", async () => {
   expect(invoke).toHaveBeenCalledWith("show_scan_area_selector");
 });
 
+it("shows dictionary attribution from the sources control", async () => {
+  await act(async () => root.render(<App />));
+  const button = Array.from(container.querySelectorAll("button")).find(
+    (item) => item.textContent === "Sources and licenses",
+  )!;
+  expect(button.getAttribute("aria-expanded")).toBe("false");
+  await act(async () => button.click());
+  expect(button.getAttribute("aria-expanded")).toBe("true");
+  expect(container.textContent).toContain("JMdict and KANJIDIC2");
+  expect(container.textContent).toContain("Electronic Dictionary Research");
+  expect(
+    container.querySelector<HTMLAnchorElement>(
+      'a[href="https://www.edrdg.org/edrdg/licence.html"]',
+    ),
+  ).not.toBeNull();
+});
+
 it("requires manual detector installation before packaged scans", async () => {
   vi.mocked(invoke).mockImplementation(async (command) => {
     if (command === "detector_model_status") {

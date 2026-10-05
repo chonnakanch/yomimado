@@ -6,7 +6,7 @@
   },
   "bundle": {
     "active": true,
-    "targets": ["app"],
+    "targets": ["dmg"],
     "resources": { "resources/ocr": "ocr" }
   }
 }

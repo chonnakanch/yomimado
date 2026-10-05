@@ -130,12 +130,12 @@ images over the network.
 
 ## Private macOS pre-release build
 
-An Apple Silicon `.app` can now be built with the local OCR service, detector
+An Apple Silicon `.dmg` can now be built with the local OCR service, detector
 code, Manga OCR, Sudachi, JMdict, KANJIDIC2, and on-demand translation model
 inside the app bundle. The detector's ONNX weight file is **not bundled**.
-This is still a **private test build**, not a public download: final bundled
-dependency notices need review. It is unsigned and not notarized. Do not
-upload or share the generated app yet.
+This is still a **private test build**, not a public download. The build now
+requires a complete generated dependency-notice inventory, but the app is not
+Developer ID signed or notarized. Do not upload or share the generated DMG yet.
 
 First install the service's build dependencies in its virtual environment:
 
@@ -154,7 +154,13 @@ Run from the repository root:
 ./scripts/build-macos-prerelease.sh
 ```
 
-The result is `apps/desktop/src-tauri/target/release/bundle/macos/YomiMado.app`.
+The private installer is
+`apps/desktop/src-tauri/target/release/bundle/dmg/YomiMado_0.1.0_aarch64.dmg`.
+The app inside its disk image has a `Contents/Resources/ocr/notices/` directory
+containing third-party software and asset licences, source credits, file checksums, and the
+[dictionary update procedure](docs/dictionary-updates.md). The main window's
+**Sources and licenses** control makes the dictionary attribution and source
+links available in the app.
 The app starts its bundled service on
 `127.0.0.1:8766`, separate from the development service on port 8765. Only one
 packaged instance can use that port at a time. The release service stores the
@@ -170,11 +176,12 @@ its own Application Support data under `models/`; the app never downloads the
 file or adds it to the bundle. An incorrect file is rejected. The original
 model remains in your Downloads folder until you remove it yourself.
 
-This first build targets Apple Silicon only. An Intel build, signing,
-notarization, a DMG, complete third-party license texts, and a public download
-are separate release tasks. If model redistribution terms are later clarified,
+This first build targets Apple Silicon only. An Intel build, Developer ID
+signing, notarization, a clean-Mac install test, and a public download are
+separate release tasks. If model redistribution terms are later clarified,
 a bundled-model build can be reconsidered; manual installation is the default
-for the first public release.
+for the first public release. See the [macOS release gate](docs/macos-release.md)
+for the remaining checks and the subsequent GitHub Actions build.
 
 ## Local OCR models (development mode)
 

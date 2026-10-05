@@ -8,9 +8,9 @@ Build a small vertical slice first. Do not implement future features before the 
 
 ## Current status
 
-Status audit (2026-10-02): the capture → local OCR → interactive overlay →
+Status audit (2026-10-05): the capture → local OCR → interactive overlay →
 learning-popup flow works with user-installed models on macOS and has been
-manually exercised on a Retina display. The desktop (53), Rust (34), and OCR
+manually exercised on a Retina display. The desktop (55), Rust (36), and OCR
 service (47) automated tests pass. These tests do not replace the remaining
 Windows and left-of-primary alignment checks. Without user-local detector and
 recognizer models, OCR returns a labeled demo boundary, not recognized text.
@@ -19,7 +19,7 @@ errors are shown rather than inventing a result.
 
 | Phase | Current state | Main remaining work |
 | --- | --- | --- |
-| 0 — Bootstrap | App, service, shared contract, and docs exist | Choose/add the project `LICENSE` |
+| 0 — Bootstrap | App, service, shared contract, GPL-3.0-only source license, and docs exist | No required core task open |
 | 1 — Capture | Implemented and manually tried on macOS Retina and two differently shaped monitors | Windows scaled-display manual test with a packaged pre-release build |
 | 2 — OCR | Local detector/recognizer and geometry work with installed models | Reproducible detector/model pins; OCR-quality limits below; no calibrated confidence available |
 | 3 — Integration | Capture-to-OCR client flow works | Request/result correlation IDs |
@@ -676,19 +676,31 @@ At that point, the architecture has been validated and the Japanese-learning lay
 Before any public release:
 
 - [ ] verify dependency versions and licenses
-- [ ] verify model weights/licenses
-- [ ] verify dictionary/data licenses
-- [ ] update `THIRD_PARTY_LICENSES/`
+- [x] verify bundled model-weight licensing and pin both weight checksums;
+  require separate user installation for the detector ONNX file, whose
+  redistribution terms are not explicit
+- [x] verify EDRDG dictionary/data terms, bundle their licence, and document
+  the monthly dictionary update procedure
+- [x] update `THIRD_PARTY_LICENSES/` and make the macOS build generate a strict
+  inventory of bundled software licences and upstream notice sources
 - [x] build and smoke-test a private, self-contained Apple Silicon `.app` with
   the bundled OCR service, models, and dictionaries (health, OCR, JMdict,
   KANJIDIC2, Sudachi, and local translation)
 - [x] rebuild and smoke-test an Apple Silicon `.app` that omits the detector
   ONNX weights and blocks scanning until setup
-- [ ] manually import the publisher's ONNX file in the packaged app and verify
+- [x] manually import the publisher's ONNX file in the packaged app and verify
   that a scan works afterward
-- [ ] distribute the macOS pre-release only after verifying the detector
-  weights are absent and all remaining bundled notices are resolved; signing
-  and notarization are still pending
+- [x] build and inspect a private Apple Silicon DMG intended for direct
+  download from GitHub Releases; its contained app passes strict asset/notice
+  checks and local OCR, dictionary, kanji, tokenization, and translation smoke
+  testing on the development Mac
+- [ ] finish final package inspection, Developer ID signing/notarization, and
+  clean-Mac install testing before distributing the first macOS pre-release;
+  the detector weights are already absent and the strict notice inventory
+  passes, but Apple credentials are not yet installed on this Mac
+- [ ] add an automated GitHub Actions build after the macOS pre-release reaches
+  a releasable, signed and notarized state; never upload the current private
+  test bundle
 - [x] keep copyrighted manga fixtures out of git (current tracked test assets)
 - [x] document local model/data setup behavior
 - [x] document macOS permissions

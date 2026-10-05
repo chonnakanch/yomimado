@@ -1,13 +1,15 @@
 # Third-party licensing and pre-release audit
 
 YomiMado's own source is GPL-3.0-only. This file tracks the separately licensed
-software and assets needed for the first macOS package. It
-is an audit, not yet the complete set of license texts for a distributable
-build. Do not describe the package as release-ready until the open items below
-are closed and the final bundle has been inspected.
+software and assets needed for the first macOS package. The build now creates
+`THIRD_PARTY_SOFTWARE.md`, a machine-readable manifest, and copied license
+texts from its actual dependency inputs. A strict check fails the build if a
+listed software component lacks a license identifier or notice file. This is
+an inventory, not a legal opinion; inspect the final bundle before publishing.
 The private Apple Silicon test bundle includes the assets below except the
-detector ONNX weights, and retains [explicit model/dictionary credits](MODEL_CREDITS.md).
-It must not be uploaded or redistributed while the remaining gates are open.
+detector ONNX weights, and retains [explicit model/dictionary credits](MODEL_CREDITS.md)
+and [asset notices](ASSET_NOTICES.md). It must not be uploaded or redistributed
+while signing and final release verification remain open.
 
 | Component | Intended package use | License evidence | Status |
 | --- | --- | --- | --- |
@@ -30,18 +32,20 @@ Other direct runtime software includes Tauri, the global-shortcut plugin,
 xcap, core-graphics, React, FastAPI, Uvicorn, Transformers, PyTorch,
 SentencePiece, and their resolved dependencies. The Python environment,
 Cargo.lock, and package-lock.json determine the exact bundled versions. A
-final distributable package must include a generated, verified inventory and
-the required license/notice texts for the **actual** compiled and frozen
-dependencies, not only this direct-dependency summary.
+final distributable package includes a generated, verified inventory and
+license/notice texts for the **actual** compiled and frozen dependencies, not
+only this direct-dependency summary. Missing wheel/crate notice files are
+vendored from commit-pinned upstream repositories under `upstream/`; their
+source URLs and SHA-256 digests are in `upstream/sources.json`.
 
 ## Open release gates
 
-1. Verify every public build omits the detector ONNX weights. If bundling them
-   later, first obtain clear redistribution terms from the weight creator or
+1. Recheck every public build for detector ONNX weights and copyrighted sample
+   images; neither may be included in the package. If bundling the detector
+   weights later, first obtain clear redistribution terms from their creator or
    publisher, or use a replacement asset with explicit distributable terms.
-2. Pin model and dictionary revisions/checksums and identify any required
-   model-card or dataset notices for the exact files selected.
-3. Generate and review the complete macOS bundle's dependency/asset notice
-   set, including full licence texts and corresponding-source obligations.
-4. Verify those notices and the EDRDG source/attribution are accessible from
-   the packaged app or its accompanying distribution materials.
+2. Recheck the final package's generated software/asset manifests and tests,
+   including model SHA-256 values and dictionary refresh date.
+3. Complete Apple Developer ID signing, notarization, and a clean-Mac install
+   test before a direct public download. Until then the `.app` is for private
+   local testing only.

@@ -39,6 +39,18 @@ if [[ ! -f "$manga_model/config.json" || ! -f "$manga_model/pytorch_model.bin" ]
   echo "Manga OCR model revision $model_revision is not available locally." >&2
   exit 1
 fi
+require_sha256() {
+  local source="$1" expected="$2" actual
+  actual="$(shasum -a 256 "$source" | cut -d ' ' -f1)"
+  if [[ "$actual" != "$expected" ]]; then
+    echo "Unexpected model checksum: $source ($actual)" >&2
+    exit 1
+  fi
+}
+require_sha256 "$manga_model/pytorch_model.bin" \
+  c63e0bb5b3ff798c5991de18a8e0956c7ee6d1563aca6729029815eda6f5c2eb
+require_sha256 "$translation_model/pytorch_model.bin" \
+  ed649116c143fc2d7aea690246f4b2b7caa814e9e00a8d5bbe047822b18de022
 
 "$python_bin" -m PyInstaller --noconfirm --clean --onedir \
   --name yomimado-ocr \
@@ -56,6 +68,7 @@ fi
   --collect-submodules transformers.models.vit \
   --collect-submodules transformers.models.vision_encoder_decoder \
   --collect-submodules transformers.models.marian \
+  --exclude-module pytest \
   --exclude-module tensorflow \
   "$service_dir/packaged_main.py"
 
@@ -65,8 +78,14 @@ mkdir -p "$staging/runtime" "$staging/assets/comic-text-detector" \
   "$staging/assets/manga-ocr-base" "$staging/assets/opus-mt-ja-en" \
   "$staging/notices"
 cp -R "$service_dir/dist/yomimado-ocr/." "$staging/runtime/"
+# Manga OCR warms up by reading this path. Replace its sample artwork with
+# an original, generated blank image so no third-party example is distributed.
+"$python_bin" "$repo_root/scripts/create-manga-ocr-warmup.py" \
+  "$staging/runtime/_internal/manga_ocr/assets/example.jpg"
 rsync -a --exclude .git --exclude __pycache__ --exclude '*.pyc' \
-  --exclude '*.onnx' \
+  --exclude '*.onnx' --exclude '*.pt' --exclude '*.pth' \
+  --exclude '/data/doc/' --exclude '/data/examples/' \
+  --exclude '*.ipynb' \
   "$detector_repo/" "$staging/assets/comic-text-detector/"
 cp -RL "$manga_model/." "$staging/assets/manga-ocr-base/"
 for name in README.md config.json generation_config.json pytorch_model.bin \
@@ -77,12 +96,16 @@ cp "$dictionary_dir/JMdict_e.gz" "$dictionary_dir/kanjidic2.xml.gz" \
   "$staging/assets/"
 cp "$repo_root/LICENSE" "$repo_root/THIRD_PARTY_LICENSES/README.md" \
   "$repo_root/THIRD_PARTY_LICENSES/MODEL_CREDITS.md" \
+  "$repo_root/THIRD_PARTY_LICENSES/ASSET_NOTICES.md" \
   "$staging/notices/"
+cp "$repo_root/docs/dictionary-updates.md" "$staging/notices/"
 (
   cd "$staging/assets"
   shasum -a 256 manga-ocr-base/pytorch_model.bin \
     opus-mt-ja-en/pytorch_model.bin JMdict_e.gz kanjidic2.xml.gz
 ) > "$staging/notices/asset-checksums.txt"
+"$python_bin" "$repo_root/scripts/generate-macos-notices.py" \
+  "$staging/notices" --strict
 
 # Replace only the ignored, generated bundle input; never touch user models.
 if [[ "$resource_dir" != "$repo_root/apps/desktop/src-tauri/resources/ocr" ]]; then
@@ -96,8 +119,15 @@ mv "$staging" "$resource_dir"
 
 cd "$desktop_dir"
 VITE_OCR_URL=http://127.0.0.1:8766 npm run tauri build -- \
-  --config src-tauri/tauri.release.conf.json --bundles app
+  --config src-tauri/tauri.release.conf.json --bundles dmg
 
-echo "Local macOS test bundle: $desktop_dir/src-tauri/target/release/bundle/macos/YomiMado.app"
+for dmg in "$desktop_dir"/src-tauri/target/release/bundle/dmg/YomiMado_*.dmg; do
+  if [[ ! -f "$dmg" ]]; then
+    echo "Missing macOS disk image installer." >&2
+    exit 1
+  fi
+  bash "$repo_root/scripts/verify-macos-dmg.sh" "$dmg" "$python_bin"
+  echo "Local macOS test installer: $dmg"
+done
 echo "Detector ONNX weights are not bundled; select your own copy in YomiMado."
-echo "Private test only until all remaining bundled notices and release gates are resolved."
+echo "Private test only until signing, notarization, and remaining release gates are resolved."

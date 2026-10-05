@@ -144,6 +144,16 @@ h1 span {
   font-size: 1rem;
   margin: 0 0 0.6rem;
 }
+.sources-toggle {
+  padding: 0.45rem 0.65rem;
+}
+.sources-content {
+  color: #c6bcb5;
+  line-height: 1.45;
+}
+.sources-content a {
+  color: #ffab83;
+}
 .setting-option {
   align-items: flex-start;
   display: flex;

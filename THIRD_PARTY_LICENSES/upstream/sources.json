@@ -1,0 +1,177 @@
+{
+  "loguru": {
+    "project": "Delgan/loguru",
+    "commit": "0412a60d6aff63a4ed009c7445993b42d294c2f1",
+    "files": [
+      {
+        "path": "loguru/LICENSE",
+        "source": "https://raw.githubusercontent.com/Delgan/loguru/0412a60d6aff63a4ed009c7445993b42d294c2f1/LICENSE",
+        "sha256": "b35d026cc7aca9d5859a02eb87ddf7a386a24c986838651bd1f283f94e003327"
+      }
+    ]
+  },
+  "sentencepiece": {
+    "project": "google/sentencepiece",
+    "commit": "ed7305463dd62f659fdffe4de1f33fb77ba925b2",
+    "files": [
+      {
+        "path": "sentencepiece/LICENSE",
+        "source": "https://raw.githubusercontent.com/google/sentencepiece/ed7305463dd62f659fdffe4de1f33fb77ba925b2/LICENSE",
+        "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30"
+      }
+    ]
+  },
+  "sudachi-rs": {
+    "project": "WorksApplications/sudachi.rs",
+    "commit": "1c21940d1ca6b045eb211ecc1cdb767326f3783f",
+    "files": [
+      {
+        "path": "sudachi-rs/LICENSE",
+        "source": "https://raw.githubusercontent.com/WorksApplications/sudachi.rs/1c21940d1ca6b045eb211ecc1cdb767326f3783f/LICENSE",
+        "sha256": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4"
+      }
+    ]
+  },
+  "tokenizers": {
+    "project": "huggingface/tokenizers",
+    "commit": "bbccb0513ff9afda385ca5c85c66eddb1318cfc7",
+    "files": [
+      {
+        "path": "tokenizers/LICENSE",
+        "source": "https://raw.githubusercontent.com/huggingface/tokenizers/bbccb0513ff9afda385ca5c85c66eddb1318cfc7/LICENSE",
+        "sha256": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4"
+      }
+    ]
+  },
+  "torchsummary": {
+    "project": "sksq96/pytorch-summary",
+    "commit": "345d898d84507b848e92dab4629e03405e19afce",
+    "files": [
+      {
+        "path": "torchsummary/LICENSE",
+        "source": "https://raw.githubusercontent.com/sksq96/pytorch-summary/345d898d84507b848e92dab4629e03405e19afce/LICENSE",
+        "sha256": "ff9b34acb85ba0a7b8d53068ed89ca98ca78c507c31af153f6f27bb2aa935490"
+      }
+    ]
+  },
+  "alloc-stdlib": {
+    "project": "dropbox/rust-alloc-no-stdlib",
+    "commit": "0a81fd6928ea3b33c8cd484aa4575d50ffb98012",
+    "files": [
+      {
+        "path": "alloc-stdlib/LICENSE",
+        "source": "https://raw.githubusercontent.com/dropbox/rust-alloc-no-stdlib/0a81fd6928ea3b33c8cd484aa4575d50ffb98012/LICENSE",
+        "sha256": "c0c56f26d9c051cac4d200c34c84e7ae9aaa853e01a982a1df08b09931e518ae"
+      }
+    ]
+  },
+  "objc2": {
+    "project": "madsmtm/objc2",
+    "commit": "40dbfe5ed5bee7f476b68a595e2f11b0ebd360e5",
+    "files": [
+      {
+        "path": "objc2/LICENSE.md",
+        "source": "https://raw.githubusercontent.com/madsmtm/objc2/40dbfe5ed5bee7f476b68a595e2f11b0ebd360e5/LICENSE.md",
+        "sha256": "e489d07e5496be274efcbeaa31ce7267779e3fe3fbf2d6195d74750d7e9ac288"
+      },
+      {
+        "path": "objc2/LICENSE-MIT.txt",
+        "source": "https://raw.githubusercontent.com/madsmtm/objc2/40dbfe5ed5bee7f476b68a595e2f11b0ebd360e5/LICENSE-MIT.txt",
+        "sha256": "f6a2e783669a0dd7a2c3b8a4f76db40ae49033e66e1bdc30f3aa25fe5577b070"
+      },
+      {
+        "path": "objc2/LICENSE-APACHE.txt",
+        "source": "https://raw.githubusercontent.com/madsmtm/objc2/40dbfe5ed5bee7f476b68a595e2f11b0ebd360e5/LICENSE-APACHE.txt",
+        "sha256": "0c9a5f6fe28e27015e12506ffe58c9e007cead169af9670ec15c1df0d14e4f2a"
+      },
+      {
+        "path": "objc2/LICENSE-ZLIB.txt",
+        "source": "https://raw.githubusercontent.com/madsmtm/objc2/40dbfe5ed5bee7f476b68a595e2f11b0ebd360e5/LICENSE-ZLIB.txt",
+        "sha256": "fced3e7fedc235fa83ed0108b0df74d86b435d06436356f46917a903cbadd80a"
+      }
+    ]
+  },
+  "defmt": {
+    "project": "knurling-rs/defmt",
+    "commit": "0433aebf718a980323cf377d4e3fda342746c6b7",
+    "files": [
+      {
+        "path": "defmt/LICENSE-MIT",
+        "source": "https://raw.githubusercontent.com/knurling-rs/defmt/0433aebf718a980323cf377d4e3fda342746c6b7/LICENSE-MIT",
+        "sha256": "2710a622a896bba67356913d4d0492cab5465f61b2ecce6d880aeb483834fb50"
+      },
+      {
+        "path": "defmt/LICENSE-APACHE",
+        "source": "https://raw.githubusercontent.com/knurling-rs/defmt/0433aebf718a980323cf377d4e3fda342746c6b7/LICENSE-APACHE",
+        "sha256": "8173d5c29b4f956d532781d2b86e4e30f83e6b7878dce18c919451d6ba707c90"
+      }
+    ]
+  },
+  "selectors": {
+    "project": "spdx/license-list-data",
+    "commit": "31ba1a50e5397e00a304dbadc76531740e89ee48",
+    "files": [
+      {
+        "path": "selectors/LICENSE-MPL-2.0.txt",
+        "source": "https://raw.githubusercontent.com/spdx/license-list-data/31ba1a50e5397e00a304dbadc76531740e89ee48/text/MPL-2.0.txt",
+        "sha256": "66a3107d5ad6a058aab753eaac2047ccb2ed0e39465dd0fe5844da3e300d5172"
+      }
+    ]
+  },
+  "tauri": {
+    "project": "tauri-apps/tauri",
+    "commit": "30da1fd6e17de6107ecc850c95dfb16b5729f2dd",
+    "files": [
+      {
+        "path": "tauri/LICENSE-MIT",
+        "source": "https://raw.githubusercontent.com/tauri-apps/tauri/30da1fd6e17de6107ecc850c95dfb16b5729f2dd/LICENSE-MIT",
+        "sha256": "9dd42ea92cff2ede5cd477cbfcce051b2d0115c0ac7f368ee88cb545055dff1d"
+      },
+      {
+        "path": "tauri/LICENSE-APACHE-2.0",
+        "source": "https://raw.githubusercontent.com/tauri-apps/tauri/30da1fd6e17de6107ecc850c95dfb16b5729f2dd/LICENSE-APACHE-2.0",
+        "sha256": "0d542e0c8804e39aa7f37eb00da5a762149dc682d7829451287e11b938e94594"
+      }
+    ]
+  },
+  "unic": {
+    "project": "open-i18n/rust-unic",
+    "commit": "37bd705602b5d3a87e44a6b7819906ab588e22ac",
+    "files": [
+      {
+        "path": "unic/LICENSE-MIT",
+        "source": "https://raw.githubusercontent.com/open-i18n/rust-unic/37bd705602b5d3a87e44a6b7819906ab588e22ac/LICENSE-MIT",
+        "sha256": "23f18e03dc49df91622fe2a76176497404e46ced8a715d9d2b67a7446571cca3"
+      },
+      {
+        "path": "unic/LICENSE-APACHE",
+        "source": "https://raw.githubusercontent.com/open-i18n/rust-unic/37bd705602b5d3a87e44a6b7819906ab588e22ac/LICENSE-APACHE",
+        "sha256": "a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2"
+      }
+    ]
+  },
+  "assets": {
+    "files": [
+      {
+        "path": "assets/EDRDG-dictionary-licence.html",
+        "source": "https://www.edrdg.org/edrdg/licence.html",
+        "sha256": "52f60ea9ca68170a2f0663d7dba381ebf1bd57c17a3347dfe21153865c156692"
+      },
+      {
+        "path": "assets/CC-BY-SA-4.0.txt",
+        "source": "https://creativecommons.org/licenses/by-sa/4.0/legalcode.txt",
+        "sha256": "28a9529c7d0bb4dc51f4bf5c116a3d16ef247a052f7591466768ddf563fd1cf5"
+      },
+      {
+        "path": "assets/Apache-2.0.txt",
+        "source": "https://www.apache.org/licenses/LICENSE-2.0.txt",
+        "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30"
+      },
+      {
+        "path": "assets/manga-ocr-model-card.md",
+        "source": "https://huggingface.co/kha-white/manga-ocr-base/raw/aa6573bd10b0d446cbf622e29c3e084914df9741/README.md",
+        "sha256": "32f413afcc4295151e77d25202c5c5d81ef621b46f947da1c3bde13256dc0d5f"
+      }
+    ]
+  }
+}
