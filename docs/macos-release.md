@@ -55,7 +55,7 @@ incomplete candidate.
       `4bfd303f2a566c8669d0a80ca3c394099cae8bfba48b31313713ada88a1cf1ff`.
 - Fresh-macOS installation: **skipped at the maintainer's request on 2026-10-05**;
   no clean Mac is available. This is a waiver, not a passed test.
-- [ ] Complete the [existing-Mac installed-app record](macos-clean-mac-test.md):
+- [x] Complete the [existing-Mac installed-app record](macos-clean-mac-test.md):
       browser quarantine, per-app Gatekeeper approval, model import and Screen
       Recording. Preserve existing learning data and permissions.
 - [x] Replace the `042360e` candidate: browser quarantine/hash and Finder copy
@@ -68,7 +68,11 @@ incomplete candidate.
       now pass; model dialog cancellation, rejection, import and relaunch pass.
       Screen Recording recovery and capture-to-OCR pass. Precise synthetic
       vertical Retina alignment and the global shortcut pass with maintainer
-      confirmation; remaining installed learning-flow checks are pending.
+      confirmation. Maintainer screenshots verify word/kanji lookup,
+      attribution, cached translation and saved entries. The maintainer confirms
+      offline capture/lookup, the shortcut after reboot and saved-entry
+      persistence after relaunch. Page scan, uncached translation and removal
+      of the two synthetic entries also pass with maintainer confirmation.
 - [x] Draft [pre-release notes](macos-prerelease-notes.md) with installation,
       detector import, permissions, data credits and known limitations.
 - [ ] Finalize release notes with unnotarized status, install steps, fresh-Mac
@@ -100,8 +104,17 @@ incomplete candidate.
   the installed app opened the selector and returned a real OCR region.
   The maintainer confirms that Cmd+Shift+O produces an aligned clickable
   synthetic vertical `学校へ` region. Visible in-app source/data/model credits
-  also pass; learning-popup GUI checks remain pending. Existing learning databases and other apps' privacy grants are
-  preserved; no quarantine removal or global Gatekeeper/TCC reset was used.
+  also pass. Maintainer screenshots show `学校` / `がっこう` / “school,”
+  `学` readings/meanings/compounds, JMdict/KANJIDIC2 attribution, a cached
+  “Go to school.” translation with original Japanese, and saved word/sentence
+  entries. The maintainer separately confirms offline capture/lookup, the
+  shortcut after reboot and both saved entries remaining after relaunch.
+  The maintainer also confirms fresh uncached translation, page-scan execution
+  and removal of the two synthetic saved entries. The installed-app gate is
+  cleared for this candidate hash, retaining the fresh-Mac waiver and precise
+  untested subcases in the record. A new CI-built hash requires renewed testing.
+  Existing learning databases and other apps' privacy grants are preserved;
+  no quarantine removal or global Gatekeeper/TCC reset was used.
 - Matching source delivery retains all 477 entries/75 archives. Only the clean
   project archive changes; 74 dependency archives and native licence/source
   approval are unchanged. Original maintainer approval remains attributed to

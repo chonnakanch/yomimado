@@ -17,8 +17,13 @@ and frozen OCR/learning/persistence checks. Browser quarantine, Finder install,
 per-app Open Anyway, model import/rejection/cancellation and restart pass.
 Refreshing the old development Screen Recording entry allows the installed
 app to open capture and return OCR regions. The maintainer confirms the global
-shortcut and aligned synthetic vertical OCR on Retina. In-app credits pass;
-remaining installed learning-flow tests still require completion.
+shortcut and aligned synthetic vertical OCR on Retina. In-app credits and
+screenshotted word/kanji lookup, cached translation and saved entries pass.
+The maintainer confirms offline capture/lookup, the shortcut after reboot and
+saved-data restart persistence. Explicit page scan, uncached translation and
+test-entry removal pass with maintainer confirmation. The installed-app gate is
+cleared for candidate `5120506`; fresh-Mac and other untested subcases stay
+explicit in the release record. A CI rebuild needs a new installer confirmation.
 Native licence/source review and maintainer approval remain complete.
 
 Status audit (2026-10-05): the capture → local OCR → interactive overlay →

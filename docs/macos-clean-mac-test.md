@@ -5,7 +5,8 @@ Fresh-macOS installation test: **skipped at the maintainer's request on
 successful clean-machine installation. Keep that limitation in the pre-release
 notes; it does not block this first pre-release on its own.
 
-Installed-app result: **partial; not yet cleared for publication**. Native
+Installed-app result: **passed for candidate `5120506`** with the fresh-macOS
+waiver and untested cases below retained. Native
 source/licence approval is complete. The replacement at clean commit `5120506`
 passes exact mounted bundle/signature/source and frozen-service checks.
 Installation, per-app Gatekeeper approval, model-import UI and permission
@@ -68,12 +69,25 @@ Matching source: `YomiMado_0.1.0_sources_5120506.tar.gz`; SHA-256:
   automation independently exercised selector/capture, but did not establish
   the intended synthetic crop; the precise alignment result is attributed to
   the maintainer's manual test.
-- **Pending:** repeat/page scan, dictionary/kanji/translation GUI and saved-data
-  GUI persistence.
-- **Not tested yet:** physically disconnected-network GUI run and OS reboot.
-  The mounted frozen service passes isolated offline OCR/dictionary/translation
-  and saved-word/sentence/cache persistence across service restart. Those tests
-  do not substitute for these manual OS conditions.
+- **Pass (maintainer screenshots):** the synthetic vertical `学校へ` region
+  aligns with the text, and the page also has a horizontal OCR region.
+  Selecting `学校` shows `がっこう` / “school” and JMdict attribution.
+  Selecting `学` shows meanings, on/kun readings, example compounds and
+  KANJIDIC2 attribution. The original Japanese remains visible alongside a
+  cached local translation, “Go to school.” Saved words and saved sentences
+  show the test word and sentence with the expected reading/meaning/translation.
+  The supplied screenshots were inspected in chat; no desktop screenshot or
+  unrelated personal screen contents were copied into the repository.
+- **Pass (maintainer confirmation):** after disconnecting the network,
+  capture/lookup works. After reboot, the installed app's shortcut works, and
+  both saved test entries remain after relaunch. This confirmation supplements
+  the screenshots; those images alone do not establish the OS conditions.
+- **Pass (maintainer confirmation):** Scan manga page, fresh uncached
+  translation and removal of the two synthetic saved test entries all work.
+  Unrelated saved items were excluded from the removal test. This supplements
+  the screenshots, which show the cached translation and entries before removal.
+  The mounted frozen-service smoke independently verifies fresh offline
+  translation and saved-item persistence.
 - **Pass (files):** embedded revision/source-delivery, EDRDG/model and native
   notices match the verified candidate. Expanding Sources and licenses shows
   EDRDG/CC BY-SA, OCR/translation model credits, detector source, separate
@@ -109,21 +123,29 @@ source package remains unverified.
       → Screen Recording (wording may include system audio on newer macOS).
       Follow the requested quit/reopen flow. Permission attaches to the installed
       app and capture works afterward.
-- [ ] Show synthetic/user-local Japanese text; select a crop and confirm real
+- [x] Show synthetic/user-local Japanese text; select a crop and confirm real
       vertical OCR with clickable regions aligned on Retina. Dismiss/repeat and
       try page scan. If available, also test a monitor left of the primary display.
-- [ ] Click `学校`, inspect reading/meaning, select `学` and inspect kanji
+- [x] Click `学校`, inspect reading/meaning, select `学` and inspect kanji
       readings/meanings. Dictionary attribution is visible.
-- [ ] Request sentence translation; Japanese remains visible. Save a word and
+- [x] Request sentence translation; Japanese remains visible. Save a word and
       sentence, quit/relaunch, verify both persist and can be removed.
 - [ ] Disconnect the network after import. Relaunch and repeat OCR,
       tokenization, dictionaries and explicit translation. No model download is
       needed. Translation starts only on request.
-- [ ] Reboot; launch from `/Applications`, repeat shortcut/capture. Permissions
+- [x] Reboot; launch from `/Applications`, repeat shortcut/capture. Permissions
       and model setup persist. Remove/eject the DMG; the installed app works
       independently of the DMG and repository.
 - [x] Inspect `/Applications/YomiMado.app/Contents/Resources/ocr/notices`;
       revision, source-delivery and EDRDG/model notices match the candidate.
+
+Untested manual subcases: missing-model first launch (existing detector retained),
+denial specifically through the shortcut (the shared capture command's button
+error was observed), a left-of-primary display, and fresh uncached translation
+while physically disconnected (fresh translation passes the isolated offline
+frozen smoke). These are not claimed as passed. The maintainer's confirmations
+clear the installed-app gate for this exact candidate; any CI rebuild with a
+different DMG hash needs its own installer confirmation before publication.
 
 Record pass/fail, errors and recovery for every step. Use synthetic text for
 screenshots; never put copyrighted manga or private screen content in git.
