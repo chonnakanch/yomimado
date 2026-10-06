@@ -63,16 +63,21 @@ Matching source: `YomiMado_0.1.0_sources_5120506.tar.gz`; SHA-256:
   mismatch. The YomiMado entry was subsequently refreshed in System Settings;
   the installed app opens the capture selector and returns real OCR regions.
   Other applications' grants are unchanged. No global TCC reset was performed.
-- **Pending:** global-shortcut confirmation, precise synthetic vertical Retina
-  alignment, repeat/page scan, dictionary/kanji/translation GUI and saved-data
-  GUI persistence. Desktop automation completed a capture but did not establish
-  the intended synthetic crop/alignment; do not infer a pass.
+- **Pass (maintainer confirmation):** Cmd+Shift+O over the synthetic Japanese
+  page produces an aligned, clickable vertical `学校へ` OCR region. Desktop
+  automation independently exercised selector/capture, but did not establish
+  the intended synthetic crop; the precise alignment result is attributed to
+  the maintainer's manual test.
+- **Pending:** repeat/page scan, dictionary/kanji/translation GUI and saved-data
+  GUI persistence.
 - **Not tested yet:** physically disconnected-network GUI run and OS reboot.
   The mounted frozen service passes isolated offline OCR/dictionary/translation
   and saved-word/sentence/cache persistence across service restart. Those tests
   do not substitute for these manual OS conditions.
 - **Pass (files):** embedded revision/source-delivery, EDRDG/model and native
-  notices match the verified candidate. Visible in-app credits still pending.
+  notices match the verified candidate. Expanding Sources and licenses shows
+  EDRDG/CC BY-SA, OCR/translation model credits, detector source, separate
+  user-installed weights and the bundled notices location.
 
 The approved base source revision remains `042360e`. The `5120506` source
 manifest records the packaging correction and retains that approval scope;

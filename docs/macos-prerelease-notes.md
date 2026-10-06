@@ -32,8 +32,9 @@ tokenization, dictionaries and the bundled on-demand translation run locally.
 Model import requires your own downloaded file; the app does not download it.
 
 If an earlier development or hobby build already has Screen Recording enabled
-but the new app still reports missing access, refresh YomiMado's entry in that
-settings panel for `/Applications/YomiMado.app`, then quit/reopen. A permission
+but the new app still reports missing access, select and remove only YomiMado's
+old entry in that settings panel, then use Add to select
+`/Applications/YomiMado.app` and follow Quit & Reopen. A permission
 attached to the previous ad-hoc signature may not cover the replacement build.
 
 ## Data and limitations

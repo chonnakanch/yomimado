@@ -67,7 +67,8 @@ incomplete candidate.
       OCR/learning/persistence smoke. Finder install and per-app Open Anyway
       now pass; model dialog cancellation, rejection, import and relaunch pass.
       Screen Recording recovery and capture-to-OCR pass. Precise synthetic
-      alignment, shortcut and remaining installed learning-flow checks are pending.
+      vertical Retina alignment and the global shortcut pass with maintainer
+      confirmation; remaining installed learning-flow checks are pending.
 - [x] Draft [pre-release notes](macos-prerelease-notes.md) with installation,
       detector import, permissions, data credits and known limitations.
 - [ ] Finalize release notes with unnotarized status, install steps, fresh-Mac
@@ -97,8 +98,9 @@ incomplete candidate.
   initially retained the stale code requirement; macOS diagnostics confirmed
   the mismatch. After the YomiMado entry was refreshed through System Settings,
   the installed app opened the selector and returned a real OCR region.
-  Synthetic vertical alignment, shortcut and learning-popup GUI checks remain
-  pending. Existing learning databases and other apps' privacy grants are
+  The maintainer confirms that Cmd+Shift+O produces an aligned clickable
+  synthetic vertical `学校へ` region. Visible in-app source/data/model credits
+  also pass; learning-popup GUI checks remain pending. Existing learning databases and other apps' privacy grants are
   preserved; no quarantine removal or global Gatekeeper/TCC reset was used.
 - Matching source delivery retains all 477 entries/75 archives. Only the clean
   project archive changes; 74 dependency archives and native licence/source
