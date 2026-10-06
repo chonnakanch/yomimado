@@ -43,12 +43,15 @@ incomplete candidate.
       2,332 source-only assets omitted and 9 vendor checksum maps updated.
       Original inputs stay private; retained content comparison and locked
       offline Cargo dependency resolution pass. App packaging is unchanged.
-- [ ] Finalize and sign off the complete corresponding-source delivery from the
-      clean project revision. The source copy and technical checks are ready;
-      the release validator still requires named human source/licence review
-      in `source-delivery.json`. Do not substitute an automated approval.
-- [ ] Build a source-cleared hobby candidate from a clean commit; verify that
-      exact mounted DMG and its frozen service, then retain its SHA-256.
+- [x] Record maintainer source/licence approval as **chonnakanch**, 2026-10-06,
+      for clean project revision `042360e`. The approved `source-delivery.json`
+      passes all 477 entry, archive hash and notice checks. Full rebuild from
+      only the filtered source package remains unverified, as disclosed before
+      approval; the project frontend/Rust and filtered Manga OCR rebuild checks
+      pass. Approval does not mark installed-app tests or publication complete.
+- [x] Build the source-cleared hobby candidate from clean commit `042360e`;
+      exact mounted DMG/bundle and frozen-service smoke pass. SHA-256:
+      `4bfd303f2a566c8669d0a80ca3c394099cae8bfba48b31313713ada88a1cf1ff`.
 - Fresh-macOS installation: **skipped at the maintainer's request on 2026-10-05**;
   no clean Mac is available. This is a waiver, not a passed test.
 - [ ] Complete the [existing-Mac installed-app record](macos-clean-mac-test.md):
@@ -125,8 +128,25 @@ incomplete candidate.
   filtered Cargo vendor tree resolves the locked project offline. See
   `services/ocr/build/source-delivery-prepared-final/` for the worksheet,
   archive hashes, omission record, content verification, notices and `BUILD.md`.
-  Reviewer/date remain blank; no release-authorizing manifest is generated.
-  Size optimization is deferred at the maintainer's request.
+  The original preparation worksheet remains unsigned. The separate approved
+  `source-delivery.json` now records the maintainer's explicit approval under
+  Git account `chonnakanch`, dated 2026-10-06. Its bytes match the candidate's
+  embedded manifest; coverage/hash/notice verification passes. Size optimization
+  is deferred at the maintainer's request.
+- Source-package partial rebuild checks pass: frontend build from the extracted
+  project using existing Node tools/dependencies; Rust checks from that project
+  against the filtered vendor tree (259 crates, locked/offline); and a Manga OCR
+  wheel from the filtered 0.1.16 sdist. Manga OCR's preferred `ocr.py` matches
+  the installed runtime source. Complete app/all-native-dependency rebuilding
+  using only the filtered package has not been verified. See the local
+  `source-rebuild-verification.json`; do not claim an end-to-end source rebuild.
+- The first source-cleared `unnotarized-hobby` candidate embeds clean revision
+  `042360e` and the approved manifest. Its exact mounted disk-image/bundle checks
+  and frozen health, vertical OCR geometry, Sudachi, JMdict, KANJIDIC2,
+  translation and saved-data/cache restart smoke pass. It is available privately
+  under `apps/desktop/src-tauri/target/release/bundle/releasable/` with its hash
+  sidecar. Installed-app authorization/testing is pending; no public upload or
+  release CI is activated. Developer ID/notarization remains optional.
 - Previous private DMG SHA-256:
   `3750db3829ba9356778c9c6be8e634375494f840c0b2a9cc459268dd155871cf`.
   This artifact was built from the preparation working tree based on

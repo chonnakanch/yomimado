@@ -210,6 +210,25 @@ omission record and content-verification report are in the ignored local
 `services/ocr/build/source-delivery-prepared-final/` directory. The source copy
 is ready for the named human review; no approval is recorded automatically.
 
+### Maintainer approval — 2026-10-06
+
+The maintainer explicitly approved the prepared source/licence delivery using
+Git account **chonnakanch**: “approve with my git account name”. The approved
+local `source-delivery.json` covers clean project revision `042360e` and passes
+the release validator's full coverage/hash/notice checks. The original unsigned
+worksheet is retained separately. The approval record is a project audit trail;
+it does not require a legal name or assert a legal certification.
+
+The source-cleared hobby candidate embeds that exact manifest and revision.
+Its mounted disk-image/bundle and frozen-service smoke checks pass; installed-app
+testing and publication remain pending. Additional source-package checks pass
+for the extracted project frontend (existing Node tools), Rust against the
+filtered vendor tree (259 crates, locked/offline), and a wheel from the filtered
+Manga OCR sdist. Its preferred OCR source matches the installed code.
+The complete app/all-native-dependency rebuild using only the filtered package
+has not been verified; this limitation was disclosed before the approval and
+remains recorded in the local rebuild report. Do not infer that test passed.
+
 ## Delivery alongside the GitHub Release
 
 Use GPLv3 section 6(d): offer the source with equivalent free access alongside

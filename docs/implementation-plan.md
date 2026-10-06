@@ -695,8 +695,10 @@ Before any public release:
 - [x] prepare the complete source delivery for human review: 75 archives/477
   entries, source-only asset omissions, unchanged retained-code/notice checks
   and offline locked Cargo resolution; defer app-size optimization until release
-- [ ] finalize and sign off the complete corresponding-source delivery with
-  build/installation instructions and the clean project revision
+- [x] record source/licence approval by Git account chonnakanch on 2026-10-06
+  for clean revision 042360e; verify the approved 477-entry source manifest and
+  build instructions. Full filtered-source-only rebuild remains unverified;
+  extracted project frontend/Rust and filtered Manga OCR checks pass.
 - [x] verify bundled model-weight licensing and pin both weight checksums;
   require separate user installation for the detector ONNX file, whose
   redistribution terms are not explicit
@@ -720,8 +722,10 @@ Before any public release:
 - [x] complete source/notice evidence for all 114 native inputs; source-build
       minimal Pillow/torchvision and OpenMP, remove training-only tools and
       compiled Tomli, and retain all embedded notices
-- [ ] finish final source-delivery sign-off, package inspection and
-      installed-app testing on the existing Mac before the public pre-release
+- [x] build and verify the source-approved hobby candidate from clean revision
+      042360e; exact mounted DMG/bundle and frozen-service smoke checks pass
+- [ ] finish installed-app testing on the existing Mac before publication;
+      source approval and candidate verification do not mark these tests passed
 - Fresh-macOS install testing was skipped at the maintainer's request on
   2026-10-05 because no clean Mac is available; disclose this unverified case.
   Exact-DMG verification, model import and Screen Recording tests remain required.

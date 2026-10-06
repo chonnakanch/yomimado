@@ -14,24 +14,37 @@ machine: global runtimes, permissions and caches can persist. Mark any step
 that cannot be exercised as not tested, with its reason; never infer a pass
 from an existing model or permission grant.
 
+The source-cleared hobby candidate is ready: clean source revision `042360e`,
+source/licence approval by Git account `chonnakanch` on 2026-10-06, and exact
+mounted-bundle/frozen-service checks passed. Manual installed-app execution
+is awaiting authorization for launch, per-app Gatekeeper approval and Screen
+Recording access. No installed test is marked passed by the source approval.
+
 Supply the tester with the exact verified candidate privately, its SHA-256,
 source commit and the original publisher's detector link. Do not substitute a private build or redistribute detector weights. Preserve browser download
 quarantine to exercise Gatekeeper. Do not reset the developer Mac's permissions.
 
 ## Record before testing
 
-| Field                                 | Result                                              |
-| ------------------------------------- | --------------------------------------------------- |
-| Tester / test date                    | Pending                                             |
-| Mac model / Apple chip                | Pending                                             |
-| macOS version/build (`sw_vers`)       | Pending                                             |
-| DMG filename / SHA-256                | Pending                                             |
-| Source commit / release version       | Pending                                             |
-| Distribution                          | Unnotarized hobby DMG; no Developer ID/notarization |
-| JMdict/KANJIDIC2 header refresh dates | Pending                                             |
-| Fresh macOS installation              | Skipped by maintainer, 2026-10-05; unavailable      |
-| Download quarantine confirmed         | Pending                                             |
-| Existing app/model/permission state   | Pending                                             |
+| Field                                 | Result                                                |
+| ------------------------------------- | ----------------------------------------------------- |
+| Tester / test date                    | Pending                                               |
+| Mac model / Apple chip                | Pending                                               |
+| macOS version/build (`sw_vers`)       | 26.6.2 / 25G83 (development Mac)                      |
+| DMG filename / SHA-256                | YomiMado_0.1.0_aarch64.dmg / see candidate hash below |
+| Source commit / release version       | 042360ed6d3dcc6612673486f8cee686ede1ae17 / 0.1.0      |
+| Distribution                          | Unnotarized hobby DMG; no Developer ID/notarization   |
+| JMdict/KANJIDIC2 header refresh dates | 2026-09-27                                            |
+| Fresh macOS installation              | Skipped by maintainer, 2026-10-05; unavailable        |
+| Download quarantine confirmed         | Pending                                               |
+| Existing app/model/permission state   | Pending                                               |
+
+Candidate SHA-256:
+`4bfd303f2a566c8669d0a80ca3c394099cae8bfba48b31313713ada88a1cf1ff`.
+Private candidate path:
+`apps/desktop/src-tauri/target/release/bundle/releasable/YomiMado_0.1.0_aarch64.dmg`.
+`/Applications/YomiMado.app` was absent before this test; existing user model,
+learning data and permission state has not been modified or verified.
 
 ## Execute in order
 
