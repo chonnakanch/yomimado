@@ -75,10 +75,12 @@ incomplete candidate.
   detector, CPython, OpenSSL and liblzma source), 114 unique native input binaries
   plus 9 aliases (123 paths, down from 310). All native reviews are hash-verified.
   Corresponding-source worksheet: 477 entries; final delivery sign-off is separate.
-- The dependency source report is regenerated after the focused native-review
-  commit. The collector exports the exact clean project and filtered detector
-  source, reuses all 114 native reviews, and binds notices/archive hashes.
-  Complete source-delivery sign-off remains separate.
+- The regenerated source report for clean commit `02c0b3b` has **477 entries,
+  75 distinct archives, zero unresolved entries and 114 verified native inputs**.
+  The private `source-delivery.worksheet.json` is fully populated, with matching
+  archive hashes, notice paths and technical licence evidence; `BUILD.md`
+  provides rebuild/replacement instructions. Reviewer/date remain blank until
+  the complete source-delivery review and source-only asset cleanup finish.
 - The former NumPy wheel received its missing full libquadmath LGPL text;
   the current Accelerate build contains no libquadmath and omits that supplement. Cargo source archives include the original crate archives
   and vendor tree; their current hashes are in `source-candidates.json`.
@@ -105,9 +107,12 @@ incomplete candidate.
 - Development-Mac native smoke: parallel Torch, torchvision CPU NMS, JPEG/PNG,
   source-built fonts and the GEOS shared-library replacement pass. The 114-input
   private DMG passes frozen vertical OCR, dictionaries, tokenization,
-  translation and persistence across restart. Its preparation-build SHA-256 is
-  `190fe4962ee39188259e6074e9d20e62d0abc68f079ff4a5421af6d66fc28ff1`;
-  a final rebuild must embed the completed review and latest Unicode notice.
+  translation and persistence across restart. The clean-commit rebuild embeds
+  the completed review documentation and Unicode notice; exact mounted-bundle,
+  platform and frozen-service checks pass. SHA-256:
+  `02c283479e0b60df2c10d0365e0af425fd18b9b61c31d208772bdd0744a07182`.
+  Its embedded project revision is `02c0b3b` and mode is `private-test`;
+  it is not a signed-off public hobby candidate.
 - Bundled JMdict/KANJIDIC2 header dates: **2026-09-27**.
 - Previous private DMG SHA-256:
   `3750db3829ba9356778c9c6be8e634375494f840c0b2a9cc459268dd155871cf`.

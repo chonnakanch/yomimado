@@ -150,9 +150,11 @@ inputs** and 9 aliases. The worksheet covers **477 entries**, including the
 project. The collector reuses completed technical evidence only when source,
 notice and original binary hashes match. All 114 native inputs are covered;
 PyTorch/torchvision and transitive native sources are supplied by the reviewed
-archives, rather than an unavailable PyPI sdist. Project and filtered detector
-exports remain additional candidates. Regenerate the report after committing
-changes so its project export matches the clean source revision.
+archives, rather than an unavailable PyPI sdist. The report regenerated from clean commit `02c0b3b` covers all 477 entries
+with 75 distinct archives and **zero unresolved entries**. A fully populated
+private worksheet and `BUILD.md` are ready for the complete delivery review;
+reviewer/date remain blank. Project and filtered detector exports are included.
+Regenerate the project export whenever the selected release revision changes.
 
 These are private source candidates, not public release assets. Raw upstream
 archives can contain extra data/example artwork; inspect their terms and omit
