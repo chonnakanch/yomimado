@@ -1,10 +1,12 @@
 """Test source provenance rejection without downloading or executing packages."""
 
 import importlib.util
+import io
 import json
 import tarfile
 import tempfile
 import unittest
+import zipfile
 from pathlib import Path
 from unittest.mock import patch
 
@@ -226,6 +228,116 @@ class SourceTests(unittest.TestCase):
         self.assertEqual(result["status"], "source-candidate-review-pending")
         self.assertNotIn("reviewer", result)
         self.assertNotIn("licenseEvidence", result)
+
+    def archive(self, files):
+        stream = io.BytesIO()
+        with tarfile.open(fileobj=stream, mode="w:gz") as bundle:
+            for name, data in files.items():
+                entry = tarfile.TarInfo(name)
+                entry.size = len(data)
+                bundle.addfile(entry, io.BytesIO(data))
+        stream.seek(0)
+        return stream
+
+    def test_delivery_removes_nested_artwork_preserves_code_notices_and_build_icons(
+        self,
+    ):
+        files = {
+            "package/ocr.py": b"preferred source",
+            "package/LICENSE": b"terms",
+            "package/test/example.jpg": b"uncleared artwork",
+            "package/bootloader/icon.ico": b"build input",
+            "package/path.pth": b"Python import configuration",
+        }
+        nested = self.archive(files)
+        outer = self.archive({"sources/package.tar.gz": nested.getvalue()})
+        records = []
+        cleaned = sources.clean_source_archive(outer, "native.tar.gz", records)
+        with tarfile.open(fileobj=cleaned) as bundle:
+            data = bundle.extractfile("sources/package.tar.gz").read()
+        with tarfile.open(fileobj=io.BytesIO(data)) as bundle:
+            for path, value in files.items():
+                if path.endswith(".jpg"):
+                    self.assertNotIn(path, bundle.getnames())
+                else:
+                    self.assertEqual(bundle.extractfile(path).read(), value)
+        self.assertEqual(records[0]["archive"], "native.tar.gz!sources/package.tar.gz")
+        self.assertEqual(records[0]["path"], "package/test/example.jpg")
+        cleaned.close()
+
+    def test_delivery_preserves_unchanged_archive_bytes_and_project_assets(self):
+        for label, files in [
+            ("sources.tar.gz", {"src/lib.rs": b"code"}),
+            ("yomimado-revision.tar.gz", {"yomimado/icons/icon.png": b"original icon"}),
+        ]:
+            original = self.archive(files)
+            records = []
+            self.assertIs(
+                sources.clean_source_archive(original, label, records), original
+            )
+            self.assertEqual(records, [])
+
+    def test_delivery_vendor_map_covers_retained_files(self):
+        checksums = {
+            "package": "original-package-checksum",
+            "files": {"src/lib.rs": "code-hash", "tests/sample.png": "image-hash"},
+        }
+        original = self.archive(
+            {
+                "vendor/crate/src/lib.rs": b"code",
+                "vendor/crate/tests/sample.png": b"image",
+                "vendor/crate/.cargo-checksum.json": json.dumps(checksums).encode(),
+            }
+        )
+        records = []
+        cleaned = sources.clean_source_archive(
+            original, "cargo-sources.tar.gz", records
+        )
+        with tarfile.open(fileobj=cleaned) as bundle:
+            updated = json.load(bundle.extractfile("vendor/crate/.cargo-checksum.json"))
+        self.assertEqual(updated["package"], checksums["package"])
+        self.assertEqual(updated["files"], {"src/lib.rs": "code-hash"})
+        cleaned.close()
+
+    def test_delivery_rejects_escaping_archive_member(self):
+        original = self.archive({"../private-key": b"fixture"})
+        with self.assertRaisesRegex(ValueError, "Unsafe source archive path"):
+            sources.clean_source_archive(original, "source.tar.gz", [])
+
+    def test_delivery_preserves_intentionally_invalid_archive_test_fixture(self):
+        fixture = io.BytesIO(b"intentionally invalid archive used by source tests")
+        self.assertIs(sources.clean_source_archive(fixture, "fixture.zip", []), fixture)
+
+    def test_delivery_keeps_cpython_windows_separator_zip_as_opaque_test_data(self):
+        fixture = io.BytesIO()
+        with zipfile.ZipFile(fixture, "w") as bundle:
+            bundle.writestr("a\\b\\c", b"regression fixture")
+        original = self.archive(
+            {
+                "Python-3.11.17/Lib/test/zipdir_backslash.zip": fixture.getvalue(),
+            }
+        )
+        self.assertIs(
+            sources.clean_source_archive(original, "Python.tgz", []), original
+        )
+
+    def test_delivery_rejects_tampered_candidate_before_creating_output(self):
+        notices = self.root / "notices"
+        notices.mkdir()
+        for name in ("third-party-manifest.json", "native-libraries.json"):
+            (notices / name).write_text("{}")
+        (self.root / "candidate.tar.gz").write_bytes(b"altered")
+        worksheet = {
+            "reviewer": "",
+            "reviewedAt": "",
+            "inventorySha256": {p.name: sources.digest(p) for p in notices.iterdir()},
+            "components": [{"archive": "candidate.tar.gz", "sha256": "original"}],
+        }
+        (self.root / "source-delivery.worksheet.json").write_text(json.dumps(worksheet))
+        output = self.root / "delivery"
+        with self.assertRaisesRegex(ValueError, "checksum differs"):
+            sources.assemble_delivery(notices, self.root, output)
+        self.assertFalse(output.exists())
 
 
 if __name__ == "__main__":

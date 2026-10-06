@@ -164,6 +164,52 @@ inputs. The collector reuses completed native technical reviews; it never create
 `source-delivery.json` or signs off the complete release-source delivery. The
 release validator still rejects an incomplete or unreviewed delivery.
 
+### Assemble the complete delivery for review
+
+Use the existing collector's assembly option after populating the worksheet;
+it does not download, install or execute dependency code:
+
+```sh
+rtk services/ocr/build/release-venv/bin/python scripts/prepare-macos-sources.py apps/desktop/src-tauri/resources/ocr/notices services/ocr/build/source-delivery --assemble-delivery services/ocr/build/source-delivery-prepared-final
+```
+
+The destination must be new. Assembly verifies every candidate hash and the
+inventory, then copies only the worksheet's referenced archives and matching
+notices. It recursively omits source-only images, media, test fonts and model
+fixtures from dependency archives. Original YomiMado icons/synthetic fixtures,
+ICO build resources, Python `.pth` configuration, preferred code, lockfiles,
+licences and notice text are retained. Invalid archive-shaped test fixtures
+remain ordinary data. Unsafe archive paths or links stop preparation.
+
+`source-asset-omissions.json` records original and delivery archive hashes and
+each removed asset's path/hash. Cargo vendor checksum maps drop only the
+recorded omitted assets. The original, hash-bound build-input candidates stay
+private and unchanged. A filtered archive is a source delivery, not an original
+registry/cache archive: do not place modified `.crate` archives in Cargo's cache
+or claim that their bytes match the original registry checksum. Use the supplied
+vendor source directories for the desktop build; unpack retained native-binding
+crate sources into a separate vendor tree when rebuilding those bindings.
+Source-only fixture tests that use omitted files are unavailable; normal
+macOS build and runtime source is retained. Native build instructions must
+distinguish the original input hashes from these filtered delivery hashes.
+
+Assembly writes `source-delivery.worksheet.json`, retains blank reviewer/date,
+and never creates the release-authorizing `source-delivery.json`. Technical
+preparation is complete only after inspecting the results; the named human
+review required by `macos-release.py` remains the final source-clearance step.
+Use the exact clean release revision in the project export and worksheet.
+Existing-Mac installed-app checks remain separate from source approval.
+
+The first delivery preparation contains all **477 entries across 75 archives**.
+It records **2,332 asset omissions and 9 vendor checksum-map changes**; an
+independent comparison verifies **156,012 retained files** with no code/notice
+changes. The filtered desktop vendor tree passes locked offline Cargo metadata
+resolution. The release tools pass 70 tests and the unchanged OCR service passes
+47 tests. The complete worksheet, `BUILD.md`, notices, original/delivery hashes,
+omission record and content-verification report are in the ignored local
+`services/ocr/build/source-delivery-prepared-final/` directory. The source copy
+is ready for the named human review; no approval is recorded automatically.
+
 ## Delivery alongside the GitHub Release
 
 Use GPLv3 section 6(d): offer the source with equivalent free access alongside

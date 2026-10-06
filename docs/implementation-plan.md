@@ -692,6 +692,9 @@ Before any public release:
   sign-off remains separate from completed native review.
 - [x] complete native source/notice review for all 114 unique inputs; retain
   embedded notices, exact sources, build evidence and verified GEOS replacement
+- [x] prepare the complete source delivery for human review: 75 archives/477
+  entries, source-only asset omissions, unchanged retained-code/notice checks
+  and offline locked Cargo resolution; defer app-size optimization until release
 - [ ] finalize and sign off the complete corresponding-source delivery with
   build/installation instructions and the clean project revision
 - [x] verify bundled model-weight licensing and pin both weight checksums;

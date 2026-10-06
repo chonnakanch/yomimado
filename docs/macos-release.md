@@ -39,9 +39,14 @@ incomplete candidate.
       Missing embedded notices are retained; exact sources and input hashes are
       verified. GEOS shared-library replacement passes. Optional Pillow/vision
       codecs, training-only wandb binaries and compiled Tomli are removed.
+- [x] Prepare the complete source-delivery copy: 75 archives, all 477 entries,
+      2,332 source-only assets omitted and 9 vendor checksum maps updated.
+      Original inputs stay private; retained content comparison and locked
+      offline Cargo dependency resolution pass. App packaging is unchanged.
 - [ ] Finalize and sign off the complete corresponding-source delivery from the
-      clean project revision. Native review is complete; the release validator
-      still requires a reviewed `source-delivery.json` and build instructions.
+      clean project revision. The source copy and technical checks are ready;
+      the release validator still requires named human source/licence review
+      in `source-delivery.json`. Do not substitute an automated approval.
 - [ ] Build a source-cleared hobby candidate from a clean commit; verify that
       exact mounted DMG and its frozen service, then retain its SHA-256.
 - Fresh-macOS installation: **skipped at the maintainer's request on 2026-10-05**;
@@ -114,6 +119,14 @@ incomplete candidate.
   Its embedded project revision is `02c0b3b` and mode is `private-test`;
   it is not a signed-off public hobby candidate.
 - Bundled JMdict/KANJIDIC2 header dates: **2026-09-27**.
+- Source-delivery preparation passes **70 release-tool tests** and **47 OCR
+  tests**. The filtered copy preserves 156,012 compared files; every omitted
+  asset has a path/hash record. Code and notice content is unchanged. The
+  filtered Cargo vendor tree resolves the locked project offline. See
+  `services/ocr/build/source-delivery-prepared-final/` for the worksheet,
+  archive hashes, omission record, content verification, notices and `BUILD.md`.
+  Reviewer/date remain blank; no release-authorizing manifest is generated.
+  Size optimization is deferred at the maintainer's request.
 - Previous private DMG SHA-256:
   `3750db3829ba9356778c9c6be8e634375494f840c0b2a9cc459268dd155871cf`.
   This artifact was built from the preparation working tree based on

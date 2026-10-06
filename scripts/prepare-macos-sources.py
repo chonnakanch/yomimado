@@ -12,18 +12,275 @@ import base64
 import hashlib
 import io
 import json
+import posixpath
 import re
 import shutil
 import subprocess
 import tarfile
+import tempfile
 import urllib.parse
 import urllib.request
+import zipfile
+from contextlib import ExitStack
 from pathlib import Path
 
 import tomli
 
 ROOT = Path(__file__).resolve().parents[1]
 CARGO_CACHE = Path.home() / ".cargo/registry/cache"
+
+# Delivery copies omit source-only media, not code or notices. Keep ICO build
+# resources and Python .pth files; .pth is not necessarily a model checkpoint.
+SOURCE_MEDIA = {
+    ".png",
+    ".jpg",
+    ".jpeg",
+    ".gif",
+    ".webp",
+    ".bmp",
+    ".tif",
+    ".tiff",
+    ".mp3",
+    ".mp4",
+    ".wav",
+    ".ogg",
+    ".pdf",
+    ".ttf",
+    ".ttc",
+    ".otf",
+    ".woff",
+    ".woff2",
+    ".eot",
+    ".bdf",
+    ".pcf",
+    ".pfb",
+    ".pfa",
+    ".avif",
+    ".jp2",
+    ".j2k",
+    ".eps",
+    ".onnx",
+    ".pt",
+    ".safetensors",
+}
+NESTED_SOURCES = (".crate", ".tar.gz", ".tar.bz2", ".tgz", ".whl", ".zip")
+# An intentional CPython regression fixture containing Windows separators.
+# Retain its exact bytes as test data; never extract or interpret it as sources.
+SOURCE_ARCHIVE_FIXTURES = {"Python-3.11.17/Lib/test/zipdir_backslash.zip"}
+
+
+def safe_archive_path(name: str) -> None:
+    if name.startswith("/") or ".." in name.split("/") or "\\" in name:
+        raise ValueError("Unsafe source archive path")
+
+
+def clean_source_archive(stream, label: str, records: list[dict], depth: int = 0):
+    """Return a filtered archive stream, preserving every other file's bytes.
+
+    Original archives stay private and hash-bound. Nested source containers are
+    inspected as well; corrupt archive-shaped test fixtures stay ordinary data.
+    The omission record is evidence for a human review, never release approval.
+    """
+    if depth > 5:
+        raise ValueError("Nested source archive exceeds review depth")
+    stream.seek(0)
+    header = stream.read(6)
+    stream.seek(0)
+    is_zip = header.startswith(b"PK")
+    if not is_zip and not header.startswith((b"\x1f\x8b", b"BZh", b"\xfd7zXZ")):
+        return stream
+    with ExitStack() as stack:
+        changed = False
+        if is_zip:
+            source = stack.enter_context(zipfile.ZipFile(stream))
+        else:
+            source = stack.enter_context(tarfile.open(fileobj=stream))
+        entries = source.infolist() if is_zip else source.getmembers()
+        names = [entry.filename if is_zip else entry.name for entry in entries]
+        omitted = {
+            name
+            for name in names
+            if Path(name).suffix.lower() in SOURCE_MEDIA
+            # YomiMado's original icons and synthetic fixtures are cleared assets.
+            and not label.startswith("yomimado-")
+        }
+        try:
+            for name in names:
+                safe_archive_path(name)
+            if not is_zip:
+                for entry in entries:
+                    if entry.issym() or entry.islnk():
+                        target = posixpath.normpath(
+                            posixpath.join(
+                                posixpath.dirname(entry.name), entry.linkname
+                            )
+                            if entry.issym()
+                            else entry.linkname
+                        )
+                        safe_archive_path(target)
+                    elif not (entry.isfile() or entry.isdir()):
+                        raise ValueError("Unexpected source archive special file")
+        except Exception:
+            source.close()
+            raise
+        if not omitted and not any(
+            name.endswith(NESTED_SOURCES) and name not in SOURCE_ARCHIVE_FIXTURES
+            for name in names
+        ):
+            stream.seek(0)
+            return stream
+        output = tempfile.SpooledTemporaryFile(max_size=8 * 1024 * 1024)  # noqa: SIM115 -- caller owns returned stream
+        if is_zip:
+            destination = stack.enter_context(
+                zipfile.ZipFile(output, "w", compression=zipfile.ZIP_DEFLATED)
+            )
+        else:
+            destination = stack.enter_context(tarfile.open(fileobj=output, mode="w:gz"))
+        failed = True
+        try:
+            for entry, name in zip(entries, names, strict=True):
+                regular = not entry.is_dir() if is_zip else entry.isfile()
+                if not regular:
+                    if is_zip:
+                        destination.writestr(entry, b"")
+                    else:
+                        destination.addfile(entry)
+                    continue
+                data = (
+                    source.read(entry) if is_zip else source.extractfile(entry).read()
+                )
+                if name in omitted:
+                    records.append(
+                        {
+                            "archive": label,
+                            "path": name,
+                            "sha256": hashlib.sha256(data).hexdigest(),
+                            "reason": "source-only media/font/model fixture; code and notices retained",
+                        }
+                    )
+                    changed = True
+                    continue
+                if (
+                    name.endswith(NESTED_SOURCES)
+                    and name not in SOURCE_ARCHIVE_FIXTURES
+                ):
+                    original = io.BytesIO(data)
+                    nested = clean_source_archive(
+                        original, label + "!" + name, records, depth + 1
+                    )
+                    if nested is not original:
+                        data = nested.read()
+                        nested.close()
+                        changed = True
+                if name.endswith("/.cargo-checksum.json"):
+                    record = json.loads(data)
+                    prefix = name.rsplit("/", 1)[0] + "/"
+                    removed = [
+                        key for key in record["files"] if prefix + key in omitted
+                    ]
+                    if removed:
+                        for key in removed:
+                            del record["files"][key]
+                        records.append(
+                            {
+                                "archive": label,
+                                "path": name,
+                                "reason": "vendor checksum map omits the recorded removed assets",
+                            }
+                        )
+                        data = (json.dumps(record, sort_keys=True) + "\n").encode()
+                        changed = True
+                if is_zip:
+                    destination.writestr(entry, data)
+                else:
+                    entry.size = len(data)
+                    destination.addfile(entry, io.BytesIO(data))
+            failed = False
+        finally:
+            destination.close()
+            source.close()
+            if failed:
+                output.close()
+        if changed:
+            output.seek(0)
+            return output
+        output.close()
+        stream.seek(0)
+        return stream
+
+
+def assemble_delivery(notices: Path, candidates: Path, output: Path) -> None:
+    """Assemble only worksheet-referenced archives, without human sign-off."""
+    if output.exists():
+        raise ValueError("Delivery output must be a new directory")
+    worksheet = json.loads((candidates / "source-delivery.worksheet.json").read_text())
+    if worksheet["reviewer"] or worksheet["reviewedAt"]:
+        raise ValueError("Use an unsigned worksheet for delivery preparation")
+    expected_inventory = {
+        name: digest(notices / name)
+        for name in ("third-party-manifest.json", "native-libraries.json")
+    }
+    if worksheet["inventorySha256"] != expected_inventory:
+        raise ValueError("Worksheet inventory differs from the app")
+    archives = {}
+    for component in worksheet["components"]:
+        relative = component["archive"]
+        safe_archive_path(relative)
+        path = candidates / relative
+        if relative in archives:
+            if archives[relative] != component["sha256"]:
+                raise ValueError("Conflicting source archive checksums")
+            continue
+        if (
+            not path.resolve().is_relative_to(candidates.resolve())
+            or path.is_symlink()
+            or digest(path) != component["sha256"]
+        ):
+            raise ValueError("Source candidate checksum differs from worksheet")
+        archives[relative] = component["sha256"]
+    output.mkdir(parents=True)
+    records = []
+    hashes = {}
+    for relative, original_hash in sorted(archives.items()):
+        target = output / relative
+        target.parent.mkdir(parents=True, exist_ok=True)
+        with (candidates / relative).open("rb") as stream:
+            filtered = clean_source_archive(stream, relative, records)
+            with target.open("wb") as destination:
+                shutil.copyfileobj(filtered, destination)
+            if filtered is not stream:
+                filtered.close()
+        hashes[relative] = {
+            "originalSha256": original_hash,
+            "deliverySha256": digest(target),
+        }
+        print("Prepared delivery " + relative, flush=True)
+    for component in worksheet["components"]:
+        record = hashes[component["archive"]]
+        component["originalArchiveSha256"] = record["originalSha256"]
+        component["sha256"] = record["deliverySha256"]
+    worksheet["reviewStatus"] = (
+        "Asset-filtered technical preparation; named human source/licence review pending."
+    )
+    (output / "source-delivery.worksheet.json").write_text(
+        json.dumps(worksheet, indent=2) + "\n"
+    )
+    (output / "source-asset-omissions.json").write_text(
+        json.dumps(
+            {
+                "status": "technical-preparation-not-human-signoff",
+                "archives": hashes,
+                "changes": records,
+            },
+            indent=2,
+        )
+        + "\n"
+    )
+    shutil.copyfile(candidates / "BUILD.md", output / "BUILD.md")
+    shutil.copytree(notices, output / "notices")
+    print(
+        f"Prepared {len(archives)} archives; {len(records)} documented changes. No release approval recorded."
+    )
 
 
 def digest(path: Path, algorithm: str = "sha256") -> str:
@@ -424,8 +681,18 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("notices", type=Path)
     parser.add_argument("output", type=Path)
-    parser.add_argument("--cargo-vendor", type=Path, required=True)
+    parser.add_argument("--cargo-vendor", type=Path)
+    parser.add_argument(
+        "--assemble-delivery",
+        type=Path,
+        help="Prepare filtered delivery copies from the output worksheet; never approve them",
+    )
     args = parser.parse_args()
+    if args.assemble_delivery:
+        assemble_delivery(args.notices, args.output, args.assemble_delivery)
+        return 0
+    if args.cargo_vendor is None:
+        parser.error("--cargo-vendor is required when collecting candidates")
     output = args.output.resolve()
     output.mkdir(parents=True, exist_ok=True)
     manifests = ("third-party-manifest.json", "native-libraries.json")
