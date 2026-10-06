@@ -467,11 +467,13 @@ if $signed_release; then
   echo "Verified signed/notarized candidate (installed-app manual checks still required): $dmg"
   exit 0
 fi
-# Private and unnotarized hobby builds do not use signing/notary credentials.
+# Seal the app with a local ad-hoc signature before creating the DMG. The
+# linker's executable-only signature is invalid when treated as an app bundle.
+# This uses no certificate or notary credentials and does not identify a publisher.
 env -u APPLE_SIGNING_IDENTITY -u APPLE_CERTIFICATE -u APPLE_CERTIFICATE_PASSWORD \
   -u APPLE_API_ISSUER -u APPLE_API_KEY -u APPLE_API_KEY_PATH \
   -u APPLE_ID -u APPLE_PASSWORD -u APPLE_TEAM_ID \
-  VITE_OCR_URL=http://127.0.0.1:8766 npm run tauri build -- \
+  APPLE_SIGNING_IDENTITY=- VITE_OCR_URL=http://127.0.0.1:8766 npm run tauri build -- \
   --config src-tauri/tauri.release.conf.json --bundles dmg
 
 for dmg in "$desktop_dir"/src-tauri/target/release/bundle/dmg/YomiMado_*.dmg; do

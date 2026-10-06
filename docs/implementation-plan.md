@@ -8,6 +8,13 @@ Build a small vertical slice first. Do not implement future features before the 
 
 ## Current status
 
+Installer audit (2026-10-06): the approved hobby candidate passed browser
+download hash/quarantine and Finder installation, but first launch reported
+damaged because the linker-only signature lacks a bundle resource seal.
+Packaging now requests a local ad-hoc seal and verifies it plus native signatures.
+A rebuilt candidate and repeated installed-app tests are required before release.
+Native licence/source review and maintainer approval remain complete.
+
 Status audit (2026-10-05): the capture → local OCR → interactive overlay →
 learning-popup flow works with user-installed models on macOS and has been
 manually exercised on a Retina display. The desktop (55), Rust (36), and OCR
@@ -17,24 +24,24 @@ recognizer models, OCR returns a labeled demo boundary, not recognized text.
 Translation is on-demand with a separately installed local model; missing-model
 errors are shown rather than inventing a result.
 
-| Phase | Current state | Main remaining work |
-| --- | --- | --- |
-| 0 — Bootstrap | App, service, shared contract, GPL-3.0-only source license, and docs exist | No required core task open |
-| 1 — Capture | Implemented and manually tried on macOS Retina and two differently shaped monitors | Windows scaled-display manual test with a packaged pre-release build |
-| 2 — OCR | Local detector/recognizer and geometry work with installed models | Reproducible detector/model pins; OCR-quality limits below; no calibrated confidence available |
-| 3 — Integration | Capture-to-OCR client flow works | Request/result correlation IDs |
-| 4 — Overlay | Interactive overlay and two-monitor layout tested on macOS | Windows scaling and left-of-primary alignment checks |
-| 5 — Tokenization | Selected-region tokenization works | No required core task open |
-| 6 — Dictionary | Local word/kanji lookup works | Optional result cache; packaging/data updates |
-| 7 — Translation | Explicit local translation and SQLite cache work | Surrounding-sentence context |
-| 8 — Kanji | Select a kanji from a popup word | Direct on-page character hit boxes/crop fallback |
-| 9 — Learning | Save, review, and remove words/sentences | Anki export deferred; other learning extras |
-| 10 — Page scan | One-shot crop/filter/OCR and opt-in reading order work | Stronger filtering, panel order, SFX handling, incremental scans |
+| Phase            | Current state                                                                      | Main remaining work                                                                            |
+| ---------------- | ---------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| 0 — Bootstrap    | App, service, shared contract, GPL-3.0-only source license, and docs exist         | No required core task open                                                                     |
+| 1 — Capture      | Implemented and manually tried on macOS Retina and two differently shaped monitors | Windows scaled-display manual test with a packaged pre-release build                           |
+| 2 — OCR          | Local detector/recognizer and geometry work with installed models                  | Reproducible detector/model pins; OCR-quality limits below; no calibrated confidence available |
+| 3 — Integration  | Capture-to-OCR client flow works                                                   | Request/result correlation IDs                                                                 |
+| 4 — Overlay      | Interactive overlay and two-monitor layout tested on macOS                         | Windows scaling and left-of-primary alignment checks                                           |
+| 5 — Tokenization | Selected-region tokenization works                                                 | No required core task open                                                                     |
+| 6 — Dictionary   | Local word/kanji lookup works                                                      | Optional result cache; packaging/data updates                                                  |
+| 7 — Translation  | Explicit local translation and SQLite cache work                                   | Surrounding-sentence context                                                                   |
+| 8 — Kanji        | Select a kanji from a popup word                                                   | Direct on-page character hit boxes/crop fallback                                               |
+| 9 — Learning     | Save, review, and remove words/sentences                                           | Anki export deferred; other learning extras                                                    |
+| 10 — Page scan   | One-shot crop/filter/OCR and opt-in reading order work                             | Stronger filtering, panel order, SFX handling, incremental scans                               |
 
 ---
 
 # Phase 0 — Repository bootstrap
-  
+
 ## Goal
 
 Create the smallest repository structure capable of building a Tauri desktop app plus a separate Python OCR service.
@@ -202,10 +209,10 @@ Response:
       "id": "region-1",
       "text": "学校",
       "polygon": [
-        {"x": 100, "y": 100},
-        {"x": 180, "y": 100},
-        {"x": 180, "y": 240},
-        {"x": 100, "y": 240}
+        { "x": 100, "y": 100 },
+        { "x": 180, "y": 100 },
+        { "x": 180, "y": 240 },
+        { "x": 100, "y": 240 }
       ],
       "orientation": "vertical",
       "confidence": 0.95,
@@ -446,7 +453,7 @@ Translate only when the user explicitly asks.
 
 ```typescript
 interface TranslationProvider {
-  translate(input: TranslateSentenceInput): Promise<TranslationResult>
+  translate(input: TranslateSentenceInput): Promise<TranslationResult>;
 }
 ```
 
@@ -676,47 +683,47 @@ At that point, the architecture has been validated and the Japanese-learning lay
 Before any public release:
 
 - [x] pin the current Apple Silicon Python build environment and check it at
-  build time; Cargo and npm already use tracked lockfiles
+      build time; Cargo and npm already use tracked lockfiles
 - [x] replace Xcode Python with source-built CPython 3.11.17 and static OpenSSL
-  3.5.9/liblzma 5.8.4; preserve original sources, recipes and embedded notices
-  in the isolated release runtime. Final source-delivery review remains open
+      3.5.9/liblzma 5.8.4; preserve original sources, recipes and embedded notices
+      in the isolated release runtime. Final source-delivery review remains open
 - [x] audit the generated package inventory and add detector/bootloader plus
-  native binary provenance; the former native FFmpeg GPL/LGPL notice mismatch
-  is recorded in `docs/macos-source-review.md`
+      native binary provenance; the former native FFmpeg GPL/LGPL notice mismatch
+      is recorded in `docs/macos-source-review.md`
 - [x] replace the OpenCV wheel with a source-pinned image/ONNX-only build;
-  disable unused video dependencies and preserve its exact source/build notices
+      disable unused video dependencies and preserve its exact source/build notices
 - [x] replace NumPy 1.26.4 with a source-pinned Accelerate build; remove
-  its four OpenBLAS/GCC/libquadmath dylibs and preserve embedded notices
+      its four OpenBLAS/GCC/libquadmath dylibs and preserve embedded notices
 - [x] collect checksum-verified Rust/JavaScript and available Python source
-  candidates; add the missing full libquadmath LGPL notice. Final source-delivery
-  sign-off remains separate from completed native review.
+      candidates; add the missing full libquadmath LGPL notice. Final source-delivery
+      sign-off remains separate from completed native review.
 - [x] complete native source/notice review for all 114 unique inputs; retain
-  embedded notices, exact sources, build evidence and verified GEOS replacement
+      embedded notices, exact sources, build evidence and verified GEOS replacement
 - [x] prepare the complete source delivery for human review: 75 archives/477
-  entries, source-only asset omissions, unchanged retained-code/notice checks
-  and offline locked Cargo resolution; defer app-size optimization until release
+      entries, source-only asset omissions, unchanged retained-code/notice checks
+      and offline locked Cargo resolution; defer app-size optimization until release
 - [x] record source/licence approval by Git account chonnakanch on 2026-10-06
-  for clean revision 042360e; verify the approved 477-entry source manifest and
-  build instructions. Full filtered-source-only rebuild remains unverified;
-  extracted project frontend/Rust and filtered Manga OCR checks pass.
+      for clean revision 042360e; verify the approved 477-entry source manifest and
+      build instructions. Full filtered-source-only rebuild remains unverified;
+      extracted project frontend/Rust and filtered Manga OCR checks pass.
 - [x] verify bundled model-weight licensing and pin both weight checksums;
-  require separate user installation for the detector ONNX file, whose
-  redistribution terms are not explicit
+      require separate user installation for the detector ONNX file, whose
+      redistribution terms are not explicit
 - [x] verify EDRDG dictionary/data terms, bundle their licence, and document
-  the monthly dictionary update procedure
+      the monthly dictionary update procedure
 - [x] update `THIRD_PARTY_LICENSES/` and make the macOS build generate a strict
-  inventory of bundled software licences and upstream notice sources
+      inventory of bundled software licences and upstream notice sources
 - [x] build and smoke-test a private, self-contained Apple Silicon `.app` with
-  the bundled OCR service, models, and dictionaries (health, OCR, JMdict,
-  KANJIDIC2, Sudachi, and local translation)
+      the bundled OCR service, models, and dictionaries (health, OCR, JMdict,
+      KANJIDIC2, Sudachi, and local translation)
 - [x] rebuild and smoke-test an Apple Silicon `.app` that omits the detector
-  ONNX weights and blocks scanning until setup
+      ONNX weights and blocks scanning until setup
 - [x] manually import the publisher's ONNX file in the packaged app and verify
-  that a scan works afterward
+      that a scan works afterward
 - [x] build and inspect a private Apple Silicon DMG intended for direct
-  download from GitHub Releases; its contained app passes strict asset/notice
-  checks and local OCR, dictionary, kanji, tokenization, and translation smoke
-  testing on the development Mac
+      download from GitHub Releases; its contained app passes strict asset/notice
+      checks and local OCR, dictionary, kanji, tokenization, and translation smoke
+      testing on the development Mac
 - [x] choose a free unnotarized hobby DMG on 2026-10-05; Developer ID signing
       and Apple notarization are optional, with explicit per-app Gatekeeper steps
 - [x] complete source/notice evidence for all 114 native inputs; source-build
@@ -743,13 +750,13 @@ Before any public release:
 - [ ] Review the released app's main window, capture flow, OCR overlay, and learning popups with the user.
 - [ ] Agree on the redesign goals and visual direction before creating mockups or changing the UI.
 - [ ] Discuss a Jisho-inspired learning-popup layout: prominent word and reading,
-  clearly grouped meanings, and compact kanji details (meanings and on/kun
-  readings). Use it as visual inspiration, not a pixel-for-pixel copy.
+      clearly grouped meanings, and compact kanji details (meanings and on/kun
+      readings). Use it as visual inspiration, not a pixel-for-pixel copy.
 - [ ] Keep the popup usable on smaller screens with stacked sections and
-  scrolling. Do not include a Wikipedia section.
+      scrolling. Do not include a Wikipedia section.
 - [ ] Consider supplementary tags such as common-word status and JLPT level
-  only where YomiMado has a suitable, attributed data source; do not invent
-  levels or make them a prerequisite for the layout redesign.
+      only where YomiMado has a suitable, attributed data source; do not invent
+      levels or make them a prerequisite for the layout redesign.
 
 This is a post-v1 discussion, not a requirement for the first release. Keep the
 current UI stable while finishing and validating v1; do not assume a design or

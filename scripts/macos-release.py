@@ -210,6 +210,20 @@ def verify_signature(path: Path, *, executable: bool = True) -> None:
         raise ValueError(f"Missing secure timestamp/hardened runtime: {path.name}")
 
 
+def verify_hobby_app(app: Path) -> None:
+    """Require a valid local bundle seal without claiming Developer ID trust."""
+    if not (app / "Contents/_CodeSignature/CodeResources").is_file():
+        raise ValueError("Hobby app is missing its signed resource seal")
+    run("codesign", "--verify", "--deep", "--strict", str(app))
+    info = run("codesign", "--display", "--verbose=4", str(app))
+    with (app / "Contents/Info.plist").open("rb") as stream:
+        identifier = plistlib.load(stream)["CFBundleIdentifier"]
+    if "Signature=adhoc\n" not in info or f"Identifier={identifier}\n" not in info:
+        raise ValueError("Hobby app needs a local ad-hoc bundle signature")
+    for path in macho_files(app):
+        run("codesign", "--verify", "--strict", str(path))
+
+
 def minimum_versions(load_commands: str) -> list[tuple[int, ...]]:
     versions = []
     for command in load_commands.split("Load command"):
@@ -262,6 +276,7 @@ def main() -> int:
             "source-template",
             "verify-sources",
             "verify-hobby",
+            "verify-hobby-app",
         ],
     )
     parser.add_argument("path", type=Path, nargs="?")
@@ -279,6 +294,8 @@ def main() -> int:
             verify_platform(args.path)
         elif args.action == "verify-hobby":
             verify_hobby(args.path)
+        elif args.action == "verify-hobby-app":
+            verify_hobby_app(args.path)
         elif args.action == "notarize":
             profile = os.environ.get("YOMIMADO_NOTARY_PROFILE")
             if not profile:

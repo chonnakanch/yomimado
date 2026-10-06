@@ -38,6 +38,9 @@ hdiutil attach -readonly -nobrowse -mountpoint "$mount_dir" "$dmg"
 if [[ "$mode" == --release ]]; then
   "$python_bin" "$repo_root/scripts/macos-release.py" verify-app "$mount_dir/YomiMado.app"
 fi
+if [[ "$mode" == --hobby-release ]]; then
+  "$python_bin" "$repo_root/scripts/macos-release.py" verify-hobby-app "$mount_dir/YomiMado.app"
+fi
 if [[ "$mode" == --release || "$mode" == --hobby-release ]]; then
   : "${YOMIMADO_SOURCE_DIR:?Set the corresponding-source delivery directory}"
   notices="$mount_dir/YomiMado.app/Contents/Resources/ocr/notices"

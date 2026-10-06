@@ -7,8 +7,9 @@ On 2026-10-05 the maintainer chose a free **unnotarized hobby release**.
 Developer ID signing and Apple notarization are optional and are no longer
 release gates. This replaces the earlier signed-only distribution requirement.
 Users must explicitly allow the app through macOS Gatekeeper. Apple Silicon
-binaries may carry local ad-hoc signatures; these do not identify a publisher
-or provide Apple notarization. Detector ONNX weights remain **user-installed**.
+apps require a valid local ad-hoc bundle signature and resource seal; these do
+not identify a publisher or provide Apple notarization. Detector ONNX weights
+remain **user-installed**.
 
 The default build remains a **private test artifact**. `--release` is the
 explicit hobby candidate path, with source and exact-DMG checks. Neither path
@@ -57,6 +58,11 @@ incomplete candidate.
 - [ ] Complete the [existing-Mac installed-app record](macos-clean-mac-test.md):
       browser quarantine, per-app Gatekeeper approval, model import and Screen
       Recording. Preserve existing learning data and permissions.
+- [ ] Replace the `042360e` candidate: browser quarantine/hash and Finder copy
+      passed, but first launch reported **damaged**. Its linker-only signature
+      lacks the app resource seal. Hobby packaging now requests Tauri's local
+      ad-hoc signing; mounted verification requires the seal and verifies every
+      Mach-O signature. Rebuild and repeat the installer tests before release.
 - [x] Draft [pre-release notes](macos-prerelease-notes.md) with installation,
       detector import, permissions, data credits and known limitations.
 - [ ] Finalize release notes with unnotarized status, install steps, fresh-Mac
@@ -218,12 +224,15 @@ rtk bash scripts/build-macos-prerelease.sh --release
 ```
 
 This path requires no Apple account, key or password. It strips Apple signing
-credentials from the bundle command, records `unnotarized-hobby` distribution
+credentials from the bundle command, explicitly selects local ad-hoc identity
+`-` to seal the app before DMG creation, records `unnotarized-hobby` distribution
 metadata, checks the clean project/detector revision and source delivery, and
 runs the mounted DMG verifier plus frozen-service smoke. Candidate files are
 copied to ignored `target/release/bundle/releasable/` only after success. Missing
 source clearance or a failed check stops the build; it never falls back to the
 private artifact. Manual installed-app sign-off is still required.
+Mounted hobby verification also requires a signed resource seal and valid outer
+and nested Mach-O signatures. These integrity checks do not claim Apple trust.
 
 Reverify a candidate with the same reviewed source directory and detector path:
 

@@ -4,6 +4,10 @@ import importlib.util
 import io
 import json
 import os
+import plistlib
+import shutil
+import subprocess
+import sys
 import tempfile
 import unittest
 from pathlib import Path
@@ -112,6 +116,38 @@ class SourceDeliveryTests(unittest.TestCase):
 
 
 class SigningTests(unittest.TestCase):
+    @unittest.skipUnless(sys.platform == "darwin", "requires macOS codesign")
+    def test_hobby_bundle_requires_seal_and_rejects_resource_tampering(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            app = Path(temporary) / "Test.app"
+            standalone = Path(temporary) / "test"
+            shutil.copyfile("/usr/bin/true", standalone)
+            standalone.chmod(0o755)
+            release.run("codesign", "--force", "--sign", "-", str(standalone))
+            binary = app / "Contents/MacOS/test"
+            binary.parent.mkdir(parents=True)
+            standalone.rename(binary)
+            (app / "Contents/Info.plist").write_bytes(
+                plistlib.dumps(
+                    {
+                        "CFBundleIdentifier": "com.yomimado.signature-test",
+                        "CFBundleExecutable": "test",
+                        "CFBundlePackageType": "APPL",
+                    }
+                )
+            )
+            resource = app / "Contents/Resources/notice.txt"
+            resource.parent.mkdir()
+            resource.write_text("original notice")
+            # An executable signature alone must not clear the app gate.
+            with self.assertRaisesRegex(ValueError, "missing.*resource seal"):
+                release.verify_hobby_app(app)
+            release.run("codesign", "--force", "--sign", "-", str(app))
+            release.verify_hobby_app(app)
+            resource.write_text("changed notice")
+            with self.assertRaises(subprocess.CalledProcessError):
+                release.verify_hobby_app(app)
+
     def test_hobby_candidate_needs_explicit_unnotarized_metadata(self):
         with tempfile.TemporaryDirectory() as temporary:
             notices = Path(temporary)
