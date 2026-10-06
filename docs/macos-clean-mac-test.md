@@ -5,62 +5,86 @@ Fresh-macOS installation test: **skipped at the maintainer's request on
 successful clean-machine installation. Keep that limitation in the pre-release
 notes; it does not block this first pre-release on its own.
 
-Remaining installed-app tests: **pending**. Run these on the existing Apple
-Silicon Mac after native source clearance and unnotarized hobby candidate
-verification. Record existing app data, model setup and Screen Recording
-permission before testing. Preserve existing learning data. A separate local
-test account can isolate app data if practical, but does not prove a clean
-machine: global runtimes, permissions and caches can persist. Mark any step
-that cannot be exercised as not tested, with its reason; never infer a pass
-from an existing model or permission grant.
+Installed-app result: **partial; not yet cleared for publication**. Native
+source/licence approval is complete. The replacement at clean commit `5120506`
+passes exact mounted bundle/signature/source and frozen-service checks.
+Installation, per-app Gatekeeper approval, model-import UI and permission
+recovery were exercised with the maintainer's explicit authorization.
 
-The source-cleared hobby candidate is ready: clean source revision `042360e`,
-source/licence approval by Git account `chonnakanch` on 2026-10-06, and exact
-mounted-bundle/frozen-service checks passed. Manual installed-app execution
-was tested with explicit authorization for installation, per-app Gatekeeper
-approval and Screen Recording on 2026-10-06. Browser download SHA-256 and
-quarantine passed; Finder copy to `/Applications` retained quarantine. First
-launch failed with **“YomiMado is damaged and can't be opened”**. The warning
-was dismissed; quarantine and Gatekeeper were not disabled. Its main executable
-has a linker-only ad-hoc signature and no `_CodeSignature/CodeResources`; strict
-signature verification fails. Rebuild with the corrected local bundle seal,
-then repeat the installed-app tests. Subsequent GUI tests remain pending.
+The original `042360e` DMG passed browser hash/quarantine and Finder copy, but
+first launch reported **“YomiMado is damaged and can't be opened”**. Its
+linker-only signature lacked `_CodeSignature/CodeResources`. That candidate
+was rejected. Packaging now seals the app locally before creating the DMG;
+the verifier rejects both a missing seal and altered sealed resources.
 
-Supply the tester with the exact verified candidate privately, its SHA-256,
-source commit and the original publisher's detector link. Do not substitute a private build or redistribute detector weights. Preserve browser download
-quarantine to exercise Gatekeeper. Do not reset the developer Mac's permissions.
+## Test record — 2026-10-06
 
-## Record before testing
+| Field                   | Result                                                                                                       |
+| ----------------------- | ------------------------------------------------------------------------------------------------------------ |
+| Tester                  | Codex, with maintainer local authentication                                                                  |
+| Environment             | Maintainer's existing Mac; fresh-macOS test waived                                                           |
+| Mac / chip              | Mac17,3 / Apple M5                                                                                           |
+| macOS version/build     | 26.6.2 / 25G83                                                                                               |
+| Source commit / version | 5120506bdf5cf5fa93e2780484985473038f2195 / 0.1.0                                                             |
+| Distribution            | Unnotarized hobby DMG, locally ad-hoc sealed                                                                 |
+| JMdict/KANJIDIC2 dates  | 2026-09-27                                                                                                   |
+| Installed location      | /Applications/YomiMado.app                                                                                   |
+| Existing state          | No installed app initially; model, dictionary index, learning DBs and development permission already existed |
 
-| Field                                 | Result                                                                                                   |
-| ------------------------------------- | -------------------------------------------------------------------------------------------------------- |
-| Tester / test date                    | Codex on maintainer's existing Mac / 2026-10-06                                                          |
-| Mac model / Apple chip                | Pending                                                                                                  |
-| macOS version/build (`sw_vers`)       | 26.6.2 / 25G83 (development Mac)                                                                         |
-| DMG filename / SHA-256                | YomiMado_0.1.0_aarch64.dmg / see candidate hash below                                                    |
-| Source commit / release version       | 042360ed6d3dcc6612673486f8cee686ede1ae17 / 0.1.0                                                         |
-| Distribution                          | Unnotarized hobby DMG; no Developer ID/notarization                                                      |
-| JMdict/KANJIDIC2 header refresh dates | 2026-09-27                                                                                               |
-| Fresh macOS installation              | Skipped by maintainer, 2026-10-05; unavailable                                                           |
-| Download quarantine confirmed         | Yes, Helium browser download; SHA-256 matches                                                            |
-| Existing app/model/permission state   | No installed app initially; valid model and learning DBs already exist; TCC grant not yet verified in UI |
-
-Candidate SHA-256:
-`4bfd303f2a566c8669d0a80ca3c394099cae8bfba48b31313713ada88a1cf1ff`.
-Private candidate path:
+Candidate: `YomiMado_0.1.0_aarch64.dmg`; SHA-256:
+`fbe1d788d2f80b442b2abf9c53c5439af81ea78c2bc73c584907b4791f3c1cff`.
+Private path:
 `apps/desktop/src-tauri/target/release/bundle/releasable/YomiMado_0.1.0_aarch64.dmg`.
-`/Applications/YomiMado.app` was absent before this test. Finder installed the
-candidate using Copy/Paste into Applications after the drag attempt did not
-copy it. Existing detector SHA-256 matches the expected publisher file; existing
-JMdict index, vocabulary and translation databases were preserved. No model
-or TCC state was reset. The damaged candidate is not releasable.
+Matching source: `YomiMado_0.1.0_sources_5120506.tar.gz`; SHA-256:
+`0ca10a4cc5084d4778aa636e07c504db56dcf9baec87af2d37b00859803a2744`.
+
+- **Pass:** Helium browser download has the exact candidate hash and quarantine.
+  Finder Copy/Paste into Applications (Replace for the rejected test install)
+  preserves quarantine. Installed strict outer/native signature verification
+  passes. The DMG was ejected; installed launch/relaunch succeeds.
+- **Pass:** initial launch shows Apple's expected cannot-verify warning.
+  System Settings per-app Open Anyway and the final Open Anyway confirmation
+  start the installed UI and bundled service. No damaged/malware warning on
+  the replacement. Gatekeeper remains enabled; quarantine was not removed.
+- **Pass:** detector-picker cancellation leaves the app usable. A synthetic,
+  unrelated `.onnx` is rejected without replacing the existing valid model.
+  Importing the original publisher's supported file succeeds; restart retains
+  installed status. Both original and installed copies retain expected SHA-256
+  `1a86ace74961413cbd650002e7bb4dcec4980ffa21b2f19b86933372071d718f`.
+- **Not tested manually:** first-run model-absent setup, because the maintainer
+  already had the detector installed. Existing model and learning data were
+  preserved. Automated setup/validation tests cover absent and invalid models.
+- **Pass:** capture without a matching Screen Recording grant shows a usable
+  permission error; no crash or black image is claimed as an OCR result.
+- **Pass with recovery:** the old development grant showed enabled but did
+  not match the replacement signature. The maintainer authenticated locally;
+  adding the exact installed app and Quit & Reopen alone initially retained
+  the stale requirement. Narrow macOS TCC diagnostics confirmed the code
+  mismatch. The YomiMado entry was subsequently refreshed in System Settings;
+  the installed app opens the capture selector and returns real OCR regions.
+  Other applications' grants are unchanged. No global TCC reset was performed.
+- **Pending:** global-shortcut confirmation, precise synthetic vertical Retina
+  alignment, repeat/page scan, dictionary/kanji/translation GUI and saved-data
+  GUI persistence. Desktop automation completed a capture but did not establish
+  the intended synthetic crop/alignment; do not infer a pass.
+- **Not tested yet:** physically disconnected-network GUI run and OS reboot.
+  The mounted frozen service passes isolated offline OCR/dictionary/translation
+  and saved-word/sentence/cache persistence across service restart. Those tests
+  do not substitute for these manual OS conditions.
+- **Pass (files):** embedded revision/source-delivery, EDRDG/model and native
+  notices match the verified candidate. Visible in-app credits still pending.
+
+The approved base source revision remains `042360e`. The `5120506` source
+manifest records the packaging correction and retains that approval scope;
+no new human source review is claimed. Full rebuild using only the filtered
+source package remains unverified.
 
 ## Execute in order
 
-- [ ] Download the source-cleared hobby candidate in a browser; verify its hash and retain
+- [x] Download the source-cleared hobby candidate in a browser; verify its hash and retain
       quarantine. Open the DMG; drag YomiMado to `/Applications`, eject it and
       launch the installed app in Finder.
-- [ ] Record the expected Gatekeeper block for an unnotarized app. Use the
+- [x] Record the expected Gatekeeper block for an unnotarized app. Use the
       per-app **Open Anyway** flow in System Settings → Privacy & Security, then
       launch in Finder. Do not clear quarantine or disable Gatekeeper globally.
       Investigate damaged/malware warnings. UI and bundled service start without
@@ -68,7 +92,7 @@ or TCC state was reset. The damaged candidate is not releasable.
 - [ ] Before detector import, capture/page scan is blocked with the setup
       instruction. Cancel the file dialog; the app stays usable. An unrelated
       `.onnx` file is rejected and remains uninstalled.
-- [ ] Obtain `comictextdetector.pt.onnx` from the original publisher:
+- [x] Obtain `comictextdetector.pt.onnx` from the original publisher:
       [beta-0.2.1](https://github.com/zyddnys/manga-image-translator/releases/tag/beta-0.2.1).
       Import through the app; expected SHA-256 is
       `1a86ace74961413cbd650002e7bb4dcec4980ffa21b2f19b86933372071d718f`.
@@ -76,7 +100,7 @@ or TCC state was reset. The damaged candidate is not releasable.
 - [ ] Trigger Cmd+Shift+O without Screen Recording access. Record prompt and
       denial behavior. Denial yields a usable error, without a crash, black-image
       claimed result, or screenshot uploaded anywhere.
-- [ ] Grant YomiMado Screen Recording in System Settings → Privacy & Security
+- [x] Grant YomiMado Screen Recording in System Settings → Privacy & Security
       → Screen Recording (wording may include system audio on newer macOS).
       Follow the requested quit/reopen flow. Permission attaches to the installed
       app and capture works afterward.
@@ -93,7 +117,7 @@ or TCC state was reset. The damaged candidate is not releasable.
 - [ ] Reboot; launch from `/Applications`, repeat shortcut/capture. Permissions
       and model setup persist. Remove/eject the DMG; the installed app works
       independently of the DMG and repository.
-- [ ] Inspect `/Applications/YomiMado.app/Contents/Resources/ocr/notices`;
+- [x] Inspect `/Applications/YomiMado.app/Contents/Resources/ocr/notices`;
       revision, source-delivery and EDRDG/model notices match the candidate.
 
 Record pass/fail, errors and recovery for every step. Use synthetic text for

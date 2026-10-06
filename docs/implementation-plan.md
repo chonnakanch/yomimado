@@ -12,7 +12,12 @@ Installer audit (2026-10-06): the approved hobby candidate passed browser
 download hash/quarantine and Finder installation, but first launch reported
 damaged because the linker-only signature lacks a bundle resource seal.
 Packaging now requests a local ad-hoc seal and verifies it plus native signatures.
-A rebuilt candidate and repeated installed-app tests are required before release.
+The replacement at clean commit `5120506` passes mounted bundle/signature/source
+and frozen OCR/learning/persistence checks. Browser quarantine, Finder install,
+per-app Open Anyway, model import/rejection/cancellation and restart pass.
+Refreshing the old development Screen Recording entry allows the installed
+app to open capture and return OCR regions. Shortcut, synthetic Retina
+alignment and remaining installed learning-flow tests still require completion.
 Native licence/source review and maintainer approval remain complete.
 
 Status audit (2026-10-05): the capture → local OCR → interactive overlay →

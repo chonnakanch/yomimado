@@ -58,11 +58,16 @@ incomplete candidate.
 - [ ] Complete the [existing-Mac installed-app record](macos-clean-mac-test.md):
       browser quarantine, per-app Gatekeeper approval, model import and Screen
       Recording. Preserve existing learning data and permissions.
-- [ ] Replace the `042360e` candidate: browser quarantine/hash and Finder copy
+- [x] Replace the `042360e` candidate: browser quarantine/hash and Finder copy
       passed, but first launch reported **damaged**. Its linker-only signature
       lacks the app resource seal. Hobby packaging now requests Tauri's local
       ad-hoc signing; mounted verification requires the seal and verifies every
-      Mach-O signature. Rebuild and repeat the installer tests before release.
+      Mach-O signature. Replacement at clean commit `5120506` passes exact
+      mounted bundle/platform/source/signature checks and the complete frozen
+      OCR/learning/persistence smoke. Finder install and per-app Open Anyway
+      now pass; model dialog cancellation, rejection, import and relaunch pass.
+      Screen Recording recovery and capture-to-OCR pass. Precise synthetic
+      alignment, shortcut and remaining installed learning-flow checks are pending.
 - [x] Draft [pre-release notes](macos-prerelease-notes.md) with installation,
       detector import, permissions, data credits and known limitations.
 - [ ] Finalize release notes with unnotarized status, install steps, fresh-Mac
@@ -72,6 +77,41 @@ incomplete candidate.
 
 ## Development-Mac verification — 2026-10-06
 
+- Browser-quarantined first launch rejected the original `042360e` candidate
+  as damaged. Its linker signature lacked the app resource seal. The replacement
+  requests Tauri's local ad-hoc identity `-`; it has a version-2 resource seal,
+  correct identifier and valid signatures for all 125 Mach-O paths. The new gate
+  rejects the previous app. A real macOS regression test rejects an unsealed
+  fixture and changed sealed resources; **71 release-tool tests pass**. Python
+  lint/format, shell syntax, frontend/native build and exact mounted frozen
+  smoke pass. Candidate revision: `5120506bdf5cf5fa93e2780484985473038f2195`;
+  SHA-256: `fbe1d788d2f80b442b2abf9c53c5439af81ea78c2bc73c584907b4791f3c1cff`.
+  The failed DMG is moved out of `releasable/`. The replacement's browser
+  download and installed app retain Helium quarantine. Finder installation,
+  expected Apple-cannot-verify warning and per-app Open Anyway pass; the app
+  starts and relaunches after DMG ejection. Model dialog cancellation,
+  unrelated-ONNX rejection, supported model import and restart persistence pass.
+  The installed build correctly reports missing Screen Recording access despite
+  the old development entry showing enabled. The maintainer authenticated
+  locally in System Settings. Adding the exact installed app and restarting
+  initially retained the stale code requirement; macOS diagnostics confirmed
+  the mismatch. After the YomiMado entry was refreshed through System Settings,
+  the installed app opened the selector and returned a real OCR region.
+  Synthetic vertical alignment, shortcut and learning-popup GUI checks remain
+  pending. Existing learning databases and other apps' privacy grants are
+  preserved; no quarantine removal or global Gatekeeper/TCC reset was used.
+- Matching source delivery retains all 477 entries/75 archives. Only the clean
+  project archive changes; 74 dependency archives and native licence/source
+  approval are unchanged. Original maintainer approval remains attributed to
+  `042360e`; `packagingFollowup` records the technically verified correction
+  without claiming another human review. Source archive SHA-256:
+  `0ca10a4cc5084d4778aa636e07c504db56dcf9baec87af2d37b00859803a2744`;
+  filename `YomiMado_0.1.0_sources_5120506.tar.gz`. Its approval manifest matches
+  the candidate byte-for-byte and gzip integrity passes. Earlier retained-content
+  and partial rebuild reports describe the approved base source package.
+- Matching notices archive retains all 697 notice files, each byte-verified
+  against the installed candidate. Filename: `YomiMado_0.1.0_notices_5120506.tar.gz`;
+  SHA-256: `f0d2a380e2639a525bf93c61d0aa0c45de5952cb283a9a0afb65810c46b22f71`.
 - Previous baseline: 55 desktop and 36 Rust tests passed. The OpenCV change
   passes 47 OCR-service tests. NumPy numerical suites pass 1,820 tests (12
   skipped, 1 expected failure). The hobby/source preparation passes 63 release-tool

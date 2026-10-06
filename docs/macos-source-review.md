@@ -229,6 +229,21 @@ The complete app/all-native-dependency rebuild using only the filtered package
 has not been verified; this limitation was disclosed before the approval and
 remains recorded in the local rebuild report. Do not infer that test passed.
 
+### Packaging follow-up — 2026-10-06
+
+The `042360e` installer failed quarantined first launch because its linker-only
+signature lacked an app resource seal. Commit `5120506` requests a complete
+local ad-hoc seal before DMG creation and verifies the outer app and all native
+signatures. The replacement passes exact mounted bundle/source/signature and
+frozen-service checks, browser/Finder installation and per-app Open Anyway.
+The matching delivery contains all 477 entries and 75 archives; only the
+project archive changed. Its manifest retains the original approval revision
+and records the technically verified packaging correction without claiming
+another human approval. The 74 dependency archives and native review are
+unchanged. Source filename: `YomiMado_0.1.0_sources_5120506.tar.gz`; SHA-256:
+`0ca10a4cc5084d4778aa636e07c504db56dcf9baec87af2d37b00859803a2744`.
+Installed-app testing and publication remain separate gates.
+
 ## Delivery alongside the GitHub Release
 
 Use GPLv3 section 6(d): offer the source with equivalent free access alongside
