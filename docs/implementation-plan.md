@@ -688,10 +688,12 @@ Before any public release:
 - [x] replace NumPy 1.26.4 with a source-pinned Accelerate build; remove
   its four OpenBLAS/GCC/libquadmath dylibs and preserve embedded notices
 - [x] collect checksum-verified Rust/JavaScript and available Python source
-  candidates; add the missing full libquadmath LGPL notice. The native-source
-  and complete corresponding-source review below remain open.
-- [ ] clear the native licence/corresponding-source gap and complete final
-  review of source archives, native notices, build recipes and compatibility
+  candidates; add the missing full libquadmath LGPL notice. Final source-delivery
+  sign-off remains separate from completed native review.
+- [x] complete native source/notice review for all 114 unique inputs; retain
+  embedded notices, exact sources, build evidence and verified GEOS replacement
+- [ ] finalize and sign off the complete corresponding-source delivery with
+  build/installation instructions and the clean project revision
 - [x] verify bundled model-weight licensing and pin both weight checksums;
   require separate user installation for the detector ONNX file, whose
   redistribution terms are not explicit
@@ -712,9 +714,11 @@ Before any public release:
   testing on the development Mac
 - [x] choose a free unnotarized hobby DMG on 2026-10-05; Developer ID signing
       and Apple notarization are optional, with explicit per-app Gatekeeper steps
-- [ ] finish native source/notice clearance, final package inspection and
-      installed-app testing on the existing Mac before the public pre-release;
-      72 of 148 unique native inputs have recorded source/notice evidence
+- [x] complete source/notice evidence for all 114 native inputs; source-build
+      minimal Pillow/torchvision and OpenMP, remove training-only tools and
+      compiled Tomli, and retain all embedded notices
+- [ ] finish final source-delivery sign-off, package inspection and
+      installed-app testing on the existing Mac before the public pre-release
 - Fresh-macOS install testing was skipped at the maintainer's request on
   2026-10-05 because no clean Mac is available; disclose this unverified case.
   Exact-DMG verification, model import and Screen Recording tests remain required.

@@ -15,22 +15,28 @@ release=false
 signed_release=false
 prepare_runtime=false
 prepare_numpy=false
+prepare_native=false
 case "${1:-}" in
   "") ;;
   --release) release=true ;;
   --developer-id-release) release=true; signed_release=true ;;
   --prepare-runtime) prepare_runtime=true ;;
   --prepare-numpy) prepare_numpy=true ;;
-  *) echo "Usage: $0 [--release|--developer-id-release|--prepare-runtime|--prepare-numpy]" >&2; exit 1 ;;
+  --prepare-native) prepare_native=true ;;
+  *) echo "Usage: $0 [--release|--developer-id-release|--prepare-runtime|--prepare-numpy|--prepare-native]" >&2; exit 1 ;;
 esac
 if [[ $# -gt 1 ]]; then
-  echo "Usage: $0 [--release|--developer-id-release|--prepare-runtime|--prepare-numpy]" >&2
+  echo "Usage: $0 [--release|--developer-id-release|--prepare-runtime|--prepare-numpy|--prepare-native]" >&2
   exit 1
 fi
 
 if [[ "$(uname -s)" != "Darwin" || "$(uname -m)" != "arm64" ]]; then
   echo "This first pre-release build requires an Apple Silicon Mac." >&2
   exit 1
+fi
+if $prepare_native; then
+  "$python_bin" "$repo_root/scripts/verify-python-release-lock.py" --prepare-native
+  exit 0
 fi
 if $prepare_numpy; then
   "$python_bin" - "$repo_root" <<'PYNUMPY'
@@ -279,9 +285,18 @@ fi
 "$python_bin" "$repo_root/scripts/verify-python-release-lock.py"
 opencv_record="$service_dir/build/opencv-source/build-record.json"
 "$python_bin" "$repo_root/scripts/opencv_release.py" "$opencv_record"
+# Keep the upstream checkout intact. Inference does not use the training logger.
+# Apply the tracked, published lazy-import patch only to a private source copy.
+detector_build="$service_dir/build/detector-release-source"
+mkdir -p "$detector_build"
+rsync -a --delete --exclude .git --exclude __pycache__ --exclude '*.pyc' \
+  --exclude '*.onnx' --exclude '*.pt' --exclude '*.pth' \
+  --exclude '/data/doc/' --exclude '/data/examples/' --exclude '*.ipynb' \
+  "$detector_repo/" "$detector_build/"
+patch -d "$detector_build" -p1 < "$repo_root/THIRD_PARTY_LICENSES/detector-inference.patch"
 # The detector imports imshow even for ONNX-only inference. Check its source
 # imports before freezing so an incompatible minimal OpenCV fails early.
-"$python_bin" -c 'import sys; sys.path.insert(0, sys.argv[1]); from inference import TextDetector; print("Detector source imports with release OpenCV.")' "$detector_repo"
+"$python_bin" -c 'import sys; sys.path.insert(0, sys.argv[1]); from inference import TextDetector; print("Detector source imports with release OpenCV.")' "$detector_build"
 export PYINSTALLER_CONFIG_DIR="$service_dir/build/pyinstaller-cache"
 mkdir -p "$PYINSTALLER_CONFIG_DIR"
 
@@ -311,13 +326,13 @@ require_sha256 "$translation_model/pytorch_model.bin" \
   --distpath "$service_dir/dist" \
   --workpath "$service_dir/build/pyinstaller" \
   --specpath "$service_dir/build/pyinstaller" \
-  --paths "$service_dir" --paths "$detector_repo" \
+  --paths "$service_dir" --paths "$detector_build" \
   --hidden-import inference \
   --hidden-import backports.tarfile \
   --collect-all manga_ocr \
   --collect-all unidic_lite \
   --collect-all sudachidict_core \
-  --collect-all wandb \
+  --exclude-module wandb \
   --collect-submodules transformers.models.bert \
   --collect-submodules transformers.models.vit \
   --collect-submodules transformers.models.vision_encoder_decoder \
@@ -341,7 +356,7 @@ rsync -a --exclude .git --exclude __pycache__ --exclude '*.pyc' \
   --exclude '*.onnx' --exclude '*.pt' --exclude '*.pth' \
   --exclude '/data/doc/' --exclude '/data/examples/' \
   --exclude '*.ipynb' \
-  "$detector_repo/" "$staging/assets/comic-text-detector/"
+  "$detector_build/" "$staging/assets/comic-text-detector/"
 cp -RL "$manga_model/." "$staging/assets/manga-ocr-base/"
 for name in README.md config.json generation_config.json pytorch_model.bin \
   source.spm target.spm tokenizer_config.json vocab.json; do
@@ -355,6 +370,8 @@ cp "$repo_root/LICENSE" "$repo_root/THIRD_PARTY_LICENSES/README.md" \
   "$staging/notices/"
 cp "$repo_root/docs/dictionary-updates.md" "$staging/notices/"
 cp "$repo_root/docs/macos-source-review.md" "$staging/notices/"
+cp "$repo_root/THIRD_PARTY_LICENSES/detector-inference.patch" "$staging/notices/"
+cp "$service_dir/build/native-source/build-record.json" "$staging/notices/native-build.json"
 cp "$opencv_record" "$staging/notices/opencv-build.json"
 cp "$service_dir/build/numpy-source/build-record.json" "$staging/notices/numpy-build.json"
 cp "$service_dir/build/python-source/build-record.json" "$staging/notices/python-build.json"

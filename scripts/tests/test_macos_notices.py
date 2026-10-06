@@ -84,6 +84,77 @@ class NoticeSupplementTests(unittest.TestCase):
                     },
                 )
 
+    def test_native_supplement_rejects_drift_and_retains_attribution(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            native = root / "THIRD_PARTY_LICENSES/native"
+            native.mkdir(parents=True)
+            notice = native / "notice.txt"
+            notice.write_text("Copyright Original Author; full permission terms")
+            (native / "sources.json").write_text(
+                json.dumps(
+                    {
+                        "example": {
+                            "version": "1.0",
+                            "files": [
+                                {
+                                    "path": "notice.txt",
+                                    "sha256": hashlib.sha256(
+                                        notice.read_bytes()
+                                    ).hexdigest(),
+                                }
+                            ],
+                        }
+                    }
+                )
+            )
+            output = root / "generated"
+            component = {"name": "example", "version": "1.0", "noticeFiles": []}
+            with patch.object(notices, "ROOT", root):
+                notices.supplement_python_notices(output, component)
+                self.assertEqual(
+                    (output / component["noticeFiles"][0]).read_text(),
+                    notice.read_text(),
+                )
+                component["version"] = "2.0"
+                with self.assertRaisesRegex(ValueError, "version differs"):
+                    notices.supplement_python_notices(output, component)
+                component["version"] = "1.0"
+                notice.write_text("removed original attribution")
+                with self.assertRaisesRegex(ValueError, "checksum mismatch"):
+                    notices.supplement_python_notices(output, component)
+
+
+class NativeReplacementProvenanceTests(unittest.TestCase):
+    def test_changed_native_input_notice_and_source_pin_rejected(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            notice = root / "native-notices/image-openmp-vision-NOTICES.txt"
+            notice.parent.mkdir()
+            notice.write_text("Original native notices")
+            item = {
+                "buildInput": "site-packages/torch/lib/libomp.dylib",
+                "buildInputSha256": "original",
+            }
+            record = {
+                "sources": runtime.NATIVE_SOURCES.copy(),
+                "visionOptions": runtime.VISION_OPTIONS.copy(),
+                "binaries": {"torch/lib/libomp.dylib": "original"},
+                "noticeSha256": hashlib.sha256(notice.read_bytes()).hexdigest(),
+            }
+            bundle.verify_native_provenance(record, [item], root)
+            item["buildInputSha256"] = "replacement"
+            with self.assertRaisesRegex(ValueError, "input differs"):
+                bundle.verify_native_provenance(record, [item], root)
+            item["buildInputSha256"] = "original"
+            record["sources"]["pillow-11.3.0.tar.gz"] = "different source"
+            with self.assertRaisesRegex(ValueError, "source pins"):
+                bundle.verify_native_provenance(record, [item], root)
+            record["sources"] = runtime.NATIVE_SOURCES.copy()
+            notice.write_text("missing attributions")
+            with self.assertRaisesRegex(ValueError, "notices differ"):
+                bundle.verify_native_provenance(record, [item], root)
+
 
 class NumPyProvenanceTests(unittest.TestCase):
     def setUp(self):

@@ -1,0 +1,141 @@
+{
+  "hf-xet": {
+    "version": "1.6.0",
+    "files": [
+      {
+        "path": "rust-native-NOTICES.txt",
+        "sha256": "36608b0486dbd29908acee15447061a483120c97abc1592861dab3fbd291b4fb"
+      }
+    ]
+  },
+  "pydantic_core": {
+    "version": "2.46.5",
+    "files": [
+      {
+        "path": "rust-native-NOTICES.txt",
+        "sha256": "36608b0486dbd29908acee15447061a483120c97abc1592861dab3fbd291b4fb"
+      }
+    ]
+  },
+  "safetensors": {
+    "version": "0.7.0",
+    "files": [
+      {
+        "path": "rust-native-NOTICES.txt",
+        "sha256": "36608b0486dbd29908acee15447061a483120c97abc1592861dab3fbd291b4fb"
+      }
+    ]
+  },
+  "tokenizers": {
+    "version": "0.22.2",
+    "files": [
+      {
+        "path": "rust-native-NOTICES.txt",
+        "sha256": "36608b0486dbd29908acee15447061a483120c97abc1592861dab3fbd291b4fb"
+      }
+    ]
+  },
+  "watchfiles": {
+    "version": "1.1.1",
+    "files": [
+      {
+        "path": "rust-native-NOTICES.txt",
+        "sha256": "36608b0486dbd29908acee15447061a483120c97abc1592861dab3fbd291b4fb"
+      }
+    ]
+  },
+  "sudachipy": {
+    "version": "0.6.10",
+    "files": [
+      {
+        "path": "rust-native-NOTICES.txt",
+        "sha256": "36608b0486dbd29908acee15447061a483120c97abc1592861dab3fbd291b4fb"
+      }
+    ]
+  },
+  "pillow": {
+    "version": "11.3.0",
+    "files": [
+      {
+        "path": "image-openmp-vision-NOTICES.txt",
+        "sha256": "24d6e8d2c8f48f8705025e53d87ba3f14057fa6eaa568dd96ac57d80f036d828"
+      }
+    ]
+  },
+  "torchvision": {
+    "version": "0.23.0",
+    "files": [
+      {
+        "path": "image-openmp-vision-NOTICES.txt",
+        "sha256": "24d6e8d2c8f48f8705025e53d87ba3f14057fa6eaa568dd96ac57d80f036d828"
+      }
+    ]
+  },
+  "torch": {
+    "version": "2.8.0",
+    "files": [
+      {
+        "path": "image-openmp-vision-NOTICES.txt",
+        "sha256": "24d6e8d2c8f48f8705025e53d87ba3f14057fa6eaa568dd96ac57d80f036d828"
+      }
+    ]
+  },
+  "sentencepiece": {
+    "version": "0.2.1",
+    "files": [
+      {
+        "path": "sentencepiece-0.2.1-native-NOTICES.txt",
+        "sha256": "fdffbb810cc1e8043e8186c294469b436ca42bef401ec1d2049b469920f8c6f5"
+      },
+      {
+        "path": "Unicode-LICENSE.txt",
+        "sha256": "e7a93b009565cfce55919a381437ac4db883e9da2126fa28b91d12732bc53d96"
+      }
+    ]
+  },
+  "uvloop": {
+    "version": "0.22.1",
+    "files": [
+      {
+        "path": "uvloop-0.22.1-native-NOTICES.txt",
+        "sha256": "59b9ae1231e49c8623e8c62937c6545fe446043732b9f5f36eff65bda0f14916"
+      }
+    ]
+  },
+  "pyclipper": {
+    "version": "1.3.0.post6",
+    "files": [
+      {
+        "path": "pyclipper-1.3.0.post6-native-NOTICES.txt",
+        "sha256": "b84c1bbb3c97e4b24be8ca8772dcf8a978833e25cb7c299ff63687bd74d043c6"
+      }
+    ]
+  },
+  "protobuf": {
+    "version": "6.33.6",
+    "files": [
+      {
+        "path": "protobuf-6.33.6-utf8-NOTICE.txt",
+        "sha256": "2fea0506ea6f65a7c242610b3debcaab29b791214abb19bd7bb57a95a1fab59c"
+      }
+    ]
+  },
+  "pyyaml": {
+    "version": "6.0.3",
+    "files": [
+      {
+        "path": "pyyaml-6.0.3-libyaml-NOTICE.txt",
+        "sha256": "c40112449f254b9753045925248313e9270efa36d226b22d82d4cc6c43c57f29"
+      }
+    ]
+  },
+  "regex": {
+    "version": "2026.1.15",
+    "files": [
+      {
+        "path": "Unicode-LICENSE.txt",
+        "sha256": "e7a93b009565cfce55919a381437ac4db883e9da2126fa28b91d12732bc53d96"
+      }
+    ]
+  }
+}

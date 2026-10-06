@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import hashlib
+import importlib.util
 import json
 import plistlib
 import sys
@@ -44,6 +45,8 @@ REQUIRED_NOTICES = (
     "opencv-build.json",
     "python-build.json",
     "numpy-build.json",
+    "native-build.json",
+    "detector-inference.patch",
     "opencv-source-changes.diff",
     "assets/Apache-2.0.txt",
     "assets/CC-BY-SA-4.0.txt",
@@ -93,6 +96,38 @@ def verify_numpy_provenance(record: dict, binaries: list[dict], notices: Path) -
     path = notices / "licenses/python/numpy-1.26.4/LICENSE.txt"
     if not path.is_file() or sha256_file(path) != record["noticeSha256"]:
         raise ValueError("Bundled NumPy embedded notices differ from source build")
+
+
+def verify_native_provenance(record: dict, binaries: list[dict], notices: Path) -> None:
+    spec = importlib.util.spec_from_file_location(
+        "release_lock", Path(__file__).with_name("verify-python-release-lock.py")
+    )
+    release_lock = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(release_lock)
+    if (
+        record.get("sources") != release_lock.NATIVE_SOURCES
+        or record.get("visionOptions") != release_lock.VISION_OPTIONS
+    ):
+        raise ValueError("Bundled native replacements differ from source pins")
+    frozen = [
+        item
+        for item in binaries
+        if item["buildInput"].startswith(
+            ("site-packages/PIL/", "site-packages/torchvision/")
+        )
+        or item["buildInput"] == "site-packages/torch/lib/libomp.dylib"
+    ]
+    if not any(
+        item["buildInput"] == "site-packages/torch/lib/libomp.dylib" for item in frozen
+    ):
+        raise ValueError("Missing source-built OpenMP provenance")
+    for item in frozen:
+        relative = item["buildInput"].removeprefix("site-packages/")
+        if record["binaries"].get(relative) != item["buildInputSha256"]:
+            raise ValueError("Frozen native input differs from its source build")
+    notice = notices / "native-notices/image-openmp-vision-NOTICES.txt"
+    if not notice.is_file() or sha256_file(notice) != record["noticeSha256"]:
+        raise ValueError("Bundled native replacement notices differ")
 
 
 def verify_python_provenance(record: dict, binaries: list[dict], notices: Path) -> None:
@@ -240,6 +275,23 @@ def verify(app: Path) -> list[str]:
                 )
             except (ValueError, KeyError) as error:
                 errors.append(str(error))
+        native_record = notices / "native-build.json"
+        if native_record.is_file():
+            try:
+                verify_native_provenance(
+                    json.loads(native_record.read_text()), binaries, notices
+                )
+            except (ValueError, KeyError) as error:
+                errors.append(str(error))
+        if any(
+            item["path"].startswith(
+                ("wandb/", "PIL/.dylibs/", "torchvision/.dylibs/", "tomli/")
+            )
+            for item in binaries
+        ):
+            errors.append(
+                "Removed training tools or optional codec libraries are bundled"
+            )
         numpy_record = notices / "numpy-build.json"
         if numpy_record.is_file():
             try:

@@ -270,6 +270,24 @@ def python_license(distribution: metadata.Distribution) -> str:
 
 
 def supplement_python_notices(notices: Path, component: dict) -> None:
+    native = ROOT / "THIRD_PARTY_LICENSES/native"
+    index = native / "sources.json"
+    if index.exists():
+        entry = json.loads(index.read_text()).get(component["name"].lower())
+        if entry:
+            if entry["version"] != component["version"]:
+                raise ValueError("Native notice version differs from package")
+            for item in entry["files"]:
+                source = (native / item["path"]).resolve()
+                if (
+                    not source.is_relative_to(native.resolve())
+                    or hashlib.sha256(source.read_bytes()).hexdigest() != item["sha256"]
+                ):
+                    raise ValueError("Native notice checksum mismatch")
+                target = notices / "native-notices" / item["path"]
+                target.parent.mkdir(parents=True, exist_ok=True)
+                shutil.copy2(source, target)
+                component["noticeFiles"].append(target.relative_to(notices).as_posix())
     group = PYTHON_SUPPLEMENT_GROUPS.get(component["name"].lower())
     if not group:
         return

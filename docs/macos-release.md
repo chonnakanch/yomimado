@@ -15,7 +15,7 @@ explicit hobby candidate path, with source and exact-DMG checks. Neither path
 publishes anything automatically. Do not upload a private build or an
 incomplete candidate.
 
-## Status — 2026-10-05
+## Status — 2026-10-06
 
 - [x] Private DMG builds and passes mounted-bundle OCR, dictionary, kanji,
       tokenization, translation and persistence smoke tests on the development Mac.
@@ -26,8 +26,8 @@ incomplete candidate.
       build; preserve its static notices and exact changes/build recipe.
 - [x] Replace NumPy's public wheel with an exact-source Accelerate build;
       remove its OpenBLAS/GCC/libquadmath dylibs and retain embedded notices.
-- [x] Record verified native source/notice evidence for the runtime, OpenCV and NumPy builds:
-      **72 of 148 unique native inputs**. See the
+- [x] Record verified source/notice evidence for all frozen native inputs:
+      **114 of 114 unique native inputs**. See the
       [technical review record](../THIRD_PARTY_LICENSES/macos-native-review.json).
 - [x] Exclude detector weights and sample artwork/fonts; preserve EDRDG/model
       credits and dictionary update instructions.
@@ -35,9 +35,13 @@ incomplete candidate.
       full libquadmath LGPL licence text.
 - [x] Make the hobby candidate explicit and fail closed on missing source
       clearance, incorrect distribution metadata or failed bundle/smoke checks.
-- [ ] Complete the remaining native source/notice review and final delivery
-      review. **76 unique native inputs** remain, including Pillow/torchvision codecs, PyTorch, GEOS and wandb tools. Package source
-      candidates are not final clearance; see [source review](macos-source-review.md).
+- [x] Complete native source/notice review for all **114 unique native inputs**.
+      Missing embedded notices are retained; exact sources and input hashes are
+      verified. GEOS shared-library replacement passes. Optional Pillow/vision
+      codecs, training-only wandb binaries and compiled Tomli are removed.
+- [ ] Finalize and sign off the complete corresponding-source delivery from the
+      clean project revision. Native review is complete; the release validator
+      still requires a reviewed `source-delivery.json` and build instructions.
 - [ ] Build a source-cleared hobby candidate from a clean commit; verify that
       exact mounted DMG and its frozen service, then retain its SHA-256.
 - Fresh-macOS installation: **skipped at the maintainer's request on 2026-10-05**;
@@ -52,12 +56,12 @@ incomplete candidate.
 - [ ] Publish the verified DMG, matching source delivery and notices together.
 - [ ] Only after the installer gates pass, add the GitHub Actions release build.
 
-## Development-Mac verification — 2026-10-05
+## Development-Mac verification — 2026-10-06
 
 - Previous baseline: 55 desktop and 36 Rust tests passed. The OpenCV change
   passes 47 OCR-service tests. NumPy numerical suites pass 1,820 tests (12
-  skipped, 1 expected failure). The hobby/source preparation passes 61 release-tool
-  tests, including altered interpreter, frozen-input, recipe and licence rejection
+  skipped, 1 expected failure). The hobby/source preparation passes 63 release-tool
+  tests, including altered interpreter, native replacements/supplements, frozen-input, recipe and licence rejection
   cases. All seven selected CPython test groups pass (2,114 tests run, 124
   skipped): SSL, LZMA, hashing, SQLite, ctypes, decimal and Expat.
 - Frontend production build, Rust formatting, Python lint/format, Prettier and
@@ -67,14 +71,14 @@ incomplete candidate.
 - Its mounted frozen service passed synthetic vertical `学校へ` OCR with
   geometry, Sudachi, JMdict, KANJIDIC2, explicit translation, and saved word,
   sentence and translation-cache persistence across a service restart.
-- Inventory: 369 software/source components (280 Rust, 80 Python, 5 JavaScript,
-  detector, CPython, OpenSSL and liblzma source), 148 unique native input binaries
-  plus 32 aliases (180 paths, down from 310). Corresponding-source worksheet:
-  518 entries, still unreviewed as a complete delivery.
-- Dependency source candidates cover 366 entries with 85 independently hashed
-  archives. Their report matches the regenerated inventory hashes. The collector
-  also exports the exact clean project commit and filtered detector source.
-  Complete source-delivery review and native/PyTorch provenance remain pending.
+- Inventory: 362 software/source components (280 Rust, 73 Python, 5 JavaScript,
+  detector, CPython, OpenSSL and liblzma source), 114 unique native input binaries
+  plus 9 aliases (123 paths, down from 310). All native reviews are hash-verified.
+  Corresponding-source worksheet: 477 entries; final delivery sign-off is separate.
+- The dependency source report is regenerated after the focused native-review
+  commit. The collector exports the exact clean project and filtered detector
+  source, reuses all 114 native reviews, and binds notices/archive hashes.
+  Complete source-delivery sign-off remains separate.
 - The former NumPy wheel received its missing full libquadmath LGPL text;
   the current Accelerate build contains no libquadmath and omits that supplement. Cargo source archives include the original crate archives
   and vendor tree; their current hashes are in `source-candidates.json`.
@@ -92,15 +96,27 @@ incomplete candidate.
   `ad1d14405aab335a1449aa2b512581c1de70619de435e2b88736e7d6235d6dcc`.
   Original NumPy 1.26.4 source, compiler/SDK, pinned build tools, Accelerate
   options, notice aggregation and installed/frozen input hashes are verified.
+- New native preparation source archive SHA-256:
+  `7e64a3d3cd4429ae6a0908df2a156874bb8f4b3ce48f43b2ca23781cab6bf1c6`.
+  Pillow/FreeType/JPEG, torchvision, OpenMP, pinned build tools, original Tomli
+  wheel, notice aggregation and binary record retained. Native Rust source
+  archive SHA-256:
+  `03aad3a2206b379dc8e362f63d98fa319e8542439e7e66c1bcce89ab9d4b1f58`.
+- Development-Mac native smoke: parallel Torch, torchvision CPU NMS, JPEG/PNG,
+  source-built fonts and the GEOS shared-library replacement pass. The 114-input
+  private DMG passes frozen vertical OCR, dictionaries, tokenization,
+  translation and persistence across restart. Its preparation-build SHA-256 is
+  `190fe4962ee39188259e6074e9d20e62d0abc68f079ff4a5421af6d66fc28ff1`;
+  a final rebuild must embed the completed review and latest Unicode notice.
 - Bundled JMdict/KANJIDIC2 header dates: **2026-09-27**.
-- Private DMG SHA-256:
+- Previous private DMG SHA-256:
   `3750db3829ba9356778c9c6be8e634375494f840c0b2a9cc459268dd155871cf`.
   This artifact was built from the preparation working tree based on
   `c3be4ee`; its metadata identifies it as `private-test` and it is
   not a public candidate. The embedded review document predates the final
   NumPy technical record; final release packaging must regenerate it. The release path requires a clean committed tree.
 
-These private-build results do not clear the remaining source-delivery or
+The native review is complete. These private-build results do not clear final source-delivery or
 installed-app gates. Fresh-machine behavior remains unverified.
 
 ## Source-built release runtime
@@ -110,6 +126,7 @@ tools. This uses the existing build entrypoint:
 
 ```sh
 rtk bash scripts/build-macos-prerelease.sh --prepare-runtime
+rtk bash scripts/build-macos-prerelease.sh --prepare-native
 rtk bash scripts/build-macos-prerelease.sh
 ```
 
@@ -132,8 +149,8 @@ entrypoint and binary/notice records. Preserve CPython's licence and the
 embedded Expat, libmpdec, SHA3, BLAKE2, Mersenne Twister, dtoa and SipHash notices,
 plus OpenSSL and liblzma terms. Only liblzma is linked; XZ command-line tools
 and scripts are disabled. SSL certificate lookups for build downloads use the
-pinned certifi package after installation. Other wheel-native sources and final
-delivery review remain separate release gates.
+pinned certifi package after installation. All other wheel-native sources are now reviewed. Final
+delivery sign-off remains a separate release gate.
 
 Upstream releases: [CPython 3.11.17](https://www.python.org/downloads/release/python-31117/),
 [OpenSSL sources](https://openssl-library.org/source/),

@@ -1,0 +1,18 @@
+--- a/utils/general.py
++++ b/utils/general.py
+@@ -1,7 +1,6 @@
+ 
+ import os
+ import logging
+-import wandb
+ import torch
+ 
+ def set_logging(name=None, verbose=True):
+@@ -30,6 +29,7 @@
+         self.wandb = None
+         self.writer = None
+         if self.type == LOGGER_WANDB:
++            import wandb  # Training only; inference has no wandb dependency.
+             if hyp['logger']['project'] == '':
+                 project = 'ComicTextDetector'
+             else:

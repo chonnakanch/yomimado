@@ -10,6 +10,7 @@ from __future__ import annotations
 import argparse
 import base64
 import hashlib
+import io
 import json
 import re
 import shutil
@@ -343,10 +344,25 @@ def detector_archive(item: dict, output: Path) -> dict:
     path = export_git_sources(
         checkout, output, "comic-text-detector", revision, omitted
     )
+    patch = ROOT / "THIRD_PARTY_LICENSES/detector-inference.patch"
+    # Deliver original code plus the exact release modification, not a moving link.
+    temporary = path.with_suffix(".patched.tar.gz")
+    with tarfile.open(path) as original, tarfile.open(temporary, "w:gz") as archive:
+        for member in original.getmembers():
+            archive.addfile(
+                member, original.extractfile(member) if member.isfile() else None
+            )
+        data = patch.read_bytes()
+        member = tarfile.TarInfo("comic-text-detector/YOMIMADO-inference.patch")
+        member.size = len(data)
+        archive.addfile(member, io.BytesIO(data))
+    temporary.replace(path)
     omissions = {
         "revision": revision,
         "omitted": omitted,
-        "reason": "Unneeded example artwork/fonts, notebooks and model weights are excluded; source code is unchanged.",
+        "reason": "Unneeded example artwork/fonts, notebooks and model weights are excluded. Original code plus the included lazy wandb training-import patch reproduces the release inference source.",
+        "releasePatch": "YOMIMADO-inference.patch",
+        "releasePatchSha256": digest(patch),
     }
     (output / "detector-source-omissions.json").write_text(
         json.dumps(omissions, indent=2) + "\n"
@@ -478,6 +494,34 @@ def main() -> int:
                         "reason": str(error),
                     }
                 )
+    # Reviewed component archives can cover sdists unavailable from PyPI, or
+    # native extensions whose transitive sources need a larger delivery.
+    evidence = json.loads(
+        (ROOT / "THIRD_PARTY_LICENSES/macos-native-review.json").read_text()
+    )
+    for group in evidence["groups"]:
+        for key in group.get("components", []):
+            if not any(
+                key == f"{item['ecosystem']}:{item['name']}@{item['version']}"
+                for item in components
+            ):
+                continue
+            report["candidates"] = [
+                item for item in report["candidates"] if item["id"] != key
+            ]
+            report["unresolved"] = [
+                item for item in report["unresolved"] if item["id"] != key
+            ]
+            report["candidates"].append(
+                {
+                    "id": key,
+                    "archive": group["archive"],
+                    "sha256": group["sha256"],
+                    "origin": group["licenseEvidence"],
+                    "status": "source-and-notice-evidence-verified",
+                    "noticeFiles": list(group["noticeFiles"]),
+                }
+            )
     binaries = json.loads((args.notices / manifests[1]).read_text())["binaries"]
     reviewed = apply_native_reviews(
         args.notices,

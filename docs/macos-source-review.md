@@ -44,48 +44,71 @@ The final DMG rejects these removed video libraries and requires matching
 OpenCV build provenance. This replaces the uncertain wheel rather than trying
 to clear its historical FFmpeg build.
 
-## Remaining native/source review
+## Native source/notice review completed — 2026-10-06
 
-This resolves the identified OpenCV/FFmpeg input gap only. The complete release
-source delivery below remains unreviewed, including other frozen native
-dependencies. Python is now source-built; the complete archive still needs
-final delivery review. Do not mark the whole licence gate cleared
-from an OpenCV-only source archive or successful runtime smoke.
+All **114 unique native inputs** in the current frozen inventory have technical
+source and notice evidence in
+[the hash-bound review record](../THIRD_PARTY_LICENSES/macos-native-review.json).
+The complete release-source delivery still requires final archive review and
+sign-off; this native review does not publish or approve the installer.
 
-The follow-up inspection of the 2026-10-05 inputs identifies these concrete
-remaining items:
+| Input                                     | Completed review                                                                                                                                                                                                                                                                                                                                                                                                                  |
+| ----------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| CPython/OpenSSL/liblzma, OpenCV and NumPy | The previous 72 source-built input reviews remain valid; sources, embedded notices and frozen input hashes match.                                                                                                                                                                                                                                                                                                                 |
+| Pillow 11.3.0                             | Rebuilt from exact source with static libjpeg-turbo 3.1.1 and FreeType 2.13.3, using system zlib. JPEG, PNG, resizing and font rendering remain available. Optional AVIF/WebP/TIFF/JPEG2000/CMS/raqm/XCB dependencies are disabled. Full MIT/IJG/BSD/Zlib/FTL and embedded notices retained, including the FreeType and Independent JPEG Group acknowledgements.                                                                  |
+| torchvision 0.23.0                        | Built from wheel source commit `824e8c8726b65fd9d5abdc9702f81c2b0c4c0dc8`. Optional image/video codecs disabled; CPU/MPS operations and transforms remain. No bundled libc++ or codec dylibs. BSD, vendored giflib and OpenBSD reallocarray notices retained.                                                                                                                                                                     |
+| PyTorch 2.8.0                             | Exact wheel source commit `a1cb3cc05d46d198467bebbb6e8fba50a325d4e7`; root plus 67 recursive CPU/MPS dependency repositories retained. Seven unused GPU/Android submodules and 2,264 unneeded model/media/font fixtures are explicitly omitted. Full wheel LICENSE/NOTICE covers static dependencies. OpenMP is replaced with source-built LLVM 15.0.7 and its full exception/legacy notices. Parallel Torch and NMS checks pass. |
+| Shapely 2.0.7 / GEOS 3.11.4               | BSD binding and LGPL-2.1-or-later library notices retained. Upstream 2.0.7 recipe pins unmodified GEOS 3.11.4 (C API 1.17.4). Original sources and recipe retained; shared-library replacement tested successfully.                                                                                                                                                                                                               |
+| Native Rust extensions                    | Exact sdists/local crates plus 743 distinct checksum-verified locked registry crates and commit-pinned missing notices retained. Includes Unicode, permissive licence choices and MPL covered source. Optional hf_xet profiling/pprof/inferno is disabled; CDDL source in its full lockfile is not linked into the app.                                                                                                           |
+| Fugashi / MeCab, PyYAML / libyaml         | Matching source revisions, publisher build configuration, BSD/MIT copyright and full terms retained. MeCab library-only export omits unrelated dictionaries.                                                                                                                                                                                                                                                                      |
+| Remaining C/Cython extensions             | Exact source distributions and native/static notices reviewed. Added SentencePiece's embedded Abseil/darts/esaxx/protobuf notices, libuv notices, Clipper/Boost terms, protobuf UTF-8 MIT terms and regex's Unicode 17 source data/notice.                                                                                                                                                                                        |
+| wandb / compiled Tomli                    | Removed from frozen native inputs. The detector's tracked lazy training-import patch leaves inference independent of wandb; original detector checkout is untouched. Tomli uses its official pure-Python wheel.                                                                                                                                                                                                                   |
 
-| Input                                            | Evidence and next action                                                                                                                                                                                                                                                                                                          |
-| ------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| CPython 3.11.17 / OpenSSL 3.5.9 / liblzma 5.8.4  | Replaces Xcode Python 3.9.6 and LibreSSL. Original sources are checksum-pinned, build steps are tracked, OpenSSL/liblzma are static, and embedded notices plus binary hashes are retained. The rebuilt DMG and seven selected standard-library test groups pass. Review the original tarballs/build record in the final delivery. |
-| NumPy 1.26.4                                     | Public-wheel OpenBLAS/GCC/libquadmath inputs replaced with a source-pinned system-Accelerate build. Original sdist, exact build options, compiler/SDK, embedded notice aggregation and installed/frozen binary hashes retained. No bundled GCC runtimes remain in NumPy. See [the recipe](macos-numpy.md).                        |
-| torchvision 0.23.0                               | Its wheel contains only its own BSD notice while bundling libc++, JPEG, PNG, WebP/sharpyuv and zlib libraries. Runtime queries report PNG 1.6.39, WebP 1.3.2 and zlib 1.2.13; these establish versions, not patches/build provenance. Obtain the matching native notices and build inputs.                                        |
-| PyTorch 2.8.0 / torchvision 0.23.0               | Neither exact PyPI release offers an sdist. A top-level GitHub archive alone omits submodule sources; resolve the wheel's source revision, complete submodule tree and packaging recipe.                                                                                                                                          |
-| wandb 0.26.1                                     | Its package notice is MIT, but its three native inputs include Go/Rust tools. Inspect their embedded dependencies/build records and notices. Its sdist alone does not establish the compiled tools' complete sources.                                                                                                             |
-| Pillow, Shapely/GEOS and other native extensions | Existing wheel notices are preserved; verify exact native/static input versions, patches and build recipes against the recorded binary hashes.                                                                                                                                                                                    |
+Native supplements live under `THIRD_PARTY_LICENSES/native/`. Their version and
+SHA-256 index is checked when generating notices. A changed source archive,
+binary input, notice, recipe or unexpected optional codec fails the existing
+release verifiers. No new standalone script was added.
 
-### PyTorch/torchvision source evidence collected
+### Rebuild the minimal native dependencies
 
-The installed Python 3.11 wheels report PyTorch commit
-`a1cb3cc05d46d198467bebbb6e8fba50a325d4e7` and torchvision commit
-`824e8c8726b65fd9d5abdc9702f81c2b0c4c0dc8`. Private candidates under
-`services/ocr/build/source-delivery/` contain those exact Git trees.
-`pytorch-2.8.0-source-candidate.tar.gz` includes 68 repositories: the root
-and initialized CPU/MPS dependency submodules, recursively. Seven top-level
-Android/CUDA/Vulkan/ROCm submodules remain uninitialized and are explicitly
-listed in its `YOMIMADO-SOURCE-CANDIDATE.json`; it is not presented as a full
-upstream source tree. `torchvision-0.23.0-source-candidate.tar.gz` contains
-the exact root tree and its packaging scripts.
+After preparing Python/NumPy, use the existing entrypoint:
 
-These are additional private candidates outside the registry-sdist report.
-Their adjacent `*-source-candidate.json` records include revisions and archive
-hashes. Inspect source-pack examples/data before any redistribution. Historical
-wheel build inputs remain unresolved: torchvision's pinned packaging script
-installs several Conda codec packages without exact build pins; its macOS
-workflow references a moving `pytorch/test-infra` branch. Matching libc++,
-JPEG/PNG/WebP/zlib and PyTorch OpenMP source/build provenance still needs
-verification or a controlled replacement build. A source commit or successful
-smoke alone does not resolve those binary inputs.
+```sh
+rtk bash scripts/build-macos-prerelease.sh --prepare-native
+```
+
+It uses the reviewed original archives from the ignored source-delivery
+collection: torchvision's exact source tree, Pillow 11.3.0, libjpeg-turbo 3.1.1,
+FreeType 2.13.3, LLVM OpenMP/CMake 15.0.7 and the original pure-Python Tomli
+wheel. The source archive includes those inputs, pinned CMake/Ninja versions,
+compiler/SDK, compile options, complete notice aggregation, wheel and binary
+hashes, and both existing build entrypoints. Developer ID credentials are not
+needed. Keep detector weights outside all build/source archives.
+
+Pillow's optional formats are unavailable in this release runtime; the app's
+screen-capture and OCR JPEG/PNG path is unchanged. The OpenMP replacement
+retains PyTorch's shared-library ABI; frozen real OCR and translation remain
+required validation.
+
+### GEOS source and replacement
+
+The source delivery retains `geos-3.11.4.tar.bz2`, the exact Shapely publisher
+recipe at `ec8f6cd42d2f36a75808f8f44f4b8f08405f181a`, and a replacement-test
+record. The source archive includes the complete LGPL text. YomiMado adds no
+EULA restriction on modification or reverse engineering for debugging it.
+
+Build GEOS as shared libraries with CMake `Release`, Apple Silicon, macOS 14
+and `BUILD_TESTING=OFF`. Replace both `libgeos.3.11.4.dylib` and
+`libgeos_c.1.17.4.dylib` in a private copy of Shapely's `.dylibs` directory.
+Keep the same filenames and make the C library load its companion through
+`@loader_path/libgeos.3.11.4.dylib` using `install_name_tool`. Ad-hoc sign changed
+libraries with `codesign --force --sign -`; publisher keys are unnecessary.
+The tested replacement passes intersection, union and buffer operations.
+For the frozen app, replace the matching runtime copies/aliases and rebuild or
+ad-hoc sign the app seal, or rebuild YomiMado with the modified Shapely/GEOS
+installation. Keep dynamic linking and the library source/notices available
+alongside the installer. A rebuilt/modified app can require per-app Gatekeeper
+approval; this does not confer Developer ID notarization.
 
 ## Source candidate preparation
 
@@ -121,28 +144,23 @@ artwork/fonts are omitted; `detector-source-omissions.json` lists those omission
 and is checksum-linked from the candidate record. Dirty checkouts are rejected
 for source export. Commit preparation changes and rerun to export the project.
 
-The local collection covers **280 Rust components** (569 crates in the full
-cross-platform lockfile), **5 JavaScript packages**, and **78 of 80 Python
-packages**, including the custom OpenCV delivery. PyTorch/torchvision remain
-unresolved. The inventory has 369 components: 280 Rust, 80 Python, 5 JavaScript,
-and detector/CPython/OpenSSL/liblzma sources. The `source-candidates.json` report remains unreviewed,
-with complete delivery review still pending. The tracked
-[technical native review](../THIRD_PARTY_LICENSES/macos-native-review.json)
-binds source archives, retained notices and original binary inputs for 58
-CPython/static OpenSSL/liblzma inputs, the custom OpenCV input and 13 source-built
-NumPy inputs. The collector reuses these 72 completed reviews only when all hashes
-match, leaving 76 native
-inputs unresolved; changed inputs require review again. The project
-and filtered detector exports are additional candidates, not review sign-offs.
-Regenerate it when the package/native inventories change.
+The current inventory has **362 components** (280 Rust, 73 Python,
+5 JavaScript and detector/CPython/OpenSSL/liblzma sources), **114 unique native
+inputs** and 9 aliases. The worksheet covers **477 entries**, including the
+project. The collector reuses completed technical evidence only when source,
+notice and original binary hashes match. All 114 native inputs are covered;
+PyTorch/torchvision and transitive native sources are supplied by the reviewed
+archives, rather than an unavailable PyPI sdist. Project and filtered detector
+exports remain additional candidates. Regenerate the report after committing
+changes so its project export matches the clean source revision.
 
 These are private source candidates, not public release assets. Raw upstream
 archives can contain extra data/example artwork; inspect their terms and omit
 unneeded uncleared assets while documenting modifications before assembling
 the final delivery. Preserve notices, exact code, needed submodules and build
-inputs. The collector never creates `source-delivery.json`, a reviewer sign-off
-or complete native licence clearance. The release validator still rejects an incomplete
-or unreviewed delivery.
+inputs. The collector reuses completed native technical reviews; it never creates
+`source-delivery.json` or signs off the complete release-source delivery. The
+release validator still rejects an incomplete or unreviewed delivery.
 
 ## Delivery alongside the GitHub Release
 
@@ -172,7 +190,7 @@ Review these groups explicitly:
   libquadmath LGPL source/relink requirements again.
 - PyInstaller 6.16.0: preserve `COPYING.txt`, including its bootloader exception.
   Python interpreter and wheels: preserve their notices; review nested native
-  code, statically linked components and data, including MeCab/UniDic, OpenBLAS,
+  code, statically linked components and data, including MeCab/UniDic,
   GEOS, PyTorch, Pillow and torchvision. The native list identifies dynamic
   binaries; package notices/build provenance must cover static code too.
 - Apache/MIT/BSD/Unicode and other permissive dependencies: preserve required

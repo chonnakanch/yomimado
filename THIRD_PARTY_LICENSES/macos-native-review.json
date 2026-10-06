@@ -1,7 +1,7 @@
 {
-  "reviewScope": "Technical source/notice verification for these built inputs only; complete release-delivery review remains pending.",
+  "reviewScope": "Completed technical source/notice review for all 114 unique native inputs in this inventory. Final release-source delivery sign-off and installed-app gates remain separate.",
   "verifiedBy": "Codex",
-  "verifiedOn": "2026-10-05",
+  "verifiedOn": "2026-10-06",
   "groups": [
     {
       "components": [
@@ -336,6 +336,358 @@
         {
           "id": "native:numpy/random/mtrand.cpython-311-darwin.so",
           "buildInputSha256": "0e46eeec3fd67a97f1d58700b6076b4b3ff0860ecfafee84d7f09d81cf768be5"
+        }
+      ]
+    },
+    {
+      "components": ["python:pillow@11.3.0", "python:torchvision@0.23.0"],
+      "archive": "native-source-delivery.tar.gz",
+      "sha256": "7e64a3d3cd4429ae6a0908df2a156874bb8f4b3ce48f43b2ca23781cab6bf1c6",
+      "licenseEvidence": "Pillow 11.3.0 (MIT), static libjpeg-turbo 3.1.1 (IJG/BSD/Zlib), static FreeType 2.13.3 (FTL choice plus retained embedded terms), torchvision 0.23.0 (BSD-3-Clause), vendored giflib/OpenBSD reallocarray (MIT/ISC), and source-built LLVM OpenMP 15.0.7 (Apache-2.0 WITH LLVM-exception plus legacy notices). Original code archives, pinned build tools/options, installed binary hashes and complete notices retained. Optional Pillow and torchvision codecs removed; system zlib/C++ are not redistributed. JPEG/PNG/font support, parallel Torch and CPU NMS passed. OpenMP is reviewed separately from the remaining PyTorch tree.",
+      "noticeFiles": {
+        "licenses/python/pillow-11.3.0/licenses/LICENSE": "17f240ae101143707e5e7303a5d800450d9ccc7475b463cedb555cefdb3c6ece",
+        "licenses/python/torchvision-0.23.0/licenses/LICENSE": "6502f676851cfe25f8af75531dfb32375b7325b73c37e7b43741fa422893e71d",
+        "native-notices/image-openmp-vision-NOTICES.txt": "24d6e8d2c8f48f8705025e53d87ba3f14057fa6eaa568dd96ac57d80f036d828"
+      },
+      "nativeInputs": [
+        {
+          "id": "native:PIL/_imaging.cpython-311-darwin.so",
+          "buildInputSha256": "fc296e164c604512361acf4a80fd09fbd21964525d0661e8627dcf0c0ccb5e21"
+        },
+        {
+          "id": "native:PIL/_imagingft.cpython-311-darwin.so",
+          "buildInputSha256": "2b930082fb662ae4f5377f577c47ff6c6fe9d561d4e8445a415b92b7cba49a0b"
+        },
+        {
+          "id": "native:PIL/_imagingmath.cpython-311-darwin.so",
+          "buildInputSha256": "5082c6190a6920c28f2c8a13435d40f414492f4f09854f2597be131c9daa110c"
+        },
+        {
+          "id": "native:PIL/_imagingtk.cpython-311-darwin.so",
+          "buildInputSha256": "98eeb2e5b08ee69bf15081b2f7c6867b85018145fe587923e417beeeb66bffd9"
+        },
+        {
+          "id": "native:torch/lib/libomp.dylib",
+          "buildInputSha256": "d2336320ce007256b2b1faed85268e2d9473c99dc110b6423de34057242bf11f"
+        },
+        {
+          "id": "native:torchvision/_C.so",
+          "buildInputSha256": "90c55768c281a377394f2c79eb95900f85352737145e14f8e45cacad33e21d8a"
+        },
+        {
+          "id": "native:torchvision/image.so",
+          "buildInputSha256": "6bc32bf931b14efb218450375068ce715d6fe6b9f464a13d89a09cbc408a49f8"
+        }
+      ]
+    },
+    {
+      "components": ["python:torch@2.8.0"],
+      "archive": "pytorch-2.8.0-source-delivery.tar.gz",
+      "sha256": "cd8a449426d8129c1c22916c1f1b032445dcd17a5b8461c2a85cf1b7112acaa3",
+      "licenseEvidence": "PyTorch 2.8.0 exact wheel source revision a1cb3cc05d46d198467bebbb6e8fba50a325d4e7, with 68 initialized CPU/MPS source repositories and recursive submodule revisions. Complete wheel LICENSE/NOTICE preserves BSD/MIT/Apache/BSL/public-domain static dependencies. Seven unused GPU/Android submodules and 2264 unneeded media/model/font fixtures are recorded as omitted. CPU/MPS build and packaging code retained; bundled OpenMP is replaced and covered by the separate source-built group. No CUDA/ROCm runtimes are present.",
+      "noticeFiles": {
+        "licenses/python/torch-2.8.0/licenses/LICENSE": "c0ae8cfa6af6fa041232ce34e3b7f7bf79dae23ab611189f857e015568452263",
+        "licenses/python/torch-2.8.0/licenses/NOTICE": "c2cc7bf0caec7652c2b460a8a470bea1677f241e4ab8e431df34cf17f5a9fec0",
+        "native-notices/image-openmp-vision-NOTICES.txt": "24d6e8d2c8f48f8705025e53d87ba3f14057fa6eaa568dd96ac57d80f036d828"
+      },
+      "nativeInputs": [
+        {
+          "id": "native:torch/_C.cpython-311-darwin.so",
+          "buildInputSha256": "63da29ef5da262164de48f55d3c6417f7508eec4a22670dcb54463b6b100e288"
+        },
+        {
+          "id": "native:torch/bin/protoc",
+          "buildInputSha256": "e51b0b0f91618635e415e3f3826c0472a7a011499d75a06fe57c92a31487a739"
+        },
+        {
+          "id": "native:torch/bin/protoc-3.13.0.0",
+          "buildInputSha256": "e51b0b0f91618635e415e3f3826c0472a7a011499d75a06fe57c92a31487a739"
+        },
+        {
+          "id": "native:torch/bin/torch_shm_manager",
+          "buildInputSha256": "4aff23951b24dde459308848e44c856115decd1b56a0e5f85aaf66a57d2b1da3"
+        },
+        {
+          "id": "native:torch/lib/libc10.dylib",
+          "buildInputSha256": "f1950c7193efef69dd5a3115c3e885142d9a7fe3723290905e12bf02781cce6f"
+        },
+        {
+          "id": "native:torch/lib/libshm.dylib",
+          "buildInputSha256": "7fe9860c0386a2029af049164693181890068c36b11f4f0c7f362872e45ac1c3"
+        },
+        {
+          "id": "native:torch/lib/libtorch.dylib",
+          "buildInputSha256": "6d36d4b9a84b40cc91b45d5549aecd656113eacc21f6e7b331398cda73af8190"
+        },
+        {
+          "id": "native:torch/lib/libtorch_cpu.dylib",
+          "buildInputSha256": "5630bd318812b8d11d5eaad407930cd1486586fc4155b6ce16449380a9c03565"
+        },
+        {
+          "id": "native:torch/lib/libtorch_global_deps.dylib",
+          "buildInputSha256": "ce0e694d89f80acdbdf470b67e44ca0aa859213791921530bb68a77217f941c8"
+        },
+        {
+          "id": "native:torch/lib/libtorch_python.dylib",
+          "buildInputSha256": "5dcc72e19ed58a7df91e8189d7d6d9ce6d97102d427f1766949bd3ec50f7a044"
+        }
+      ]
+    },
+    {
+      "components": ["python:shapely@2.0.7"],
+      "archive": "geos-source-delivery.tar.gz",
+      "sha256": "f1539f5f72095f4c07297426dd8503a16f678f3a9254e0bb502930578a9d0d54",
+      "licenseEvidence": "Shapely 2.0.7 BSD-3-Clause; GEOS 3.11.4 LGPL-2.1-or-later, C API 1.17.4. Exact version confirmed by runtime and upstream 2.0.7 build recipe at ec8f6cd42d2f36a75808f8f44f4b8f08405f181a. Recipe downloads the unchanged original GEOS source. Full GEOS LGPL and copyright notice retained. Shared-library replacement with a source-built compatible GEOS passed intersection, union and buffer tests without a publisher key; source archive retains the recipe and replacement record. Preserve dynamic linking and permit modification/reverse engineering for debugging such modifications.",
+      "noticeFiles": {
+        "licenses/python/shapely-2.0.7/LICENSE.txt": "4a207eac9bf257ed286e1c6f0fce253d1abfdb134fc61ec855e37f5692a3f754",
+        "licenses/python/shapely-2.0.7/LICENSE_GEOS": "c700970fdef20aaec75f80b911e204d4bf56e76f8b1446e78d23c691bb68f4e9"
+      },
+      "nativeInputs": [
+        {
+          "id": "native:shapely/.dylibs/libgeos.3.11.4.dylib",
+          "buildInputSha256": "038d34bf59603796be7c2e1feb660708116bfcda03e39022af159171d0711c72"
+        },
+        {
+          "id": "native:shapely/.dylibs/libgeos_c.1.17.4.dylib",
+          "buildInputSha256": "815bea104b082aec566c042ef95d5e0c915bb0334905296c8d360b1b36d8081a"
+        },
+        {
+          "id": "native:shapely/_geometry_helpers.cpython-311-darwin.so",
+          "buildInputSha256": "6d0ed7a3ff139cce87d4f34e6b4e5c27c755de53ad1c807d1c493e737bcff845"
+        },
+        {
+          "id": "native:shapely/_geos.cpython-311-darwin.so",
+          "buildInputSha256": "73578dbb0dfd8a76fcc12f4317ee644d3766c74ddc8e1295abe402813e2fc449"
+        },
+        {
+          "id": "native:shapely/lib.cpython-311-darwin.so",
+          "buildInputSha256": "f2ea7fc129dd41062087e9e61a9a14e088f5c1b396f7f393395154448e0fe4e4"
+        }
+      ]
+    },
+    {
+      "components": [
+        "python:hf-xet@1.6.0",
+        "python:pydantic_core@2.46.5",
+        "python:safetensors@0.7.0",
+        "python:SudachiPy@0.6.10",
+        "python:tokenizers@0.22.2",
+        "python:watchfiles@1.1.1"
+      ],
+      "archive": "native-rust-sources.tar.gz",
+      "sha256": "03aad3a2206b379dc8e362f63d98fa319e8542439e7e66c1bcce89ab9d4b1f58",
+      "licenseEvidence": "Exact release sdists plus 743 distinct checksum-verified locked registry crate sources, embedded local crates, upstream-commit missing notices and Sudachi v0.6.10 lockfile at 7e2f287bbfffc036421cf960802e41a696727747. Native Rust dependencies use retained MIT/Apache/BSD/ISC/Unicode/CC0/BSL/Zlib terms; permissive options selected for dual licences. MPL-covered source is retained. hf_xet default/extension-module build excludes optional profiling/pprof/inferno (CDDL); its presence in the full lock/source/notice collection is not a claim of linkage. Build/test/other-platform crates are overincluded as independently licensed source, not added to the app. Source distributions retain their build configuration.",
+      "noticeFiles": {
+        "licenses/python/SudachiPy-0.6.10/LICENSE": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4",
+        "licenses/python/hf-xet-1.6.0/licenses/LICENSE": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4",
+        "licenses/python/pydantic_core-2.46.5/licenses/LICENSE": "2afdd30d54b4d62b6f488a6bcc1546e84ec5061f13f4209c03d012348783795a",
+        "licenses/python/safetensors-0.7.0/licenses/LICENSE": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4",
+        "licenses/python/tokenizers-0.22.2/LICENSE": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4",
+        "licenses/python/watchfiles-1.1.1/licenses/LICENSE": "4fd78355b67ce2677ede9fb6f63a250f377bb7e22088136a5f4699adb4bc069f",
+        "native-notices/rust-native-NOTICES.txt": "36608b0486dbd29908acee15447061a483120c97abc1592861dab3fbd291b4fb"
+      },
+      "nativeInputs": [
+        {
+          "id": "native:hf_xet/hf_xet.abi3.so",
+          "buildInputSha256": "0b3cacbe4132a05bf6aa4cb72a392c90d07760fd3f1bbc89e23c3aa52783a618"
+        },
+        {
+          "id": "native:pydantic_core/_pydantic_core.cpython-311-darwin.so",
+          "buildInputSha256": "a4c3e45325729778d67c8ce260fd2852304962864614c851e4247781dbcbae19"
+        },
+        {
+          "id": "native:safetensors/_safetensors_rust.abi3.so",
+          "buildInputSha256": "9f8c6553b8fa7a5286d3baa9e5ce3a75e0567e441557d35c61c43e25414e0ab3"
+        },
+        {
+          "id": "native:sudachipy/sudachipy.cpython-311-darwin.so",
+          "buildInputSha256": "d6cf84d3901eed099410bf85daccb2688783c1de08616a2e0c558dfe1a6fda63"
+        },
+        {
+          "id": "native:tokenizers/tokenizers.abi3.so",
+          "buildInputSha256": "899b244f19f1ddd6506c45ea0f7163f38952f2a552272a687a6ef4b9ddcc7327"
+        },
+        {
+          "id": "native:watchfiles/_rust_notify.cpython-311-darwin.so",
+          "buildInputSha256": "8c99ed5148deaa39510a8c35ca30b03c16e820db7621c6739beb96c6e6937b21"
+        }
+      ]
+    },
+    {
+      "components": ["python:fugashi@1.5.2", "python:PyYAML@6.0.3"],
+      "archive": "mecab-libyaml-sources.tar.gz",
+      "sha256": "7f77fa25ef26d4cf93b790fbd883b8e3f77357c915311df8fd07daa114d43403",
+      "licenseEvidence": "Fugashi 1.5.2 MIT, MeCab 0.996 BSD option (copyright Kudo/NTT retained); publisher macOS recipe clones taku910/mecab without patches. Its latest master commit 61b90ba6e669dc2d7d533d4a80d206f3b31d52b1 predates wheel publication and is retained as an unchanged library-only source export with omissions recorded. PyYAML 6.0.3 and static libyaml 0.2.5 MIT (Kirill Simonov); original source revision 2c891fc7a770e8ba2fec34fc6b545c672beb37e6 plus the release packaging recipe and full native copyright/permission notice retained.",
+      "noticeFiles": {
+        "licenses/python/PyYAML-6.0.3/licenses/LICENSE": "8d3928f9dc4490fd635707cb88eb26bd764102a7282954307d3e5167a577e8a4",
+        "licenses/python/fugashi-1.5.2/licenses/LICENSE": "e4b9056f1fb6434c407a0f18e0354198190504d7f3debbd74c6ea17947705da7",
+        "licenses/python/fugashi-1.5.2/licenses/LICENSE.mecab": "62f4b23450a9ad40e4db8063d45c1d13c78d07ca27c9ada62c4ca9c11c1f3e7b",
+        "native-notices/pyyaml-6.0.3-libyaml-NOTICE.txt": "c40112449f254b9753045925248313e9270efa36d226b22d82d4cc6c43c57f29"
+      },
+      "nativeInputs": [
+        {
+          "id": "native:fugashi/.dylibs/libmecab.2.dylib",
+          "buildInputSha256": "49d16ce524f19f8700e79233ab0ef11e43cb0bca2379e41b13f6ed6ca6db7561"
+        },
+        {
+          "id": "native:fugashi/fugashi.cpython-311-darwin.so",
+          "buildInputSha256": "c50214909e32c1f6bd437fc1b7f409afc1e8087d77f0dca621b34c12682b6b3f"
+        },
+        {
+          "id": "native:yaml/_yaml.cpython-311-darwin.so",
+          "buildInputSha256": "fddcdc7e45b0b363583056a3f313b2f5a7467eab6da2351a6ac1c2100272e0c0"
+        }
+      ]
+    },
+    {
+      "components": ["python:charset-normalizer@3.5.1"],
+      "archive": "python/charset_normalizer-3.5.1.tar.gz",
+      "sha256": "6117b84ea48435e5356dc737f5121485c30920ba43375fa7b434fd753df0eac3",
+      "licenseEvidence": "Exact release sdist contains native preferred source and packaging configuration. Wheel/root and vendored notices reviewed and retained; native links introduce no additional bundled shared libraries. Cython output retains the original source licence; compilers/build tools are separate from runtime delivery.",
+      "noticeFiles": {
+        "licenses/python/charset-normalizer-3.5.1/licenses/LICENSE": "6d0d41bfe170ac6c7dc248c9a63e254d0fb45a60d50a8257d0af92c6e249b887"
+      },
+      "nativeInputs": [
+        {
+          "id": "native:charset_normalizer/cd.cpython-311-darwin.so",
+          "buildInputSha256": "e0dfd1d345010a974e0cd59aec76daa61201a1ca151b8377caf19cd19871c393"
+        },
+        {
+          "id": "native:charset_normalizer/md.cpython-311-darwin.so",
+          "buildInputSha256": "d795991862639c674d0a7db0904c64120376c0b31691d6adf623a3d3fe8ad7b0"
+        }
+      ]
+    },
+    {
+      "components": ["python:protobuf@6.33.6"],
+      "archive": "python/protobuf-6.33.6.tar.gz",
+      "sha256": "a6768d25248312c297558af96a9f9c929e8c4cee0659cb07e780731095f38135",
+      "licenseEvidence": "BSD Google protobuf/upb; MIT-style utf8_range copyright and full permission text added. Native source is included in the exact sdist.",
+      "noticeFiles": {
+        "licenses/python/protobuf-6.33.6/LICENSE": "6e5e117324afd944dcf67f36cf329843bc1a92229a8cd9bb573d7a83130fea7d",
+        "native-notices/protobuf-6.33.6-utf8-NOTICE.txt": "2fea0506ea6f65a7c242610b3debcaab29b791214abb19bd7bb57a95a1fab59c"
+      },
+      "nativeInputs": [
+        {
+          "id": "native:google/_upb/_message.abi3.so",
+          "buildInputSha256": "f3a1ae5ed99290e7ebf913d18e19dc3ed8850f98274742ddb8cb3229380ec0ab"
+        }
+      ]
+    },
+    {
+      "components": ["python:httptools@0.8.0"],
+      "archive": "python/httptools-0.8.0.tar.gz",
+      "sha256": "6b2a32f18d97e16e90827d7a819ffa8dbd8cc245fc4e1fa9d1095b54ef4bd999",
+      "licenseEvidence": "Exact release sdist contains native preferred source and packaging configuration. Wheel/root and vendored notices reviewed and retained; native links introduce no additional bundled shared libraries. Cython output retains the original source licence; compilers/build tools are separate from runtime delivery.",
+      "noticeFiles": {
+        "licenses/python/httptools-0.8.0/licenses/LICENSE": "f4573e7cb7676745fb5b8d36fa548aa93e391cfb6872ddacd65130c45ea6a92d",
+        "licenses/python/httptools-0.8.0/licenses/vendor/http-parser/LICENSE-MIT": "79e6ba8b687cb54786207342b9b6fcee0ac10218453ed9009b84d949b2233cc0",
+        "licenses/python/httptools-0.8.0/licenses/vendor/llhttp/LICENSE": "628168d68bb5a8a17e0bbefb3bd74e326e1edc20583d76f52f457c82c921867d"
+      },
+      "nativeInputs": [
+        {
+          "id": "native:httptools/parser/parser.cpython-311-darwin.so",
+          "buildInputSha256": "dee4c64468e8beaaffa6123a19925d1788a042110aca5f6e3bdf8d64f201c44f"
+        },
+        {
+          "id": "native:httptools/parser/url_parser.cpython-311-darwin.so",
+          "buildInputSha256": "8a53fc6bcb8793eb45ad9c2cec29c853518b3b5625197eb60ab3a1cf8425d09a"
+        }
+      ]
+    },
+    {
+      "components": ["python:MarkupSafe@3.0.3"],
+      "archive": "python/markupsafe-3.0.3.tar.gz",
+      "sha256": "722695808f4b6457b320fdc131280796bdceb04ab50fe1795cd540799ebe1698",
+      "licenseEvidence": "Exact release sdist contains native preferred source and packaging configuration. Wheel/root and vendored notices reviewed and retained; native links introduce no additional bundled shared libraries. Cython output retains the original source licence; compilers/build tools are separate from runtime delivery.",
+      "noticeFiles": {
+        "licenses/python/MarkupSafe-3.0.3/licenses/LICENSE.txt": "489a8e1108509ed98a37bb983e11e0f7e1d31f0bd8f99a79c8448e7ff37d07ea"
+      },
+      "nativeInputs": [
+        {
+          "id": "native:markupsafe/_speedups.cpython-311-darwin.so",
+          "buildInputSha256": "e2d9df040be2b8dc8632199c4af4cc2902995ce6180688e7c101247879daa2a6"
+        }
+      ]
+    },
+    {
+      "components": ["python:pyclipper@1.3.0.post6"],
+      "archive": "python/pyclipper-1.3.0.post6.tar.gz",
+      "sha256": "42bff0102fa7a7f2abdd795a2594654d62b786d0c6cd67b72d469114fdeb608c",
+      "licenseEvidence": "MIT wrapper and Clipper 6.4.2 BSL-1.0 with Angus Johnson 2010-2017 copyright/algorithm attribution plus full Boost terms retained.",
+      "noticeFiles": {
+        "licenses/python/pyclipper-1.3.0.post6/LICENSE": "32ee7398e3123736fd14e9f08287edc2d97ace102ab54d8dc4edc8d31c651fa8",
+        "native-notices/pyclipper-1.3.0.post6-native-NOTICES.txt": "b84c1bbb3c97e4b24be8ca8772dcf8a978833e25cb7c299ff63687bd74d043c6"
+      },
+      "nativeInputs": [
+        {
+          "id": "native:pyclipper/_pyclipper.cpython-311-darwin.so",
+          "buildInputSha256": "b2fe5da745f0cd509427eef80046127086255c337a79cfce654ad48d376f51f0"
+        }
+      ]
+    },
+    {
+      "components": ["python:regex@2026.1.15"],
+      "archive": "regex-unicode-source-delivery.tar.gz",
+      "sha256": "22c701c9ef8ac1bc205335b8073397b49a768260e28e6d981ab9801caf3ada5e",
+      "licenseEvidence": "Apache-2.0 software and Unicode 17.0.0 database terms. Original sdist includes generated C tables and generator; matching UCD generation input and full Unicode-3.0 notice retained.",
+      "noticeFiles": {
+        "licenses/python/regex-2026.1.15/licenses/LICENSE.txt": "bff55ef4cdcc8c14ce259f8e8ab60e264418440d6335f4dc138273fbd506144d",
+        "native-notices/Unicode-LICENSE.txt": "e7a93b009565cfce55919a381437ac4db883e9da2126fa28b91d12732bc53d96"
+      },
+      "nativeInputs": [
+        {
+          "id": "native:regex/_regex.cpython-311-darwin.so",
+          "buildInputSha256": "8447333adf0f1d3f8186f9d8a94e5f8cf1ce6a29193c6f116808264e7a4a87ad"
+        }
+      ]
+    },
+    {
+      "components": ["python:sentencepiece@0.2.1"],
+      "archive": "python/sentencepiece-0.2.1.tar.gz",
+      "sha256": "8138cec27c2f2282f4a34d9a016e3374cd40e5c6e9cb335063db66a0a3b71fad",
+      "licenseEvidence": "Apache-2.0 plus embedded Abseil Apache, darts-clone BSD, esaxx MIT, protobuf-lite BSD and Unicode notices preserved from source.",
+      "noticeFiles": {
+        "licenses/python/sentencepiece-0.2.1/LICENSE": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+        "native-notices/Unicode-LICENSE.txt": "e7a93b009565cfce55919a381437ac4db883e9da2126fa28b91d12732bc53d96",
+        "native-notices/sentencepiece-0.2.1-native-NOTICES.txt": "fdffbb810cc1e8043e8186c294469b436ca42bef401ec1d2049b469920f8c6f5"
+      },
+      "nativeInputs": [
+        {
+          "id": "native:sentencepiece/_sentencepiece.cpython-311-darwin.so",
+          "buildInputSha256": "bd87d355aa82bd6c2a05853e0c6204362831f7dee445e2caf2cce5405fd735bb"
+        }
+      ]
+    },
+    {
+      "components": ["python:uvloop@0.22.1"],
+      "archive": "python/uvloop-0.22.1.tar.gz",
+      "sha256": "6c84bae345b9147082b17371e3dd5d42775bddce91f885499017f4607fdaf39f",
+      "licenseEvidence": "MIT/Apache binding and statically embedded libuv; libuv MIT and extra third-party notices preserved from the exact bundled source.",
+      "noticeFiles": {
+        "licenses/python/uvloop-0.22.1/licenses/LICENSE-APACHE": "377025287798f9dcd819e1f826fa5fc5e2f382528691ab0528c5cf8c8c282c27",
+        "licenses/python/uvloop-0.22.1/licenses/LICENSE-MIT": "6dd4c399f26de043d77a2ad7e31db4cb5bf08ea8368b0a42d6e158635cc8ab62",
+        "native-notices/uvloop-0.22.1-native-NOTICES.txt": "59b9ae1231e49c8623e8c62937c6545fe446043732b9f5f36eff65bda0f14916"
+      },
+      "nativeInputs": [
+        {
+          "id": "native:uvloop/loop.cpython-311-darwin.so",
+          "buildInputSha256": "588dc690500980771647c8169e367e21d3ec3b83fb695fd8717a4dd5368e1827"
+        }
+      ]
+    },
+    {
+      "components": ["python:websockets@15.0.1"],
+      "archive": "python/websockets-15.0.1.tar.gz",
+      "sha256": "82544de02076bafba038ce055ee6412d68da13ab47f0c60cab827346de828dee",
+      "licenseEvidence": "Exact release sdist contains native preferred source and packaging configuration. Wheel/root and vendored notices reviewed and retained; native links introduce no additional bundled shared libraries. Cython output retains the original source licence; compilers/build tools are separate from runtime delivery.",
+      "noticeFiles": {
+        "licenses/python/websockets-15.0.1/LICENSE": "3d6a0c050d8bec52fabad502e45fb25bd02bcadbd70dea34d447b6a0ff4e6da8"
+      },
+      "nativeInputs": [
+        {
+          "id": "native:websockets/speedups.cpython-311-darwin.so",
+          "buildInputSha256": "dc0d8a8e8ab9c5489b5270875760bd6e0d2e1dc8ae4a6ab7f66ab1ba97b5d43c"
         }
       ]
     }
