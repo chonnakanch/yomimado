@@ -23,7 +23,9 @@ def loaded_modules(pid: int, runtime: Path) -> list[dict]:
     system = Path(os.environ["SystemRoot"]).resolve()
     powershell = system / "System32/WindowsPowerShell/v1.0/powershell.exe"
     script = (
-        f"$ErrorActionPreference='Stop'; @(Get-Process -Id {pid}).Modules | "
+        "$ErrorActionPreference='Stop'; [Console]::OutputEncoding="
+        "[System.Text.UTF8Encoding]::new($false); "
+        f"@(Get-Process -Id {pid}).Modules | "
         "ForEach-Object { @{ path=$_.FileName; name=$_.ModuleName; "
         "sha256=(Get-FileHash $_.FileName -Algorithm SHA256).Hash.ToLower() } } | "
         "ConvertTo-Json -Compress"
@@ -32,6 +34,7 @@ def loaded_modules(pid: int, runtime: Path) -> list[dict]:
         subprocess.check_output(
             [str(powershell), "-NoProfile", "-NonInteractive", "-Command", script],
             text=True,
+            encoding="utf-8",
         )
     )
     for item in modules:
@@ -285,7 +288,12 @@ def main() -> None:
                 except Exception:
                     # This service processes only the generated test text and
                     # isolated databases; surface startup diagnostics on failure.
-                    print((data / "service.log").read_text()[-8000:], file=sys.stderr)
+                    print(
+                        (data / "service.log").read_text(
+                            encoding="utf-8", errors="replace"
+                        )[-8000:],
+                        file=sys.stderr,
+                    )
                     raise
                 finally:
                     process.terminate()
@@ -297,7 +305,7 @@ def main() -> None:
     report_path = (
         Path(__file__).parent.parent / "services/ocr/build/windows/installed-smoke.json"
     )
-    report = json.loads(report_path.read_text())
+    report = json.loads(report_path.read_text(encoding="utf-8"))
     report["savedDataAndTranslationCacheSurvivedRestart"] = True
     report_path.write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
     print(

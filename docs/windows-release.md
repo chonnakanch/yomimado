@@ -76,9 +76,9 @@ the macOS frozen runtime is not a Windows seed.
 
 - [ ] Confirm Windows 11 x64 test hardware and record its OS build, CPU and
       display layout/scaling. A Windows ARM PC under emulation is a separate case.
-- [ ] Select and pin Windows Python, Node, MSVC/SDK, Rust, PyInstaller and hooks;
+- [x] Select and pin Windows Python, Node, MSVC/SDK, Rust, PyInstaller and hooks;
       preserve npm/Cargo locks and record exact versions and download hashes.
-- [ ] Create a Windows-specific Python lock, replacing macOS-only dependencies
+- [x] Create a Windows-specific Python lock, replacing macOS-only dependencies
       and recording CPU Torch/torchvision, tokenizer, image and ONNX compatibility.
       Avoid FFmpeg/video support, training binaries and unused codecs where practical.
 - [ ] Collect the Windows runtime's EXE, DLL and PYD inventory before clearing
@@ -89,9 +89,11 @@ the macOS frozen runtime is not a Windows seed.
       applicable relinking/replacement instructions for the actual bundled inputs.
       Verify archive hashes, source coverage and required notices; record review
       scope and any source-only rebuild limitations without claiming unrun checks.
-- [ ] Freeze the service in an isolated Windows environment using the existing
-      `packaged_main.py`, initially as a directory bundle. Include approved OCR,
+- [x] Freeze the service in an isolated Windows environment using
+      `windows_packaged_main.py`, initially as a directory bundle. Include pinned OCR,
       translation and dictionary assets; exclude the detector weights.
+      Run `37582948931` produced the executable; native/source approval and
+      installed runtime verification remain open.
 - [ ] Run frozen health, synthetic vertical/horizontal OCR geometry, Sudachi,
       JMdict, KANJIDIC2, uncached translation and saved/cache restart smoke checks
       outside the checkout with fresh temporary data and empty model caches.
@@ -103,7 +105,7 @@ before treating any installer as a public candidate.
 
 ## 2. Package and run a private installed app
 
-- [ ] Add Windows service startup in Rust with the `.exe` resource path,
+- [x] Add Windows service startup in Rust with the `.exe` resource path,
       hidden child console, explicit local asset/data paths and existing offline
       model flags. Keep the API on loopback and preserve the macOS path.
 - [ ] Verify startup failures and occupied service port produce useful errors;
@@ -193,10 +195,11 @@ collects original sdists and source/binary archives; it does not claim complete
 corresponding-source coverage. The selected compiler/SDK fail closed if absent
 from the hosted image. Dictionary downloads also fail if the daily snapshot
 moves; supply the pinned snapshot or deliberately rebuild with new hashes. Candidate CI may assist development before publication CI is enabled.
-Hosted run `37581451301` built CPython 3.11.17 and passed service/frontend tests
-and 37 Rust tests. The remaining lifecycle test incorrectly required a nonzero
-exit code after job closure; it now checks termination within five seconds.
-Freezing, installer construction and installed-runtime checks remain pending.
+Hosted run `37582948931` built CPython 3.11.17, passed service/frontend and all
+38 Windows Rust tests, and froze the OCR executable. Notice collection then
+failed because Cargo UTF-8 metadata was read with the Windows default code page;
+the scripts now specify UTF-8. Installer construction, native/source review and
+installed-runtime checks remain pending.
 No Windows runtime or installer is claimed to work yet. This macOS session
 cannot validate Windows DLL loading, SmartScreen or physical display capture.
 The maintainer's separate PC can supply the manual results once a candidate is
