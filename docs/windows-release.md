@@ -58,8 +58,9 @@ Concrete packaging gaps:
 - `requirements-macos-release.txt` and `build-macos-prerelease.sh` are specific
   to Apple Silicon: custom OpenCV, Accelerate NumPy, macOS native binaries and
   notices cannot be used as Windows runtime inputs.
-- `windows-candidate.yml` builds only `develop` with read-only repository
-  permission. It prepares source-built Python, hash-pinned Windows wheels and
+- `windows-candidate.yml` builds only `develop`; its job can stage an owner-only
+  draft but cannot approve the installer or publish a release. It prepares
+  source-built Python, hash-pinned Windows wheels and
   CPU Torch, freezes the service, builds per-user NSIS, installs it, checks
   startup/quit and frozen learning, and exports a test candidate with hashes.
   Native/source evidence remains unapproved. macOS clearance does not approve
@@ -192,6 +193,10 @@ collects original sdists and source/binary archives; it does not claim complete
 corresponding-source coverage. The selected compiler/SDK fail closed if absent
 from the hosted image. Dictionary downloads also fail if the daily snapshot
 moves; supply the pinned snapshot or deliberately rebuild with new hashes. Candidate CI may assist development before publication CI is enabled.
+Hosted run `37581451301` built CPython 3.11.17 and passed service/frontend tests
+and 37 Rust tests. The remaining lifecycle test incorrectly required a nonzero
+exit code after job closure; it now checks termination within five seconds.
+Freezing, installer construction and installed-runtime checks remain pending.
 No Windows runtime or installer is claimed to work yet. This macOS session
 cannot validate Windows DLL loading, SmartScreen or physical display capture.
 The maintainer's separate PC can supply the manual results once a candidate is

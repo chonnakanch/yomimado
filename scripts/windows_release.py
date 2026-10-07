@@ -115,6 +115,8 @@ def download_inputs() -> None:
         fetch(entry, BUILD / "inputs" / entry["filename"])
         if source := entry.get("source"):
             fetch(source, BUILD / "sources" / source["filename"])
+    for entry in record.get("desktopVendorInputs", []):
+        fetch(entry, BUILD / "sources/vendors" / entry["filename"])
     # Collecting sdists does not approve embedded BLAS/codec/compiler libraries.
     write_json(BUILD / "download-record.json", record)
 
@@ -331,6 +333,64 @@ def seal_resources(resources: Path) -> None:
     write_json(manifest, files)
 
 
+def prune_unused_native() -> None:
+    """Keep still-image OCR; remove unused video and torchvision codec inputs."""
+    runtime = RESOURCES / "runtime"
+    removed = []
+    codecs = {
+        "jpeg8.dll",
+        "libjpeg.dll",
+        "libpng16.dll",
+        "libsharpyuv.dll",
+        "libwebp.dll",
+        "zlib.dll",
+    }
+
+    def remove(path):
+        removed.append(
+            {
+                "path": path.relative_to(RESOURCES).as_posix(),
+                "sha256": digest(path),
+                "reason": "unused video/torchvision image-codec extension; PIL/OpenCV processing and torchvision ops retained",
+            }
+        )
+        path.unlink()
+
+    for path in sorted(runtime.rglob("*")):
+        if path.is_file() and (
+            path.name.lower().startswith("opencv_videoio_ffmpeg")
+            or (
+                "torchvision" in path.relative_to(runtime).parts
+                and path.name.lower() == "image.pyd"
+            )
+        ):
+            remove(path)
+    # PyInstaller may place dependent codec DLLs at the runtime root. Preserve
+    # any codec still required by another native input, including dependencies
+    # of retained codecs. Never strip a DLL solely because of its filename.
+    native = [(path, pe_info(path)["imports"]) for path in native_files(runtime)]
+    needed = {
+        name
+        for path, imports in native
+        if path.name.lower() not in codecs
+        for name in imports
+    }
+    while True:
+        expanded = needed | {
+            name
+            for path, imports in native
+            if path.name.lower() in needed
+            for name in imports
+        }
+        if expanded == needed:
+            break
+        needed = expanded
+    for path, _ in native:
+        if path.name.lower() in codecs and path.name.lower() not in needed:
+            remove(path)
+    write_json(RESOURCES / "notices/windows-excluded-native.json", removed)
+
+
 def verify_resources(resources: Path) -> dict:
     assert_no_detector(resources)
     required = [
@@ -479,6 +539,7 @@ def main() -> None:
             "assets",
             "inventory",
             "configuration",
+            "prune",
             "seal",
             "verify",
             "package",
@@ -497,6 +558,8 @@ def main() -> None:
         inventory_inputs()
     elif args.command == "configuration":
         native_configuration()
+    elif args.command == "prune":
+        prune_unused_native()
     elif args.command == "seal":
         seal_resources(args.resources)
     elif args.command == "verify":

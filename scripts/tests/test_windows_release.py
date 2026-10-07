@@ -164,6 +164,38 @@ class WindowsReleaseTests(unittest.TestCase):
         ):
             self.assertEqual(smoke.loaded_modules(42, runtime), modules)
 
+    def test_codec_exclusion_preserves_transitive_native_dependencies(self):
+        runtime = self.root / "runtime"
+        vision = runtime / "torchvision"
+        vision.mkdir(parents=True)
+        imports = {
+            "_C.pyd": [],
+            "image.pyd": ["jpeg8.dll"],
+            "pillow.pyd": ["libpng16.dll"],
+            "libpng16.dll": ["zlib.dll"],
+            "zlib.dll": [],
+            "jpeg8.dll": [],
+        }
+        for name in imports:
+            path = (vision if name in ("_C.pyd", "image.pyd") else runtime) / name
+            path.write_bytes(b"MZsynthetic-" + name.encode())
+        with (
+            patch.object(release, "RESOURCES", self.root),
+            patch.object(
+                release, "pe_info", side_effect=lambda p: {"imports": imports[p.name]}
+            ),
+        ):
+            release.prune_unused_native()
+        self.assertTrue((vision / "_C.pyd").exists())
+        self.assertTrue((runtime / "libpng16.dll").exists())
+        self.assertTrue((runtime / "zlib.dll").exists())
+        self.assertFalse((vision / "image.pyd").exists())
+        self.assertFalse((runtime / "jpeg8.dll").exists())
+        self.assertEqual(
+            len(release.read_json(self.root / "notices/windows-excluded-native.json")),
+            2,
+        )
+
     def test_changed_cpu_wheel_url_is_rejected(self):
         manifest = release.read_json(release.SERVICE / "windows-inputs.json")
         next(e for e in manifest["packages"] if e["name"] == "torch")["url"] = (

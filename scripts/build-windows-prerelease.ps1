@@ -48,9 +48,8 @@ Invoke-Checked $Python $Freeze
 $Runtime = Join-Path $Resources 'runtime'
 if (Test-Path $Runtime) { Remove-Item $Runtime -Recurse -Force }
 Copy-Item (Join-Path $Build 'dist/yomimado-ocr') $Runtime -Recurse
-# The optional FFmpeg plugin is unnecessary for still-image DNN inference.
-# Remove it from the frozen input, not from the original wheel/source evidence.
-Get-ChildItem $Runtime -Recurse -File -Filter 'opencv_videoio_ffmpeg*.dll' | Remove-Item
+# Remove unused native codec extensions before inventory and exact installed smoke.
+Invoke-Checked $Python @('scripts/windows_release.py', 'prune')
 Invoke-Checked $Python @('scripts/create-manga-ocr-warmup.py', (Join-Path $Runtime '_internal/manga_ocr/assets/example.jpg'))
 $Notices = Join-Path $Resources 'notices'
 New-Item -ItemType Directory -Force $Notices | Out-Null

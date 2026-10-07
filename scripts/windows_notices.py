@@ -12,6 +12,7 @@ import os
 import shutil
 import subprocess
 import tomllib
+import zipfile
 from pathlib import Path
 from urllib.request import urlopen
 
@@ -199,10 +200,30 @@ def collect() -> None:
         "torchsummary": "torchsummary",
     }.items():
         supplement(group, output / "licenses/python-supplement" / package)
+    vendor_inputs = read_json(ROOT / "services/ocr/windows-inputs.json")[
+        "desktopVendorInputs"
+    ]
+    for entry in vendor_inputs:
+        archive = BUILD / "sources/vendors" / entry["filename"]
+        if digest(archive) != entry["sha256"]:
+            raise ValueError("Desktop vendor input hash differs")
+        destination = output / "licenses/windows-vendors" / entry["name"]
+        destination.mkdir(parents=True, exist_ok=True)
+        if archive.suffix == ".nupkg":
+            with zipfile.ZipFile(archive) as source:
+                for name, sha in entry["fileHashes"].items():
+                    content = source.read(name)
+                    if hashlib.sha256(content).hexdigest() != sha:
+                        raise ValueError("SDK vendor file hash differs")
+                    if name in ("LICENSE.txt", "NOTICE.txt"):
+                        (destination / name).write_bytes(content)
+        else:
+            shutil.copy2(archive, destination / "LICENSE.txt")
     record = {
         "target": "x86_64-pc-windows-msvc",
         "components": rust_components(output) + javascript_components(output),
         "publicDistributionApproved": False,
+        "desktopVendorInputs": vendor_inputs,
     }
     # Store portable relative notice paths, never assume Mac target membership.
     for component in record["components"]:

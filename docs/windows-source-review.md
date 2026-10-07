@@ -29,17 +29,17 @@ The 2026-10-07 wheel audit inspected original bytes whose SHA-256 pins are in
 `services/ocr/windows-inputs.json`. Counts below describe build inputs; the
 frozen/installed inventory determines which files are delivered.
 
-| Windows input          | EXE/DLL/PYD inputs | Exact embedded notice findings / public gate                                                                                                                               |
-| ---------------------- | -----------------: | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| SudachiPy 0.6.10       |                  1 | No wheel licence files; verified Apache/MIT upstream texts now supplemented. Rust/vendor source review remains open.                                                       |
-| Fugashi 1.5.2          |                  2 | Fugashi and MeCab notices present. Preserve exact MeCab source and Windows recipe for its hashed DLL.                                                                      |
-| NumPy 1.26.4           |                 20 | BSD/OpenBLAS/LAPACK and GPL GCC runtime exception texts present; full libquadmath LGPL supplemented. OpenBLAS/GCC sources and replacement recipe remain open.              |
-| OpenCV 4.11.0.86       |                  2 | Full third-party notice present. FFmpeg plugin removed; identify retained IPP/static codec inputs and exact source/build coverage.                                         |
-| Pillow 11.3.0          |                  8 | Full vendor notice present including FreeType. Verify exact Windows codec versions, source coverage and FreeType attribution choice.                                       |
-| PyInstaller 6.16.0     |                  4 | GPL bootloader exception text present. Preserve bootloader source/build recipe and modified frozen EXE provenance.                                                         |
-| Shapely 2.0.7          |                  6 | Full GEOS LGPL and Windows runtime notice present. Exact GEOS source and replacement/rebuild recipe remain open.                                                           |
-| Torch 2.8.0+cpu        |                 16 | LICENSE/NOTICE present. `libiomp5md.dll`/stubs and static CPU vendors need exact licence/source/build mapping; absence of a standalone MKL DLL is insufficient.            |
-| torchvision 0.23.0+cpu |                  8 | Only torchvision LICENSE present despite JPEG/PNG/WebP/zlib DLLs. Add exact codec notices/sources or rebuild without unused image/video extensions before public delivery. |
+| Windows input          | EXE/DLL/PYD inputs | Exact embedded notice findings / public gate                                                                                                                                                                                                                            |
+| ---------------------- | -----------------: | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| SudachiPy 0.6.10       |                  1 | No wheel licence files; verified Apache/MIT upstream texts now supplemented. Rust/vendor source review remains open.                                                                                                                                                    |
+| Fugashi 1.5.2          |                  2 | Fugashi and MeCab notices present. Preserve exact MeCab source and Windows recipe for its hashed DLL.                                                                                                                                                                   |
+| NumPy 1.26.4           |                 20 | BSD/OpenBLAS/LAPACK and GPL GCC runtime exception texts present; full libquadmath LGPL supplemented. OpenBLAS/GCC sources and replacement recipe remain open.                                                                                                           |
+| OpenCV 4.11.0.86       |                  2 | Full third-party notice present. FFmpeg plugin removed; identify retained IPP/static codec inputs and exact source/build coverage.                                                                                                                                      |
+| Pillow 11.3.0          |                  8 | Full vendor notice present including FreeType. Verify exact Windows codec versions, source coverage and FreeType attribution choice.                                                                                                                                    |
+| PyInstaller 6.16.0     |                  4 | GPL bootloader exception text present. Preserve bootloader source/build recipe and modified frozen EXE provenance.                                                                                                                                                      |
+| Shapely 2.0.7          |                  6 | Full GEOS LGPL and Windows runtime notice present. Exact GEOS source and replacement/rebuild recipe remain open.                                                                                                                                                        |
+| Torch 2.8.0+cpu        |                 16 | LICENSE/NOTICE present. `libiomp5md.dll`/stubs and static CPU vendors need exact licence/source/build mapping; absence of a standalone MKL DLL is insufficient.                                                                                                         |
+| torchvision 0.23.0+cpu |                  8 | Only torchvision LICENSE present despite JPEG/PNG/WebP/zlib DLLs. The private recipe excludes its unused `image.pyd` and codec DLLs; `_C.pyd` imports only Torch, VC and OS libraries. Installed OCR must verify that exclusion before this gap is considered resolved. |
 
 Review steps:
 
@@ -51,16 +51,23 @@ Review steps:
    Pillow codecs/fonts, GEOS, Fugashi/MeCab, tokenizer binaries and CPython's
    OpenSSL/libffi/SQLite/bzip2/zlib/liblzma/Expat/libmpdec. Identify actual linked
    components before deciding whether different binaries/source builds are needed.
-3. The optional OpenCV FFmpeg plugin is removed from the frozen bundle because
+3. The unused torchvision image/codec extension and optional OpenCV FFmpeg plugin are removed from the frozen bundle because
    still-image DNN inference does not need it. Retain original wheel hashes and
    this recipe; confirm the installed inventory contains no FFmpeg plugin and
-   that OCR still works. Removal does not approve other OpenCV native inputs.
+   that OCR still works. Removal does not approve other OpenCV native inputs. `windows-excluded-native.json` retains the removed inputs' paths/hashes.
 4. Preserve full licence/NOTICE texts and preferred sources, exact recipes,
    patches, build tools and archive hashes. Review submodules/vendor libraries;
    a PyPI sdist may not include native wheel vendors or complete build inputs.
    Include applicable LGPL replacement/relinking instructions. Identify MSVC
    runtime redistribution permission separately; it has no open-source archive.
-5. `windows-desktop-sources.json` records Windows Cargo membership, copied
+5. The exact WebView2 SDK 1.0.3650.58 is pinned from Microsoft NuGet. Its
+   BSD redistribution licence and NOTICE are preserved, with the loader DLL
+   and static library hashes (the MSVC wrapper statically links the latter).
+   The missing webview2-rs MIT text is fetched at Cargo's exact upstream commit.
+   Resolve SDK-loader source/system-library scope separately; wrapper metadata
+   does not cover Microsoft binaries.
+
+   `windows-desktop-sources.json` records Windows Cargo membership, copied
    licence texts and original archives checked against Cargo.lock. Installed
    npm inputs (including build tools) retain notices and original tarballs
    verified against package-lock SHA-512. The macOS crate subset is not Windows
