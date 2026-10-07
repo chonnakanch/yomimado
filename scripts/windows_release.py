@@ -88,6 +88,7 @@ def restore_generated_outputs(revision: str) -> None:
             subprocess.run(
                 ["git", "ls-files", "--error-unmatch", "--", relative],
                 cwd=ROOT,
+                check=False,
                 stdout=subprocess.DEVNULL,
                 stderr=subprocess.DEVNULL,
             ).returncode
@@ -192,6 +193,8 @@ def download_inputs() -> None:
             fetch(source, BUILD / "sources" / source["filename"])
     for entry in record.get("desktopVendorInputs", []):
         fetch(entry, BUILD / "sources/vendors" / entry["filename"])
+    for entry in record.get("installerSourceInputs", []):
+        fetch(entry, BUILD / "sources/installer" / entry["filename"])
     # Collecting sdists does not approve embedded BLAS/codec/compiler libraries.
     write_json(BUILD / "download-record.json", record)
 

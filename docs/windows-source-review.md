@@ -78,6 +78,11 @@ Review steps:
    desktop, setup and actual NSIS cache inputs, including its x86 host/plugins.
    Resolve exact NSIS plugin/stub and WebView2 loader source/terms before public
    delivery; metadata and collected archives alone do not grant approval.
+   The selected NSIS 3.11 original source and `nsis_tauri_utils` 0.5.3 source
+   commit `13d9edd27b69310e108d6fbd49f90992f8a05390` are checksum pinned. Their
+   full COPYING/MIT/Apache texts are copied into installed notices before NSIS
+   packaging. Bind the compiled stub/plugin and recursive build inputs before
+   approving source coverage; this collection does not attest to a rebuild.
    Missing SudachiPy software texts and NumPy's full LGPL supplement are copied
    from checksum-verified upstream notices. This resolves missing texts only.
 

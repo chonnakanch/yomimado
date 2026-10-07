@@ -104,9 +104,9 @@ class WindowsReleaseTests(unittest.TestCase):
         with (
             patch.object(release, "ROOT", self.root),
             patch.object(release, "BUILD", self.root / "evidence"),
+            self.assertRaisesRegex(ValueError, "Unexpected source changes"),
         ):
-            with self.assertRaisesRegex(ValueError, "Unexpected source changes"):
-                release.restore_generated_outputs(revision)
+            release.restore_generated_outputs(revision)
         self.assertEqual(generated.read_text(), "regenerated\n")
         self.assertEqual((self.root / "app.py").read_text(), "changed source\n")
 

@@ -1230,5 +1230,30 @@
         }
       ]
     }
+  ],
+  "installerSourceInputs": [
+    {
+      "name": "NSIS",
+      "version": "3.11",
+      "filename": "nsis-3.11-src.tar.bz2",
+      "url": "https://downloads.sourceforge.net/project/nsis/NSIS%203/3.11/nsis-3.11-src.tar.bz2",
+      "sha256": "19e72062676ebdc67c11dc032ba80b979cdbffd3886c60b04bb442cdd401ff4b",
+      "licenseFiles": {
+        "nsis-3.11-src/COPYING": "e7dd514003ab96cb3ddccbc028fe5c795fccf57dc41f21cfb9d4dd16ead23bf5"
+      },
+      "sourceReview": "pending: bind compiled stub/plugin and recursive build inputs"
+    },
+    {
+      "name": "nsis_tauri_utils",
+      "version": "0.5.3",
+      "filename": "nsis_tauri_utils-13d9edd2.tar.gz",
+      "url": "https://codeload.github.com/tauri-apps/nsis-tauri-utils/tar.gz/13d9edd27b69310e108d6fbd49f90992f8a05390",
+      "sha256": "9b277f7cdec4277b48d319c32e10b5dc4303e9efce8c3b44f1db77f86a8131c7",
+      "licenseFiles": {
+        "nsis-tauri-utils-13d9edd27b69310e108d6fbd49f90992f8a05390/LICENSE_MIT": "1c1020fa10a6bf318717e82c911bcc54ebdfb9bb280460ae332bcb2f82f57fbe",
+        "nsis-tauri-utils-13d9edd27b69310e108d6fbd49f90992f8a05390/LICENSE_APACHE-2.0": "0d542e0c8804e39aa7f37eb00da5a762149dc682d7829451287e11b938e94594"
+      },
+      "sourceReview": "pending: bind compiled stub/plugin and recursive build inputs"
+    }
   ]
 }

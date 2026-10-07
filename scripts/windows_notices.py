@@ -11,6 +11,7 @@ import json
 import os
 import shutil
 import subprocess
+import tarfile
 import tomllib
 import zipfile
 from pathlib import Path
@@ -239,11 +240,30 @@ def collect() -> None:
                         (destination / name).write_bytes(content)
         else:
             shutil.copy2(archive, destination / "LICENSE.txt")
+    installer_sources = read_json(ROOT / "services/ocr/windows-inputs.json")[
+        "installerSourceInputs"
+    ]
+    for entry in installer_sources:
+        archive = BUILD / "sources/installer" / entry["filename"]
+        if digest(archive) != entry["sha256"]:
+            raise ValueError("Installer source archive hash differs")
+        destination = output / "licenses/windows-installer" / entry["name"]
+        destination.mkdir(parents=True, exist_ok=True)
+        with tarfile.open(archive) as source:
+            for name, sha in entry["licenseFiles"].items():
+                member = source.getmember(name)
+                if not member.isfile():
+                    raise ValueError("Installer notice is not a regular source file")
+                content = source.extractfile(member).read()
+                if hashlib.sha256(content).hexdigest() != sha:
+                    raise ValueError("Installer source notice hash differs")
+                (destination / Path(name).name).write_bytes(content)
     record = {
         "target": "x86_64-pc-windows-msvc",
         "components": rust_components(output) + javascript_components(output),
         "publicDistributionApproved": False,
         "desktopVendorInputs": vendor_inputs,
+        "installerSourceInputs": installer_sources,
     }
     # Store portable relative notice paths, never assume Mac target membership.
     for component in record["components"]:
