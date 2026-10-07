@@ -74,6 +74,28 @@ def validate_lock(record: dict) -> None:
             or "\\" in item["filename"]
         ):
             raise ValueError("Invalid input pin")
+        if item["filename"].endswith(".whl"):
+            _, python_tag, abi, target = (
+                item["filename"].removesuffix(".whl").rsplit("-", 3)
+            )
+            compatible = (
+                (python_tag == "cp311" and abi == "cp311" and target == "win_amd64")
+                or (
+                    python_tag in ("cp37", "cp38", "cp39", "cp310", "cp311")
+                    and abi == "abi3"
+                    and target == "win_amd64"
+                )
+                or (
+                    python_tag in ("py3", "py2.py3")
+                    and abi == "none"
+                    and target in ("any", "win_amd64")
+                )
+            )
+            if not compatible:
+                raise ValueError(
+                    "Wheel is not compatible with Windows CPython 3.11 x64: "
+                    + item["filename"]
+                )
     for name, version in (("torch", "2.8.0+cpu"), ("torchvision", "0.23.0+cpu")):
         entry = next(e for e in entries if e["name"] == name)
         if entry["version"] != version or not entry["url"].startswith(

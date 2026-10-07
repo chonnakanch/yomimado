@@ -1102,9 +1102,9 @@
     {
       "name": "hf-xet",
       "version": "1.6.0",
-      "filename": "hf_xet-1.6.0-cp314-cp314t-win_amd64.whl",
-      "url": "https://files.pythonhosted.org/packages/53/a0/26b717a9d1840e8abf48dcec64b5ed8fbe472671d38ad28d30e147132b33/hf_xet-1.6.0-cp314-cp314t-win_amd64.whl",
-      "sha256": "5789835d7c6bc9436962853192082374297fb72d7eff7e7762ec25ceb7e25338",
+      "filename": "hf_xet-1.6.0-cp38-abi3-win_amd64.whl",
+      "url": "https://files.pythonhosted.org/packages/98/b7/8c59a66d15205024662f1d66968136f13893f96df1ddc5087e2e281fc95f/hf_xet-1.6.0-cp38-abi3-win_amd64.whl",
+      "sha256": "fb4fadde1b2b70bf4c0c14a6dccbe7194b1c28947fefd5bbe3fed9d940676c3b",
       "source": {
         "filename": "hf_xet-1.6.0.tar.gz",
         "url": "https://files.pythonhosted.org/packages/1b/ab/522a2ab67f27971a9d48ca666d4fca85ef7d5282d142e31fd087e27b1bbe/hf_xet-1.6.0.tar.gz",

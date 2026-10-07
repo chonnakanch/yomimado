@@ -64,6 +64,8 @@ class WindowsReleaseTests(unittest.TestCase):
 
         def api(url, method="GET", data=None, content_type=None):
             calls.append((url, method, data))
+            if url.endswith("/releases?per_page=100"):
+                return []
             if url.endswith("/releases"):
                 self.assertTrue(data["draft"])
                 self.assertTrue(data["prerelease"])
@@ -126,6 +128,18 @@ class WindowsReleaseTests(unittest.TestCase):
         )
         with self.assertRaisesRegex(ValueError, "CPU Torch"):
             release.validate_lock(manifest)
+
+    def test_incompatible_python_abi_and_arm_wheels_are_rejected(self):
+        for filename in (
+            "hf_xet-1.6.0-cp314-cp314t-win_amd64.whl",
+            "hf_xet-1.6.0-cp38-abi3-win_arm64.whl",
+        ):
+            manifest = release.read_json(release.SERVICE / "windows-inputs.json")
+            next(e for e in manifest["packages"] if e["name"] == "hf-xet")[
+                "filename"
+            ] = filename
+            with self.assertRaisesRegex(ValueError, "not compatible"):
+                release.validate_lock(manifest)
 
     def test_detector_and_unapproved_weights_are_rejected_at_any_depth(self):
         for suffix in release.FORBIDDEN:

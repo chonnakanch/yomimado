@@ -86,21 +86,35 @@ def stage(directory: Path) -> None:
     files = candidate_files(directory, revision)
     tag = "windows-private-test-" + revision
     tag_absent(tag)
-    release = request(
-        API + "/releases",
-        "POST",
-        {
-            "tag_name": tag,
-            "target_commitish": revision,
-            "name": "PRIVATE Windows installer test — " + revision[:12],
-            "draft": True,
-            "prerelease": True,
-            "body": "Private maintainer test only. Source/licence review and exact-installer human approval remain OPEN. Do not publish this draft.\n\nSource: "
-            + revision
-            + "\n\n"
-            + (directory / "SHA256SUMS.txt").read_text(),
-        },
-    )
+    existing = [
+        r for r in request(API + "/releases?per_page=100") if r["tag_name"] == tag
+    ]
+    if len(existing) > 1:
+        raise ValueError("Ambiguous private draft")
+    if existing:
+        release = existing[0]
+        if (
+            release["draft"] is not True
+            or release["target_commitish"] != revision
+            or release["assets"]
+        ):
+            raise ValueError("Only an empty exact-commit private draft can be staged")
+    else:
+        release = request(
+            API + "/releases",
+            "POST",
+            {
+                "tag_name": tag,
+                "target_commitish": revision,
+                "name": "PRIVATE Windows installer test — " + revision[:12],
+                "draft": True,
+                "prerelease": True,
+                "body": "Private maintainer test only. Source/licence review and exact-installer human approval remain OPEN. Do not publish this draft.\n\nSource: "
+                + revision
+                + "\n\n"
+                + (directory / "SHA256SUMS.txt").read_text(),
+            },
+        )
     if release["draft"] is not True:
         raise ValueError("GitHub did not create an unpublished draft")
     upload = release["upload_url"].split("{")[0]

@@ -5,6 +5,11 @@ record from automated CI alone. Each rebuilt setup needs its own confirmation.
 The candidate workflow stages an owner-only GitHub draft with `SHA256SUMS.txt`
 and `windows-candidate.json`. It creates no tag and has no publication operation.
 Installer/source archives are never uploaded as public Actions artifacts.
+GitHub blocks Actions tokens from creating a draft targeting workflow changes
+relative to main. Before staging, create an **empty draft** in the owner UI with
+`windows-private-test-<full candidate SHA>` and the exact candidate commit as
+target; save as draft, never publish/create a tag. The workflow can upload and
+verify that empty draft. No credentials belong in git, logs or test reports.
 
 Reported hardware (2026-10-07): Intel Core i5-14500, RTX 4070 Super, Windows
 version described as “25h”, one 2K display. The PC is not currently available.
