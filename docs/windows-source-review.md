@@ -64,6 +64,9 @@ Review steps:
    BSD redistribution licence and NOTICE are preserved, with the loader DLL
    and static library hashes (the MSVC wrapper statically links the latter).
    The missing webview2-rs MIT text is fetched at Cargo's exact upstream commit.
+   All three locked wrapper crates are linked to that preserved notice; the
+   macros crate's different upstream revision was verified to have identical
+   licence bytes. The Windows-target locked graph resolves 286 crates.
    Resolve SDK-loader source/system-library scope separately; wrapper metadata
    does not cover Microsoft binaries.
 

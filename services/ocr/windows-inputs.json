@@ -1209,7 +1209,26 @@
       "filename": "webview2-rs-b74dc5e2-LICENSE.txt",
       "url": "https://raw.githubusercontent.com/wravery/webview2-rs/b74dc5e2b394044bea5191052868ce7a106c202c/LICENSE",
       "sha256": "0dcf41516e608bbcb6cdc5229feb7b86fe4a643b85e7df251133c93408fdac73",
-      "license": "MIT"
+      "license": "MIT",
+      "coveredCrates": [
+        {
+          "name": "webview2-com",
+          "version": "0.38.2",
+          "revision": "b74dc5e2b394044bea5191052868ce7a106c202c"
+        },
+        {
+          "name": "webview2-com-sys",
+          "version": "0.38.2",
+          "revision": "b74dc5e2b394044bea5191052868ce7a106c202c"
+        },
+        {
+          "name": "webview2-com-macros",
+          "version": "0.8.1",
+          "revision": "dffa41a8a46d3f5565eefbff2de57d38d399f158",
+          "licenseUrl": "https://raw.githubusercontent.com/wravery/webview2-rs/dffa41a8a46d3f5565eefbff2de57d38d399f158/LICENSE",
+          "licenseSha256": "0dcf41516e608bbcb6cdc5229feb7b86fe4a643b85e7df251133c93408fdac73"
+        }
+      ]
     }
   ]
 }

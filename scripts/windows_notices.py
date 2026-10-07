@@ -79,6 +79,13 @@ def rust_components(output: Path) -> list[dict]:
     included = {node["id"] for node in data["resolve"]["nodes"]}
     lock = tomllib.loads((DESKTOP / "src-tauri/Cargo.lock").read_text(encoding="utf-8"))
     hashes = {(p["name"], p["version"]): p.get("checksum") for p in lock["package"]}
+    vendor_licenses = {
+        (crate["name"], crate["version"]): (vendor, crate)
+        for vendor in read_json(ROOT / "services/ocr/windows-inputs.json")[
+            "desktopVendorInputs"
+        ]
+        for crate in vendor.get("coveredCrates", [])
+    }
     result = []
     for package in data["packages"]:
         if package["id"] not in included or package["name"] == "yomimado":
@@ -102,6 +109,18 @@ def rust_components(output: Path) -> list[dict]:
             )
             if group:
                 copied = supplement(group, output / "licenses/rust" / key)
+            elif (name, version) in vendor_licenses:
+                vendor, crate = vendor_licenses[(name, version)]
+                vcs = read_json(directory / ".cargo_vcs_info.json")
+                license_path = (
+                    output / "licenses/windows-vendors" / vendor["name"] / "LICENSE.txt"
+                )
+                if (
+                    vcs["git"]["sha1"] != crate["revision"]
+                    or digest(license_path) != vendor["sha256"]
+                ):
+                    raise ValueError("Windows crate upstream licence evidence differs")
+                copied = [str(license_path)]
         sha = hashes[(name, version)]
         if not sha or not package["source"].startswith("registry+"):
             raise ValueError("Unpinned/non-registry Windows crate: " + key)
