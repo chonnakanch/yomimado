@@ -1,8 +1,10 @@
 # First macOS pre-release notes — draft
 
-Native source/licence clearance and exact-candidate verification are complete;
-publication is pending installed-app sign-off. Attach the final DMG/source/notices download links,
-source commit and SHA-256 values before publishing these notes.
+Native source/licence clearance, exact-candidate verification and installed-app
+checks are complete for candidate `5120506`. Publication will follow a versioned
+merge into `main`, CI verification and installer confirmation for the new DMG.
+The workflow supplies that merged source commit, download links and hashes;
+the historical seed hashes below must not be used for a rebuilt installer.
 
 YomiMado (読み窓) helps you read Japanese text on your screen: select a region,
 run local OCR, then click the overlay to explore readings, dictionary meanings,

@@ -1,0 +1,324 @@
+name: macOS pre-release from main
+
+# Merge a versioned change into main. Build the merged commit, then wait for
+# installer confirmation before creating its tag and public hobby pre-release.
+"on":
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: macos-main-release
+  cancel-in-progress: false
+
+env:
+  SEED_RELEASE_TAG: macos-reviewed-seed-5120506
+  SOURCE_REVISION: ${{ github.sha }}
+  SOURCE_SHA256: 0ca10a4cc5084d4778aa636e07c504db56dcf9baec87af2d37b00859803a2744
+  NOTICES_SHA256: f0d2a380e2639a525bf93c61d0aa0c45de5952cb283a9a0afb65810c46b22f71
+  SEED_DMG_SHA256: fbe1d788d2f80b442b2abf9c53c5439af81ea78c2bc73c584907b4791f3c1cff
+
+jobs:
+  plan:
+    if: github.repository == 'chonnakanch/yomimado' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      actions: read
+    outputs:
+      release: ${{ steps.plan.outputs.release }}
+      version: ${{ steps.plan.outputs.version }}
+      tag: ${{ steps.plan.outputs.tag }}
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
+        with:
+          python-version: "3.11.17"
+      - name: Select version and require installer review protection
+        id: plan
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          plan="$(python scripts/macos-ci-release.py plan)"
+          version="$(jq -er .version <<< "$plan")"
+          tag="$(jq -er .tag <<< "$plan")"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+          if git show-ref --verify --quiet "refs/tags/$tag"; then
+            gh api "repos/$GITHUB_REPOSITORY/releases/tags/$tag" > "$RUNNER_TEMP/existing-release.json"
+            jq -e '.draft == false' "$RUNNER_TEMP/existing-release.json" > /dev/null
+            echo "release=false" >> "$GITHUB_OUTPUT"
+            echo "Version $version is already released; bump the app version for another release."
+            exit 0
+          fi
+          test "$(gh api "repos/$GITHUB_REPOSITORY" --jq .default_branch)" = main
+          gh api "repos/$GITHUB_REPOSITORY/environments/macos-release" > "$RUNNER_TEMP/release-environment.json"
+          gh api "repos/$GITHUB_REPOSITORY/environments/macos-release/deployment-branch-policies" > "$RUNNER_TEMP/release-policies.json"
+          python scripts/macos-ci-release.py verify-environment --directory "$RUNNER_TEMP/release-environment.json" --policies "$RUNNER_TEMP/release-policies.json"
+          echo "release=true" >> "$GITHUB_OUTPUT"
+
+  build:
+    needs: plan
+    if: needs.plan.outputs.release == 'true'
+    runs-on: macos-14
+    timeout-minutes: 90
+    outputs:
+      record: ${{ steps.package.outputs.record }}
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: "22.23.2"
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
+        with:
+          python-version: "3.11.17"
+      - name: Check platform and prepare verification tools
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(uname -s)" = Darwin
+          test "$(uname -m)" = arm64
+          test "$(git rev-parse HEAD)" = "$SOURCE_REVISION"
+          test -z "$(git status --porcelain)"
+          rustup toolchain install 1.98.1 --profile minimal
+          rustup default 1.98.1
+          python -m pip install --disable-pip-version-check --only-binary=:all: --no-deps pillow==11.3.0 tomli==2.4.1 importlib-metadata==8.7.1 zipp==3.23.0
+          python -m unittest discover -s scripts/tests
+          npm ci --prefix apps/desktop
+          npm test --prefix apps/desktop
+          cargo test --manifest-path apps/desktop/src-tauri/Cargo.toml --locked
+          mkdir -p "$RUNNER_TEMP/yomimado-input" "$RUNNER_TEMP/yomimado-output"
+      - name: Download and hash the reviewed seed assets
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          gh api "repos/$GITHUB_REPOSITORY/releases/tags/$SEED_RELEASE_TAG" > "$RUNNER_TEMP/yomimado-input/release.json"
+          python - <<'PY'
+          import hashlib, json, os, subprocess
+          from pathlib import Path
+          directory = Path(os.environ["RUNNER_TEMP"]) / "yomimado-input"
+          expected = {
+              "YomiMado_0.1.0_aarch64.dmg": os.environ["SEED_DMG_SHA256"],
+              "YomiMado_0.1.0_sources_5120506.tar.gz": os.environ["SOURCE_SHA256"],
+              "YomiMado_0.1.0_notices_5120506.tar.gz": os.environ["NOTICES_SHA256"],
+          }
+          release = json.loads((directory / "release.json").read_text())
+          if release["tag_name"] != os.environ["SEED_RELEASE_TAG"] or release["draft"] is not True:
+              raise ValueError("Reviewed seed must remain an unpublished draft")
+          for name, digest in expected.items():
+              assets = [a for a in release["assets"] if a["name"] == name]
+              if len(assets) != 1 or not isinstance(assets[0]["id"], int):
+                  raise ValueError("Missing or ambiguous reviewed asset: " + name)
+              endpoint = f'repos/{os.environ["GITHUB_REPOSITORY"]}/releases/assets/{assets[0]["id"]}'
+              path = directory / name
+              with path.open("wb") as output:
+                  subprocess.run(["gh", "api", endpoint, "-H", "Accept: application/octet-stream"], stdout=output, check=True)
+              with path.open("rb") as stream:
+                  actual = hashlib.file_digest(stream, "sha256").hexdigest()
+              if actual != digest:
+                  raise ValueError("Reviewed input hash mismatch: " + name)
+          PY
+          tar -xzf "$RUNNER_TEMP/yomimado-input/YomiMado_0.1.0_sources_5120506.tar.gz" -C "$RUNNER_TEMP/yomimado-input"
+          echo "YOMIMADO_SOURCE_DIR=$RUNNER_TEMP/yomimado-input/source-delivery-5120506" >> "$GITHUB_ENV"
+      - name: Install smoke-only detector from the original publisher
+        shell: bash
+        run: |
+          set -euo pipefail
+          model="$RUNNER_TEMP/comictextdetector.pt.onnx"
+          curl --fail --location --retry 3 --output "$model" \
+            https://github.com/zyddnys/manga-image-translator/releases/download/beta-0.2.1/comictextdetector.pt.onnx
+          echo "1a86ace74961413cbd650002e7bb4dcec4980ffa21b2f19b86933372071d718f  $model" | shasum -a 256 --check
+          echo "YOMIMADO_SMOKE_DETECTOR_MODEL=$model" >> "$GITHUB_ENV"
+      - name: Verify the seed DMG and copy its reviewed runtime
+        shell: bash
+        run: |
+          set -euo pipefail
+          seed="$RUNNER_TEMP/yomimado-input/YomiMado_0.1.0_aarch64.dmg"
+          bash scripts/verify-macos-dmg.sh "$seed" "$(command -v python)" --hobby-release
+          mount_dir="$(mktemp -d /private/tmp/yomimado-seed.XXXXXX)"
+          trap 'hdiutil detach "$mount_dir"; rmdir "$mount_dir"' EXIT
+          hdiutil attach -readonly -nobrowse -mountpoint "$mount_dir" "$seed"
+          mkdir -p apps/desktop/src-tauri/resources
+          ditto "$mount_dir/YomiMado.app/Contents/Resources/ocr" apps/desktop/src-tauri/resources/ocr
+          hdiutil detach "$mount_dir"
+          rmdir "$mount_dir"
+          trap - EXIT
+          rm "$seed"
+      - name: Bind matching project sources to the merged commit
+        shell: bash
+        run: |
+          set -euo pipefail
+          source_dir="$RUNNER_TEMP/yomimado-input/source-delivery-main"
+          notices=apps/desktop/src-tauri/resources/ocr/notices
+          python scripts/macos-ci-release.py prepare-sources \
+            --sources "$YOMIMADO_SOURCE_DIR" --notices "$notices" --directory "$source_dir"
+          python scripts/macos-release.py verify-sources "$notices" \
+            --source-dir "$source_dir" --revision "$SOURCE_REVISION"
+          echo "YOMIMADO_SOURCE_DIR=$source_dir" >> "$GITHUB_ENV"
+          rm -rf "$RUNNER_TEMP/yomimado-input/source-delivery-5120506"
+          rm "$RUNNER_TEMP/yomimado-input/YomiMado_0.1.0_sources_5120506.tar.gz"
+          rm "$RUNNER_TEMP/yomimado-input/YomiMado_0.1.0_notices_5120506.tar.gz"
+      - name: Build and verify the new hobby DMG
+        env:
+          APP_VERSION: ${{ needs.plan.outputs.version }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          env -u APPLE_CERTIFICATE -u APPLE_CERTIFICATE_PASSWORD \
+            -u APPLE_API_ISSUER -u APPLE_API_KEY -u APPLE_API_KEY_PATH \
+            -u APPLE_ID -u APPLE_PASSWORD -u APPLE_TEAM_ID \
+            APPLE_SIGNING_IDENTITY=- VITE_OCR_URL=http://127.0.0.1:8766 \
+            npm --prefix apps/desktop run tauri build -- \
+            --config src-tauri/tauri.release.conf.json --bundles dmg --ci -- --locked
+          dmg="apps/desktop/src-tauri/target/release/bundle/dmg/YomiMado_${APP_VERSION}_aarch64.dmg"
+          test -f "$dmg"
+          bash scripts/verify-macos-dmg.sh "$dmg" "$(command -v python)" --hobby-release
+          test "$(git rev-parse HEAD)" = "$SOURCE_REVISION"
+          test -z "$(git status --porcelain)"
+          mv "$dmg" "$RUNNER_TEMP/yomimado-output/"
+      - name: Assemble only release files and bind their digests
+        id: package
+        shell: bash
+        run: |
+          set -euo pipefail
+          record="$(python scripts/macos-ci-release.py package \
+            --directory "$RUNNER_TEMP/yomimado-output" --sources "$YOMIMADO_SOURCE_DIR" \
+            --notices apps/desktop/src-tauri/resources/ocr/notices)"
+          python scripts/macos-ci-release.py verify-artifact \
+            --directory "$RUNNER_TEMP/yomimado-output" --expected "$record"
+          echo "record=$record" >> "$GITHUB_OUTPUT"
+          {
+            echo "### Installer confirmation required"
+            echo "Merged commit: $SOURCE_REVISION"
+            echo "$record" | jq -r '.assets | to_entries[] | "- \(.key): \(.value)"'
+            echo "Download verified-macos-hobby-candidate and test its exact DMG before approving macos-release."
+            echo "Fresh-Mac testing is waived; never describe it as passed."
+          } >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: candidate-for-transfer
+          path: ${{ runner.temp }}/yomimado-output/
+          if-no-files-found: error
+          retention-days: 1
+          compression-level: 0
+      - name: Remove smoke-only model
+        if: always()
+        shell: bash
+        run: rm -f "$RUNNER_TEMP/comictextdetector.pt.onnx"
+
+  verify-transfer:
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: candidate-for-transfer
+          path: candidate
+      - name: Reject altered or additional artifact files
+        env:
+          EXPECTED_RECORD: ${{ needs.build.outputs.record }}
+        shell: bash
+        run: python3 scripts/macos-ci-release.py verify-artifact --directory candidate --expected "$EXPECTED_RECORD"
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: verified-macos-hobby-candidate
+          path: candidate/
+          if-no-files-found: error
+          retention-days: 14
+          compression-level: 0
+
+  publish:
+    needs: [plan, build, verify-transfer]
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    environment: macos-release
+    permissions:
+      contents: write
+      actions: read
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: verified-macos-hobby-candidate
+          path: candidate
+      - name: Recheck files, protection, main and tag before publishing
+        env:
+          GH_TOKEN: ${{ github.token }}
+          EXPECTED_RECORD: ${{ needs.build.outputs.record }}
+          RELEASE_TAG: ${{ needs.plan.outputs.tag }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 scripts/macos-ci-release.py verify-artifact --directory candidate --expected "$EXPECTED_RECORD"
+          test "$(gh api "repos/$GITHUB_REPOSITORY" --jq .default_branch)" = main
+          gh api "repos/$GITHUB_REPOSITORY/environments/macos-release" > "$RUNNER_TEMP/release-environment.json"
+          gh api "repos/$GITHUB_REPOSITORY/environments/macos-release/deployment-branch-policies" > "$RUNNER_TEMP/release-policies.json"
+          python3 scripts/macos-ci-release.py verify-environment --directory "$RUNNER_TEMP/release-environment.json" --policies "$RUNNER_TEMP/release-policies.json"
+          main_sha="$(gh api "repos/$GITHUB_REPOSITORY/git/ref/heads/main" --jq .object.sha)"
+          test "$main_sha" = "$GITHUB_SHA"
+          test -z "$(git ls-remote --tags origin "refs/tags/$RELEASE_TAG" "refs/tags/$RELEASE_TAG^{}")"
+          python3 - <<'PYNOTES'
+          import json, os
+          from pathlib import Path
+          record = json.loads(os.environ["EXPECTED_RECORD"])
+          template = Path("docs/macos-prerelease-notes.md").read_text()
+          notes = template.split("Verified candidate source commit:", 1)[0]
+          notes = notes.replace("# First macOS pre-release notes — draft", "# YomiMado " + record["version"] + " — macOS pre-release")
+          start = notes.index("Native source/licence clearance")
+          end = notes.index("YomiMado (読み窓)", start)
+          notes = notes[:start] + "" + notes[end:]
+          notes += "Source commit: `" + record["sourceRevision"] + "`.\n\n"
+          notes += "This exact CI installer was confirmed by the maintainer through the protected release environment. Fresh-macOS testing remains waived.\n\n"
+          for name, digest in record["assets"].items():
+              url = f'https://github.com/{os.environ["GITHUB_REPOSITORY"]}/releases/download/{record["tag"]}/{name}'
+              notes += f"- [{name}]({url}) — SHA-256 `{digest}`\n"
+          Path(os.environ["RUNNER_TEMP"], "release-notes.md").write_text(notes)
+          PYNOTES
+          # Create the version tag only after the main merge and installer
+          # approval. Failure during upload leaves the release unpublished.
+          gh api --method POST "repos/$GITHUB_REPOSITORY/git/refs" \
+            -f "ref=refs/tags/$RELEASE_TAG" -f "sha=$GITHUB_SHA" > /dev/null
+          gh release create "$RELEASE_TAG" candidate/* --repo "$GITHUB_REPOSITORY" --verify-tag \
+            --target "$GITHUB_SHA" --title "YomiMado $RELEASE_TAG — macOS pre-release" \
+            --notes-file "$RUNNER_TEMP/release-notes.md" --prerelease --draft
+          gh api "repos/$GITHUB_REPOSITORY/releases/tags/$RELEASE_TAG" > "$RUNNER_TEMP/uploaded-release.json"
+          test "$(gh api "repos/$GITHUB_REPOSITORY/git/ref/tags/$RELEASE_TAG" --jq .object.sha)" = "$GITHUB_SHA"
+          python3 - <<'PYUPLOAD'
+          import json, os
+          from pathlib import Path
+          report = json.loads(Path(os.environ["RUNNER_TEMP"], "uploaded-release.json").read_text())
+          record = json.loads(os.environ["EXPECTED_RECORD"])
+          expected = dict(record["assets"])
+          import hashlib
+          for path in Path("candidate").iterdir():
+              with path.open("rb") as stream:
+                  expected[path.name] = hashlib.file_digest(stream, "sha256").hexdigest()
+          actual = {a["name"]: a["digest"] for a in report["assets"]}
+          if not report["draft"] or not report["prerelease"] or len(report["assets"]) != len(expected) or actual != {n: "sha256:" + d for n, d in expected.items()}:
+              raise ValueError("Uploaded release assets differ; leave the draft unpublished")
+          PYUPLOAD
+          gh release edit "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY" --draft=false

@@ -26,6 +26,15 @@ cleared for candidate `5120506`; fresh-Mac and other untested subcases stay
 explicit in the release record. A CI rebuild needs a new installer confirmation.
 Native licence/source review and maintainer approval remain complete.
 
+Release policy (2026-10-06): versioned feature merges into `main` trigger the
+macOS hobby pre-release workflow. It builds the merged commit, preserves the
+reviewed runtime/source inputs, verifies artifact transfers, and creates
+`v<app version>` plus the public GitHub pre-release after protected installer
+confirmation. Local workflow/rebuild checks pass. The protected GitHub release
+environment is configured and API-verified on 2026-10-07. Initial/default `main`,
+GitHub seed assets and hosted execution are pending; no version tag or
+public release has been created. See [the release setup](macos-release.md#release-on-merge-to-main).
+
 Status audit (2026-10-05): the capture → local OCR → interactive overlay →
 learning-popup flow works with user-installed models on macOS and has been
 manually exercised on a Retina display. The desktop (55), Rust (36), and OCR
@@ -742,15 +751,20 @@ Before any public release:
       compiled Tomli, and retain all embedded notices
 - [x] build and verify the source-approved hobby candidate from clean revision
       042360e; exact mounted DMG/bundle and frozen-service smoke checks pass
-- [ ] finish installed-app testing on the existing Mac before publication;
-      source approval and candidate verification do not mark these tests passed
+- [x] finish installed-app testing for the sealed `5120506` candidate on the
+      existing Mac, including maintainer-confirmed page scan, fresh translation,
+      offline capture/lookup, reboot shortcut and saved-data persistence/removal
 - Fresh-macOS install testing was skipped at the maintainer's request on
   2026-10-05 because no clean Mac is available; disclose this unverified case.
   Exact-DMG verification, model import and Screen Recording tests remain required.
 - [ ] link the exact corresponding source revision and full notices alongside
       the public GitHub Release
-- [ ] add the GitHub Actions build after the hobby installer is releasable;
-      never upload the private test bundle or detector weights
+- [x] add the main-triggered versioned GitHub Actions build after the hobby
+      installer is releasable; never upload private outputs or detector weights
+- [x] configure/API-verify the protected release environment with a required
+      reviewer and main-only branch policy, without administrator bypass
+- [ ] configure GitHub seed assets, create/set default `main`, merge the release
+      change, and confirm the new CI installer before public publication
 - [x] keep copyrighted manga fixtures out of git (current tracked test assets)
 - [x] document local model/data setup behavior
 - [x] document macOS permissions
