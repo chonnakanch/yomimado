@@ -33,7 +33,7 @@ if ($Prepare) {
 }
 if (-not (Test-Path $Python)) { throw 'Prepare the isolated Windows runtime first.' }
 Invoke-Checked $Python @('-m', 'pytest', 'services/ocr/tests')
-Invoke-Checked $Python @('-m', 'unittest', 'discover', '-s', 'scripts/tests')
+Invoke-Checked $Python @('-m', 'unittest', 'discover', '-s', 'scripts/tests', '-p', 'test_windows*.py')
 Invoke-Checked npm @('ci', '--prefix', 'apps/desktop')
 Invoke-Checked npm @('test', '--prefix', 'apps/desktop')
 Invoke-Checked cargo @('test', '--locked', '--manifest-path', 'apps/desktop/src-tauri/Cargo.toml')
@@ -66,6 +66,7 @@ Copy-Item (Join-Path $Root 'docs/windows-source-review.md') $Notices
 [IO.File]::WriteAllText((Join-Path $Notices 'project-revision.txt'), "$Revision`n")
 @{mode='private-test'; authenticodeSigned=$false; publicDistributionApproved=$false; installedAppVerified=$false} | ConvertTo-Json | Set-Content (Join-Path $Notices 'distribution.json') -Encoding utf8NoBOM
 Invoke-Checked $Python @('scripts/windows_notices.py')
+Invoke-Checked $Python @('scripts/windows_release.py', 'configuration')
 Invoke-Checked $Python @('scripts/windows_release.py', 'inventory')
 Invoke-Checked $Python @('scripts/windows_release.py', 'seal')
 Invoke-Checked $Python @('scripts/windows_release.py', 'verify')

@@ -20,7 +20,28 @@ source/binary externals and no Tkinter. Its upstream OpenSSL 3.0.15 and libffi
 upstream Windows build scripts and redistribution terms; merely possessing a
 matching version number does not prove corresponding-source coverage.
 
-For each candidate, inspect `notices/windows-inventory.json`:
+For each candidate, inspect `notices/windows-inventory.json` and
+`windows-native-configuration.json`. The latter records compiler/vendor build
+information (Torch/BLAS/OpenMP, NumPy, OpenCV, Pillow codecs and GEOS) from the
+exact hash-pinned Windows environment, not guessed versions from macOS.
+
+The 2026-10-07 wheel audit inspected original bytes whose SHA-256 pins are in
+`services/ocr/windows-inputs.json`. Counts below describe build inputs; the
+frozen/installed inventory determines which files are delivered.
+
+| Windows input          | EXE/DLL/PYD inputs | Exact embedded notice findings / public gate                                                                                                                               |
+| ---------------------- | -----------------: | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| SudachiPy 0.6.10       |                  1 | No wheel licence files; verified Apache/MIT upstream texts now supplemented. Rust/vendor source review remains open.                                                       |
+| Fugashi 1.5.2          |                  2 | Fugashi and MeCab notices present. Preserve exact MeCab source and Windows recipe for its hashed DLL.                                                                      |
+| NumPy 1.26.4           |                 20 | BSD/OpenBLAS/LAPACK and GPL GCC runtime exception texts present; full libquadmath LGPL supplemented. OpenBLAS/GCC sources and replacement recipe remain open.              |
+| OpenCV 4.11.0.86       |                  2 | Full third-party notice present. FFmpeg plugin removed; identify retained IPP/static codec inputs and exact source/build coverage.                                         |
+| Pillow 11.3.0          |                  8 | Full vendor notice present including FreeType. Verify exact Windows codec versions, source coverage and FreeType attribution choice.                                       |
+| PyInstaller 6.16.0     |                  4 | GPL bootloader exception text present. Preserve bootloader source/build recipe and modified frozen EXE provenance.                                                         |
+| Shapely 2.0.7          |                  6 | Full GEOS LGPL and Windows runtime notice present. Exact GEOS source and replacement/rebuild recipe remain open.                                                           |
+| Torch 2.8.0+cpu        |                 16 | LICENSE/NOTICE present. `libiomp5md.dll`/stubs and static CPU vendors need exact licence/source/build mapping; absence of a standalone MKL DLL is insufficient.            |
+| torchvision 0.23.0+cpu |                  8 | Only torchvision LICENSE present despite JPEG/PNG/WebP/zlib DLLs. Add exact codec notices/sources or rebuild without unused image/video extensions before public delivery. |
+
+Review steps:
 
 1. Every actual EXE/DLL/PYD needs a SHA-256, x64 machine value, imports and
    matching input provenance. The PyInstaller bootloader and modified frozen

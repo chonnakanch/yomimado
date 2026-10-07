@@ -17,6 +17,12 @@ release = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(release)
 import windows_private_draft as draft
 
+smoke_spec = importlib.util.spec_from_file_location(
+    "windows_smoke", Path(__file__).parents[1] / "smoke-windows-install.py"
+)
+smoke = importlib.util.module_from_spec(smoke_spec)
+smoke_spec.loader.exec_module(smoke)
+
 
 class WindowsReleaseTests(unittest.TestCase):
     def setUp(self):
@@ -120,6 +126,43 @@ class WindowsReleaseTests(unittest.TestCase):
         manifest["packages"][0]["version"] = "unreviewed"
         with self.assertRaisesRegex(ValueError, "manifest differ"):
             release.validate_lock(manifest)
+
+    def test_loaded_inference_modules_reject_developer_and_system_vc_runtime(self):
+        runtime = self.root / "runtime"
+        system = self.root / "Windows"
+        for path, error in (
+            (self.root / "developer/torch_cpu.dll", "external"),
+            (system / "System32/msvcp140.dll", "app-local"),
+            (runtime / "cudart64.dll", "CUDA"),
+        ):
+            modules = json.dumps(
+                [{"name": path.name, "path": str(path), "sha256": "test"}]
+            )
+            with (
+                patch.dict("os.environ", {"SystemRoot": str(system)}),
+                patch.object(smoke.subprocess, "check_output", return_value=modules),
+                self.assertRaisesRegex(RuntimeError, error),
+            ):
+                smoke.loaded_modules(42, runtime)
+
+    def test_loaded_inference_modules_allow_bundled_and_os_libraries(self):
+        runtime = self.root / "runtime"
+        system = self.root / "Windows"
+        modules = [
+            {"name": p.name, "path": str(p), "sha256": "test"}
+            for p in (
+                runtime / "torch_cpu.dll",
+                runtime / "msvcp140.dll",
+                system / "System32/kernel32.dll",
+            )
+        ]
+        with (
+            patch.dict("os.environ", {"SystemRoot": str(system)}),
+            patch.object(
+                smoke.subprocess, "check_output", return_value=json.dumps(modules)
+            ),
+        ):
+            self.assertEqual(smoke.loaded_modules(42, runtime), modules)
 
     def test_changed_cpu_wheel_url_is_rejected(self):
         manifest = release.read_json(release.SERVICE / "windows-inputs.json")

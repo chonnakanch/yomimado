@@ -294,6 +294,32 @@ def inventory_inputs() -> None:
     write_json(BUILD / "windows-inventory.json", record)
 
 
+def native_configuration() -> None:
+    """Record compiled vendor versions/options for the exact Windows inputs."""
+    import cv2
+    import numpy
+    import shapely
+    import torch
+    from PIL import features
+
+    if sys.platform != "win32" or torch.version.cuda is not None:
+        raise ValueError("Native configuration requires the Windows CPU environment")
+    record = {
+        "python": platform.python_version(),
+        "torch": str(torch.__version__),
+        "torchCuda": torch.version.cuda,
+        "torchBuild": torch.__config__.show(),
+        "numpyBuild": numpy.show_config(mode="dicts"),
+        "opencvBuild": cv2.getBuildInformation(),
+        "geos": shapely.geos_version_string,
+        "pillow": {name: features.version(name) for name in features.get_supported()},
+        "inputManifestSha256": digest(SERVICE / "windows-inputs.json"),
+        "publicDistributionApproved": False,
+    }
+    write_json(BUILD / "windows-native-configuration.json", record)
+    write_json(RESOURCES / "notices/windows-native-configuration.json", record)
+
+
 def seal_resources(resources: Path) -> None:
     """Bind Python archives, data and notices as well as native binaries."""
     manifest = resources / "notices/windows-resource-hashes.json"
@@ -359,7 +385,16 @@ def verify_resources(resources: Path) -> dict:
             # System32 is not evidence that a clean user's PC will have them.
             if (
                 name.startswith(
-                    ("vcruntime", "msvcp", "libiomp", "mkl", "cuda", "cudnn")
+                    (
+                        "vcruntime",
+                        "msvcp",
+                        "vcomp",
+                        "concrt",
+                        "libiomp",
+                        "mkl",
+                        "cuda",
+                        "cudnn",
+                    )
                 )
                 or not (system / name).is_file()
             ):
@@ -439,7 +474,15 @@ def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
         "command",
-        choices=["download", "assets", "inventory", "seal", "verify", "package"],
+        choices=[
+            "download",
+            "assets",
+            "inventory",
+            "configuration",
+            "seal",
+            "verify",
+            "package",
+        ],
     )
     parser.add_argument("--resources", type=Path, default=RESOURCES)
     parser.add_argument("--installed", type=Path)
@@ -452,6 +495,8 @@ def main() -> None:
         prepare_assets()
     elif args.command == "inventory":
         inventory_inputs()
+    elif args.command == "configuration":
+        native_configuration()
     elif args.command == "seal":
         seal_resources(args.resources)
     elif args.command == "verify":

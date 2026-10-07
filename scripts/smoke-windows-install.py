@@ -18,6 +18,43 @@ from urllib.request import Request, urlopen
 from PIL import Image
 
 
+def loaded_modules(pid: int, runtime: Path) -> list[dict]:
+    """Check libraries actually loaded after inference, not just PE imports."""
+    system = Path(os.environ["SystemRoot"]).resolve()
+    powershell = system / "System32/WindowsPowerShell/v1.0/powershell.exe"
+    script = (
+        f"$ErrorActionPreference='Stop'; @(Get-Process -Id {pid}).Modules | "
+        "ForEach-Object { @{ path=$_.FileName; name=$_.ModuleName; "
+        "sha256=(Get-FileHash $_.FileName -Algorithm SHA256).Hash.ToLower() } } | "
+        "ConvertTo-Json -Compress"
+    )
+    modules = json.loads(
+        subprocess.check_output(
+            [str(powershell), "-NoProfile", "-NonInteractive", "-Command", script],
+            text=True,
+        )
+    )
+    for item in modules:
+        path = Path(item["path"]).resolve()
+        if not path.is_relative_to(runtime.resolve()) and not path.is_relative_to(
+            system
+        ):
+            raise RuntimeError(
+                "Frozen runtime loaded an external native module: " + str(path)
+            )
+        name = item["name"].lower()
+        if name.startswith(
+            ("vcruntime", "msvcp", "vcomp", "concrt", "libiomp", "mkl")
+        ) and not path.is_relative_to(runtime.resolve()):
+            raise RuntimeError(
+                "Frozen runtime used a system/developer copy instead of its app-local library: "
+                + name
+            )
+        if "cuda" in name or "cudnn" in name:
+            raise RuntimeError("CPU inference loaded CUDA")
+    return modules
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("installed", type=Path)
@@ -222,6 +259,29 @@ def main() -> None:
                             "translatedText": translation["translatedText"],
                         },
                     )
+                    modules = loaded_modules(process.pid, resources / "runtime")
+                    names = {m["name"].lower() for m in modules}
+                    check(
+                        "torch_cpu.dll" in names and "cv2.pyd" in names,
+                        "Actual CPU/native inference modules were not observed",
+                    )
+                    report = {
+                        "installedRuntime": str(resources / "runtime"),
+                        "runtimeSha256": hashlib.sha256(
+                            (resources / "runtime/yomimado-ocr.exe").read_bytes()
+                        ).hexdigest(),
+                        "loadedModules": modules,
+                        "geometry": ["vertical", "horizontal"],
+                        "tokenization": True,
+                        "dictionaries": True,
+                        "kanji": True,
+                        "uncachedTranslation": True,
+                        "windows11HardwareVerified": False,
+                    }
+                    (
+                        Path(__file__).parent.parent
+                        / "services/ocr/build/windows/installed-smoke.json"
+                    ).write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
                 except Exception:
                     # This service processes only the generated test text and
                     # isolated databases; surface startup diagnostics on failure.
@@ -234,6 +294,12 @@ def main() -> None:
                     except subprocess.TimeoutExpired:
                         process.kill()
                         process.wait()
+    report_path = (
+        Path(__file__).parent.parent / "services/ocr/build/windows/installed-smoke.json"
+    )
+    report = json.loads(report_path.read_text())
+    report["savedDataAndTranslationCacheSurvivedRestart"] = True
+    report_path.write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
     print(
         "PASS: installed frozen health, vertical/horizontal OCR geometry, Sudachi, JMdict, KANJIDIC2, translation and saved-data/cache restart"
     )
