@@ -68,27 +68,7 @@ jobs:
           if ($env:VCToolsVersion.TrimEnd('\') -ne '14.44.35207' -or $env:WindowsSDKVersion.TrimEnd('\') -ne '10.0.26100.0') { throw 'Native tools differ' }
           "Windows candidate: $env:ImageOS $env:ImageVersion; MSVC $env:VCToolsVersion; SDK $env:WindowsSDKVersion" | Add-Content $env:GITHUB_STEP_SUMMARY
       - name: Prepare, test, freeze, inventory and build NSIS
-        run: |
-          $ErrorActionPreference = 'Stop'
-          $log = Join-Path $env:RUNNER_TEMP 'windows-preparation.log'
-          $failed = $false
-          Start-Transcript -Path $log | Out-Null
-          try {
-            ./scripts/build-windows-prerelease.ps1 -Prepare
-          } catch {
-            $failed = $true
-            throw
-          } finally {
-            Stop-Transcript | Out-Null
-            if ($failed) {
-              # Native build errors are already public job logs. Preserve a
-              # bounded tail in annotations for API-based failure diagnosis.
-              $tail = (Get-Content $log -Tail 50) -join "`n"
-              if ($tail.Length -gt 12000) { $tail = $tail.Substring($tail.Length - 12000) }
-              $encoded = $tail.Replace('%', '%25').Replace("`r", '%0D').Replace("`n", '%0A')
-              Write-Host "::error title=Windows preparation failed::$encoded"
-            }
-          }
+        run: ./scripts/build-windows-prerelease.ps1 -Prepare
       - name: Install exact setup and verify installed startup
         run: |
           $ErrorActionPreference = 'Stop'
@@ -131,6 +111,7 @@ jobs:
           name: windows-preparation-evidence
           path: |
             services/ocr/build/windows/python-build.log
+            services/ocr/build/windows/build-last-command.log
             services/ocr/build/windows/python-build.json
             services/ocr/build/windows/windows-inventory.json
             services/ocr/build/windows/windows-native-configuration.json

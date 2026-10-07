@@ -10,8 +10,19 @@ $Resources = Join-Path $Root 'apps/desktop/src-tauri/resources/ocr'
 $Python = Join-Path $Build 'venv/Scripts/python.exe'
 function Invoke-Checked {
     param([string]$Program, [string[]]$Arguments)
-    & $Program @Arguments
-    if ($LASTEXITCODE -ne 0) { throw "$Program exited with $LASTEXITCODE" }
+    $CommandLog = Join-Path $Build 'build-last-command.log'
+    & $Program @Arguments 2>&1 | Tee-Object -FilePath $CommandLog
+    if ($LASTEXITCODE -ne 0) {
+        if ($env:GITHUB_ACTIONS -eq 'true') {
+            # Native stdout bypasses PowerShell transcription on hosted runners.
+            # Retain the failing command's actual output, already public in logs.
+            $Tail = (Get-Content $CommandLog -Tail 50) -join "`n"
+            if ($Tail.Length -gt 12000) { $Tail = $Tail.Substring($Tail.Length - 12000) }
+            $Encoded = $Tail.Replace('%', '%25').Replace("`r", '%0D').Replace("`n", '%0A')
+            Write-Host "::error title=Windows build command failed::$Encoded"
+        }
+        throw "$Program exited with $LASTEXITCODE"
+    }
 }
 if (-not $IsWindows -or $env:PROCESSOR_ARCHITECTURE -ne 'AMD64') {
     throw 'Build requires native Windows x64 PowerShell 7.'
