@@ -65,7 +65,9 @@ Copy-Item (Join-Path $Build 'python-build.json') $Notices
 Copy-Item (Join-Path $Root 'docs/windows-source-review.md') $Notices
 [IO.File]::WriteAllText((Join-Path $Notices 'project-revision.txt'), "$Revision`n")
 @{mode='private-test'; authenticodeSigned=$false; publicDistributionApproved=$false; installedAppVerified=$false} | ConvertTo-Json | Set-Content (Join-Path $Notices 'distribution.json') -Encoding utf8NoBOM
+Invoke-Checked $Python @('scripts/windows_notices.py')
 Invoke-Checked $Python @('scripts/windows_release.py', 'inventory')
+Invoke-Checked $Python @('scripts/windows_release.py', 'seal')
 Invoke-Checked $Python @('scripts/windows_release.py', 'verify')
 $env:VITE_OCR_URL = 'http://127.0.0.1:8766'
 Invoke-Checked npm @('--prefix', 'apps/desktop', 'run', 'tauri', 'build', '--', '--config', 'src-tauri/tauri.windows-release.conf.json', '--target', 'x86_64-pc-windows-msvc', '--bundles', 'nsis', '--ci', '--', '--locked')

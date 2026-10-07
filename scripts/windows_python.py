@@ -47,6 +47,15 @@ def main() -> None:
     # All required externals already exist, so get_externals skips downloads.
     env = os.environ.copy()
     env.update(IncludeTkinter="false", PYTHON=sys.executable)
+    # build.bat splits unquoted '=' arguments. Its documented response file
+    # preserves exact MSBuild properties without cmd.exe quoting ambiguity.
+    response = source / "PCbuild/msbuild.rsp"
+    response.write_text(
+        "/p:PlatformToolset=v143\n"
+        "/p:VCToolsVersion=14.44.35207\n"
+        "/p:WindowsTargetPlatformVersion=10.0.26100.0\n",
+        encoding="utf-8",
+    )
     command = [
         "cmd.exe",
         "/c",
@@ -56,12 +65,15 @@ def main() -> None:
         "-c",
         "Release",
         "--no-tkinter",
-        "/p:PlatformToolset=v143",
-        "/p:WindowsTargetPlatformVersion=10.0.26100.0",
     ]
     with (BUILD / "python-build.log").open("w", encoding="utf-8") as log:
         result = subprocess.run(
-            command, env=env, stdout=log, stderr=subprocess.STDOUT, check=False
+            command,
+            cwd=source / "PCbuild",
+            env=env,
+            stdout=log,
+            stderr=subprocess.STDOUT,
+            check=False,
         )
     if result.returncode:
         print(
@@ -86,6 +98,7 @@ def main() -> None:
             "sources": [record["pythonSource"], *record["pythonExternals"]],
             "recipeSha256": digest(Path(__file__)),
             "command": command,
+            "msbuildResponseFile": response.read_text(),
             "compiler": os.environ.get("VCToolsVersion"),
             "sdk": os.environ.get("WindowsSDKVersion"),
             "binaries": {

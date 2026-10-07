@@ -2,6 +2,7 @@
 
 import importlib.util
 import json
+import shutil
 import sys
 import tempfile
 import unittest
@@ -181,6 +182,9 @@ class WindowsReleaseTests(unittest.TestCase):
                 ]
             },
         )
+        for name in ("windows-inputs.json", "windows-assets.json"):
+            shutil.copy2(release.SERVICE / name, notices / name)
+        release.seal_resources(self.root)
         return exe
 
     def verify(self, machine="0x8664"):
@@ -202,7 +206,17 @@ class WindowsReleaseTests(unittest.TestCase):
         exe = self.resources()
         self.verify()
         exe.write_bytes(b"MZchanged")
-        with self.assertRaisesRegex(ValueError, "inventory differs"):
+        with self.assertRaisesRegex(ValueError, "resource hashes differ"):
+            self.verify()
+
+    def test_frozen_python_archive_tampering_is_rejected(self):
+        self.resources()
+        archive = self.root / "runtime/PYZ.pyz"
+        archive.write_bytes(b"original frozen Python")
+        release.seal_resources(self.root)
+        self.verify()
+        archive.write_bytes(b"changed Python")
+        with self.assertRaisesRegex(ValueError, "resource hashes differ"):
             self.verify()
 
     def test_mixed_pe_architecture_is_rejected(self):
@@ -213,7 +227,7 @@ class WindowsReleaseTests(unittest.TestCase):
     def test_extra_dll_is_rejected_even_if_x64(self):
         self.resources()
         (self.root / "runtime/extra.dll").write_bytes(b"MZextra")
-        with self.assertRaisesRegex(ValueError, "inventory differs"):
+        with self.assertRaisesRegex(ValueError, "resource hashes differ"):
             self.verify()
 
     def test_native_names_with_non_pe_content_are_rejected(self):

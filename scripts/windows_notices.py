@@ -1,0 +1,266 @@
+"""Collect Windows-target notices and exact locked desktop source archives.
+
+This is evidence preparation, not approval of embedded native libraries.
+"""
+
+from __future__ import annotations
+
+import base64
+import hashlib
+import json
+import os
+import shutil
+import subprocess
+import tomllib
+from pathlib import Path
+from urllib.request import urlopen
+
+from windows_release import BUILD, RESOURCES, ROOT, digest, fetch, read_json, write_json
+
+DESKTOP = ROOT / "apps/desktop"
+UPSTREAM = ROOT / "THIRD_PARTY_LICENSES/upstream"
+PREFIXES = ("license", "licence", "copying", "notice", "copyright")
+
+
+def license_files(directory: Path) -> list[Path]:
+    files = []
+    for path in directory.iterdir():
+        if path.is_file() and path.name.lower().startswith(PREFIXES):
+            files.append(path)
+        elif path.is_dir() and path.name.lower() in ("licenses", "licences"):
+            files.extend(p for p in path.rglob("*") if p.is_file())
+    return sorted(files)
+
+
+def supplement(group: str, destination: Path) -> list[str]:
+    files = []
+    for entry in read_json(UPSTREAM / "sources.json")[group]["files"]:
+        original = UPSTREAM / entry["path"]
+        if digest(original) != entry["sha256"]:
+            raise ValueError("Upstream notice hash differs: " + str(original))
+        target = destination / original.relative_to(UPSTREAM / group)
+        target.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(original, target)
+        files.append(str(target))
+    return files
+
+
+def notices(directory: Path, destination: Path, extra=None) -> list[str]:
+    files = license_files(directory)
+    if extra and (directory / extra).is_file() and directory / extra not in files:
+        files.append(directory / extra)
+    copied = []
+    for original in files:
+        target = destination / original.relative_to(directory)
+        target.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(original, target)
+        copied.append(str(target))
+    return copied
+
+
+def rust_components(output: Path) -> list[dict]:
+    data = json.loads(
+        subprocess.check_output(
+            [
+                "cargo",
+                "metadata",
+                "--locked",
+                "--format-version",
+                "1",
+                "--filter-platform",
+                "x86_64-pc-windows-msvc",
+            ],
+            cwd=DESKTOP / "src-tauri",
+            text=True,
+        )
+    )
+    included = {node["id"] for node in data["resolve"]["nodes"]}
+    lock = tomllib.loads((DESKTOP / "src-tauri/Cargo.lock").read_text())
+    hashes = {(p["name"], p["version"]): p.get("checksum") for p in lock["package"]}
+    result = []
+    for package in data["packages"]:
+        if package["id"] not in included or package["name"] == "yomimado":
+            continue
+        name, version = package["name"], package["version"]
+        key = name + "-" + version
+        directory = Path(package["manifest_path"]).parent
+        copied = notices(
+            directory, output / "licenses/rust" / key, package.get("license_file")
+        )
+        if not copied:
+            group = (
+                "unic"
+                if name.startswith("unic-")
+                else {
+                    "alloc-stdlib": "alloc-stdlib",
+                    "defmt-parser": "defmt",
+                    "selectors": "selectors",
+                    "tauri-plugin": "tauri",
+                }.get(name)
+            )
+            if group:
+                copied = supplement(group, output / "licenses/rust" / key)
+        sha = hashes[(name, version)]
+        if not sha or not package["source"].startswith("registry+"):
+            raise ValueError("Unpinned/non-registry Windows crate: " + key)
+        source = BUILD / "sources/rust" / (key + ".crate")
+        fetch(
+            {
+                "url": f"https://static.crates.io/crates/{name}/{key}.crate",
+                "sha256": sha,
+            },
+            source,
+        )
+        result.append(
+            {
+                "ecosystem": "rust",
+                "name": name,
+                "version": version,
+                "license": package.get("license"),
+                "noticeFiles": copied,
+                "sourceArchive": str(source.relative_to(BUILD)),
+                "sourceSha256": sha,
+                "review": "pending",
+            }
+        )
+    return result
+
+
+def npm_source(entry: dict, destination: Path) -> str:
+    integrity = entry["integrity"]
+    algorithm, encoded = integrity.split("-", 1)
+    if algorithm != "sha512" or not entry["resolved"].startswith(
+        "https://registry.npmjs.org/"
+    ):
+        raise ValueError("Unsupported/unpinned npm source")
+    expected = base64.b64decode(encoded, validate=True).hex()
+    if not destination.exists():
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        temporary = destination.with_suffix(".download")
+        try:
+            with (
+                urlopen(entry["resolved"], timeout=120) as response,
+                temporary.open("wb") as out,
+            ):
+                shutil.copyfileobj(response, out)
+            with temporary.open("rb") as stream:
+                actual = hashlib.file_digest(stream, "sha512").hexdigest()
+            if actual != expected:
+                raise ValueError("npm original source integrity differs")
+            temporary.replace(destination)
+        finally:
+            temporary.unlink(missing_ok=True)
+    with destination.open("rb") as stream:
+        if hashlib.file_digest(stream, "sha512").hexdigest() != expected:
+            raise ValueError("npm original source integrity differs")
+    return digest(destination)
+
+
+def javascript_components(output: Path) -> list[dict]:
+    result = []
+    lock = read_json(DESKTOP / "package-lock.json")
+    for relative, entry in lock["packages"].items():
+        directory = DESKTOP / relative
+        if not relative or not directory.is_dir():
+            continue  # Optional foreign-platform packages are not installed inputs.
+        package = read_json(directory / "package.json")
+        name, version = package["name"], package["version"]
+        if version != entry["version"]:
+            raise ValueError("Installed npm version differs from lock")
+        key = name.replace("/", "_") + "-" + version
+        source = BUILD / "sources/javascript" / (key + ".tgz")
+        sha = npm_source(entry, source)
+        result.append(
+            {
+                "ecosystem": "javascript",
+                "name": name,
+                "version": version,
+                "license": package.get("license"),
+                "buildOnly": bool(entry.get("dev")),
+                "noticeFiles": notices(directory, output / "licenses/javascript" / key),
+                "sourceArchive": str(source.relative_to(BUILD)),
+                "sourceSha256": sha,
+                "review": "pending",
+            }
+        )
+    return result
+
+
+def collect() -> None:
+    output = RESOURCES / "notices"
+    output.mkdir(parents=True, exist_ok=True)
+    # These verified texts resolve missing wheel texts; they confer no Windows approval.
+    for package, group in {
+        "sudachipy": "sudachi-rs",
+        "numpy": "lgpl-2.1",
+        "loguru": "loguru",
+        "sentencepiece": "sentencepiece",
+        "tokenizers": "tokenizers",
+        "torchsummary": "torchsummary",
+    }.items():
+        supplement(group, output / "licenses/python-supplement" / package)
+    record = {
+        "target": "x86_64-pc-windows-msvc",
+        "components": rust_components(output) + javascript_components(output),
+        "publicDistributionApproved": False,
+    }
+    # Store portable relative notice paths, never assume Mac target membership.
+    for component in record["components"]:
+        component["noticeFiles"] = [
+            Path(p).relative_to(output).as_posix() for p in component["noticeFiles"]
+        ]
+    write_json(output / "windows-desktop-sources.json", record)
+    write_json(BUILD / "windows-desktop-sources.json", record)
+
+
+def installer_inputs(installed: Path, installer: Path) -> dict:
+    from windows_release import native_files, pe_info
+
+    files = []
+    for path in native_files(installed):
+        if "ocr" not in path.relative_to(installed).parts:
+            files.append(
+                {
+                    "path": path.relative_to(installed).as_posix(),
+                    "sha256": digest(path),
+                    **pe_info(path),
+                    "review": "pending",
+                }
+            )
+    # NSIS uses a 32-bit setup/plugin host even when the application payload is x64.
+    cache = Path(os.environ["LOCALAPPDATA"]) / "tauri/NSIS"
+    tools = []
+    if not cache.is_dir():
+        raise ValueError(
+            "Missing actual NSIS tool cache; cannot inventory installer inputs"
+        )
+    for path in sorted(cache.rglob("*")):
+        if path.is_file():
+            with path.open("rb") as stream:
+                pe = stream.read(2) == b"MZ"
+            if (
+                pe
+                or path.name.lower().startswith(PREFIXES)
+                or path.suffix.lower() in (".nsh", ".nsi")
+            ):
+                tools.append(
+                    {
+                        "path": path.relative_to(cache).as_posix(),
+                        "sha256": digest(path),
+                        **(pe_info(path) if pe else {}),
+                        "review": "pending",
+                    }
+                )
+    record = {
+        "desktopBinaries": files,
+        "installer": {"sha256": digest(installer), **pe_info(installer)},
+        "nsisInputs": tools,
+        "sourceReview": "pending",
+        "publicDistributionApproved": False,
+    }
+    write_json(BUILD / "windows-installer-inputs.json", record)
+    return record
+
+
+if __name__ == "__main__":
+    collect()

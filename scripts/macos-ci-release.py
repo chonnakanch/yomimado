@@ -112,6 +112,7 @@ def verify_reuse(root: Path = ROOT) -> None:
         "scripts/verify-windows-install.ps1",
         "scripts/windows_release.py",
         "scripts/windows_private_draft.py",
+        "scripts/windows_notices.py",
         "scripts/windows_python.py",
         "scripts/smoke-windows-install.py",
         "scripts/fixtures/windows-ocr-horizontal.png",

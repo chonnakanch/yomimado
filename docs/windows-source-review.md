@@ -39,9 +39,17 @@ For each candidate, inspect `notices/windows-inventory.json`:
    a PyPI sdist may not include native wheel vendors or complete build inputs.
    Include applicable LGPL replacement/relinking instructions. Identify MSVC
    runtime redistribution permission separately; it has no open-source archive.
-5. Windows Rust/Cargo and JavaScript notices/sources are also required. Filter
-   Cargo metadata for `x86_64-pc-windows-msvc`; the macOS crate subset is not
-   Windows coverage. Include exact NSIS plugins/stub and WebView2 loader terms.
+5. `windows-desktop-sources.json` records Windows Cargo membership, copied
+   licence texts and original archives checked against Cargo.lock. Installed
+   npm inputs (including build tools) retain notices and original tarballs
+   verified against package-lock SHA-512. The macOS crate subset is not Windows
+   coverage. `windows-installer-inputs.json` separately records the installed
+   desktop, setup and actual NSIS cache inputs, including its x86 host/plugins.
+   Resolve exact NSIS plugin/stub and WebView2 loader source/terms before public
+   delivery; metadata and collected archives alone do not grant approval.
+   Missing SudachiPy software texts and NumPy's full LGPL supplement are copied
+   from checksum-verified upstream notices. This resolves missing texts only.
+
 6. Bind every notice/source entry to installed binary hashes and the exact
    project revision. Do not sign off unresolved entries, placeholders or broad
    upstream links. The private source-preparation archive is an evidence

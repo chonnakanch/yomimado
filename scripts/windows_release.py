@@ -20,6 +20,7 @@ SERVICE = ROOT / "services/ocr"
 BUILD = SERVICE / "build/windows"
 RESOURCES = ROOT / "apps/desktop/src-tauri/resources/ocr"
 FORBIDDEN = (".onnx", ".pt", ".pth", ".safetensors")
+DETECTOR_SHA256 = "1a86ace74961413cbd650002e7bb4dcec4980ffa21b2f19b86933372071d718f"
 
 
 def digest(path: Path) -> str:
@@ -103,6 +104,7 @@ def assert_no_detector(directory: Path) -> None:
         if path.is_file() and (
             path.suffix.lower() in FORBIDDEN
             or "comictextdetector.pt" in path.name.lower()
+            or (path.stat().st_size > 10_000_000 and digest(path) == DETECTOR_SHA256)
         ):
             raise ValueError("Detector/unapproved weights in delivery: " + str(path))
 
@@ -270,6 +272,17 @@ def inventory_inputs() -> None:
     write_json(BUILD / "windows-inventory.json", record)
 
 
+def seal_resources(resources: Path) -> None:
+    """Bind Python archives, data and notices as well as native binaries."""
+    manifest = resources / "notices/windows-resource-hashes.json"
+    files = {
+        p.relative_to(resources).as_posix(): digest(p)
+        for p in sorted(resources.rglob("*"))
+        if p.is_file() and p != manifest
+    }
+    write_json(manifest, files)
+
+
 def verify_resources(resources: Path) -> dict:
     assert_no_detector(resources)
     required = [
@@ -281,12 +294,24 @@ def verify_resources(resources: Path) -> dict:
         "windows-inputs.json",
         "windows-assets.json",
         "distribution.json",
+        "windows-resource-hashes.json",
     ]
     for name in required:
         if not (resources / "notices" / name).is_file():
             raise ValueError("Missing Windows notice/record: " + name)
     if not (resources / "runtime/yomimado-ocr.exe").is_file():
         raise ValueError("Missing Windows frozen executable")
+    manifest = resources / "notices/windows-resource-hashes.json"
+    actual_files = {
+        p.relative_to(resources).as_posix(): digest(p)
+        for p in sorted(resources.rglob("*"))
+        if p.is_file() and p != manifest
+    }
+    if actual_files != read_json(manifest):
+        raise ValueError("Installed resource hashes differ")
+    for name in ("windows-inputs.json", "windows-assets.json"):
+        if digest(resources / "notices" / name) != digest(SERVICE / name):
+            raise ValueError("Installed input manifest differs: " + name)
     for entry in read_json(SERVICE / "windows-assets.json"):
         if digest(resources / "assets" / entry["path"]) != entry["sha256"]:
             raise ValueError("Installed asset changed: " + entry["path"])
@@ -333,7 +358,12 @@ def package(installer: Path, output: Path, installed: Path) -> None:
     ).strip()
     if (installed / "ocr/notices/project-revision.txt").read_text().strip() != revision:
         raise ValueError("Installed source revision mismatch")
+    from windows_notices import installer_inputs
+
     output.mkdir(parents=True, exist_ok=True)
+    write_json(
+        output / "windows-installer-inputs.json", installer_inputs(installed, installer)
+    )
     shutil.copy2(installer, output / installer.name)
     with tarfile.open(output / "windows-notices.tar.gz", "w:gz") as archive:
         archive.add(installed / "ocr/notices", arcname="notices")
@@ -345,6 +375,8 @@ def package(installer: Path, output: Path, installed: Path) -> None:
             ROOT / "scripts/build-windows-prerelease.ps1",
             ROOT / "scripts/windows_release.py",
             SERVICE / "windows-inputs.json",
+            ROOT / "scripts/windows_python.py",
+            ROOT / "scripts/windows_notices.py",
         ):
             archive.add(path, arcname="recipes/" + path.name)
     subprocess.run(
@@ -384,7 +416,8 @@ def package(installer: Path, output: Path, installed: Path) -> None:
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
-        "command", choices=["download", "assets", "inventory", "verify", "package"]
+        "command",
+        choices=["download", "assets", "inventory", "seal", "verify", "package"],
     )
     parser.add_argument("--resources", type=Path, default=RESOURCES)
     parser.add_argument("--installed", type=Path)
@@ -397,6 +430,8 @@ def main() -> None:
         prepare_assets()
     elif args.command == "inventory":
         inventory_inputs()
+    elif args.command == "seal":
+        seal_resources(args.resources)
     elif args.command == "verify":
         verify_resources(args.resources)
     else:
