@@ -83,5 +83,6 @@ Invoke-Checked $Python @('scripts/windows_release.py', 'seal')
 Invoke-Checked $Python @('scripts/windows_release.py', 'verify')
 $env:VITE_OCR_URL = 'http://127.0.0.1:8766'
 Invoke-Checked npm @('--prefix', 'apps/desktop', 'run', 'tauri', 'build', '--', '--config', 'src-tauri/tauri.windows-release.conf.json', '--target', 'x86_64-pc-windows-msvc', '--bundles', 'nsis', '--ci', '--', '--locked')
+Invoke-Checked $Python @('scripts/windows_release.py', 'restore-generated', '--revision', $Revision)
 if ((git rev-parse HEAD) -ne $Revision -or (git status --porcelain)) { throw 'Source changed during build.' }
 Write-Host 'Built private NSIS candidate. Install, inventory and smoke it before exporting.'

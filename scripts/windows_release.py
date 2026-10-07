@@ -22,6 +22,26 @@ RESOURCES = ROOT / "apps/desktop/src-tauri/resources/ocr"
 FORBIDDEN = (".onnx", ".pt", ".pth", ".safetensors")
 DETECTOR_SHA256 = "1a86ace74961413cbd650002e7bb4dcec4980ffa21b2f19b86933372071d718f"
 
+GENERATED_OUTPUTS = {
+    "services/ocr/yomimado_ocr.egg-info/" + name
+    for name in (
+        "PKG-INFO",
+        "SOURCES.txt",
+        "dependency_links.txt",
+        "requires.txt",
+        "top_level.txt",
+    )
+} | {
+    "apps/desktop/src-tauri/gen/schemas/" + name
+    for name in (
+        "acl-manifests.json",
+        "capabilities.json",
+        "desktop-schema.json",
+        "macOS-schema.json",
+        "windows-schema.json",
+    )
+}
+
 
 def digest(path: Path) -> str:
     with path.open("rb") as stream:
@@ -35,6 +55,61 @@ def write_json(path: Path, data) -> None:
 
 def read_json(path: Path):
     return json.loads(path.read_text(encoding="utf-8"))
+
+
+def restore_generated_outputs(revision: str) -> None:
+    """Restore only known generated outputs in the initially clean build checkout."""
+    head = subprocess.check_output(
+        ["git", "rev-parse", "HEAD"], cwd=ROOT, encoding="utf-8"
+    ).strip()
+    if head != revision:
+        raise ValueError("Source revision changed during Windows build")
+    changes = subprocess.check_output(
+        ["git", "status", "--porcelain", "-z", "--untracked-files=all"],
+        cwd=ROOT,
+        encoding="utf-8",
+    ).split("\0")
+    changes = [entry for entry in changes if entry]
+    # Validate the entire change set before modifying any file. Never conceal
+    # source, lock, staged, renamed or unrelated changes behind generation.
+    unexpected = [
+        entry
+        for entry in changes
+        if entry[:2] not in (" M", " D", "??") or entry[3:] not in GENERATED_OUTPUTS
+    ]
+    if unexpected:
+        raise ValueError("Unexpected source changes during build: " + repr(unexpected))
+    evidence = []
+    for entry in changes:
+        relative = entry[3:]
+        path = ROOT / relative
+        before = digest(path) if path.is_file() else None
+        tracked = (
+            subprocess.run(
+                ["git", "ls-files", "--error-unmatch", "--", relative],
+                cwd=ROOT,
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+            ).returncode
+            == 0
+        )
+        if tracked:
+            subprocess.run(
+                ["git", "restore", "--source", revision, "--worktree", "--", relative],
+                cwd=ROOT,
+                check=True,
+            )
+        else:
+            path.unlink()
+        evidence.append(
+            {
+                "path": relative,
+                "generatedSha256": before,
+                "restoredSha256": digest(path) if path.is_file() else None,
+            }
+        )
+    write_json(BUILD / "windows-generated-outputs.json", evidence)
+    print("Restored known generated build outputs: " + str(len(evidence)))
 
 
 def fetch(record: dict, path: Path) -> None:
@@ -543,15 +618,23 @@ def main() -> None:
             "seal",
             "verify",
             "package",
+            "restore-generated",
         ],
     )
     parser.add_argument("--resources", type=Path, default=RESOURCES)
     parser.add_argument("--installed", type=Path)
     parser.add_argument("--installer", type=Path)
+    parser.add_argument("--revision")
     parser.add_argument("--output", type=Path)
     args = parser.parse_args()
     if args.command == "download":
         download_inputs()
+    elif args.command == "restore-generated":
+        if sys.platform != "win32" or not args.revision:
+            raise ValueError(
+                "Generated output restoration requires Windows and exact revision"
+            )
+        restore_generated_outputs(args.revision)
     elif args.command == "assets":
         prepare_assets()
     elif args.command == "inventory":

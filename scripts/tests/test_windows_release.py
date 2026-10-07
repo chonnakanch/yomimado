@@ -3,6 +3,7 @@
 import importlib.util
 import json
 import shutil
+import subprocess
 import sys
 import tempfile
 import unittest
@@ -50,6 +51,64 @@ class WindowsReleaseTests(unittest.TestCase):
         (self.root / "SHA256SUMS.txt").write_text(
             "".join(f"{sha}  {name}\n" for name, sha in sums.items())
         )
+
+    def generated_repository(self):
+        generated = self.root / "services/ocr/yomimado_ocr.egg-info/SOURCES.txt"
+        generated.parent.mkdir(parents=True)
+        generated.write_text("original\n")
+        (self.root / "app.py").write_text("source\n")
+        (self.root / ".gitignore").write_text("evidence/\n")
+        for args in (
+            ["init", "-q"],
+            ["add", "."],
+            [
+                "-c",
+                "user.name=Release tests",
+                "-c",
+                "user.email=tests@example.invalid",
+                "commit",
+                "-qm",
+                "initial",
+            ],
+        ):
+            subprocess.run(
+                ["git", *args], cwd=self.root, check=True, capture_output=True
+            )
+        revision = subprocess.check_output(
+            ["git", "rev-parse", "HEAD"], cwd=self.root, encoding="utf-8"
+        ).strip()
+        return generated, revision
+
+    def test_restores_only_known_generated_outputs(self):
+        generated, revision = self.generated_repository()
+        generated.write_text("regenerated\n")
+        schema = self.root / "apps/desktop/src-tauri/gen/schemas/windows-schema.json"
+        schema.parent.mkdir(parents=True)
+        schema.write_text("{}")
+        with (
+            patch.object(release, "ROOT", self.root),
+            patch.object(release, "BUILD", self.root / "evidence"),
+        ):
+            release.restore_generated_outputs(revision)
+        self.assertEqual(generated.read_text(), "original\n")
+        self.assertFalse(schema.exists())
+        self.assertEqual(
+            subprocess.check_output(["git", "status", "--porcelain"], cwd=self.root),
+            b"",
+        )
+
+    def test_unexpected_source_change_prevents_any_restoration(self):
+        generated, revision = self.generated_repository()
+        generated.write_text("regenerated\n")
+        (self.root / "app.py").write_text("changed source\n")
+        with (
+            patch.object(release, "ROOT", self.root),
+            patch.object(release, "BUILD", self.root / "evidence"),
+        ):
+            with self.assertRaisesRegex(ValueError, "Unexpected source changes"):
+                release.restore_generated_outputs(revision)
+        self.assertEqual(generated.read_text(), "regenerated\n")
+        self.assertEqual((self.root / "app.py").read_text(), "changed source\n")
 
     def test_private_draft_rejects_changed_candidate_and_gate_claim(self):
         self.private_candidate()

@@ -120,6 +120,7 @@ jobs:
             services/ocr/build/windows/installed-smoke.json
             services/ocr/build/windows/windows-desktop-sources.json
             services/ocr/build/windows/windows-installer-inputs.json
+            services/ocr/build/windows/windows-generated-outputs.json
           if-no-files-found: ignore
           retention-days: 14
       - name: Remove smoke-only detector
