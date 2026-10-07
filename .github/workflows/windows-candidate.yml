@@ -1,6 +1,6 @@
 name: Windows private candidate
 
-# Development-only execution. No main merge, version tag, release or approval.
+# Development-only execution. Owner-only drafts; no tag, publication or approval.
 "on":
   push:
     branches: [develop]
@@ -27,6 +27,8 @@ concurrency:
 jobs:
   candidate:
     if: github.repository == 'chonnakanch/yomimado' && github.ref == 'refs/heads/develop'
+    permissions:
+      contents: write # Only owner-visible draft staging; no public publisher exists here.
     runs-on: windows-2022
     timeout-minutes: 120
     defaults:
@@ -94,13 +96,12 @@ jobs:
           if ($LASTEXITCODE) { throw 'Candidate export failed' }
           Get-Content "$output/SHA256SUMS.txt" | Add-Content $env:GITHUB_STEP_SUMMARY
           'Private test only. Source review and exact-installer human confirmation remain OPEN. No Windows 11 hardware/scaling test is claimed.' | Add-Content $env:GITHUB_STEP_SUMMARY
-      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
-        with:
-          name: windows-private-test-candidate
-          path: ${{ runner.temp }}/windows-candidate/
-          if-no-files-found: error
-          retention-days: 14
-          compression-level: 0
+      - name: Stage owner-only draft and verify uploaded hashes
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          & services/ocr/build/windows/venv/Scripts/python.exe scripts/windows_private_draft.py (Join-Path $env:RUNNER_TEMP 'windows-candidate')
+          if ($LASTEXITCODE) { throw 'Private draft staging failed; do not publish' }
       - name: Retain diagnostic evidence without detector weights
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2

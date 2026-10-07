@@ -88,6 +88,7 @@ def download_inputs() -> None:
     record = read_json(SERVICE / "windows-inputs.json")
     validate_lock(record)
     for entry in record["packages"]:
+        print("Verifying pinned input: " + entry["filename"], flush=True)
         fetch(entry, BUILD / "inputs" / entry["filename"])
         if source := entry.get("source"):
             fetch(source, BUILD / "sources" / source["filename"])

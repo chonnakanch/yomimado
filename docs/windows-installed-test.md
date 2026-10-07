@@ -2,8 +2,9 @@
 
 Status: waiting for a verified candidate and the separate PC. Never approve this
 record from automated CI alone. Each rebuilt setup needs its own confirmation.
-The candidate workflow produces an unpublished test artifact with
-`SHA256SUMS.txt` and `windows-candidate.json`; it cannot publish a release.
+The candidate workflow stages an owner-only GitHub draft with `SHA256SUMS.txt`
+and `windows-candidate.json`. It creates no tag and has no publication operation.
+Installer/source archives are never uploaded as public Actions artifacts.
 
 Reported hardware (2026-10-07): Intel Core i5-14500, RTX 4070 Super, Windows
 version described as “25h”, one 2K display. The PC is not currently available.
