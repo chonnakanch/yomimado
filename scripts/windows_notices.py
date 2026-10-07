@@ -73,10 +73,11 @@ def rust_components(output: Path) -> list[dict]:
             ],
             cwd=DESKTOP / "src-tauri",
             text=True,
+            encoding="utf-8",
         )
     )
     included = {node["id"] for node in data["resolve"]["nodes"]}
-    lock = tomllib.loads((DESKTOP / "src-tauri/Cargo.lock").read_text())
+    lock = tomllib.loads((DESKTOP / "src-tauri/Cargo.lock").read_text(encoding="utf-8"))
     hashes = {(p["name"], p["version"]): p.get("checksum") for p in lock["package"]}
     result = []
     for package in data["packages"]:

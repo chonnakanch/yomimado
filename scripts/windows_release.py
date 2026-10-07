@@ -60,7 +60,7 @@ def validate_lock(record: dict) -> None:
     expected = {
         line.strip()
         for line in (SERVICE / "requirements-windows-release.txt")
-        .read_text()
+        .read_text(encoding="utf-8")
         .splitlines()
         if line.strip() and not line.startswith("#")
     }
@@ -155,7 +155,7 @@ def prepare_assets() -> None:
     subprocess.run(["git", "checkout", "--detach", revision], cwd=detector, check=True)
     if (
         subprocess.check_output(
-            ["git", "rev-parse", "HEAD"], cwd=detector, text=True
+            ["git", "rev-parse", "HEAD"], cwd=detector, text=True, encoding="utf-8"
         ).strip()
         != revision
     ):
@@ -164,7 +164,7 @@ def prepare_assets() -> None:
     destination.mkdir(parents=True, exist_ok=True)
     # Copy tracked source only, with no examples, artwork, notebooks or weights.
     for relative in subprocess.check_output(
-        ["git", "ls-files"], cwd=detector, text=True
+        ["git", "ls-files"], cwd=detector, text=True, encoding="utf-8"
     ).splitlines():
         path = Path(relative)
         if (
