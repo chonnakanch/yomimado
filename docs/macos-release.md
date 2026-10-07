@@ -13,10 +13,10 @@ remain **user-installed**.
 
 The default build remains a **private test artifact**. `--release` is the
 explicit hobby candidate path, with source and exact-DMG checks. Neither path
-publishes anything automatically. Do not upload a private build or an
-incomplete candidate.
+publishes anything automatically from the local build script. Do not upload a
+private build or an incomplete candidate.
 
-## Status — 2026-10-06
+## Status — 2026-10-07
 
 - [x] Private DMG builds and passes mounted-bundle OCR, dictionary, kanji,
       tokenization, translation and persistence smoke tests on the development Mac.
@@ -82,8 +82,12 @@ incomplete candidate.
       `main` GitHub Actions build with protected publication and artifact checks.
 - [x] Configure the protected `macos-release` environment: required reviewer
       `chonnakanch`, administrator bypass disabled, deployments from `main` only.
-- [ ] Configure the reviewed seed assets; create/set default branch `main`,
-      then run the workflow after merging the release change into it.
+- [x] Save the three reviewed seed assets in a private draft and verify GitHub's
+      uploaded SHA-256 values against the workflow's pinned inputs.
+- [x] Create `main` at `cc8a95c` and set it as GitHub's default branch;
+      leave the release workflow on `develop`, unmerged.
+- [ ] Merge the release change into `main`, run the hosted workflow, and
+      confirm its exact new installer before approving publication.
 
 ## Development-Mac verification — 2026-10-06
 
@@ -365,15 +369,22 @@ One-time GitHub setup, before the first merge:
    GitHub's job token cannot create releases targeting workflow changes
    relative to a different default branch without broader workflow permissions.
    See [GitHub’s release API requirements](https://docs.github.com/en/rest/releases/releases#create-a-release).
-   This setup avoids needing a personal token. The repository currently has
-   only `develop`; this work does not merge it or create a public version tag.
+   This setup avoids needing a personal token. The initial baseline is
+   `cc8a95cbe98d6c1fff5eeb042ec80ff86d51cfd3`, the tested commit before the
+   workflow. Leave `develop` unmerged until the intended first feature merge.
 
 Setup record — 2026-10-07: the environment and its exact `main` branch policy
 are saved and verified through GitHub's public API. `chonnakanch` is the required
 reviewer; administrator bypass is disabled and owner self-review is allowed.
-The draft-only seed upload remains pending. GitHub's
-draft tag selection explicitly defers creation until publication; the seed
-must remain a draft and must never be published.
+The [private seed draft](https://github.com/chonnakanch/yomimado/releases/edit/untagged-b6a7397915d12f62985b)
+is saved with all three approved assets. GitHub's displayed SHA-256 values match
+the pinned DMG, source and notice hashes recorded above. Its staging tag name
+is retained as `macos-reviewed-seed-5120506`; GitHub explicitly defers tag
+creation until publication. The seed must remain a draft and must never be
+published. `main` is pushed at `cc8a95c` and verified as GitHub's default branch
+through both the UI and public API. `develop` remains unmerged; remote tag
+inspection confirms no tags. Hosted workflow execution and the new candidate's
+installed-app confirmation remain pending the first merge.
 
 The hobby target uses GitHub's job-scoped token and no Apple keys, passwords or
 signing/notarization secrets. Only the protected publish job has

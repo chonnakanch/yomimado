@@ -31,9 +31,12 @@ macOS hobby pre-release workflow. It builds the merged commit, preserves the
 reviewed runtime/source inputs, verifies artifact transfers, and creates
 `v<app version>` plus the public GitHub pre-release after protected installer
 confirmation. Local workflow/rebuild checks pass. The protected GitHub release
-environment is configured and API-verified on 2026-10-07. Initial/default `main`,
-GitHub seed assets and hosted execution are pending; no version tag or
-public release has been created. See [the release setup](macos-release.md#release-on-merge-to-main).
+environment is configured and API-verified on 2026-10-07. The three reviewed
+seed assets are saved in a private draft with matching uploaded hashes. `main`
+is created at `cc8a95c` and set as GitHub's default branch; `develop` remains
+unmerged as requested. Hosted execution and its new installer confirmation
+are pending the first merge; no version tag or public release has been created.
+See [the release setup](macos-release.md#release-on-merge-to-main).
 
 Status audit (2026-10-05): the capture → local OCR → interactive overlay →
 learning-popup flow works with user-installed models on macOS and has been
@@ -763,8 +766,10 @@ Before any public release:
       installer is releasable; never upload private outputs or detector weights
 - [x] configure/API-verify the protected release environment with a required
       reviewer and main-only branch policy, without administrator bypass
-- [ ] configure GitHub seed assets, create/set default `main`, merge the release
-      change, and confirm the new CI installer before public publication
+- [x] save the reviewed GitHub seed assets as a private draft and verify hashes;
+      create `main` at `cc8a95c`, set it as default and leave `develop` unmerged
+- [ ] merge the release change into `main`, verify the hosted build, and confirm
+      the exact new CI installer before approving public publication
 - [x] keep copyrighted manga fixtures out of git (current tracked test assets)
 - [x] document local model/data setup behavior
 - [x] document macOS permissions
