@@ -1,7 +1,7 @@
-name: macOS pre-release from main
+name: macOS release from main
 
 # Merge a versioned change into main. Build the merged commit, then wait for
-# installer confirmation before creating its tag and public hobby pre-release.
+# installer confirmation before creating its tag and public hobby release.
 "on":
   push:
     branches: [main]
@@ -32,6 +32,7 @@ jobs:
       release: ${{ steps.plan.outputs.release }}
       version: ${{ steps.plan.outputs.version }}
       tag: ${{ steps.plan.outputs.tag }}
+      prerelease: ${{ steps.plan.outputs.prerelease }}
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
         with:
@@ -53,6 +54,7 @@ jobs:
           tag="$(jq -er .tag <<< "$plan")"
           echo "version=$version" >> "$GITHUB_OUTPUT"
           echo "tag=$tag" >> "$GITHUB_OUTPUT"
+          echo "prerelease=$(jq -r .prerelease <<< "$plan")" >> "$GITHUB_OUTPUT"
           if git show-ref --verify --quiet "refs/tags/$tag"; then
             gh api "repos/$GITHUB_REPOSITORY/releases/tags/$tag" > "$RUNNER_TEMP/existing-release.json"
             jq -e '.draft == false' "$RUNNER_TEMP/existing-release.json" > /dev/null
@@ -270,10 +272,13 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           EXPECTED_RECORD: ${{ needs.build.outputs.record }}
           RELEASE_TAG: ${{ needs.plan.outputs.tag }}
+          RELEASE_PRERELEASE: ${{ needs.plan.outputs.prerelease }}
         shell: bash
         run: |
           set -euo pipefail
           python3 scripts/macos-ci-release.py verify-artifact --directory candidate --expected "$EXPECTED_RECORD"
+          test "$(jq -r .tag <<< "$EXPECTED_RECORD")" = "$RELEASE_TAG"
+          test "$(jq -r .prerelease <<< "$EXPECTED_RECORD")" = "$RELEASE_PRERELEASE"
           test "$(gh api "repos/$GITHUB_REPOSITORY" --jq .default_branch)" = main
           gh api "repos/$GITHUB_REPOSITORY/environments/macos-release" > "$RUNNER_TEMP/release-environment.json"
           gh api "repos/$GITHUB_REPOSITORY/environments/macos-release/deployment-branch-policies" > "$RUNNER_TEMP/release-policies.json"
@@ -287,7 +292,8 @@ jobs:
           record = json.loads(os.environ["EXPECTED_RECORD"])
           template = Path("docs/macos-prerelease-notes.md").read_text()
           notes = template.split("Verified candidate source commit:", 1)[0]
-          notes = notes.replace("# First macOS pre-release notes — draft", "# YomiMado " + record["version"] + " — macOS pre-release")
+          label = "pre-release" if record["prerelease"] else "release"
+          notes = notes.replace("# First macOS pre-release notes — draft", "# YomiMado " + record["version"] + " — macOS " + label)
           start = notes.index("Native source/licence clearance")
           end = notes.index("YomiMado (読み窓)", start)
           notes = notes[:start] + "" + notes[end:]
@@ -302,9 +308,16 @@ jobs:
           # approval. Failure during upload leaves the release unpublished.
           gh api --method POST "repos/$GITHUB_REPOSITORY/git/refs" \
             -f "ref=refs/tags/$RELEASE_TAG" -f "sha=$GITHUB_SHA" > /dev/null
+          release_options=(--draft)
+          if [ "$RELEASE_PRERELEASE" = true ]; then
+            release_options+=(--prerelease)
+            release_label=pre-release
+          else
+            release_label=release
+          fi
           gh release create "$RELEASE_TAG" candidate/* --repo "$GITHUB_REPOSITORY" --verify-tag \
-            --target "$GITHUB_SHA" --title "YomiMado $RELEASE_TAG — macOS pre-release" \
-            --notes-file "$RUNNER_TEMP/release-notes.md" --prerelease --draft
+            --target "$GITHUB_SHA" --title "YomiMado $RELEASE_TAG — macOS $release_label" \
+            --notes-file "$RUNNER_TEMP/release-notes.md" "${release_options[@]}"
           gh api "repos/$GITHUB_REPOSITORY/releases/tags/$RELEASE_TAG" > "$RUNNER_TEMP/uploaded-release.json"
           test "$(gh api "repos/$GITHUB_REPOSITORY/git/ref/tags/$RELEASE_TAG" --jq .object.sha)" = "$GITHUB_SHA"
           python3 - <<'PYUPLOAD'
@@ -318,7 +331,7 @@ jobs:
               with path.open("rb") as stream:
                   expected[path.name] = hashlib.file_digest(stream, "sha256").hexdigest()
           actual = {a["name"]: a["digest"] for a in report["assets"]}
-          if not report["draft"] or not report["prerelease"] or len(report["assets"]) != len(expected) or actual != {n: "sha256:" + d for n, d in expected.items()}:
-              raise ValueError("Uploaded release assets differ; leave the draft unpublished")
+          if not report["draft"] or report["prerelease"] is not record["prerelease"] or len(report["assets"]) != len(expected) or actual != {n: "sha256:" + d for n, d in expected.items()}:
+              raise ValueError("Uploaded release classification or assets differ; leave the draft unpublished")
           PYUPLOAD
           gh release edit "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY" --draft=false

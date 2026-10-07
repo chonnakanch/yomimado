@@ -80,6 +80,8 @@ private build or an incomplete candidate.
 - [ ] Publish the verified DMG, matching source delivery and notices together.
 - [x] After candidate `5120506` passed the installed-app gate, add the versioned
       `main` GitHub Actions build with protected publication and artifact checks.
+- [x] Select pre-release or stable publication from the app version; verify the
+      classification in transferred provenance and GitHub's uploaded draft.
 - [x] Configure the protected `macos-release` environment: required reviewer
       `chonnakanch`, administrator bypass disabled, deployments from `main` only.
 - [x] Save the three reviewed seed assets in a private draft and verify GitHub's
@@ -331,7 +333,7 @@ Keep all private keys/passwords out of chat, source control and command history.
 
 The maintainer chose this release policy on 2026-10-06: merge a feature into
 `main`, build that exact merged commit, then create its version tag and GitHub
-pre-release after verification and installer confirmation. The workflow is
+release after verification and installer confirmation. The workflow is
 [macos-prerelease.yml](../.github/workflows/macos-prerelease.yml). It runs on
 pushes to `main`, including merge, squash and rebase merges. A manual rerun is
 available on `main`; `develop`, pull requests and tag pushes cannot publish.
@@ -341,7 +343,18 @@ release retains version `0.1.0` and GitHub's **pre-release** flag. For the next
 release, bump the version in the feature branch before merging. Keep Tauri's
 `tauri.conf.json`, npm's `package.json` and both root version entries in
 `package-lock.json`, and the `yomimado` package in `Cargo.toml`/`Cargo.lock`
-consistent. `0.1.0-alpha.1`, `beta.N` and `rc.N` versions are also accepted.
+consistent. Release classification (2026-10-07) is automatic:
+
+- Every `0.x.x` version is a **pre-release**, including versions without a suffix.
+- Versions with `-alpha.N`, `-beta.N` or `-rc.N` are **pre-releases**, such as
+  `1.0.0-beta.1`. Replace `N` with a number; literal `beta.x` is not a version.
+- Versions `1.0.0` and later without a suffix are **stable releases**.
+
+The GitHub flag, title and notes follow this classification. Candidate provenance
+records the boolean `prerelease`; artifact verification and uploaded-draft
+verification reject a mismatched flag. Both release types require the same
+installer approval and source/bundle verification. Stable publication does not
+change the unnotarized hobby distribution or its disclosed test limitations.
 A merge with an already published version skips release creation. Existing
 tags are never moved; a tag without a published release fails closed for
 maintainer investigation rather than silently overwriting a partial release.
@@ -418,9 +431,13 @@ remove only that failed draft/tag before an intentional rerun, or select a new
 version; the workflow does not clobber existing tags or assets. A run awaiting
 approval also refuses publication if `main` has advanced to another commit.
 
-Local verification: 84 release-tool tests, 55 desktop tests and 36 Rust tests pass; actionlint,
-YAML formatting, shell/Python syntax, actual local Tauri/DMG rebuild and mounted
-frozen smoke pass. A fake GitHub API rehearsal of the actual publish step
+Local verification: 88 release-tool tests pass, including stable/pre-release
+classification and tampered-provenance rejection. The actual publish step passes
+fake-API rehearsals for `0.1.0`, `1.0.0-beta.1` and `1.0.0`, and rejects the
+opposite uploaded release flag in both directions. The previous 55 desktop
+tests, 36 Rust tests and local native rebuild/smoke remain applicable because
+this change affects release automation only. Actionlint, YAML formatting,
+Python lint/format and shell/Python syntax pass. A fake GitHub API rehearsal of the actual publish step
 accepts the successful path and blocks a different default branch, unprotected
 environments, administrator bypass, broad branch rules, stale `main`,
 tag collisions, changed uploads and tampered artifacts. GitHub-hosted execution

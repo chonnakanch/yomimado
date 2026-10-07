@@ -8,7 +8,7 @@ the historical seed hashes below must not be used for a rebuilt installer.
 
 YomiMado (読み窓) helps you read Japanese text on your screen: select a region,
 run local OCR, then click the overlay to explore readings, dictionary meanings,
-kanji and on-demand translation. Screenshots stay local. This pre-release
+kanji and on-demand translation. Screenshots stay local. This release
 supports Apple Silicon Macs running macOS 14 or later.
 
 ## Installation

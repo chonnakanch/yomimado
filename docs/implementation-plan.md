@@ -27,10 +27,14 @@ explicit in the release record. A CI rebuild needs a new installer confirmation.
 Native licence/source review and maintainer approval remain complete.
 
 Release policy (2026-10-06): versioned feature merges into `main` trigger the
-macOS hobby pre-release workflow. It builds the merged commit, preserves the
+macOS hobby release workflow. It builds the merged commit, preserves the
 reviewed runtime/source inputs, verifies artifact transfers, and creates
-`v<app version>` plus the public GitHub pre-release after protected installer
-confirmation. Local workflow/rebuild checks pass. The protected GitHub release
+`v<app version>` plus the public GitHub release after protected installer
+confirmation. On 2026-10-07, release classification follows the version:
+`0.x.x` and `alpha.N`/`beta.N`/`rc.N` suffixes are pre-releases; `1.0.0` and
+later without a suffix are stable. Artifact provenance and GitHub's draft flag
+must agree with that rule; both paths retain all release gates. Local
+workflow/rebuild checks pass. The protected GitHub release
 environment is configured and API-verified on 2026-10-07. The three reviewed
 seed assets are saved in a private draft with matching uploaded hashes. `main`
 is created at `cc8a95c` and set as GitHub's default branch; `develop` remains
@@ -764,6 +768,8 @@ Before any public release:
       the public GitHub Release
 - [x] add the main-triggered versioned GitHub Actions build after the hobby
       installer is releasable; never upload private outputs or detector weights
+- [x] support stable releases from `1.0.0` onward without suffixes; keep `0.x.x`
+      and alpha/beta/rc versions as pre-releases with verified classification
 - [x] configure/API-verify the protected release environment with a required
       reviewer and main-only branch policy, without administrator bypass
 - [x] save the reviewed GitHub seed assets as a private draft and verify hashes;

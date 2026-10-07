@@ -28,7 +28,8 @@ class VersionTests(unittest.TestCase):
                 data["packages"][""]["version"] = version
             return json.dumps(data)
         return text.replace(
-            'name = "yomimado"\nversion = "0.1.0"', f'name = "yomimado"\nversion = "{version}"'
+            'name = "yomimado"\nversion = "0.1.0"',
+            f'name = "yomimado"\nversion = "{version}"',
         )
 
     def setUp(self):
@@ -48,10 +49,41 @@ class VersionTests(unittest.TestCase):
 
     def test_matching_release_and_prerelease_versions(self):
         self.assertEqual(ci.version(self.root), "0.1.0")
-        for path in self.root.rglob("*"):
-            if path.is_file():
-                path.write_text(self.bumped(str(path), path.read_text(), "0.1.0-alpha.1"))
-        self.assertEqual(ci.version(self.root), "0.1.0-alpha.1")
+        originals = {p: p.read_text() for p in self.root.rglob("*") if p.is_file()}
+        for app_version in ("0.1.0-alpha.1", "1.0.0", "1.0.0-beta.2", "2.1.3"):
+            with self.subTest(version=app_version):
+                for path, text in originals.items():
+                    path.write_text(self.bumped(str(path), text, app_version))
+                self.assertEqual(ci.version(self.root), app_version)
+
+    def test_release_classification(self):
+        for app_version, expected in (
+            ("0.1.0", True),
+            ("0.99.10", True),
+            ("1.0.0-alpha.1", True),
+            ("1.0.0-beta.2", True),
+            ("2.0.0-rc.1", True),
+            ("1.0.0", False),
+            ("1.0.1", False),
+            ("2.1.3", False),
+            ("10.0.0", False),
+        ):
+            with self.subTest(version=app_version):
+                self.assertIs(ci.is_prerelease(app_version), expected)
+
+    def test_invalid_versions_cannot_select_a_release_classification(self):
+        for app_version in (
+            "1.0",
+            "01.0.0",
+            "1.0.0-beta.x",
+            "1.0.0-beta.01",
+            "1.0.0-foo.1",
+        ):
+            with (
+                self.subTest(version=app_version),
+                self.assertRaisesRegex(ValueError, "version"),
+            ):
+                ci.is_prerelease(app_version)
 
     def test_mismatched_version_is_rejected(self):
         path = self.root / "apps/desktop/package.json"
@@ -70,7 +102,8 @@ class VersionTests(unittest.TestCase):
             text = (self.root / "apps/desktop" / name).read_text()
             path = "apps/desktop/" + name
             self.assertEqual(
-                ci.normalized(path, text), ci.normalized(path, self.bumped(path, text, "0.2.0"))
+                ci.normalized(path, text),
+                ci.normalized(path, self.bumped(path, text, "0.2.0")),
             )
 
     def test_dependency_change_and_ocr_change_require_new_review(self):
@@ -105,6 +138,7 @@ class ArtifactTests(unittest.TestCase):
             "sourceRevision": "a" * 40,
             "version": "0.1.0",
             "tag": "v0.1.0",
+            "prerelease": True,
             "mode": "unnotarized-hobby",
             "installedAppVerified": False,
             "assets": {},
@@ -119,6 +153,37 @@ class ArtifactTests(unittest.TestCase):
 
     def test_exact_artifacts_accepted(self):
         ci.verify_artifact(self.root, self.record)
+
+    def test_release_classification_tampering_rejected(self):
+        for value in (False, "true", 1, None):
+            changed = copy.deepcopy(self.record)
+            changed["prerelease"] = value
+            ci.write_json(self.root / "release-candidate.json", changed)
+            with (
+                self.subTest(value=value),
+                self.assertRaisesRegex(ValueError, "provenance"),
+            ):
+                ci.verify_artifact(self.root, changed)
+
+    def test_stable_artifacts_accepted_and_wrong_classification_rejected(self):
+        record = copy.deepcopy(self.record)
+        record.update(version="1.0.0", tag="v1.0.0", prerelease=False)
+        record["assets"] = {}
+        for path in list(self.root.iterdir()):
+            if path.name.startswith("YomiMado_0.1.0"):
+                new_name = path.name.replace("0.1.0", "1.0.0")
+                path.rename(self.root / new_name)
+                if not new_name.endswith(".sha256"):
+                    checksum = ci.digest(self.root / new_name)
+                    record["assets"][new_name] = checksum
+        for name, checksum in record["assets"].items():
+            (self.root / (name + ".sha256")).write_text(f"{checksum}  {name}\n")
+        ci.write_json(self.root / "release-candidate.json", record)
+        ci.verify_artifact(self.root, record)
+        record["prerelease"] = True
+        ci.write_json(self.root / "release-candidate.json", record)
+        with self.assertRaisesRegex(ValueError, "provenance"):
+            ci.verify_artifact(self.root, record)
 
     def test_added_model_rejected(self):
         (self.root / "comictextdetector.pt.onnx").write_bytes(b"model")
@@ -248,7 +313,8 @@ class SourceFollowupTests(unittest.TestCase):
             self.assertFalse((output / "old.tar.gz").exists())
             with tarfile.open(output / result["components"][0]["archive"]) as archive:
                 self.assertEqual(
-                    archive.extractfile("yomimado/feature.txt").read(), b"merged feature"
+                    archive.extractfile("yomimado/feature.txt").read(),
+                    b"merged feature",
                 )
 
 

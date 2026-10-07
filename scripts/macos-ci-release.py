@@ -38,6 +38,15 @@ def write_json(path: Path, value: dict) -> None:
     path.write_text(json.dumps(value, indent=2) + "\n")
 
 
+def is_prerelease(app_version: str) -> bool:
+    number = r"(?:0|[1-9][0-9]*)"
+    if not re.fullmatch(
+        rf"{number}\.{number}\.{number}(?:-(?:alpha|beta|rc)\.{number})?", app_version
+    ):
+        raise ValueError("Expected a release version such as 1.0.0 or 1.0.0-beta.1")
+    return app_version.startswith("0.") or "-" in app_version
+
+
 def version(root: Path = ROOT) -> str:
     desktop = root / "apps/desktop"
     versions = {
@@ -55,9 +64,7 @@ def version(root: Path = ROOT) -> str:
     if len(versions) != 1:
         raise ValueError("App, npm and Cargo versions must agree before merging to main")
     result = versions.pop()
-    number = r"(?:0|[1-9][0-9]*)"
-    if not re.fullmatch(rf"{number}\.{number}\.{number}(?:-(?:alpha|beta|rc)\.{number})?", result):
-        raise ValueError("Expected a release version such as 0.1.0 or 0.1.0-alpha.1")
+    is_prerelease(result)
     return result
 
 
@@ -163,7 +170,10 @@ def prepare_sources(seed: Path, notices: Path, output: Path, root: Path = ROOT) 
     write_json(output / "source-delivery.worksheet.json", worksheet)
     omissions = read_json(output / "source-asset-omissions.json")
     omissions["archives"].pop(old_archive)
-    omissions["archives"][archive.name] = {"originalSha256": checksum, "deliverySha256": checksum}
+    omissions["archives"][archive.name] = {
+        "originalSha256": checksum,
+        "deliverySha256": checksum,
+    }
     write_json(output / "source-asset-omissions.json", omissions)
     for name in ("BUILD.md", "REVIEW.md"):
         with (output / name).open("a") as stream:
@@ -185,14 +195,20 @@ def package(directory: Path, sources: Path, notices: Path) -> dict:
     ):
         with tarfile.open(directory / name, "w:gz") as archive:
             archive.add(
-                source, arcname="YomiMado-sources" if source == sources else "YomiMado-notices"
+                source,
+                arcname="YomiMado-sources" if source == sources else "YomiMado-notices",
             )
-    names = [prefix + "_aarch64.dmg", prefix + "_sources.tar.gz", prefix + "_notices.tar.gz"]
+    names = [
+        prefix + "_aarch64.dmg",
+        prefix + "_sources.tar.gz",
+        prefix + "_notices.tar.gz",
+    ]
     assets = {name: digest(directory / name) for name in names}
     record = {
         "sourceRevision": revision,
         "version": app_version,
         "tag": "v" + app_version,
+        "prerelease": is_prerelease(app_version),
         "mode": "unnotarized-hobby",
         "installedAppVerified": False,
         "assets": assets,
@@ -209,6 +225,7 @@ def verify_artifact(directory: Path, expected: dict) -> None:
     if (
         set(expected["assets"]) != names
         or expected["tag"] != "v" + expected["version"]
+        or expected.get("prerelease") is not is_prerelease(expected["version"])
         or expected["mode"] != "unnotarized-hobby"
         or expected["installedAppVerified"] is not False
         or not re.fullmatch(r"[0-9a-f]{40}", expected["sourceRevision"])
@@ -250,7 +267,13 @@ def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
         "action",
-        choices=("plan", "prepare-sources", "package", "verify-artifact", "verify-environment"),
+        choices=(
+            "plan",
+            "prepare-sources",
+            "package",
+            "verify-artifact",
+            "verify-environment",
+        ),
     )
     parser.add_argument("--directory", type=Path)
     parser.add_argument("--sources", type=Path)
@@ -260,12 +283,23 @@ def main() -> None:
     args = parser.parse_args()
     if args.action == "plan":
         app_version = version()
-        print(json.dumps({"version": app_version, "tag": "v" + app_version}))
+        print(
+            json.dumps(
+                {
+                    "version": app_version,
+                    "tag": "v" + app_version,
+                    "prerelease": is_prerelease(app_version),
+                }
+            )
+        )
     elif args.action == "prepare-sources":
         prepare_sources(args.sources, args.notices, args.directory)
     elif args.action == "package":
         print(
-            json.dumps(package(args.directory, args.sources, args.notices), separators=(",", ":"))
+            json.dumps(
+                package(args.directory, args.sources, args.notices),
+                separators=(",", ":"),
+            )
         )
     elif args.action == "verify-artifact":
         expected = json.loads(args.expected)
