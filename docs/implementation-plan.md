@@ -42,6 +42,15 @@ unmerged as requested. Hosted execution and its new installer confirmation
 are pending the first merge; no version tag or public release has been created.
 See [the release setup](macos-release.md#release-on-merge-to-main).
 
+Next platform milestone (2026-10-07): prepare the first Windows pre-release
+using [the Windows release plan](windows-release.md). Initial planned target
+is Windows 11 x64 with a per-user NSIS installer. The maintainer has a separate
+Windows 11 PC for manual checks, without live agent access; confirm architecture
+before claiming x64 coverage. The first slice is a reviewed Windows frozen OCR
+runtime and private installed-app startup: current bundled startup is macOS-only.
+Windows source/native and installer gates remain open. Add joint release-on-main
+publication only after those gates pass, using one publisher for both platforms.
+
 Status audit (2026-10-05): the capture → local OCR → interactive overlay →
 learning-popup flow works with user-installed models on macOS and has been
 manually exercised on a Retina display. The desktop (55), Rust (36), and OCR
@@ -779,7 +788,9 @@ Before any public release:
 - [x] keep copyrighted manga fixtures out of git (current tracked test assets)
 - [x] document local model/data setup behavior
 - [x] document macOS permissions
-- [ ] document Windows installation/runtime requirements
+- [x] plan Windows runtime, source review, installer/scaling tests and joint
+      publication in `docs/windows-release.md`
+- [ ] implement and verify Windows installation/runtime requirements
 
 # After the first release — UI redesign discussion
 
