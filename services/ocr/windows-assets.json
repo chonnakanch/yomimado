@@ -1,0 +1,82 @@
+[
+  {
+    "path": "manga-ocr-base/config.json",
+    "url": "https://huggingface.co/kha-white/manga-ocr-base/resolve/aa6573bd10b0d446cbf622e29c3e084914df9741/config.json",
+    "sha256": "8c0e395de8fa699daaac21aee33a4ba9bd1309cfbff03147813d2a025f39f349"
+  },
+  {
+    "path": "manga-ocr-base/preprocessor_config.json",
+    "url": "https://huggingface.co/kha-white/manga-ocr-base/resolve/aa6573bd10b0d446cbf622e29c3e084914df9741/preprocessor_config.json",
+    "sha256": "af4eb4d79cf61b47010fc0bc9352ee967579c417423b4917188d809b7e048948"
+  },
+  {
+    "path": "manga-ocr-base/pytorch_model.bin",
+    "url": "https://huggingface.co/kha-white/manga-ocr-base/resolve/aa6573bd10b0d446cbf622e29c3e084914df9741/pytorch_model.bin",
+    "sha256": "c63e0bb5b3ff798c5991de18a8e0956c7ee6d1563aca6729029815eda6f5c2eb"
+  },
+  {
+    "path": "manga-ocr-base/special_tokens_map.json",
+    "url": "https://huggingface.co/kha-white/manga-ocr-base/resolve/aa6573bd10b0d446cbf622e29c3e084914df9741/special_tokens_map.json",
+    "sha256": "303df45a03609e4ead04bc3dc1536d0ab19b5358db685b6f3da123d05ec200e3"
+  },
+  {
+    "path": "manga-ocr-base/tokenizer_config.json",
+    "url": "https://huggingface.co/kha-white/manga-ocr-base/resolve/aa6573bd10b0d446cbf622e29c3e084914df9741/tokenizer_config.json",
+    "sha256": "d775ad1deac162dc56b84e9b8638f95ed8a1f263d0f56f4f40834e26e205e266"
+  },
+  {
+    "path": "manga-ocr-base/vocab.txt",
+    "url": "https://huggingface.co/kha-white/manga-ocr-base/resolve/aa6573bd10b0d446cbf622e29c3e084914df9741/vocab.txt",
+    "sha256": "344fbb6b8bf18c57839e924e2c9365434697e0227fac00b88bb4899b78aa594d"
+  },
+  {
+    "path": "opus-mt-ja-en/README.md",
+    "url": "https://huggingface.co/Helsinki-NLP/opus-mt-ja-en/resolve/0770961a39ba6bd66305b149c3f4110bcafca2e6/README.md",
+    "sha256": "0b86e8b0db54d2371edbd3896da45f44c1d1c4d151c6a1164304da49fd841676"
+  },
+  {
+    "path": "opus-mt-ja-en/config.json",
+    "url": "https://huggingface.co/Helsinki-NLP/opus-mt-ja-en/resolve/0770961a39ba6bd66305b149c3f4110bcafca2e6/config.json",
+    "sha256": "e289b397c417050d9be37049677abf8929c35b16397389ad591a8d008e6db340"
+  },
+  {
+    "path": "opus-mt-ja-en/generation_config.json",
+    "url": "https://huggingface.co/Helsinki-NLP/opus-mt-ja-en/resolve/0770961a39ba6bd66305b149c3f4110bcafca2e6/generation_config.json",
+    "sha256": "2a2ada2b87855613701872484737458add1c5d3a4330185e7fa4a3d1f6888f48"
+  },
+  {
+    "path": "opus-mt-ja-en/pytorch_model.bin",
+    "url": "https://huggingface.co/Helsinki-NLP/opus-mt-ja-en/resolve/0770961a39ba6bd66305b149c3f4110bcafca2e6/pytorch_model.bin",
+    "sha256": "ed649116c143fc2d7aea690246f4b2b7caa814e9e00a8d5bbe047822b18de022"
+  },
+  {
+    "path": "opus-mt-ja-en/source.spm",
+    "url": "https://huggingface.co/Helsinki-NLP/opus-mt-ja-en/resolve/0770961a39ba6bd66305b149c3f4110bcafca2e6/source.spm",
+    "sha256": "d0b5c3b10b5959f056ff2c86e2f2356129242ff1fc72d3a4a34d6a8c0eee4e57"
+  },
+  {
+    "path": "opus-mt-ja-en/target.spm",
+    "url": "https://huggingface.co/Helsinki-NLP/opus-mt-ja-en/resolve/0770961a39ba6bd66305b149c3f4110bcafca2e6/target.spm",
+    "sha256": "35d89c704e270d441fade716a3931d49c43179400682edcca7f180694982a2f6"
+  },
+  {
+    "path": "opus-mt-ja-en/tokenizer_config.json",
+    "url": "https://huggingface.co/Helsinki-NLP/opus-mt-ja-en/resolve/0770961a39ba6bd66305b149c3f4110bcafca2e6/tokenizer_config.json",
+    "sha256": "9db10a7f6e536bc53ecdd33bb23fa7ba610d20ee7959059a9deee5f33d636e54"
+  },
+  {
+    "path": "opus-mt-ja-en/vocab.json",
+    "url": "https://huggingface.co/Helsinki-NLP/opus-mt-ja-en/resolve/0770961a39ba6bd66305b149c3f4110bcafca2e6/vocab.json",
+    "sha256": "0483c9c2b3deade6d6fbfe149eccf9cd3c44c77b348232030ae2d81400d65b61"
+  },
+  {
+    "path": "JMdict_e.gz",
+    "url": "https://www.edrdg.org/pub/Nihongo/JMdict_e.gz",
+    "sha256": "a84c95984295173c4a6dff2d37c16697aa7b42b469146bb0a55578d940076c5f"
+  },
+  {
+    "path": "kanjidic2.xml.gz",
+    "url": "https://www.edrdg.org/kanjidic/kanjidic2.xml.gz",
+    "sha256": "049c5a22a83ee70d2bf5b2f0b2e42e737bebf632043ecefab935a0a97c0af1c9"
+  }
+]

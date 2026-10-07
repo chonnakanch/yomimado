@@ -121,6 +121,27 @@ class VersionTests(unittest.TestCase):
         ):
             ci.verify_reuse()
 
+    def test_windows_only_preparation_does_not_change_macos_runtime_scope(self):
+        for path in (
+            "services/ocr/windows-inputs.json",
+            "services/ocr/windows_packaged_main.py",
+            "scripts/windows_python.py",
+            "apps/desktop/src-tauri/tauri.windows-release.conf.json",
+        ):
+            with self.subTest(path=path), patch.object(ci, "git", return_value=path):
+                ci.verify_reuse()
+        for path in (
+            "services/ocr/app/main.py",
+            "services/ocr/packaged_main.py",
+            "services/ocr/requirements-macos-release.txt",
+        ):
+            with (
+                self.subTest(path=path),
+                patch.object(ci, "git", return_value=path),
+                self.assertRaisesRegex(ValueError, "new seed"),
+            ):
+                ci.verify_reuse()
+
     def test_detector_weights_rejected_even_in_desktop_sources(self):
         with (
             patch.object(ci, "git", return_value="apps/desktop/src/detector.onnx"),
@@ -148,7 +169,9 @@ class ArtifactTests(unittest.TestCase):
             path.write_bytes(b"verified input " + suffix.encode())
             checksum = ci.digest(path)
             self.record["assets"][path.name] = checksum
-            (self.root / (path.name + ".sha256")).write_text(f"{checksum}  {path.name}\n")
+            (self.root / (path.name + ".sha256")).write_text(
+                f"{checksum}  {path.name}\n"
+            )
         ci.write_json(self.root / "release-candidate.json", self.record)
 
     def test_exact_artifacts_accepted(self):
@@ -247,7 +270,9 @@ class ArtifactTests(unittest.TestCase):
                 "protected_branches": False,
                 "custom_branch_policies": True,
             },
-            "protection_rules": [{"type": "required_reviewers", "reviewers": [{"type": "User"}]}],
+            "protection_rules": [
+                {"type": "required_reviewers", "reviewers": [{"type": "User"}]}
+            ],
         }
         policies = {"branch_policies": [{"name": "main", "type": "branch"}]}
         ci.verify_environment(data, policies)
@@ -276,7 +301,9 @@ class SourceFollowupTests(unittest.TestCase):
                 subprocess.run(["git", *args], cwd=checkout, check=True)
             (checkout / "feature.txt").write_text("merged feature")
             subprocess.run(["git", "add", "."], cwd=checkout, check=True)
-            subprocess.run(["git", "commit", "-qm", "feature"], cwd=checkout, check=True)
+            subprocess.run(
+                ["git", "commit", "-qm", "feature"], cwd=checkout, check=True
+            )
             revision = ci.git("rev-parse", "HEAD", root=checkout)
             seed.mkdir()
             notices.mkdir()
@@ -298,7 +325,9 @@ class SourceFollowupTests(unittest.TestCase):
             }
             ci.write_json(seed / "source-delivery.json", original)
             ci.write_json(seed / "source-delivery.worksheet.json", original)
-            ci.write_json(seed / "source-asset-omissions.json", {"archives": {"old.tar.gz": {}}})
+            ci.write_json(
+                seed / "source-asset-omissions.json", {"archives": {"old.tar.gz": {}}}
+            )
             for name in ("BUILD.md", "REVIEW.md"):
                 (seed / name).write_text("original review instructions")
             with patch.object(ci, "verify_reuse"):
@@ -306,10 +335,14 @@ class SourceFollowupTests(unittest.TestCase):
             result = ci.read_json(output / "source-delivery.json")
             self.assertEqual(result["projectRevision"], revision)
             self.assertEqual(result["reviewer"], original["reviewer"])
-            self.assertEqual(result["approvalProjectRevision"], original["approvalProjectRevision"])
+            self.assertEqual(
+                result["approvalProjectRevision"], original["approvalProjectRevision"]
+            )
             self.assertEqual(result["components"][1], original["components"][1])
             self.assertEqual(ci.read_json(seed / "source-delivery.json"), original)
-            self.assertEqual((notices / "project-revision.txt").read_text().strip(), revision)
+            self.assertEqual(
+                (notices / "project-revision.txt").read_text().strip(), revision
+            )
             self.assertFalse((output / "old.tar.gz").exists())
             with tarfile.open(output / result["components"][0]["archive"]) as archive:
                 self.assertEqual(

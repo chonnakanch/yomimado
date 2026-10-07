@@ -104,6 +104,22 @@ def verify_reuse(root: Path = ROOT) -> None:
         "README.md",
         ".github/workflows/macos-prerelease.yml",
         "scripts/macos-ci-release.py",
+        # These inputs are used only by the independent Windows candidate path.
+        # Shared OCR code, existing locks and macOS recipes still fail closed.
+        ".github/workflows/windows-candidate.yml",
+        "apps/desktop/src-tauri/tauri.windows-release.conf.json",
+        "scripts/build-windows-prerelease.ps1",
+        "scripts/verify-windows-install.ps1",
+        "scripts/windows_release.py",
+        "scripts/windows_python.py",
+        "scripts/smoke-windows-install.py",
+        "scripts/fixtures/windows-ocr-horizontal.png",
+        "scripts/fixtures/windows-ocr-vertical.png",
+        "services/ocr/requirements-windows-release.txt",
+        "services/ocr/windows-inputs.json",
+        "services/ocr/windows-assets.json",
+        "services/ocr/windows_packaged_main.py",
+        "services/ocr/tests/test_windows_packaged_main.py",
     }
     changed = git("diff", "--name-only", SEED_REVISION, "HEAD", root=root).splitlines()
     for path in changed:

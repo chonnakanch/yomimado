@@ -1,6 +1,8 @@
 mod capture;
 mod detector_model;
 mod overlay;
+#[cfg(target_os = "windows")]
+mod windows_service;
 
 use std::process::Child;
 use std::sync::{Arc, Mutex};
@@ -22,6 +24,8 @@ struct AppState {
     capture: Arc<dyn ScreenCapture>,
     overlay: overlay::OverlayStore,
     service: Mutex<Option<Child>>,
+    #[cfg(target_os = "windows")]
+    windows_service: Mutex<Option<windows_service::Service>>,
 }
 
 #[cfg(all(not(debug_assertions), target_os = "macos"))]
@@ -495,10 +499,26 @@ pub fn run() {
             let service = Some(start_bundled_service(app)?);
             #[cfg(any(debug_assertions, not(target_os = "macos")))]
             let service = None;
+            #[cfg(all(not(debug_assertions), target_os = "windows"))]
+            let windows_service = match windows_service::start(app) {
+                Ok(service) => Some(service),
+                Err(error) => {
+                    use tauri_plugin_dialog::DialogExt;
+                    app.dialog()
+                        .message(format!("Local OCR service could not start: {error}"))
+                        .title("YomiMado startup failed")
+                        .blocking_show();
+                    return Err(error.into());
+                }
+            };
+            #[cfg(all(debug_assertions, target_os = "windows"))]
+            let windows_service = None;
             app.manage(AppState {
                 capture: Arc::new(XcapScreenCapture::new()),
                 overlay: overlay::OverlayStore::default(),
                 service: Mutex::new(service),
+                #[cfg(target_os = "windows")]
+                windows_service: Mutex::new(windows_service),
             });
             let manual =
                 Shortcut::try_from(MANUAL_CAPTURE_SHORTCUT).map_err(|error| error.to_string())?;
@@ -542,6 +562,11 @@ pub fn run() {
         .expect("error while building YomiMado")
         .run(|app, event| {
             if matches!(event, tauri::RunEvent::Exit) {
+                #[cfg(target_os = "windows")]
+                if let Ok(mut service) = app.state::<AppState>().windows_service.lock() {
+                    // Drop closes the job and terminates its entire service tree.
+                    service.take();
+                }
                 if let Ok(mut service) = app.state::<AppState>().service.lock() {
                     if let Some(mut child) = service.take() {
                         let _ = child.kill();

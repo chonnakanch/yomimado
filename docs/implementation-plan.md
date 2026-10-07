@@ -46,8 +46,11 @@ Next platform milestone (2026-10-07): prepare the first Windows pre-release
 using [the Windows release plan](windows-release.md). Initial planned target
 is Windows 11 x64 with a per-user NSIS installer. The maintainer has a separate
 Windows 11 PC for manual checks, without live agent access; confirm architecture
-before claiming x64 coverage. The first slice is a reviewed Windows frozen OCR
-runtime and private installed-app startup: current bundled startup is macOS-only.
+before claiming x64 coverage. Windows-only startup, a pinned source-Python/CPU-wheel build, a per-user NSIS
+override and an independent candidate workflow are prepared. Local macOS tests
+and frontend build pass; hosted Windows execution, actual native/source review
+and exact installed-app confirmation are still pending. No public Windows
+release integration or x64 hardware coverage is claimed.
 Windows source/native and installer gates remain open. Add joint release-on-main
 publication only after those gates pass, using one publisher for both platforms.
 

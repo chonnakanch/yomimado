@@ -1,8 +1,12 @@
 # First Windows pre-release plan
 
-Status — 2026-10-07: planning is complete; Windows packaging and installed-app
-verification have not started. The maintainer has a separate Windows 11 PC,
-with no live agent access. Build checks can run on a Windows GitHub Actions
+Status — 2026-10-07: independent Windows candidate preparation is implemented;
+hosted build, actual native/source review and installed-app verification are
+pending. See the [source worksheet](windows-source-review.md) and
+[numbered PC checklist](windows-installed-test.md). The maintainer has a separate Windows 11 PC,
+with no live agent access and no current physical access. Reported specs are
+i5-14500, RTX 4070 Super, “25h” Windows and one 2K monitor; exact OS build,
+System type and scaling remain unconfirmed. Build checks can run on a Windows GitHub Actions
 runner; the maintainer will perform installed-app checks locally and report
 results. Confirm the PC's architecture before claiming x64 coverage.
 
@@ -44,16 +48,22 @@ unverified in [the implementation plan](implementation-plan.md).
 
 Concrete packaging gaps:
 
-- `apps/desktop/src-tauri/src/lib.rs` starts the bundled service only for
-  non-debug macOS builds. A Windows release currently starts no service.
+- Windows startup is now separate from the reviewed macOS path: it launches
+  `runtime/yomimado-ocr.exe` without a console, supplies explicit resource/data
+  paths, checks PID/instance readiness after the service binds loopback and
+  closes a kill-on-close job when the desktop exits. Windows CI verification
+  remains pending; code completion does not clear the installed-app gate.
 - `tauri.release.conf.json` targets DMG and contains macOS settings. Add a
   separate Windows release override with the production CSP and OCR resources.
 - `requirements-macos-release.txt` and `build-macos-prerelease.sh` are specific
   to Apple Silicon: custom OpenCV, Accelerate NumPy, macOS native binaries and
   notices cannot be used as Windows runtime inputs.
-- No Windows build, native/source review, installer verifier or release
-  candidate record exists. macOS licence clearance stays complete, but does
-  not approve newly selected Windows binaries.
+- `windows-candidate.yml` builds only `develop` with read-only repository
+  permission. It prepares source-built Python, hash-pinned Windows wheels and
+  CPU Torch, freezes the service, builds per-user NSIS, installs it, checks
+  startup/quit and frozen learning, and exports a test candidate with hashes.
+  Native/source evidence remains unapproved. macOS clearance does not approve
+  Windows inputs. The main publisher is unchanged; no public Windows path exists.
 
 First slice: freeze the existing Python entry point as
 `runtime/yomimado-ocr.exe` on Windows, bundle resources, and launch it from an
@@ -174,9 +184,14 @@ Only after the Windows candidate clears its runtime/source and installer gates:
 
 ## Next action and current limitations
 
-Next implementation task: build the isolated frozen Windows OCR runtime and
-its inventory on an x64 Windows runner, then implement private installed-app
-startup. Candidate CI may assist development before publication CI is enabled.
+Next action: execute the independent Windows candidate workflow from the
+tracked `develop` commit, inspect the actual Windows inventory and resolve
+source/notice gaps before public distribution. Download the exact test candidate
+and use the numbered PC checklist when the hardware is available. The manifest
+collects original sdists and source/binary archives; it does not claim complete
+corresponding-source coverage. The selected compiler/SDK fail closed if absent
+from the hosted image. Dictionary downloads also fail if the daily snapshot
+moves; supply the pinned snapshot or deliberately rebuild with new hashes. Candidate CI may assist development before publication CI is enabled.
 No Windows runtime or installer is claimed to work yet. This macOS session
 cannot validate Windows DLL loading, SmartScreen or physical display capture.
 The maintainer's separate PC can supply the manual results once a candidate is

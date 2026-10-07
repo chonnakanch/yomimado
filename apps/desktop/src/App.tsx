@@ -324,7 +324,8 @@ export function App() {
             </p>
             <p>
               The packaged app also includes full model, dictionary, and
-              software notices in its <code>Resources/ocr/notices</code> folder.
+              software notices in its <code>ocr/notices</code> folder (inside
+              Resources on macOS).
             </p>
           </div>
         )}
