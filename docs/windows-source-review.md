@@ -127,6 +127,19 @@ sources were obtained from the recipe's official Chromium repository instead.
 Exact static binary binding, licence review, final source delivery and a
 source-only Windows rebuild remain open. No macOS codec clearance is reused.
 
+The SudachiPy 0.6.10 tag resolves to
+`7e2f287bbfffc036421cf960802e41a696727747`. Its original
+[preferred-source archive](https://codeload.github.com/WorksApplications/sudachi.rs/tar.gz/7e2f287bbfffc036421cf960802e41a696727747)
+is retained with SHA-256
+`40694b5d3d7541a08629484af8383b0afc134977b3680de002d14bfa71a3a095`.
+Its Cargo.lock (`8fe375cb8712bb8f219f1ce7b4dd4faa560d3d247b2ff8b8f88c1b4e685179f8`)
+is stale relative to the Python binding manifest: the manifest requires PyO3
+0.23, while the lock records 0.22.6. The original PyPI sdist omits Cargo.lock.
+Do not treat the retained lock/vendor collection as the exact Windows wheel's
+dependency graph. Resolve the actual wheel build inputs from upstream evidence,
+or build the binding on Windows with a deliberately resolved, reviewed and
+retained lock and crate originals. Source identity alone does not close this gap.
+
 Review steps:
 
 1. Every actual EXE/DLL/PYD needs a SHA-256, x64 machine value, imports and
