@@ -3,8 +3,9 @@
 Status — 2026-10-08: the maintainer reports that setup completes, but launching
 opens a blank terminal, scan buttons do nothing and a capture shortcut freezes
 the app. The supplied screenshot shows no detector-import panel. The human
-installer gate is **FAILED / open**. The setup hash, System type and full OS
-build have not yet been confirmed on the PC. Other checklist cases remain
+installer gate is **FAILED / open**. The installed setup hash has not yet been
+confirmed on the PC. The maintainer confirms an x64 OS/processor and full Windows
+build below. Other checklist cases remain
 untested. Never
 approve this record from automated CI alone. Each rebuilt setup needs its own confirmation.
 
@@ -38,11 +39,13 @@ relative to main. Before staging, create an **empty draft** in the owner UI with
 target; save as draft, never publish/create a tag. The workflow can upload and
 verify that empty draft. No credentials belong in git, logs or test reports.
 
-Reported hardware (2026-10-07): Intel Core i5-14500, RTX 4070 Super, Windows
-version described as “25h”, one 2K display. The maintainer now has access for
-the failing installation test.
-This is reported hardware, not installed Windows x64 coverage. Confirm the
-System type, full version/OS build, resolution and scaling when the PC is ready.
+Confirmed by the maintainer's System/About report (2026-10-08): **64-bit operating
+system, x64-based processor**, Windows 11 Home **25H2**, OS build **26200.9457**,
+Intel Core i5-14500 and 32 GB RAM. Previously reported: RTX 4070 Super and one
+2K display; exact resolution and scaling remain unconfirmed. Device/product
+identifiers are intentionally omitted. The PC architecture is confirmed, while
+the replacement installer's functional tests remain open and the prior UI test
+failed. Record resolution and scaling during retesting.
 GPU acceleration is not used; a CUDA installation is not required.
 
 Fill in: candidate commit, setup filename/SHA-256, browser, System type,

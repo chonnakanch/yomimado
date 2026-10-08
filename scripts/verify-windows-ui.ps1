@@ -51,7 +51,10 @@ $Process = $null
 $SecondProcess = $null
 $MainWindow = [IntPtr]::Zero
 $ModelCreated = $false
-$Record = @{ windows11HardwareVerified=$false; cases=@() }
+$Record = @{
+    windows11HardwareVerified=$false; cases=@();
+    desktopSha256=(Get-FileHash (Join-Path $Installed 'yomimado.exe') -Algorithm SHA256).Hash.ToLower()
+}
 
 function Wait-Check {
     param([scriptblock]$Check, [string]$Failure, [int]$Seconds=40)
@@ -97,6 +100,7 @@ try {
         if ((Get-Button $Name).Current.IsEnabled) { throw "Scan is enabled without a detector: $Name" }
     }
     $Record.missingModelPanel = $true
+    Write-Host 'Missing-model panel and disabled scan buttons passed.'
     # A second instance must explain the occupied service port, then exit
     # normally after acknowledgement without blocking the first app.
     $SecondProcess = Start-Process (Join-Path $Installed 'yomimado.exe') -PassThru
@@ -115,9 +119,16 @@ try {
     if ($ErrorText -notmatch 'Port 8766 is occupied') { throw 'Second instance did not explain the occupied port.' }
     if (-not [YomiMadoUiNative]::SetForegroundWindow($ErrorWindow)) { throw 'Cannot focus startup error dialog.' }
     [System.Windows.Forms.SendKeys]::SendWait('{ENTER}')
-    if (-not $SecondProcess.WaitForExit(15000) -or $SecondProcess.ExitCode -ne 1) { throw 'Startup error acknowledgement did not exit cleanly.' }
+    if (-not $SecondProcess.WaitForExit(15000)) { throw 'Startup error acknowledgement did not exit.' }
+    $SecondProcess.Refresh()
+    $Record.occupiedPortExitCode = $SecondProcess.ExitCode
+    # Pinned tauri-runtime-wry 2.11.4 maps RequestExit to ControlFlow::Exit,
+    # which uses zero even when AppHandle::exit requested one. Require normal
+    # termination and retain the actual result; do not mistake it for a hang.
+    if ($SecondProcess.ExitCode -notin @(0, 1)) { throw "Unexpected startup-error exit code: $($SecondProcess.ExitCode)" }
     if (-not [YomiMadoUiNative]::Responding($MainWindow)) { throw 'Second instance blocked the original app.' }
     $Record.occupiedPortDialog = $true
+    Write-Host "Occupied-port dialog, acknowledgement and original app responsiveness passed; exit code $($SecondProcess.ExitCode)."
     # Exercise native dialog cancellation before staging the hash-checked fixture.
     Invoke-Button 'Select detector model file'
     Wait-Check { @([YomiMadoUiNative]::Windows($Process.Id) | Where-Object { $_ -ne $MainWindow }).Count -gt 0 } 'Model file dialog did not open.'
@@ -127,6 +138,7 @@ try {
     Wait-Check { @([YomiMadoUiNative]::Windows($Process.Id) | Where-Object { $_ -ne $MainWindow }).Count -eq 0 } 'Model dialog cancellation hung.'
     if ((Get-Button 'Scan manga page').Current.IsEnabled) { throw 'Cancelled import incorrectly enables scanning.' }
     $Record.modelDialogCancellation = $true
+    Write-Host 'Model import dialog cancellation passed.'
     Stop-TestApp
     # This is a smoke-only user-data fixture, never an installer/resource input.
     New-Item -ItemType Directory -Force (Split-Path -Parent $ModelPath) | Out-Null
@@ -160,9 +172,9 @@ try {
         } "Selector did not cancel for $($Case.name)."
         if (-not [YomiMadoUiNative]::Responding($MainWindow)) { throw 'Main window is unresponsive after cancellation.' }
         $Record.cases += @{name=$Case.name; selectorOpened=$true; cancellation=$true; responsive=$true}
+        Write-Host "Installed UI passed: $($Case.name)."
     }
     Stop-TestApp
-    $Record.desktopSha256 = (Get-FileHash (Join-Path $Installed 'yomimado.exe') -Algorithm SHA256).Hash.ToLower()
     $Record.detectorSha256 = $ExpectedModelHash
     $Record.passed = $true
     Write-Host 'Installed Windows model setup, buttons, shortcuts and UI cancellation passed.'

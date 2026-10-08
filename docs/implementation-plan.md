@@ -45,8 +45,8 @@ See [the release setup](macos-release.md#release-on-merge-to-main).
 Next platform milestone (2026-10-07): prepare the first Windows pre-release
 using [the Windows release plan](windows-release.md). Initial planned target
 is Windows 11 x64 with a per-user NSIS installer. The maintainer has a separate
-Windows 11 PC for manual checks, without live agent access; confirm architecture
-before claiming x64 coverage. Windows-only startup, a pinned source-Python/CPU-wheel build, a per-user NSIS
+Windows 11 PC for manual checks, without live agent access; its x64 architecture
+is confirmed by the 2026-10-08 System/About report below. Windows-only startup, a pinned source-Python/CPU-wheel build, a per-user NSIS
 override and an independent candidate workflow are prepared. Local macOS tests
 and frontend build pass; hosted Windows Python/service/frontend/Rust tests and
 freezing pass. Hosted run `37589437962` also built NSIS and passed exact installed
@@ -76,9 +76,10 @@ scan buttons and a shortcut freeze. The human installer gate fails. The
 replacement fixes Windows GUI subsystem/model setup and the documented
 WebView2 deadlock from synchronous window creation, with installed UI regression
 checks for buttons, shortcuts and cancellation. Hosted verification and a new
-exact-installer test remain required. PC System type, full OS build and scaling
-are still unconfirmed.
-No public Windows release integration or x64 hardware coverage is claimed.
+exact-installer test remain required. The maintainer's System/About report
+confirms a 64-bit OS and x64 processor, Windows 11 Home 25H2 build 26200.9457,
+Core i5-14500 and 32 GB RAM. Exact display resolution/scaling remain unconfirmed.
+No public Windows release integration or passing Windows 11 installer gate is claimed.
 Windows source/native and installer gates remain open. Add joint release-on-main
 publication only after those gates pass, using one publisher for both platforms.
 

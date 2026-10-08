@@ -17,10 +17,22 @@ These changes need hosted execution and
 new exact-installer confirmation. See the [source worksheet](windows-source-review.md) and
 [numbered PC checklist](windows-installed-test.md). The maintainer has a separate Windows 11 PC,
 with no live agent access; it is now available for maintainer testing. Reported specs are
-i5-14500, RTX 4070 Super, “25h” Windows and one 2K monitor; exact OS build,
-System type and scaling remain unconfirmed. Build checks can run on a Windows GitHub Actions
+i5-14500, 32 GB RAM, RTX 4070 Super and one 2K monitor. The maintainer's
+System/About report confirms **64-bit operating system, x64-based processor**,
+Windows 11 Home **25H2**, build **26200.9457**. Exact display resolution and
+scaling remain unconfirmed. Build checks can run on a Windows GitHub Actions
 runner; the maintainer will perform installed-app checks locally and report
-results. Confirm the PC's architecture before claiming x64 coverage.
+results. Architecture is confirmed; functional coverage requires the new exact
+installer's recorded test results.
+
+Replacement run `37782181350` at `f5c157d6f9a4b0efdb39908e5054fbd061a37956`
+built and installed NSIS, verified the x64 GUI executable/resources/startup,
+and reached the missing-model panel and occupied-port dialog. Its UI harness
+incorrectly required exit code 1 after acknowledgement; the pinned Tauri runtime
+maps requested exits to its normal GUI exit path. The assertion now accepts
+normal exit codes 0/1, records the actual code and retains responsiveness checks.
+The remaining UI and learning steps were skipped in that run, so it produced no
+download candidate and grants no installer approval. A complete rerun is required.
 
 The [owner-only candidate draft](https://github.com/chonnakanch/yomimado/releases/tag/untagged-e4524b4cbafe468fe44d)
 contains `YomiMado_0.1.0_x64-setup.exe` (893 MB), `SHA256SUMS.txt`, provenance,
@@ -33,7 +45,7 @@ desktop reports `NotSigned`; browser/SmartScreen behavior is still untested.
 | 1 — Pinned environment/freeze | Passed in Windows Actions; CPython 3.11.17, pinned CPU wheels, frozen service                                                  | Native distribution review is tracked separately below                                                                                           |
 | 2 — Native licences/sources   | Actual inputs, notices and preferred-source bindings collected                                                                 | Complete Windows vendor/terms review and corresponding-source delivery; resolve Intel MKL/IPP compatibility or run compatible replacement builds |
 | 3 — Private installed app     | Exact NSIS installation, resource/data paths, bundled startup and normal quit cleanup pass                                     | Human startup/console/relaunch/occupied-port cases                                                                                               |
-| 4 — Installed runtime         | Geometry, tokenization, dictionaries, kanji, uncached translation, restart persistence, model exclusion and AMD64 payload pass | Finish native source approval; Windows 11 hardware coverage remains unconfirmed                                                                  |
+| 4 — Installed runtime         | Geometry, tokenization, dictionaries, kanji, uncached translation, restart persistence, model exclusion and AMD64 payload pass | Finish native source approval; x64 PC architecture is confirmed, but Windows 11 functional cases remain open                                     |
 | 5 — Separate PC               | Setup completion reported; capture UI fails                                                                                    | Fix and retest blank console, absent detector setup, scan buttons and shortcut freeze; other cases untested                                      |
 | 6 — Joint release-on-main     | Existing macOS path preserved                                                                                                  | Deliberately gated on Windows source clearance and human exact-installer approval                                                                |
 
