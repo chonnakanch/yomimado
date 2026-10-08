@@ -173,7 +173,7 @@ export function App() {
         <section className="model-setup" aria-label="Detector model setup">
           <h2>Detector model</h2>
           {detectorModel.installed ? (
-            <p>Installed on this Mac. Manga scanning is ready.</p>
+            <p>Installed on this computer. Manga scanning is ready.</p>
           ) : (
             <p>
               Download <code>comictextdetector.pt.onnx</code> from the{" "}

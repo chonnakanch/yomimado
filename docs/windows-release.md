@@ -5,9 +5,16 @@ Status — 2026-10-08: run `37721943728` built the per-user NSIS candidate at
 startup/cleanup, native loading, horizontal/vertical OCR geometry, tokenization,
 word/kanji lookup, uncached translation and saved-data/cache restart checks.
 Native licence/source clearance and human installed-app verification remain
-open. See the [source worksheet](windows-source-review.md) and
+open. The maintainer subsequently reports successful setup but a blank terminal,
+inactive scan buttons, no detector-import panel and a freeze on the capture
+shortcut. The candidate therefore **fails the human installer gate** and must
+not be approved or published. The replacement adds the Windows GUI subsystem,
+Windows model setup, asynchronous window commands and a worker for shortcut
+window creation; installed UI regression checks now exercise model setup,
+buttons, shortcuts and cancellation. These changes need hosted execution and
+new exact-installer confirmation. See the [source worksheet](windows-source-review.md) and
 [numbered PC checklist](windows-installed-test.md). The maintainer has a separate Windows 11 PC,
-with no live agent access and no current physical access. Reported specs are
+with no live agent access; it is now available for maintainer testing. Reported specs are
 i5-14500, RTX 4070 Super, “25h” Windows and one 2K monitor; exact OS build,
 System type and scaling remain unconfirmed. Build checks can run on a Windows GitHub Actions
 runner; the maintainer will perform installed-app checks locally and report
@@ -25,7 +32,7 @@ desktop reports `NotSigned`; browser/SmartScreen behavior is still untested.
 | 2 — Native licences/sources   | Actual inputs, notices and preferred-source bindings collected                                                                 | Complete Windows vendor/terms review and corresponding-source delivery; resolve Intel MKL/IPP compatibility or run compatible replacement builds |
 | 3 — Private installed app     | Exact NSIS installation, resource/data paths, bundled startup and normal quit cleanup pass                                     | Human startup/console/relaunch/occupied-port cases                                                                                               |
 | 4 — Installed runtime         | Geometry, tokenization, dictionaries, kanji, uncached translation, restart persistence, model exclusion and AMD64 payload pass | Finish native source approval; Windows 11 hardware coverage remains unconfirmed                                                                  |
-| 5 — Separate PC               | Candidate, hashes and numbered test record ready                                                                               | PC unavailable; all human cases untested                                                                                                         |
+| 5 — Separate PC               | Setup completion reported; capture UI fails                                                                                    | Fix and retest blank console, absent detector setup, scan buttons and shortcut freeze; other cases untested                                      |
 | 6 — Joint release-on-main     | Existing macOS path preserved                                                                                                  | Deliberately gated on Windows source clearance and human exact-installer approval                                                                |
 
 ## Target and scope

@@ -70,8 +70,14 @@ setup/uninstaller use x86 host stubs. This Windows Server 2022 execution does
 not establish Windows 11 hardware coverage. The owner-only draft retains eight
 hash-verified assets, including original dictionary snapshots. Native source
 bindings, Intel MKL/IPP compatibility or compatible replacement builds, and
-the exact installed-app human gate remain open. The separate PC is currently
-unavailable; its System type, full OS build and scaling are unconfirmed.
+the exact installed-app human gate remain open. The maintainer subsequently
+reports setup completion but a blank terminal, absent detector setup, inactive
+scan buttons and a shortcut freeze. The human installer gate fails. The
+replacement fixes Windows GUI subsystem/model setup and the documented
+WebView2 deadlock from synchronous window creation, with installed UI regression
+checks for buttons, shortcuts and cancellation. Hosted verification and a new
+exact-installer test remain required. PC System type, full OS build and scaling
+are still unconfirmed.
 No public Windows release integration or x64 hardware coverage is claimed.
 Windows source/native and installer gates remain open. Add joint release-on-main
 publication only after those gates pass, using one publisher for both platforms.

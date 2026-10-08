@@ -93,19 +93,45 @@ fn current_display(app: &AppHandle, window_label: &str) -> Result<DisplayInfo, S
     })
 }
 
-#[tauri::command]
+// WebView2 creation deadlocks inside Windows synchronous IPC/event handlers.
+// Keep macOS dispatch unchanged and use the async executor for Windows IPC.
+#[cfg_attr(target_os = "windows", tauri::command(async))]
+#[cfg_attr(not(target_os = "windows"), tauri::command)]
 fn show_capture_selector(app: AppHandle) -> Result<(), String> {
     show_capture_window(app, "")
 }
 
-#[tauri::command]
+#[cfg_attr(target_os = "windows", tauri::command(async))]
+#[cfg_attr(not(target_os = "windows"), tauri::command)]
 fn show_auto_scanner(app: AppHandle) -> Result<(), String> {
     show_capture_window(app, "scan=auto")
 }
 
-#[tauri::command]
+#[cfg_attr(target_os = "windows", tauri::command(async))]
+#[cfg_attr(not(target_os = "windows"), tauri::command)]
 fn show_scan_area_selector(app: AppHandle) -> Result<(), String> {
     show_capture_window(app, "scan=configure")
+}
+
+fn dispatch_capture_shortcut(app: AppHandle, scan_query: &'static str) {
+    let capture = move || {
+        if let Err(error) = show_capture_window(app.clone(), scan_query) {
+            eprintln!("YomiMado: {error}");
+            #[cfg(target_os = "windows")]
+            {
+                use tauri_plugin_dialog::DialogExt;
+                app.dialog()
+                    .message(error)
+                    .title("YomiMado capture unavailable")
+                    .show(|_| {});
+            }
+        }
+    };
+    // Shortcut callbacks also arrive on the Windows UI/event thread.
+    #[cfg(target_os = "windows")]
+    tauri::async_runtime::spawn_blocking(capture);
+    #[cfg(not(target_os = "windows"))]
+    capture();
 }
 
 #[derive(Serialize)]
@@ -417,7 +443,8 @@ async fn capture_selection(
     Ok(captured)
 }
 
-#[tauri::command]
+#[cfg_attr(target_os = "windows", tauri::command(async))]
+#[cfg_attr(not(target_os = "windows"), tauri::command)]
 fn show_ocr_overlay(
     app: AppHandle,
     state: tauri::State<'_, AppState>,
@@ -443,7 +470,8 @@ fn get_overlay_state(state: tauri::State<'_, AppState>) -> Result<serde_json::Va
     state.overlay.get()
 }
 
-#[tauri::command]
+#[cfg_attr(target_os = "windows", tauri::command(async))]
+#[cfg_attr(not(target_os = "windows"), tauri::command)]
 fn show_translation_popup(
     app: AppHandle,
     metadata: CaptureMetadata,
@@ -524,9 +552,7 @@ pub fn run() {
                 Shortcut::try_from(MANUAL_CAPTURE_SHORTCUT).map_err(|error| error.to_string())?;
             app.global_shortcut().on_shortcut(manual, |app, _, event| {
                 if event.state() == ShortcutState::Pressed {
-                    if let Err(error) = show_capture_selector(app.clone()) {
-                        eprintln!("YomiMado: {error}");
-                    }
+                    dispatch_capture_shortcut(app.clone(), "");
                 }
             })?;
             let saved_area =
@@ -534,9 +560,7 @@ pub fn run() {
             app.global_shortcut()
                 .on_shortcut(saved_area, |app, _, event| {
                     if event.state() == ShortcutState::Pressed {
-                        if let Err(error) = show_auto_scanner(app.clone()) {
-                            eprintln!("YomiMado: {error}");
-                        }
+                        dispatch_capture_shortcut(app.clone(), "scan=auto");
                     }
                 })?;
             Ok(())

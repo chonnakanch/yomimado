@@ -15,6 +15,7 @@ name: Windows private candidate
       - services/ocr/windows_packaged_main.py
       - services/ocr/requirements-windows-release.txt
       - apps/desktop/src-tauri/src/**
+      - apps/desktop/src/**
       - apps/desktop/src-tauri/tauri.windows-release.conf.json
   workflow_dispatch:
 
@@ -41,6 +42,14 @@ jobs:
         with:
           fetch-depth: 0
           persist-credentials: false
+      - name: Check Windows PowerShell script syntax
+        run: |
+          foreach ($path in Get-ChildItem scripts/*windows*.ps1) {
+            $tokens = $null
+            $errors = $null
+            [System.Management.Automation.Language.Parser]::ParseFile($path.FullName, [ref]$tokens, [ref]$errors) | Out-Null
+            if ($errors.Count) { throw ($errors | Out-String) }
+          }
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version: "22.23.2"
@@ -85,12 +94,29 @@ jobs:
           if ($LASTEXITCODE) { throw 'Desktop/installer native input verification failed' }
           "YOMIMADO_INSTALLED=$installed" | Add-Content $env:GITHUB_ENV
           "YOMIMADO_INSTALLER=$($setup[0].FullName)" | Add-Content $env:GITHUB_ENV
-      - name: Obtain smoke-only detector and verify frozen installed learning
+      - name: Obtain smoke-only detector
         run: |
           $ErrorActionPreference = 'Stop'
           $model = Join-Path $env:RUNNER_TEMP 'comictextdetector.pt.onnx'
           Invoke-WebRequest 'https://github.com/zyddnys/manga-image-translator/releases/download/beta-0.2.1/comictextdetector.pt.onnx' -OutFile $model
           if ((Get-FileHash $model -Algorithm SHA256).Hash.ToLower() -ne '1a86ace74961413cbd650002e7bb4dcec4980ffa21b2f19b86933372071d718f') { throw 'Smoke-only model hash differs' }
+          "YOMIMADO_SMOKE_DETECTOR=$model" | Add-Content $env:GITHUB_ENV
+      - name: Verify installed model setup, buttons and shortcuts
+        timeout-minutes: 8
+        run: |
+          $ErrorActionPreference = 'Stop'
+          # The Framework UI Automation assemblies run under Windows PowerShell.
+          # Do not inherit PowerShell 7's incompatible module discovery paths.
+          $modules = $env:PSModulePath
+          Remove-Item Env:PSModulePath -ErrorAction SilentlyContinue
+          try {
+            & "$env:SystemRoot/System32/WindowsPowerShell/v1.0/powershell.exe" -NoProfile -File scripts/verify-windows-ui.ps1 -Installed $env:YOMIMADO_INSTALLED -DetectorModel $env:YOMIMADO_SMOKE_DETECTOR
+            if ($LASTEXITCODE) { throw 'Installed Windows UI regression failed' }
+          } finally { $env:PSModulePath = $modules }
+      - name: Verify frozen installed learning and persistence
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $model = $env:YOMIMADO_SMOKE_DETECTOR
           $log = 'services/ocr/build/windows/installed-smoke.log'
           & services/ocr/build/windows/venv/Scripts/python.exe scripts/smoke-windows-install.py $env:YOMIMADO_INSTALLED --detector-model $model 2>&1 | Tee-Object -FilePath $log
           if ($LASTEXITCODE) {
@@ -132,6 +158,7 @@ jobs:
             services/ocr/build/windows/installed-verification.json
             services/ocr/build/windows/installed-smoke.json
             services/ocr/build/windows/installed-smoke.log
+            services/ocr/build/windows/installed-ui.json
             services/ocr/build/windows/SHA256SUMS.txt
             services/ocr/build/windows/windows-candidate.json
             services/ocr/build/windows/windows-desktop-sources.json

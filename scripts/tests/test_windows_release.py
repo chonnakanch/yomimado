@@ -26,6 +26,27 @@ smoke_spec.loader.exec_module(smoke)
 
 
 class WindowsReleaseTests(unittest.TestCase):
+    def test_desktop_rejects_console_subsystem_and_accepts_x64_gui(self):
+        path = Path("yomimado.exe")
+        with (
+            patch.object(
+                release, "pe_info", return_value={"machine": "0x8664", "subsystem": 3}
+            ),
+            self.assertRaisesRegex(ValueError, "opens a console"),
+        ):
+            release.verify_desktop_gui(path)
+        with patch.object(
+            release, "pe_info", return_value={"machine": "0x8664", "subsystem": 2}
+        ):
+            release.verify_desktop_gui(path)
+        with (
+            patch.object(
+                release, "pe_info", return_value={"machine": "0x14c", "subsystem": 2}
+            ),
+            self.assertRaisesRegex(ValueError, "not x64"),
+        ):
+            release.verify_desktop_gui(path)
+
     def test_windows_powershell_diagnostics_do_not_inherit_ps7_modules(self):
         with (
             patch.dict(

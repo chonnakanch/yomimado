@@ -1,7 +1,11 @@
 # Windows candidate test record
 
-Status — 2026-10-08: the private candidate is available; the separate PC is
-currently unavailable and every human test below remains **untested**. Never
+Status — 2026-10-08: the maintainer reports that setup completes, but launching
+opens a blank terminal, scan buttons do nothing and a capture shortcut freezes
+the app. The supplied screenshot shows no detector-import panel. The human
+installer gate is **FAILED / open**. The setup hash, System type and full OS
+build have not yet been confirmed on the PC. Other checklist cases remain
+untested. Never
 approve this record from automated CI alone. Each rebuilt setup needs its own confirmation.
 
 Candidate: `79065df7ba34a3aaa4ddb3a1ebb30e164405742a`, successful
@@ -12,7 +16,12 @@ while signed in with repository release access. Setup:
 `01a28c0f4964b2df1733814670b3024d8aa18c525b544965a50189ec25ecab0a`.
 `SHA256SUMS.txt` in the same draft covers all seven other assets; its own
 GitHub digest is `ac6a442053f710ee3ca146f5627dea7aaed62c0348613c5c79f059133ccfb72a`.
-The installed desktop reports `NotSigned`. CI passes installed startup/quit,
+This candidate is retained for diagnosis and must not be approved or published.
+Its source omits the Windows GUI subsystem, enables model setup only for macOS,
+and creates capture windows synchronously from IPC/shortcut handlers. A
+replacement fixes those paths and adds installed Windows UI regression checks;
+its new installer hash needs fresh human confirmation.
+The installed desktop reports `NotSigned`. Earlier CI passed installed startup/quit,
 CPU/native loading without Python/CUDA on PATH, OCR geometry, tokenization,
 dictionary/kanji, uncached translation and persistence after restart.
 Those Windows Server 2022 checks do not pass any Windows 11 hardware,
@@ -28,7 +37,8 @@ target; save as draft, never publish/create a tag. The workflow can upload and
 verify that empty draft. No credentials belong in git, logs or test reports.
 
 Reported hardware (2026-10-07): Intel Core i5-14500, RTX 4070 Super, Windows
-version described as “25h”, one 2K display. The PC is not currently available.
+version described as “25h”, one 2K display. The maintainer now has access for
+the failing installation test.
 This is reported hardware, not installed Windows x64 coverage. Confirm the
 System type, full version/OS build, resolution and scaling when the PC is ready.
 GPU acceleration is not used; a CUDA installation is not required.

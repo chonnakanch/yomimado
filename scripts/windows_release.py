@@ -279,7 +279,11 @@ def pe_info(path: Path) -> dict:
                 for item in getattr(pe, group, [])
             }
         )
-        return {"machine": hex(pe.FILE_HEADER.Machine), "imports": imports}
+        return {
+            "machine": hex(pe.FILE_HEADER.Machine),
+            "subsystem": pe.OPTIONAL_HEADER.Subsystem,
+            "imports": imports,
+        }
     finally:
         pe.close()
 
@@ -573,10 +577,17 @@ def verify_resources(resources: Path) -> dict:
     return inventory
 
 
+def verify_desktop_gui(path: Path) -> None:
+    info = pe_info(path)
+    if info["machine"] != "0x8664":
+        raise ValueError("Desktop executable is not x64")
+    if info["subsystem"] != 2:  # IMAGE_SUBSYSTEM_WINDOWS_GUI
+        raise ValueError("Desktop executable opens a console; expected Windows GUI")
+
+
 def package(installer: Path, output: Path, installed: Path) -> None:
     verify_resources(installed / "ocr")
-    if pe_info(installed / "yomimado.exe")["machine"] != "0x8664":
-        raise ValueError("Desktop executable is not x64")
+    verify_desktop_gui(installed / "yomimado.exe")
     if subprocess.check_output(
         ["git", "status", "--porcelain"], cwd=ROOT, text=True
     ).strip():

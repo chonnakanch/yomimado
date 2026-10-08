@@ -281,7 +281,7 @@ def collect() -> None:
 
 
 def installer_inputs(installed: Path, installer: Path) -> dict:
-    from windows_release import native_files, pe_info
+    from windows_release import native_files, pe_info, verify_desktop_gui
 
     files = []
     for path in native_files(installed):
@@ -326,6 +326,7 @@ def installer_inputs(installed: Path, installer: Path) -> dict:
         "publicDistributionApproved": False,
     }
     write_json(BUILD / "windows-installer-inputs.json", record)
+    verify_desktop_gui(installed / "yomimado.exe")
     # Prove desktop loading separately from the frozen Python search path.
     # An NSIS uninstaller is a 32-bit host; the actual app/DLL payload is x64.
     desktop = [entry for entry in files if entry["path"].lower() != "uninstall.exe"]

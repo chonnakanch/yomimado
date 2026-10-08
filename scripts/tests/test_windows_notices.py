@@ -36,6 +36,7 @@ class WindowsNoticeTests(unittest.TestCase):
                     "pe_info",
                     return_value={
                         "machine": "0x8664",
+                        "subsystem": 2,
                         "imports": ["msvcp140.dll", "msvcp_win.dll"],
                     },
                 ),
