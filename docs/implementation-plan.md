@@ -59,10 +59,20 @@ verification because Windows PowerShell inherited incompatible PS7 modules.
 That diagnostic is corrected. Run `37720960120` rejected a moved daily
 KANJIDIC2 snapshot; a deliberate 2026-10-08 snapshot and early asset checking
 are committed, with original dictionaries retained in candidate delivery.
-Complete installed
-OCR/learning checks, actual native/source review and exact installed-app
-confirmation are still pending. No public Windows
-release integration or x64 hardware coverage is claimed.
+Run `37721943728` then passed the complete installed runtime checks at
+`79065df7ba34a3aaa4ddb3a1ebb30e164405742a`: startup/cleanup, actual native
+loading, horizontal/vertical OCR geometry, tokenization, dictionary/kanji,
+uncached translation and saved-data/cache restart. Its private per-user NSIS
+setup has SHA-256
+`01a28c0f4964b2df1733814670b3024d8aa18c525b544965a50189ec25ecab0a`.
+All 94 frozen service PE files and the installed desktop are AMD64; the NSIS
+setup/uninstaller use x86 host stubs. This Windows Server 2022 execution does
+not establish Windows 11 hardware coverage. The owner-only draft retains eight
+hash-verified assets, including original dictionary snapshots. Native source
+bindings, Intel MKL/IPP compatibility or compatible replacement builds, and
+the exact installed-app human gate remain open. The separate PC is currently
+unavailable; its System type, full OS build and scaling are unconfirmed.
+No public Windows release integration or x64 hardware coverage is claimed.
 Windows source/native and installer gates remain open. Add joint release-on-main
 publication only after those gates pass, using one publisher for both platforms.
 

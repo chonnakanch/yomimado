@@ -1,7 +1,23 @@
 # Windows candidate test record
 
-Status: waiting for a verified candidate and the separate PC. Never approve this
-record from automated CI alone. Each rebuilt setup needs its own confirmation.
+Status — 2026-10-08: the private candidate is available; the separate PC is
+currently unavailable and every human test below remains **untested**. Never
+approve this record from automated CI alone. Each rebuilt setup needs its own confirmation.
+
+Candidate: `79065df7ba34a3aaa4ddb3a1ebb30e164405742a`, successful
+[Windows run `37721943728`](https://github.com/chonnakanch/yomimado/actions/runs/37721943728).
+Download from the [owner-only draft](https://github.com/chonnakanch/yomimado/releases/tag/untagged-e4524b4cbafe468fe44d)
+while signed in with repository release access. Setup:
+`YomiMado_0.1.0_x64-setup.exe` (893 MB), SHA-256:
+`01a28c0f4964b2df1733814670b3024d8aa18c525b544965a50189ec25ecab0a`.
+`SHA256SUMS.txt` in the same draft covers all seven other assets; its own
+GitHub digest is `ac6a442053f710ee3ca146f5627dea7aaed62c0348613c5c79f059133ccfb72a`.
+The installed desktop reports `NotSigned`. CI passes installed startup/quit,
+CPU/native loading without Python/CUDA on PATH, OCR geometry, tokenization,
+dictionary/kanji, uncached translation and persistence after restart.
+Those Windows Server 2022 checks do not pass any Windows 11 hardware,
+browser/SmartScreen, capture/scaling or human installer case below.
+
 The candidate workflow stages an owner-only GitHub draft with `SHA256SUMS.txt`
 and `windows-candidate.json`. It creates no tag and has no publication operation.
 Installer/source archives are never uploaded as public Actions artifacts.

@@ -33,7 +33,37 @@ IPP 2021.12.0 and static codecs; GEOS is 3.11.4. Pillow records FreeType 2.13.3,
 LittleCMS 2.17, WebP 1.5.0, AVIF 1.3.0, libjpeg-turbo 3.1.1, zlib-ng 2.2.4,
 OpenJPEG 2.5.3 and TIFF 4.7.0. These are build reports, not source approval.
 
-That inventory exposed copied Windows DbgHelp/WinTrust/UCRT/API-set DLLs.
+Successful installed run `37721943728` at `79065df7ba34a3aaa4ddb3a1ebb30e164405742a`
+now inventories **94 AMD64 frozen service PE files** and 201 original native
+inputs. The installed desktop is AMD64; the NSIS setup/uninstaller use x86
+host stubs. The installed learning smoke records **128 loaded modules** with
+their actual paths/hashes and passes the native dependency gate without
+developer Python or CUDA on PATH. Removed OS DLLs and unused torchvision
+codecs/FFmpeg are absent from delivery; real OCR still passes. This verifies
+runtime loading and deliberate exclusions, while corresponding-source and
+licence approval remain open. Exact setup SHA-256:
+`01a28c0f4964b2df1733814670b3024d8aa18c525b544965a50189ec25ecab0a`.
+The [private draft](https://github.com/chonnakanch/yomimado/releases/tag/untagged-e4524b4cbafe468fe44d)
+contains hash-verified notices/inventories and source preparation. Later source
+collections described below still need assembly into final delivery. Full
+diagnostics from this run are retained locally in ignored
+`services/ocr/build/windows-run-37721943728/`; the downloaded diagnostic ZIP
+matches GitHub's SHA-256
+`3338d19da7239420cf791b506232e3a7e08ededaa6d9180fc7f675947eea93aa`.
+
+Ninety of the 94 frozen files match original interpreter/wheel bytes. The four
+remaining files below require explicit provenance rather than an inferred wheel
+owner. The frozen EXE is modified by PyInstaller as expected; that explains why
+its hash differs, but does not replace retained bootloader/build evidence.
+
+| Installed runtime file | SHA-256                                                            | Open binding                                                                   |
+| ---------------------- | ------------------------------------------------------------------ | ------------------------------------------------------------------------------ |
+| `msvcp140.dll`         | `0fa7eb792d3fbcf2233e4ea47e9144b9b1309ba8ed5d4731a72fffa8f4f556d6` | Identify the exact runner/app-local VC runtime origin and redistribution terms |
+| `vcruntime140.dll`     | `4d292623516f65c80482081e62d5dadb759dc16e851de5db24c3cbb57b87db83` | Identify the exact runner/app-local VC runtime origin and redistribution terms |
+| `vcruntime140_1.dll`   | `a113f192195f245f17389e6ecbed8005990bcb2476ddad33f7c4c6c86327afe5` | Identify the exact runner/app-local VC runtime origin and redistribution terms |
+| `yomimado-ocr.exe`     | `3b4e7c05b84e88b421be9edece042f33bab3795ea979fb09bb3a87083f4dbc61` | Bind the PyInstaller bootloader, appended application and exact freeze recipe  |
+
+The earlier inventory exposed copied Windows DbgHelp/WinTrust/UCRT/API-set DLLs.
 The recipe removes these OS components and records their original hashes,
 validates the runner's AMD64 system libraries, and requires installed loading
 verification. [Windows DbgHelp is not redistributable](https://learn.microsoft.com/en-us/windows/win32/debug/dbghelp-versions).

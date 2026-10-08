@@ -1,20 +1,32 @@
 # First Windows pre-release plan
 
-Status — 2026-10-08: hosted Windows tests, service freeze, NSIS construction,
-installation and desktop startup/cleanup pass at `9dd6e6f`. Installed OCR failed
-because the freeze excluded `torch.testing`; the recipe now retains it.
-Run `37717190035` subsequently reached real horizontal/vertical OCR geometry,
-tokenization, word/kanji lookup, uncached translation and save assertions.
-Its module diagnostic failed before restart verification; the inherited PS7
-module-path issue is corrected. The latest candidate is rerunning those checks.
-Actual native/source review and complete installed-app verification remain
-pending. See the [source worksheet](windows-source-review.md) and
+Status — 2026-10-08: run `37721943728` built the per-user NSIS candidate at
+`79065df7ba34a3aaa4ddb3a1ebb30e164405742a` and passed exact installed resource,
+startup/cleanup, native loading, horizontal/vertical OCR geometry, tokenization,
+word/kanji lookup, uncached translation and saved-data/cache restart checks.
+Native licence/source clearance and human installed-app verification remain
+open. See the [source worksheet](windows-source-review.md) and
 [numbered PC checklist](windows-installed-test.md). The maintainer has a separate Windows 11 PC,
 with no live agent access and no current physical access. Reported specs are
 i5-14500, RTX 4070 Super, “25h” Windows and one 2K monitor; exact OS build,
 System type and scaling remain unconfirmed. Build checks can run on a Windows GitHub Actions
 runner; the maintainer will perform installed-app checks locally and report
 results. Confirm the PC's architecture before claiming x64 coverage.
+
+The [owner-only candidate draft](https://github.com/chonnakanch/yomimado/releases/tag/untagged-e4524b4cbafe468fe44d)
+contains `YomiMado_0.1.0_x64-setup.exe` (893 MB), `SHA256SUMS.txt`, provenance,
+notices, project/source preparation and the original dictionary snapshots.
+All eight uploaded asset digests were checked against GitHub. The installed
+desktop reports `NotSigned`; browser/SmartScreen behavior is still untested.
+
+| Requested gate                | Current evidence                                                                                                               | Remaining work                                                                                                                                   |
+| ----------------------------- | ------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 1 — Pinned environment/freeze | Passed in Windows Actions; CPython 3.11.17, pinned CPU wheels, frozen service                                                  | Native distribution review is tracked separately below                                                                                           |
+| 2 — Native licences/sources   | Actual inputs, notices and preferred-source bindings collected                                                                 | Complete Windows vendor/terms review and corresponding-source delivery; resolve Intel MKL/IPP compatibility or run compatible replacement builds |
+| 3 — Private installed app     | Exact NSIS installation, resource/data paths, bundled startup and normal quit cleanup pass                                     | Human startup/console/relaunch/occupied-port cases                                                                                               |
+| 4 — Installed runtime         | Geometry, tokenization, dictionaries, kanji, uncached translation, restart persistence, model exclusion and AMD64 payload pass | Finish native source approval; Windows 11 hardware coverage remains unconfirmed                                                                  |
+| 5 — Separate PC               | Candidate, hashes and numbered test record ready                                                                               | PC unavailable; all human cases untested                                                                                                         |
+| 6 — Joint release-on-main     | Existing macOS path preserved                                                                                                  | Deliberately gated on Windows source clearance and human exact-installer approval                                                                |
 
 ## Target and scope
 
@@ -57,10 +69,10 @@ Concrete packaging gaps:
 - Windows startup is now separate from the reviewed macOS path: it launches
   `runtime/yomimado-ocr.exe` without a console, supplies explicit resource/data
   paths, checks PID/instance readiness after the service binds loopback and
-  closes a kill-on-close job when the desktop exits. Windows CI verification
-  remains pending; code completion does not clear the installed-app gate.
-- `tauri.release.conf.json` targets DMG and contains macOS settings. Add a
-  separate Windows release override with the production CSP and OCR resources.
+  closes a kill-on-close job when the desktop exits. Installed startup and normal
+  quit cleanup pass in Windows CI; the human installed-app gate remains open.
+- `tauri.release.conf.json` targets DMG and contains macOS settings. The separate
+  Windows release override supplies the production CSP and OCR resources.
 - `requirements-macos-release.txt` and `build-macos-prerelease.sh` are specific
   to Apple Silicon: custom OpenCV, Accelerate NumPy, macOS native binaries and
   notices cannot be used as Windows runtime inputs.
@@ -99,8 +111,9 @@ the macOS frozen runtime is not a Windows seed.
       `windows_packaged_main.py`, initially as a directory bundle. Include pinned OCR,
       translation and dictionary assets; exclude the detector weights.
       Run `37582948931` produced the executable; native/source approval and
-      installed runtime verification remain open.
-- [ ] Run frozen health, synthetic vertical/horizontal OCR geometry, Sudachi,
+      human installed-app approval remain open. Complete installed-runtime
+      automation subsequently passes in run `37721943728`.
+- [x] Run frozen health, synthetic vertical/horizontal OCR geometry, Sudachi,
       JMdict, KANJIDIC2, uncached translation and saved/cache restart smoke checks
       outside the checkout with fresh temporary data and empty model caches.
       A separately obtained, hash-checked detector is temporary smoke input only.
@@ -117,21 +130,25 @@ before treating any installer as a public candidate.
 - [ ] Verify startup failures and occupied service port produce useful errors;
       quitting/relaunching does not leave an orphaned service or reuse an
       unrelated process. Avoid logging captured screen contents.
-- [ ] Use Tauri's writable app data directory for models, SQLite and indexes;
+- [x] Use Tauri's writable app data directory for models, SQLite and indexes;
       verify the actual installed path. Reconcile the Python fallback and
       README paths if needed; do not write mutable data into install resources.
+      CI records `%APPDATA%\com.yomimado.desktop`, verifies bundled startup and
+      normal quit cleanup, and passes saved-data/cache restart. The separate PC
+      still needs the numbered startup/error/relaunch cases.
 - [x] Add the Windows release configuration and the smallest build entry point
       needed to assemble reviewed resources and an NSIS per-user installer.
       Fail on absent runtime, missing notices, mixed architecture or model leakage.
 - [x] Run frontend/Rust/service tests on Windows and targeted lifecycle/path
       tests for changed code. Build with locked dependencies and record the
-      clean source commit and installer SHA-256. Run `37589437962` built and
-      installed `9dd6e6f`; its diagnostic verification record contains the
-      desktop hash. A corrected candidate still needs full OCR/learning smoke
-      and export of its exact installer hash.
-- [ ] Inspect the installed file inventory and PE architectures; detect missing
+      clean source commit and installer SHA-256. Run `37721943728` built and
+      installed `79065df7ba34`; its exact setup SHA-256 is
+      `01a28c0f4964b2df1733814670b3024d8aa18c525b544965a50189ec25ecab0a`.
+- [x] Inspect the installed file inventory and PE architectures; detect missing
       DLL dependencies and developer-only paths. Repeat frozen smoke using the
       exact installed runtime and confirm source/notice manifest consistency.
+      This attests to pinned manifest/file hashes and CPU/native loading,
+      not approval of the still-open corresponding-source/licence review.
 
 Exit: the private installer launches OCR/learning from the installed app under
 a normal Windows user account, without a developer environment.
@@ -196,10 +213,9 @@ Only after the Windows candidate clears its runtime/source and installer gates:
 
 ## Next action and current limitations
 
-Next action: execute the independent Windows candidate workflow from the
-tracked `develop` commit, inspect the actual Windows inventory and resolve
-source/notice gaps before public distribution. Download the exact test candidate
-and use the numbered PC checklist when the hardware is available. The manifest
+Next action: resolve the native/source entries in the source worksheet and
+perform the numbered PC checklist when the separate hardware is available.
+The manifest
 collects original sdists and source/binary archives; it does not claim complete
 corresponding-source coverage. The selected compiler/SDK fail closed if absent
 from the hosted image. Dictionary downloads also fail if the daily snapshot
@@ -212,20 +228,16 @@ before compilation; a private candidate also retains the original two gzip
 files in `windows-dictionary-snapshots.tar.gz`. For a later rebuild, extract
 that verified archive into `apps/desktop/src-tauri/resources/ocr/assets/`;
 changed upstream bytes are still rejected and never automatically repinned.
-Hosted run `37589437962` built CPython 3.11.17, passed service/frontend and all
-38 Windows Rust tests, froze the OCR executable, built NSIS and verified exact
-installed resources, startup and normal-exit process cleanup. Known setuptools
-and Tauri generated outputs are restored before enforcing clean committed source.
-Real installed OCR then returned `No module named 'torch.testing'`; that freeze
-exclusion is removed. The actual inventory also revealed copied Windows OS DLLs.
-The recipe now removes OS DbgHelp/WinTrust/UCRT/API-set copies, keeps app-local
-VC runtimes, and records exclusions; installed loading must pass again.
-Run `37717190035` then passed the initial OCR/learning/save assertions, but
-Windows PowerShell's `Get-FileHash` failed under the inherited PS7 module path.
-The diagnostic now starts with Windows PowerShell's own module path. This
-partial result does not attest to restart persistence or loaded DLL coverage.
-Native/source review and complete installed-runtime checks remain pending.
-No complete Windows OCR installer is claimed to work yet. This macOS session
-cannot validate Windows DLL loading, SmartScreen or physical display capture.
-The maintainer's separate PC can supply the manual results once a candidate is
-ready; coordinate file delivery and the checklist at that point.
+Hosted run `37721943728` passes the complete installed frozen-learning smoke,
+including actual loaded DLL paths and saved-data/cache restart. The recipe
+retains required `torch.testing` imports, excludes OS DbgHelp/WinTrust/UCRT/API
+copies and unused codecs, preserves app-local VC libraries, and isolates
+Windows PowerShell diagnostics from inherited PS7 modules. Known setuptools
+and Tauri outputs are restored before enforcing clean committed source.
+The hosted Windows Server 2022 result does not establish Windows 11 hardware,
+browser/SmartScreen, screen capture, shortcuts, upgrade/uninstall or display
+scaling coverage. The maintainer must report those results on the separate PC.
+Public distribution also requires completing native source/terms bindings and
+resolving Intel MKL/IPP compatibility or testing compatible source-built
+replacements. The source/rebuild worksheets record exact remaining work;
+no replacement build or human installer approval is claimed.
