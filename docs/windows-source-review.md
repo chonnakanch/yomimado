@@ -41,6 +41,10 @@ verification. [Windows DbgHelp is not redistributable](https://learn.microsoft.c
 VC redistributables remain app-local and need separate exact redistribution
 terms/provenance; removing OS DLLs does not approve those binaries.
 
+The [native rebuild worksheet](windows-native-rebuild.md) gives exact source
+revisions, proposed Intel-free builds and GEOS replacement requirements. Those
+Windows rebuild/replacement tests are unrun; the worksheet conveys no approval.
+
 The original `mkl-2025.2.0-py2.py3-none-win_amd64.whl` is pinned solely to
 preserve its full Intel October 2022 binary licence and bundled third-party
 texts, which Torch's wheel notice omits. Its SHA-256 is

@@ -91,13 +91,24 @@ jobs:
           $model = Join-Path $env:RUNNER_TEMP 'comictextdetector.pt.onnx'
           Invoke-WebRequest 'https://github.com/zyddnys/manga-image-translator/releases/download/beta-0.2.1/comictextdetector.pt.onnx' -OutFile $model
           if ((Get-FileHash $model -Algorithm SHA256).Hash.ToLower() -ne '1a86ace74961413cbd650002e7bb4dcec4980ffa21b2f19b86933372071d718f') { throw 'Smoke-only model hash differs' }
-          & services/ocr/build/windows/venv/Scripts/python.exe scripts/smoke-windows-install.py $env:YOMIMADO_INSTALLED --detector-model $model
-          if ($LASTEXITCODE) { throw 'Installed frozen smoke failed' }
+          $log = 'services/ocr/build/windows/installed-smoke.log'
+          & services/ocr/build/windows/venv/Scripts/python.exe scripts/smoke-windows-install.py $env:YOMIMADO_INSTALLED --detector-model $model 2>&1 | Tee-Object -FilePath $log
+          if ($LASTEXITCODE) {
+            # Only synthetic test text; preserve the actual failure for diagnosis.
+            $tail = (Get-Content $log -Tail 25) -join "`n"
+            $encoded = $tail.Replace('%', '%25').Replace("`r", '%0D').Replace("`n", '%0A')
+            Write-Host "::error title=Installed Windows runtime failed::$encoded"
+            throw 'Installed frozen smoke failed'
+          }
       - name: Export unpublished test candidate and hashes
         run: |
           $output = Join-Path $env:RUNNER_TEMP 'windows-candidate'
           & services/ocr/build/windows/venv/Scripts/python.exe scripts/windows_release.py package --installer $env:YOMIMADO_INSTALLER --installed $env:YOMIMADO_INSTALLED --output $output
           if ($LASTEXITCODE) { throw 'Candidate export failed' }
+          # Retain hashes/provenance even if owner-only draft staging is blocked.
+          foreach ($name in @('SHA256SUMS.txt', 'windows-candidate.json')) {
+            Copy-Item "$output/$name" "services/ocr/build/windows/$name"
+          }
           Get-Content "$output/SHA256SUMS.txt" | Add-Content $env:GITHUB_STEP_SUMMARY
           'Private test only. Source review and exact-installer human confirmation remain OPEN. No Windows 11 hardware/scaling test is claimed.' | Add-Content $env:GITHUB_STEP_SUMMARY
       - name: Stage owner-only draft and verify uploaded hashes
@@ -120,6 +131,9 @@ jobs:
             services/ocr/build/windows/pyinstaller/warn-yomimado-ocr.txt
             services/ocr/build/windows/installed-verification.json
             services/ocr/build/windows/installed-smoke.json
+            services/ocr/build/windows/installed-smoke.log
+            services/ocr/build/windows/SHA256SUMS.txt
+            services/ocr/build/windows/windows-candidate.json
             services/ocr/build/windows/windows-desktop-sources.json
             services/ocr/build/windows/windows-installer-inputs.json
             services/ocr/build/windows/windows-generated-outputs.json
