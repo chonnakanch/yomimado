@@ -139,6 +139,15 @@ Do not treat the retained lock/vendor collection as the exact Windows wheel's
 dependency graph. Resolve the actual wheel build inputs from upstream evidence,
 or build the binding on Windows with a deliberately resolved, reviewed and
 retained lock and crate originals. Source identity alone does not close this gap.
+The actual Windows PYD has SHA-256
+`9654018fcc2d5fb244d6195b59435042fc6fd8a924c3d0d790acee1cb2dc1a68`.
+Its embedded Rust source paths identify PyO3/PyO3-FFI **0.23.3**, 22 other
+crate versions and compiler commit `90b35a6239c3d8bdabc530a6a0816f7ff89a0aaf`.
+Twenty-seven original crate archives (including three additional PyO3 family
+members for preparation) are retained under `windows-audit/sudachi-crates/`,
+verified against crates.io checksums; the source-input record includes their
+licence-file hashes. Embedded paths are partial evidence, not proof of the
+complete dependency graph or a successful Windows rebuild.
 
 Review steps:
 
