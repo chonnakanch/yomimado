@@ -25,6 +25,22 @@ For each candidate, inspect `notices/windows-inventory.json` and
 information (Torch/BLAS/OpenMP, NumPy, OpenCV, Pillow codecs and GEOS) from the
 exact hash-pinned Windows environment, not guessed versions from macOS.
 
+Run `37584983920` supplied an actual frozen inventory of 140 AMD64 PE files
+and 201 original interpreter/wheel inputs. The compiler/vendor configuration
+confirms CPU-only Torch with Intel MKL 2025.2, oneDNN 3.7.1 and OpenMP;
+NumPy uses OpenBLAS `0.3.23-293-gc2f4bdbb` with GCC 10.3.0; OpenCV retains
+IPP 2021.12.0 and static codecs; GEOS is 3.11.4. Pillow records FreeType 2.13.3,
+LittleCMS 2.17, WebP 1.5.0, AVIF 1.3.0, libjpeg-turbo 3.1.1, zlib-ng 2.2.4,
+OpenJPEG 2.5.3 and TIFF 4.7.0. These are build reports, not source approval.
+
+That inventory exposed copied Windows DbgHelp/WinTrust/UCRT/API-set DLLs.
+The recipe removes these OS components and records their original hashes,
+validates the runner's AMD64 system libraries, and requires installed loading
+verification. [Windows DbgHelp is not redistributable](https://learn.microsoft.com/en-us/windows/win32/debug/dbghelp-versions).
+[Windows 11 supplies and always uses its serviced UCRT](https://learn.microsoft.com/en-us/cpp/windows/universal-crt-deployment).
+VC redistributables remain app-local and need separate exact redistribution
+terms/provenance; removing OS DLLs does not approve those binaries.
+
 The 2026-10-07 wheel audit inspected original bytes whose SHA-256 pins are in
 `services/ocr/windows-inputs.json`. Counts below describe build inputs; the
 frozen/installed inventory determines which files are delivered.

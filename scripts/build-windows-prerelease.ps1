@@ -53,7 +53,7 @@ $Detector = Join-Path $Resources 'assets/comic-text-detector'
 Invoke-Checked $Python @('-c', 'import sys; sys.path.insert(0,sys.argv[1]); from inference import TextDetector; import torch; assert torch.version.cuda is None', $Detector)
 $Freeze = @('-m', 'PyInstaller', '--noconfirm', '--clean', '--onedir', '--console', '--name', 'yomimado-ocr', '--distpath', (Join-Path $Build 'dist'), '--workpath', (Join-Path $Build 'pyinstaller'), '--specpath', $Build, '--paths', $Service, '--paths', $Detector, '--hidden-import', 'inference', '--hidden-import', 'backports.tarfile', '--collect-all', 'manga_ocr', '--collect-all', 'unidic_lite', '--collect-all', 'sudachidict_core')
 foreach ($Name in @('bert','vit','vision_encoder_decoder','marian')) { $Freeze += @('--collect-submodules', "transformers.models.$Name") }
-foreach ($Name in @('pytest','tensorflow','wandb','hf_xet','torch.testing','torch.utils.tensorboard')) { $Freeze += @('--exclude-module', $Name) }
+foreach ($Name in @('pytest','tensorflow','wandb','hf_xet','torch.utils.tensorboard')) { $Freeze += @('--exclude-module', $Name) }
 $Freeze += (Join-Path $Service 'windows_packaged_main.py')
 Invoke-Checked $Python $Freeze
 $Runtime = Join-Path $Resources 'runtime'

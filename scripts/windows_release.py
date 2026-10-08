@@ -412,7 +412,7 @@ def seal_resources(resources: Path) -> None:
 
 
 def prune_unused_native() -> None:
-    """Keep still-image OCR; remove unused video and torchvision codec inputs."""
+    """Remove unused codecs and OS components supplied by Windows 11."""
     runtime = RESOURCES / "runtime"
     removed = []
     codecs = {
@@ -424,15 +424,36 @@ def prune_unused_native() -> None:
         "zlib.dll",
     }
 
-    def remove(path):
+    def remove(path, reason=None):
         removed.append(
             {
                 "path": path.relative_to(RESOURCES).as_posix(),
                 "sha256": digest(path),
-                "reason": "unused video/torchvision image-codec extension; PIL/OpenCV processing and torchvision ops retained",
+                "reason": reason
+                or "unused video/torchvision image-codec extension; PIL/OpenCV processing and torchvision ops retained",
             }
         )
         path.unlink()
+
+    # Windows 11 supplies UCRT/API sets, WinTrust and DbgHelp. The Windows
+    # system DbgHelp is explicitly not redistributable. Keep VC redistributables
+    # app-local; they are not OS components. Validate the host's concrete OS
+    # libraries before deleting anything, then prove loading in installed smoke.
+    os_names = {"dbghelp.dll", "wintrust.dll", "ucrtbase.dll"}
+    os_files = [
+        path
+        for path in native_files(runtime)
+        if path.name.lower() in os_names
+        or path.name.lower().startswith(("api-ms-win-", "ext-ms-win-"))
+    ]
+    system = Path(os.environ.get("SystemRoot", "C:/Windows")) / "System32"
+    for path in os_files:
+        if path.name.lower() in os_names:
+            host = system / path.name.lower()
+            if not host.is_file() or pe_info(host)["machine"] != "0x8664":
+                raise ValueError("Missing native Windows OS dependency: " + path.name)
+    for path in os_files:
+        remove(path, "Windows 11 OS component; use the serviced system library/API set")
 
     for path in sorted(runtime.rglob("*")):
         if path.is_file() and (
@@ -514,6 +535,12 @@ def verify_resources(resources: Path) -> dict:
     if any("cuda" in name.lower() or "cudnn" in name.lower() for name in actual):
         raise ValueError("CUDA binary in CPU candidate")
     bundled = {p.name.lower() for p in native_files(resources / "runtime")}
+    if any(
+        name in {"dbghelp.dll", "wintrust.dll", "ucrtbase.dll"}
+        or name.startswith(("api-ms-win-", "ext-ms-win-"))
+        for name in bundled
+    ):
+        raise ValueError("Windows OS component copied into runtime")
     system = Path(os.environ.get("SystemRoot", "C:/Windows")) / "System32"
     for entry in inventory["binaries"]:
         for name in entry["imports"]:

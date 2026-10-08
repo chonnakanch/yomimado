@@ -1,7 +1,9 @@
 # First Windows pre-release plan
 
-Status — 2026-10-07: independent Windows candidate preparation is implemented;
-hosted build, actual native/source review and installed-app verification are
+Status — 2026-10-08: hosted Windows tests, service freeze, NSIS construction,
+installation and desktop startup/cleanup pass at `9dd6e6f`. Installed OCR failed
+because the freeze excluded `torch.testing`; the recipe now retains it.
+Actual native/source review and complete installed-app verification remain
 pending. See the [source worksheet](windows-source-review.md) and
 [numbered PC checklist](windows-installed-test.md). The maintainer has a separate Windows 11 PC,
 with no live agent access and no current physical access. Reported specs are
@@ -114,12 +116,14 @@ before treating any installer as a public candidate.
 - [ ] Use Tauri's writable app data directory for models, SQLite and indexes;
       verify the actual installed path. Reconcile the Python fallback and
       README paths if needed; do not write mutable data into install resources.
-- [ ] Add the Windows release configuration and the smallest build entry point
+- [x] Add the Windows release configuration and the smallest build entry point
       needed to assemble reviewed resources and an NSIS per-user installer.
       Fail on absent runtime, missing notices, mixed architecture or model leakage.
-- [ ] Run frontend/Rust/service tests on Windows and targeted lifecycle/path
+- [x] Run frontend/Rust/service tests on Windows and targeted lifecycle/path
       tests for changed code. Build with locked dependencies and record the
-      clean source commit and installer SHA-256.
+      clean source commit and installer SHA-256. Run `37589437962` built and
+      installed `9dd6e6f`; its diagnostic verification record contains setup and
+      desktop hashes. A corrected candidate still needs full OCR/learning smoke.
 - [ ] Inspect the installed file inventory and PE architectures; detect missing
       DLL dependencies and developer-only paths. Repeat frozen smoke using the
       exact installed runtime and confirm source/notice manifest consistency.
@@ -195,12 +199,16 @@ collects original sdists and source/binary archives; it does not claim complete
 corresponding-source coverage. The selected compiler/SDK fail closed if absent
 from the hosted image. Dictionary downloads also fail if the daily snapshot
 moves; supply the pinned snapshot or deliberately rebuild with new hashes. Candidate CI may assist development before publication CI is enabled.
-Hosted run `37582948931` built CPython 3.11.17, passed service/frontend and all
-38 Windows Rust tests, and froze the OCR executable. Notice collection then
-failed because Cargo UTF-8 metadata was read with the Windows default code page;
-the scripts now specify UTF-8. Installer construction, native/source review and
-installed-runtime checks remain pending.
-No Windows runtime or installer is claimed to work yet. This macOS session
+Hosted run `37589437962` built CPython 3.11.17, passed service/frontend and all
+38 Windows Rust tests, froze the OCR executable, built NSIS and verified exact
+installed resources, startup and normal-exit process cleanup. Known setuptools
+and Tauri generated outputs are restored before enforcing clean committed source.
+Real installed OCR then returned `No module named 'torch.testing'`; that freeze
+exclusion is removed. The actual inventory also revealed copied Windows OS DLLs.
+The recipe now removes OS DbgHelp/WinTrust/UCRT/API-set copies, keeps app-local
+VC runtimes, and records exclusions; installed loading must pass again.
+Native/source review and complete installed-runtime checks remain pending.
+No complete Windows OCR installer is claimed to work yet. This macOS session
 cannot validate Windows DLL loading, SmartScreen or physical display capture.
 The maintainer's separate PC can supply the manual results once a candidate is
 ready; coordinate file delivery and the checklist at that point.

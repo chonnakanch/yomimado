@@ -255,6 +255,41 @@ class WindowsReleaseTests(unittest.TestCase):
             2,
         )
 
+    def test_os_exclusion_retains_app_local_vc_and_requires_system_dependencies(self):
+        runtime = self.root / "runtime"
+        system_root = self.root / "Windows"
+        system = system_root / "System32"
+        runtime.mkdir()
+        system.mkdir(parents=True)
+        for name in (
+            "dbghelp.dll",
+            "wintrust.dll",
+            "ucrtbase.dll",
+            "api-ms-win-crt-runtime-l1-1-0.dll",
+            "vcruntime140.dll",
+            "msvcp140.dll",
+        ):
+            (runtime / name).write_bytes(b"MZsynthetic")
+        with (
+            patch.object(release, "RESOURCES", self.root),
+            patch.dict("os.environ", {"SystemRoot": str(system_root)}),
+            patch.object(
+                release, "pe_info", return_value={"machine": "0x8664", "imports": []}
+            ),
+        ):
+            with self.assertRaisesRegex(ValueError, "OS dependency"):
+                release.prune_unused_native()
+            self.assertTrue((runtime / "dbghelp.dll").exists())
+            for name in ("dbghelp.dll", "wintrust.dll", "ucrtbase.dll"):
+                (system / name).write_bytes(b"MZsynthetic")
+            release.prune_unused_native()
+        self.assertEqual(
+            {p.name for p in runtime.iterdir()}, {"vcruntime140.dll", "msvcp140.dll"}
+        )
+        removed = release.read_json(self.root / "notices/windows-excluded-native.json")
+        self.assertEqual(len(removed), 4)
+        self.assertTrue(all("OS component" in p["reason"] for p in removed))
+
     def test_changed_cpu_wheel_url_is_rejected(self):
         manifest = release.read_json(release.SERVICE / "windows-inputs.json")
         next(e for e in manifest["packages"] if e["name"] == "torch")["url"] = (

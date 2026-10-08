@@ -49,8 +49,12 @@ Windows 11 PC for manual checks, without live agent access; confirm architecture
 before claiming x64 coverage. Windows-only startup, a pinned source-Python/CPU-wheel build, a per-user NSIS
 override and an independent candidate workflow are prepared. Local macOS tests
 and frontend build pass; hosted Windows Python/service/frontend/Rust tests and
-freezing pass, while NSIS construction, installed-runtime verification, actual native/source review
-and exact installed-app confirmation are still pending. No public Windows
+freezing pass. Hosted run `37589437962` also built NSIS and passed exact installed
+resource verification, desktop startup and process cleanup. Real installed OCR
+exposed an excluded `torch.testing` import; that recipe is corrected, and copied
+Windows OS DLLs are removed before the next verification. Complete installed
+OCR/learning checks, actual native/source review and exact installed-app
+confirmation are still pending. No public Windows
 release integration or x64 hardware coverage is claimed.
 Windows source/native and installer gates remain open. Add joint release-on-main
 publication only after those gates pass, using one publisher for both platforms.
