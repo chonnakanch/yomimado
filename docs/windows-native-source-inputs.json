@@ -1,0 +1,189 @@
+{
+  "scope": "Private preferred-source collection; not approved Windows corresponding-source delivery",
+  "publicDistributionApproved": false,
+  "pillowBuildRecipeSha256": "d8afecdf8faa2e63f85392439adb2c50a7235e51463af1d3659d54af0a36ff0c",
+  "sources": [
+    {
+      "filename": "libjpeg-turbo-3.1.1.tar.gz",
+      "url": "https://github.com/libjpeg-turbo/libjpeg-turbo/releases/download/3.1.1/libjpeg-turbo-3.1.1.tar.gz",
+      "sha256": "aadc97ea91f6ef078b0ae3a62bba69e008d9a7db19b34e4ac973b19b71b4217c",
+      "noticeHashes": {
+        "libjpeg-turbo-3.1.1/LICENSE.md": "96f5b328adbb78eeaaec6980d73fd558cb1e4d62560ed615646bc3cf5e532430",
+        "libjpeg-turbo-3.1.1/java/doc/legal/LICENSE": "4b9abebc4338048a7c2dc184e9f800deb349366bdf28eb23c2677a77b4c87726",
+        "libjpeg-turbo-3.1.1/release/License.rtf": "d26120ab237f87dea10aa4fa7fd4243cadffd26e54eb2f3903d5fb0f8ed336b2"
+      },
+      "review": "pending: Windows static linkage and complete licence/source review"
+    },
+    {
+      "filename": "zlib-ng-2.2.4.tar.gz",
+      "url": "https://github.com/zlib-ng/zlib-ng/archive/refs/tags/2.2.4.tar.gz",
+      "sha256": "a73343c3093e5cdc50d9377997c3815b878fd110bf6511c2c7759f2afb90f5a3",
+      "noticeHashes": {
+        "zlib-ng-2.2.4/LICENSE.md": "6c9f0d975b41afaa34d22f55bb8986ce69e5cb7ad327cb2b28820cd425edf5ee"
+      },
+      "review": "pending: Windows static linkage and complete licence/source review"
+    },
+    {
+      "filename": "xz-5.8.1.tar.gz",
+      "url": "https://github.com/tukaani-project/xz/releases/download/v5.8.1/xz-5.8.1.tar.gz",
+      "sha256": "507825b599356c10dca1cd720c9d0d0c9d5400b9de300af00e4d1ea150795543",
+      "noticeHashes": {
+        "xz-5.8.1/COPYING": "616a3ad264ce29b8f1cb97e53037b139d406899ca8d1f799651e17bfa09830b8",
+        "xz-5.8.1/COPYING.0BSD": "0b01625d853911cd0e2e088dcfb743261034a091bb379246cb25a14cc4c74bf1",
+        "xz-5.8.1/COPYING.GPLv2": "8177f97513213526df2cf6184d8ff986c675afb514d4e68a404010521b880643",
+        "xz-5.8.1/COPYING.GPLv3": "3972dc9744f6499f0f9b2dbf76696f2ae7ad8af9b23dde66d6af86c9dfb36986",
+        "xz-5.8.1/COPYING.LGPLv2.1": "dc626520dcd53a22f727af3ee42c770e56c97a64fe3adb063799d8ab032fe551",
+        "xz-5.8.1/build-aux/license-check.sh": "2b3fa1d23cb2ab084f3d919908159473cc0e1eed059d106e2a2857c0ec8af98a"
+      },
+      "review": "pending: Windows static linkage and complete licence/source review"
+    },
+    {
+      "filename": "tiff-4.7.0.tar.gz",
+      "url": "https://download.osgeo.org/libtiff/tiff-4.7.0.tar.gz",
+      "sha256": "67160e3457365ab96c5b3286a0903aa6e78bdc44c4bc737d2e486bcecb6ba976",
+      "noticeHashes": {
+        "tiff-4.7.0/doc/html-prebuilt/_sources/project/license.rst.txt": "02e86af3b805e0f2075ebb5ac512831f6ab2a97ddeb186de076c418956418ba1",
+        "tiff-4.7.0/doc/html-prebuilt/project/license.html": "fe543a09ba633b6c113d2850e39887df3a5d90b67b1df9d033ef60d391b13319",
+        "tiff-4.7.0/doc/project/license.rst": "02e86af3b805e0f2075ebb5ac512831f6ab2a97ddeb186de076c418956418ba1",
+        "tiff-4.7.0/LICENSE.md": "0780558a8bfba0af1160ec1ff11ade4f41c0d7deafd6ecfc796b492a788e380d"
+      },
+      "review": "pending: Windows static linkage and complete licence/source review"
+    },
+    {
+      "filename": "libpng-1.6.49.tar.gz",
+      "url": "https://sourceforge.net/projects/libpng/files/libpng16/1.6.49/libpng-1.6.49.tar.gz/download",
+      "sha256": "d173dada6181ef1638bcdb9526dd46a0f5eee08e3be9615e628ae54f888f17f9",
+      "noticeHashes": {
+        "libpng-1.6.49/LICENSE": "16d9daaafbf63a31a5bdc91d4600972548fef5aaa1244202393288dbd079c49a",
+        "libpng-1.6.49/ci/LICENSE_MIT.txt": "508a77d2e7b51d98adeed32648ad124b7b30241a8e70b2e72c99f92d8e5874d1",
+        "libpng-1.6.49/contrib/gregbook/COPYING": "d6cb0e9e560f51085556949a84af12b79a00f10ab8b66c752537faf7cd665572",
+        "libpng-1.6.49/contrib/gregbook/LICENSE": "b6a03c1803eb58ffb1f1278d5c7d4096c4c116e66dce8a7553e8c77d163c3438",
+        "libpng-1.6.49/contrib/pngexif/LICENSE_MIT.txt": "508a77d2e7b51d98adeed32648ad124b7b30241a8e70b2e72c99f92d8e5874d1",
+        "libpng-1.6.49/contrib/pngminus/LICENSE.txt": "1806f1f10d393e9e377b3a8d1b968452b54f1a90378f14eeef45426946ace330"
+      },
+      "review": "pending: Windows static linkage and complete licence/source review"
+    },
+    {
+      "filename": "brotli-1.1.0.tar.gz",
+      "url": "https://github.com/google/brotli/archive/refs/tags/v1.1.0.tar.gz",
+      "sha256": "e720a6ca29428b803f4ad165371771f5398faba397edf6778837a18599ea13ff",
+      "noticeHashes": {
+        "brotli-1.1.0/LICENSE": "3d180008e36922a4e8daec11c34c7af264fed5962d07924aea928c38e8663c94"
+      },
+      "review": "pending: Windows static linkage and complete licence/source review"
+    },
+    {
+      "filename": "lcms2-2.17.tar.gz",
+      "url": "https://sourceforge.net/projects/lcms/files/lcms/2.17/lcms2-2.17.tar.gz/download",
+      "sha256": "d11af569e42a1baa1650d20ad61d12e41af4fead4aa7964a01f93b08b53ab074",
+      "noticeHashes": {
+        "lcms2-2.17/LICENSE": "6dbd60437f8ef91d8de1f08ad75882547fd4931bfcc3566a0735f28db1484d31",
+        "lcms2-2.17/plugins/fast_float/COPYING.GPL3": "c53a65c2fd561c87eaabf1072ef5dcab8653042bc15308465f52413585eb6271",
+        "lcms2-2.17/plugins/threaded/COPYING.GPL3": "c53a65c2fd561c87eaabf1072ef5dcab8653042bc15308465f52413585eb6271",
+        "lcms2-2.17/utils/jpgicc/LICENSE_iccjpeg": "8baac37d14eed89b82ffcb041677dd701164eb5cc0f26e165fe47eb11afa0dca"
+      },
+      "review": "pending: Windows static linkage and complete licence/source review"
+    },
+    {
+      "filename": "openjpeg-2.5.3.tar.gz",
+      "url": "https://github.com/uclouvain/openjpeg/archive/v2.5.3.tar.gz",
+      "sha256": "368fe0468228e767433c9ebdea82ad9d801a3ad1e4234421f352c8b06e7aa707",
+      "noticeHashes": {
+        "openjpeg-2.5.3/LICENSE": "a6af136f3e15038a666b61f376612a07d9a4e48cb7c01adbf3e33b3f14ab49b6",
+        "openjpeg-2.5.3/src/bin/wx/OPJViewer/source/license.txt": "8081c33f6953950dcf424aa844714658b73ada0fcaea16e4487f5fa07ef0960d",
+        "openjpeg-2.5.3/thirdparty/astyle/LICENSE.md": "2e8480e753b7a1d100c80920f4250b1bc9f93a18c6a5953c42b11445218cd0fb",
+        "openjpeg-2.5.3/thirdparty/liblcms2/COPYING": "c725daac91a9259ce5e195683c0eeb797d345035c36ac5ba114c9fa80e11639a",
+        "openjpeg-2.5.3/thirdparty/libpng/LICENSE": "7317e078e2d3b5d7ba5a6159e650945153262b44b76f6700f8e9edb261c5143e"
+      },
+      "review": "pending: Windows static linkage and complete licence/source review"
+    },
+    {
+      "filename": "harfbuzz-11.2.1.tar.xz",
+      "url": "https://github.com/harfbuzz/harfbuzz/releases/download/11.2.1/harfbuzz-11.2.1.tar.xz",
+      "sha256": "093714c8548a285094685f0bdc999e202d666b59eeb3df2ff921ab68b8336a49",
+      "noticeHashes": {
+        "harfbuzz-11.2.1/COPYING": "ba8f810f2455c2f08e2d56bb49b72f37fcf68f1f4fade38977cfd7372050ad64",
+        "harfbuzz-11.2.1/src/ms-use/COPYING": "c2cfccb812fe482101a8f04597dfc5a9991a6b2748266c47ac91b6a5aae15383",
+        "harfbuzz-11.2.1/test/COPYING": "9b35b8485f69cd298fccbb3c40a827dc06cf1185553bef827903497d2944a8d7",
+        "harfbuzz-11.2.1/test/shape/data/aots/COPYING": "f55f74bf740db07bb032a90aa74af4307adea3d489c1ccba12453cf0c0a764cb",
+        "harfbuzz-11.2.1/test/shape/data/text-rendering-tests/COPYING": "d24039e4d22c9bc72096f6174374539d92a3d6e1163938546ec59179fe095e6f"
+      },
+      "review": "pending: Windows static linkage and complete licence/source review"
+    },
+    {
+      "filename": "libavif-1.3.0.tar.gz",
+      "url": "https://github.com/AOMediaCodec/libavif/archive/v1.3.0.tar.gz",
+      "sha256": "0a545e953cc049bf5bcf4ee467306a2f113a75110edf59e61248873101cd26c1",
+      "noticeHashes": {
+        "libavif-1.3.0/LICENSE": "165abf92cc04b39e80d29cadea7a6a7e8fddf59407d4ad2616507a7ebe8216f9"
+      },
+      "review": "pending: Windows static linkage and complete licence/source review"
+    },
+    {
+      "filename": "libwebp-v1.5.0-preferred.tar.gz",
+      "url": "https://chromium.googlesource.com/webm/libwebp/+archive/refs/tags/v1.5.0.tar.gz",
+      "sha256": "797f7353e85879a74b63b6b8c6bf054dcc74f8c04f2e216495edf4b89cf850ac",
+      "noticeHashes": {
+        "COPYING": "5aec868f669e384a22372a4e8a1a6cd7d44c64cd451f960ca69cc170d1e13acf",
+        "PATENTS": "cc3273e0694ea5896145e0677699b53471b03ea43021ddc50e7923fbb9f5023c"
+      },
+      "review": "pending: Windows static linkage and complete licence/source review"
+    },
+    {
+      "filename": "freetype-2.13.3.tar.gz",
+      "url": "https://downloads.sourceforge.net/project/freetype/freetype2/2.13.3/freetype-2.13.3.tar.gz",
+      "sha256": "5c3a8e78f7b24c20b25b54ee575d6daa40007a5f4eea2845861c3409b3021747",
+      "noticeHashes": {
+        "freetype-2.13.3/docs/FTL.TXT": "08c135755dd589039470f1fdbb400daaabaaa50d0b366d19cebff4d22986baa1",
+        "freetype-2.13.3/src/lzw/ftlzw.c": "c43ea301d24f75c1693494a1d6286bb59e586c33b80ba036bc73d0debfc27490",
+        "freetype-2.13.3/src/base/ftlcdfil.c": "562a268709beaa2a16ac14b828c5ca8779088574e1f3b3a956d4af89cc6a9201",
+        "freetype-2.13.3/builds/mac/ftlib.prj.xml": "b5e60ec36935a86c8e193226b42d5f9296294eb6b80ba20cf51153c06ac7d745",
+        "freetype-2.13.3/include/freetype/ftlist.h": "47d82894f2c3e187b8659d1966fdba44348c1739a88751a5a42a5a97c7a209ce",
+        "freetype-2.13.3/include/freetype/ftlogging.h": "adfcb1f6c6ff73b6bfed707c74d7c22e2aea7528de728588eb051b4ecb18f279",
+        "freetype-2.13.3/include/freetype/ftlzw.h": "2d5bf1d9075275776e9be7becd793ac079f52982f7db70ec87ea764f637a4fcd",
+        "freetype-2.13.3/include/freetype/ftlcdfil.h": "96f6c9bac843c30f3d329760e8f5ea061d958ba302682d69a50d953c193f73bf",
+        "freetype-2.13.3/LICENSE.TXT": "2e3bbb7d7c5c396368dd0853a790ec29ce5b8647163dde42a0493fb0d6556b2b"
+      },
+      "review": "pending: Windows static linkage and complete licence/source review"
+    },
+    {
+      "filename": "aom-v3.12.1.tar.gz",
+      "url": "https://aomedia.googlesource.com/aom/+archive/refs/tags/v3.12.1.tar.gz",
+      "sha256": "532c9f68296b277d283d24ed744ff57852d8858d69d3eed97efa9d4915f6f24c",
+      "noticeHashes": {
+        "LICENSE": "4764a286d8b2faeaf42f4418e7d7a28d58fc8fd4d00a3d0a7f44b0a4099de7f2",
+        "PATENTS": "661fb8e504744e95587b556b94a58343448300606a41bea8c7a9b97125696e61",
+        "third_party/SVT-AV1/LICENSE.md": "0acc2fcb27472bdc9aaf8b71f37055bbdac4f54671b7d922f241bd7fcd0dd3e6",
+        "third_party/SVT-AV1/PATENTS.md": "20678ab10402659106dc4c147c97b2a6e94b5c0695415e15a8f195ebc3547922",
+        "third_party/fastfeat/LICENSE": "043dcfd059386f9facd376351b2bd79325778744aa442177390cdfcca54babed",
+        "third_party/googletest/src/LICENSE": "9702de7e4117a8e2b20dafab11ffda58c198aede066406496bef670d40a22138",
+        "third_party/libwebm/LICENSE.TXT": "5aec868f669e384a22372a4e8a1a6cd7d44c64cd451f960ca69cc170d1e13acf",
+        "third_party/libwebm/PATENTS.TXT": "cc3273e0694ea5896145e0677699b53471b03ea43021ddc50e7923fbb9f5023c",
+        "third_party/libyuv/LICENSE": "2b2cc1180c7e6988328ad2033b04b80117419db9c4c584918bbb3cfec7e9364f",
+        "third_party/vector/LICENSE": "ff6c857ce2708e87701323078aef115c1872a1f80a9649f86dc899b48083bc60",
+        "third_party/x86inc/LICENSE": "719d8fa235f2068e0ae6d6a7dceb0a7720d7840f0f0ebed29957989e6ded3cd8"
+      },
+      "review": "pending: Windows static linkage and complete licence/source review"
+    },
+    {
+      "filename": "dav1d-1.5.1.tar.bz2",
+      "url": "https://code.videolan.org/videolan/dav1d/-/archive/1.5.1/dav1d-1.5.1.tar.bz2",
+      "sha256": "4eddffd108f098e307b93c9da57b6125224dc5877b1b3d157b31be6ae8f1f093",
+      "noticeHashes": {
+        "dav1d-1.5.1/COPYING": "b327887de263238deaa80c34cdd2ff3e0ba1d35db585ce14a37ce3e74ee389e9",
+        "dav1d-1.5.1/doc/PATENTS": "335eca574598bf4ca181b12f708d6669e5a5e78c8e1513e5b35fa1f03901484b"
+      },
+      "review": "pending: Windows static linkage and complete licence/source review"
+    },
+    {
+      "filename": "libyuv-4db2af62.tar.gz",
+      "url": "https://chromium.googlesource.com/libyuv/libyuv/+archive/4db2af62dab48895226be6b52737247e898ebe36.tar.gz",
+      "sha256": "90498812787bf60c00e36c7f265481d0f724fe0677fdd6832eced35104b085de",
+      "noticeHashes": {
+        "LICENSE": "2b2cc1180c7e6988328ad2033b04b80117419db9c4c584918bbb3cfec7e9364f",
+        "PATENTS": "4da84211f947c6f9f7dd8fbce513e1522e01833407ae732b8c9a2bbb75fed495"
+      },
+      "review": "pending: Windows static linkage and complete licence/source review"
+    }
+  ]
+}

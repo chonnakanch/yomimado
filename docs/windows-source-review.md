@@ -111,6 +111,22 @@ OpenBLAS vendor ZIP; that original vendor download currently returns HTTP 403.
 The exact compiler patches, static libquadmath scope and replacement/relinking
 recipe remain open. Collecting these source roots does not resolve them.
 
+Pillow's pinned source archive contains its Windows dependency recipe
+`winbuild/build_prepare.py`, SHA-256
+`d8afecdf8faa2e63f85392439adb2c50a7235e51463af1d3659d54af0a36ff0c`.
+The recipe matches the reported Windows codec versions and supplies its
+compiler/linkage flags and patches. Fifteen original preferred-source archives
+are now retained in `services/ocr/build/windows-audit/pillow-sources/`;
+[the source-input record](windows-native-source-inputs.json) binds their URLs,
+SHA-256 values and embedded licence-file hashes. This includes FreeType's
+PNG/Brotli/HarfBuzz inputs, TIFF's XZ input and libavif's AOM 3.12.1,
+dav1d 1.5.1, libyuv `4db2af62dab48895226be6b52737247e898ebe36` and
+libsharpyuv/libwebp 1.5.0 inputs from the original CMake recipes. The original
+WebP download's certificate hostname mismatch was not bypassed; preferred
+sources were obtained from the recipe's official Chromium repository instead.
+Exact static binary binding, licence review, final source delivery and a
+source-only Windows rebuild remain open. No macOS codec clearance is reused.
+
 Review steps:
 
 1. Every actual EXE/DLL/PYD needs a SHA-256, x64 machine value, imports and
