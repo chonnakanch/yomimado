@@ -326,6 +326,22 @@ def installer_inputs(installed: Path, installer: Path) -> dict:
         "publicDistributionApproved": False,
     }
     write_json(BUILD / "windows-installer-inputs.json", record)
+    # Prove desktop loading separately from the frozen Python search path.
+    # An NSIS uninstaller is a 32-bit host; the actual app/DLL payload is x64.
+    desktop = [entry for entry in files if entry["path"].lower() != "uninstall.exe"]
+    bundled = {Path(entry["path"]).name.lower() for entry in desktop}
+    system = Path(os.environ["SystemRoot"]) / "System32"
+    for entry in desktop:
+        if entry["machine"] != "0x8664":
+            raise ValueError("Desktop native payload is not x64: " + entry["path"])
+        for name in entry["imports"]:
+            if name in bundled or name.startswith(("api-ms-win-", "ext-ms-win-")):
+                continue
+            if (
+                name.startswith(("vcruntime", "msvcp", "vcomp", "concrt"))
+                or not (system / name).is_file()
+            ):
+                raise ValueError("Missing desktop app-local native dependency: " + name)
     return record
 
 

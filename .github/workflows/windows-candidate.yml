@@ -81,6 +81,8 @@ jobs:
           & $python scripts/windows_release.py verify --resources "$installed/ocr"
           if ($LASTEXITCODE) { throw 'Installed resource verification failed' }
           ./scripts/verify-windows-install.ps1 -Installed $installed
+          & $python scripts/windows_release.py installer-inventory --installer $setup[0].FullName --installed $installed
+          if ($LASTEXITCODE) { throw 'Desktop/installer native input verification failed' }
           "YOMIMADO_INSTALLED=$installed" | Add-Content $env:GITHUB_ENV
           "YOMIMADO_INSTALLER=$($setup[0].FullName)" | Add-Content $env:GITHUB_ENV
       - name: Obtain smoke-only detector and verify frozen installed learning

@@ -648,6 +648,7 @@ def main() -> None:
             "seal",
             "verify",
             "package",
+            "installer-inventory",
             "restore-generated",
         ],
     )
@@ -659,6 +660,14 @@ def main() -> None:
     args = parser.parse_args()
     if args.command == "download":
         download_inputs()
+    elif args.command == "installer-inventory":
+        if not args.installed or not args.installer:
+            raise ValueError(
+                "Installer inventory requires installed app and exact setup"
+            )
+        from windows_notices import installer_inputs
+
+        installer_inputs(args.installed, args.installer)
     elif args.command == "restore-generated":
         if sys.platform != "win32" or not args.revision:
             raise ValueError(

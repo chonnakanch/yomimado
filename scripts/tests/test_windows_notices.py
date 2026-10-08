@@ -10,9 +10,40 @@ from unittest.mock import patch
 
 sys.path.insert(0, str(Path(__file__).parents[1]))
 import windows_notices as notices
+import windows_release as release
 
 
 class WindowsNoticeTests(unittest.TestCase):
+    def test_desktop_cannot_use_developer_vc_runtime_from_system32(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            installed = root / "installed"
+            cache = root / "tauri/NSIS"
+            system = root / "System32"
+            for path in (installed, cache, system):
+                path.mkdir(parents=True)
+            exe = installed / "yomimado.exe"
+            exe.write_bytes(b"MZsynthetic")
+            (system / "msvcp140.dll").write_bytes(b"MZsystem-developer-runtime")
+            with (
+                patch.dict(
+                    "os.environ", {"LOCALAPPDATA": str(root), "SystemRoot": str(root)}
+                ),
+                patch.object(notices, "BUILD", root / "evidence"),
+                patch.object(
+                    release,
+                    "pe_info",
+                    return_value={"machine": "0x8664", "imports": ["msvcp140.dll"]},
+                ),
+            ):
+                with self.assertRaisesRegex(ValueError, "desktop app-local"):
+                    notices.installer_inputs(installed, exe)
+                self.assertTrue(
+                    (root / "evidence/windows-installer-inputs.json").exists()
+                )
+                (installed / "msvcp140.dll").write_bytes(b"MZapp-local-runtime")
+                notices.installer_inputs(installed, exe)
+
     def test_existing_npm_archive_must_match_locked_integrity(self):
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory) / "package.tgz"
