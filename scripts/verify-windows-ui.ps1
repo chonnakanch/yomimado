@@ -67,14 +67,18 @@ function Wait-Check {
     } while ((Get-Date) -lt $Deadline)
     throw $Failure
 }
-function Get-Button {
-    param([string]$Name)
-    $Window = [System.Windows.Automation.AutomationElement]::FromHandle($MainWindow)
+function Get-WindowButton {
+    param([IntPtr]$Handle, [string]$Name)
+    $Window = [System.Windows.Automation.AutomationElement]::FromHandle($Handle)
     $Condition = New-Object System.Windows.Automation.AndCondition -ArgumentList @(
         (New-Object System.Windows.Automation.PropertyCondition -ArgumentList @([System.Windows.Automation.AutomationElement]::ControlTypeProperty, [System.Windows.Automation.ControlType]::Button)),
         (New-Object System.Windows.Automation.PropertyCondition -ArgumentList @([System.Windows.Automation.AutomationElement]::NameProperty, $Name))
     )
     return $Window.FindFirst([System.Windows.Automation.TreeScope]::Descendants, $Condition)
+}
+function Get-Button {
+    param([string]$Name)
+    return Get-WindowButton $MainWindow $Name
 }
 function Start-TestApp {
     $script:Process = Start-Process (Join-Path $Installed 'yomimado.exe') -PassThru
@@ -94,6 +98,7 @@ function Invoke-Button {
 }
 
 try {
+    $Record.phase = 'missing model and startup conflict'
     Start-TestApp
     Wait-Check { $null -ne (Get-Button 'Select detector model file') } 'Windows release hides detector import.'
     foreach ($Name in @('Select screen region', 'Scan manga page', 'Set/adjust scan area')) {
@@ -130,12 +135,27 @@ try {
     $Record.occupiedPortDialog = $true
     Write-Host "Occupied-port dialog, acknowledgement and original app responsiveness passed; exit code $($SecondProcess.ExitCode)."
     # Exercise native dialog cancellation before staging the hash-checked fixture.
+    $Record.phase = 'model dialog cancellation'
     Invoke-Button 'Select detector model file'
-    Wait-Check { @([YomiMadoUiNative]::Windows($Process.Id) | Where-Object { $_ -ne $MainWindow }).Count -gt 0 } 'Model file dialog did not open.'
-    $Dialog = @([YomiMadoUiNative]::Windows($Process.Id) | Where-Object { $_ -ne $MainWindow })[0]
-    if (-not [YomiMadoUiNative]::SetForegroundWindow($Dialog)) { throw 'Cannot focus model file dialog.' }
-    [System.Windows.Forms.SendKeys]::SendWait('{ESC}')
-    Wait-Check { @([YomiMadoUiNative]::Windows($Process.Id) | Where-Object { $_ -ne $MainWindow }).Count -eq 0 } 'Model dialog cancellation hung.'
+    $script:CancelButton = $null
+    $script:ModelDialogHandle = [IntPtr]::Zero
+    Wait-Check {
+        foreach ($Handle in [YomiMadoUiNative]::Windows($Process.Id)) {
+            if ($Handle -eq $MainWindow) { continue }
+            $Button = Get-WindowButton $Handle 'Cancel'
+            if ($null -ne $Button -and $Button.Current.IsEnabled) {
+                $script:CancelButton = $Button
+                $script:ModelDialogHandle = $Handle
+                return $true
+            }
+        }
+        return $false
+    } 'Model file dialog never exposed an enabled Cancel button.'
+    # Invoke the actual dialog control after initialization. Sending Escape as
+    # soon as an HWND appears can race the common file dialog's input setup.
+    $CancelButton.GetCurrentPattern([System.Windows.Automation.InvokePattern]::Pattern).Invoke()
+    Wait-Check { -not [YomiMadoUiNative]::IsWindowVisible($ModelDialogHandle) } 'Model dialog cancellation hung.'
+    Wait-Check { (Get-Button 'Select detector model file').Current.IsEnabled } 'Cancelled model import did not finish in the frontend.'
     if ((Get-Button 'Scan manga page').Current.IsEnabled) { throw 'Cancelled import incorrectly enables scanning.' }
     $Record.modelDialogCancellation = $true
     Write-Host 'Model import dialog cancellation passed.'
@@ -153,6 +173,7 @@ try {
         @{name='page-scan button'; button='Scan manga page'},
         @{name='page-scan shortcut'; keys='^+s'}
     )) {
+        $Record.phase = $Case.name
         if (-not [YomiMadoUiNative]::SetForegroundWindow($MainWindow)) { throw 'Cannot focus installed app.' }
         if ($Case.ContainsKey('button')) { Invoke-Button $Case.button }
         else { [System.Windows.Forms.SendKeys]::SendWait($Case.keys) }
@@ -161,14 +182,26 @@ try {
             [YomiMadoUiNative]::IsIconic($MainWindow)
         } "No selector appeared for $($Case.name); possible WebView2 deadlock."
         if (-not [YomiMadoUiNative]::Responding($MainWindow)) { throw "UI froze for $($Case.name)." }
-        $Selector = @([YomiMadoUiNative]::Windows($Process.Id) | Where-Object { $_ -ne $MainWindow })[0]
+        $script:Selector = [IntPtr]::Zero
+        Wait-Check {
+            foreach ($Handle in [YomiMadoUiNative]::Windows($Process.Id)) {
+                if ($Handle -eq $MainWindow) { continue }
+                $Element = [System.Windows.Automation.AutomationElement]::FromHandle($Handle)
+                $Names = ($Element.FindAll([System.Windows.Automation.TreeScope]::Descendants, [System.Windows.Automation.Condition]::TrueCondition) | ForEach-Object { $_.Current.Name }) -join ' '
+                if ($Names -match 'Press Escape to (cancel|close)') {
+                    $script:Selector = $Handle
+                    return $true
+                }
+            }
+            return $false
+        } "Selector UI did not load for $($Case.name)."
         if (-not [YomiMadoUiNative]::SetForegroundWindow($Selector)) { throw 'Cannot focus capture selector.' }
-        # Allow the selector's DOM key handler to attach before Escape.
-        Start-Sleep -Milliseconds 500
+        # Wait for rendered content rather than guessing WebView2 startup time.
+        Start-Sleep -Milliseconds 200
         [System.Windows.Forms.SendKeys]::SendWait('{ESC}')
         Wait-Check {
             -not [YomiMadoUiNative]::IsIconic($MainWindow) -and
-            @([YomiMadoUiNative]::Windows($Process.Id) | Where-Object { $_ -ne $MainWindow }).Count -eq 0
+            -not [YomiMadoUiNative]::IsWindowVisible($Selector)
         } "Selector did not cancel for $($Case.name)."
         if (-not [YomiMadoUiNative]::Responding($MainWindow)) { throw 'Main window is unresponsive after cancellation.' }
         $Record.cases += @{name=$Case.name; selectorOpened=$true; cancellation=$true; responsive=$true}
@@ -177,9 +210,17 @@ try {
     Stop-TestApp
     $Record.detectorSha256 = $ExpectedModelHash
     $Record.passed = $true
+    $Record.phase = 'complete'
     Write-Host 'Installed Windows model setup, buttons, shortcuts and UI cancellation passed.'
 } finally {
     # Preserve completed cases if a later case fails. No screenshot or model bytes.
+    if ($null -ne $Process -and -not $Process.HasExited) {
+        try {
+            $Record.visibleWindows = @([YomiMadoUiNative]::Windows($Process.Id) | ForEach-Object {
+                @{handle=$_.ToInt64(); title=[System.Windows.Automation.AutomationElement]::FromHandle($_).Current.Name}
+            })
+        } catch { $Record.windowSnapshotError = $_.Exception.Message }
+    }
     [IO.File]::WriteAllText((Join-Path $Root 'services/ocr/build/windows/installed-ui.json'), ($Record | ConvertTo-Json -Depth 8))
     if ($null -ne $Process) {
         $Process.Refresh()

@@ -34,6 +34,15 @@ normal exit codes 0/1, records the actual code and retains responsiveness checks
 The remaining UI and learning steps were skipped in that run, so it produced no
 download candidate and grants no installer approval. A complete rerun is required.
 
+Run `37787583634` at `10b8aba894fe83d08fd7f02fb83771ad68413984` confirms
+the model panel, disabled scanning without a model, occupied-port message,
+acknowledgement with exit code 0 and the original app's responsiveness. Its next
+UI case timed out after sending Escape to the just-created model file dialog.
+The harness now waits for and invokes the enabled native Cancel control, waits
+for frontend import completion, and waits for rendered selector instructions
+before testing Escape. Remaining capture/learning checks still need a full run;
+no failed-run installer was exported or approved.
+
 The [owner-only candidate draft](https://github.com/chonnakanch/yomimado/releases/tag/untagged-e4524b4cbafe468fe44d)
 contains `YomiMado_0.1.0_x64-setup.exe` (893 MB), `SHA256SUMS.txt`, provenance,
 notices, project/source preparation and the original dictionary snapshots.
