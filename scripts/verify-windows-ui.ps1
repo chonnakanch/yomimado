@@ -16,13 +16,20 @@ Add-Type @'
 using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
+using System.Text;
 public static class YomiMadoUiNative {
     private delegate bool EnumCallback(IntPtr window, IntPtr parameter);
     [DllImport("user32.dll")] private static extern bool EnumWindows(EnumCallback callback, IntPtr parameter);
+    [DllImport("user32.dll")] private static extern bool EnumChildWindows(IntPtr parent, EnumCallback callback, IntPtr parameter);
     [DllImport("user32.dll")] private static extern uint GetWindowThreadProcessId(IntPtr window, out uint process);
+    [DllImport("user32.dll", CharSet=CharSet.Unicode)] private static extern int GetWindowText(IntPtr window, StringBuilder text, int count);
+    [DllImport("user32.dll")] private static extern int GetDlgCtrlID(IntPtr window);
     [DllImport("user32.dll")] public static extern bool IsWindowVisible(IntPtr window);
+    [DllImport("user32.dll")] public static extern bool IsWindowEnabled(IntPtr window);
     [DllImport("user32.dll")] public static extern bool IsIconic(IntPtr window);
     [DllImport("user32.dll")] public static extern bool SetForegroundWindow(IntPtr window);
+    [DllImport("user32.dll")] public static extern IntPtr GetForegroundWindow();
+    [DllImport("user32.dll", SetLastError=true)] private static extern bool PostMessage(IntPtr window, uint message, IntPtr wParam, IntPtr lParam);
     [DllImport("user32.dll", SetLastError=true)] private static extern IntPtr SendMessageTimeout(IntPtr window, uint message, IntPtr wParam, IntPtr lParam, uint flags, uint timeout, out IntPtr result);
     public static IntPtr[] Windows(uint process) {
         var windows = new List<IntPtr>();
@@ -32,6 +39,33 @@ public static class YomiMadoUiNative {
             return true;
         }, IntPtr.Zero);
         return windows.ToArray();
+    }
+    public static string Text(IntPtr window) {
+        var text = new StringBuilder(512);
+        GetWindowText(window, text, text.Capacity);
+        return text.ToString();
+    }
+    public static IntPtr CancelButton(IntPtr dialog) {
+        IntPtr cancel = IntPtr.Zero;
+        EnumChildWindows(dialog, (window, parameter) => {
+            // IDCANCEL is the native common-dialog control ID. The runner is
+            // English; require its label and state before sending a click.
+            if (GetDlgCtrlID(window) == 2 && Text(window).Replace("&", "") == "Cancel"
+                && IsWindowVisible(window) && IsWindowEnabled(window)) cancel = window;
+            return true;
+        }, IntPtr.Zero);
+        return cancel;
+    }
+    public static string[] Controls(IntPtr dialog) {
+        var controls = new List<string>();
+        EnumChildWindows(dialog, (window, parameter) => {
+            controls.Add(GetDlgCtrlID(window) + ":" + Text(window));
+            return controls.Count < 100;
+        }, IntPtr.Zero);
+        return controls.ToArray();
+    }
+    public static bool ClickButton(IntPtr button) {
+        return PostMessage(button, 0x00F5, IntPtr.Zero, IntPtr.Zero); // BM_CLICK
     }
     public static bool Responding(IntPtr window) {
         IntPtr result;
@@ -67,18 +101,14 @@ function Wait-Check {
     } while ((Get-Date) -lt $Deadline)
     throw $Failure
 }
-function Get-WindowButton {
-    param([IntPtr]$Handle, [string]$Name)
-    $Window = [System.Windows.Automation.AutomationElement]::FromHandle($Handle)
+function Get-Button {
+    param([string]$Name)
+    $Window = [System.Windows.Automation.AutomationElement]::FromHandle($MainWindow)
     $Condition = New-Object System.Windows.Automation.AndCondition -ArgumentList @(
         (New-Object System.Windows.Automation.PropertyCondition -ArgumentList @([System.Windows.Automation.AutomationElement]::ControlTypeProperty, [System.Windows.Automation.ControlType]::Button)),
         (New-Object System.Windows.Automation.PropertyCondition -ArgumentList @([System.Windows.Automation.AutomationElement]::NameProperty, $Name))
     )
     return $Window.FindFirst([System.Windows.Automation.TreeScope]::Descendants, $Condition)
-}
-function Get-Button {
-    param([string]$Name)
-    return Get-WindowButton $MainWindow $Name
 }
 function Start-TestApp {
     $script:Process = Start-Process (Join-Path $Installed 'yomimado.exe') -PassThru
@@ -137,13 +167,14 @@ try {
     # Exercise native dialog cancellation before staging the hash-checked fixture.
     $Record.phase = 'model dialog cancellation'
     Invoke-Button 'Select detector model file'
-    $script:CancelButton = $null
+    $script:CancelButton = [IntPtr]::Zero
     $script:ModelDialogHandle = [IntPtr]::Zero
     Wait-Check {
         foreach ($Handle in [YomiMadoUiNative]::Windows($Process.Id)) {
             if ($Handle -eq $MainWindow) { continue }
-            $Button = Get-WindowButton $Handle 'Cancel'
-            if ($null -ne $Button -and $Button.Current.IsEnabled) {
+            if ([YomiMadoUiNative]::Text($Handle) -ne 'Open') { continue }
+            $Button = [YomiMadoUiNative]::CancelButton($Handle)
+            if ($Button -ne [IntPtr]::Zero) {
                 $script:CancelButton = $Button
                 $script:ModelDialogHandle = $Handle
                 return $true
@@ -151,9 +182,12 @@ try {
         }
         return $false
     } 'Model file dialog never exposed an enabled Cancel button.'
-    # Invoke the actual dialog control after initialization. Sending Escape as
-    # soon as an HWND appears can race the common file dialog's input setup.
-    $CancelButton.GetCurrentPattern([System.Windows.Automation.InvokePattern]::Pattern).Invoke()
+    # The common dialog's UIA provider did not expose Cancel on this runner.
+    # Activate the actual Open dialog and click its native IDCANCEL control;
+    # never send Escape to an arbitrary auxiliary/IME window.
+    if (-not [YomiMadoUiNative]::SetForegroundWindow($ModelDialogHandle)) { throw 'Cannot focus model file dialog.' }
+    Wait-Check { [YomiMadoUiNative]::GetForegroundWindow() -eq $ModelDialogHandle } 'Model file dialog did not receive focus.'
+    if (-not [YomiMadoUiNative]::ClickButton($CancelButton)) { throw 'Cannot click the native model dialog Cancel control.' }
     Wait-Check { -not [YomiMadoUiNative]::IsWindowVisible($ModelDialogHandle) } 'Model dialog cancellation hung.'
     Wait-Check { (Get-Button 'Select detector model file').Current.IsEnabled } 'Cancelled model import did not finish in the frontend.'
     if ((Get-Button 'Scan manga page').Current.IsEnabled) { throw 'Cancelled import incorrectly enables scanning.' }
@@ -217,7 +251,7 @@ try {
     if ($null -ne $Process -and -not $Process.HasExited) {
         try {
             $Record.visibleWindows = @([YomiMadoUiNative]::Windows($Process.Id) | ForEach-Object {
-                @{handle=$_.ToInt64(); title=[System.Windows.Automation.AutomationElement]::FromHandle($_).Current.Name}
+                @{handle=$_.ToInt64(); title=[YomiMadoUiNative]::Text($_); controls=[YomiMadoUiNative]::Controls($_)}
             })
         } catch { $Record.windowSnapshotError = $_.Exception.Message }
     }

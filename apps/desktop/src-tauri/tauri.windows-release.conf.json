@@ -10,7 +10,7 @@
     "resources": { "resources/ocr": "ocr" },
     "windows": {
       "webviewInstallMode": { "type": "downloadBootstrapper", "silent": true },
-      "nsis": { "installMode": "currentUser", "compression": "lzma" }
+      "nsis": { "installMode": "currentUser", "compression": "zlib" }
     }
   }
 }

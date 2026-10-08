@@ -43,6 +43,21 @@ for frontend import completion, and waits for rendered selector instructions
 before testing Escape. Remaining capture/learning checks still need a full run;
 no failed-run installer was exported or approved.
 
+Run `37794271949` at `80be890535305c2e3b349fc118561d850a0dfa02` again
+built/installed NSIS and passed startup/resource/native checks. Its dialog test
+could not find Cancel through UI Automation. Hash-verified diagnostics show the
+actual `Open` dialog and a separate untitled auxiliary window; selecting the
+first non-main window was unreliable. The harness now activates the named
+dialog and clicks its enabled native `IDCANCEL` control, with frontend completion
+and close assertions retained. It also records native child-control diagnostics
+on failure. The replacement still needs a complete passing run.
+
+Private verification builds now use NSIS zlib compression instead of LZMA:
+compression dominated the failed reruns after a successful desktop compile.
+This may increase the download size. The complete installed payload, native
+inventory, checksums and GitHub asset-size limit are still verified; it grants
+no source or installer approval. macOS packaging is unchanged.
+
 The [owner-only candidate draft](https://github.com/chonnakanch/yomimado/releases/tag/untagged-e4524b4cbafe468fe44d)
 contains `YomiMado_0.1.0_x64-setup.exe` (893 MB), `SHA256SUMS.txt`, provenance,
 notices, project/source preparation and the original dictionary snapshots.
@@ -85,7 +100,7 @@ do not assume every target PC already has it. See
 
 Detector ONNX weights remain **user-installed**, excluded from installers,
 source delivery and public CI artifacts. Use only synthetic/private local test
-images. No feature redesign or model/installer size optimization in this work.
+images. No feature redesign or model-payload optimization in this work.
 
 ## Repository audit and first implementation slice
 
