@@ -35,10 +35,11 @@ class WindowsReleaseTests(unittest.TestCase):
             patch.object(smoke.subprocess, "check_output", return_value="[]") as query,
         ):
             self.assertEqual(smoke.loaded_modules(42, self.root / "runtime"), [])
-            self.assertNotIn("PSModulePath", query.call_args.kwargs["env"])
-            self.assertEqual(
-                query.call_args.kwargs["env"]["SystemRoot"], str(self.root)
-            )
+            environment = {
+                k.upper(): v for k, v in query.call_args.kwargs["env"].items()
+            }
+            self.assertNotIn("PSMODULEPATH", environment)
+            self.assertEqual(environment["SYSTEMROOT"], str(self.root))
 
     def setUp(self):
         self.temp = tempfile.TemporaryDirectory()
