@@ -122,8 +122,9 @@ before treating any installer as a public candidate.
 - [x] Run frontend/Rust/service tests on Windows and targeted lifecycle/path
       tests for changed code. Build with locked dependencies and record the
       clean source commit and installer SHA-256. Run `37589437962` built and
-      installed `9dd6e6f`; its diagnostic verification record contains setup and
-      desktop hashes. A corrected candidate still needs full OCR/learning smoke.
+      installed `9dd6e6f`; its diagnostic verification record contains the
+      desktop hash. A corrected candidate still needs full OCR/learning smoke
+      and export of its exact installer hash.
 - [ ] Inspect the installed file inventory and PE architectures; detect missing
       DLL dependencies and developer-only paths. Repeat frozen smoke using the
       exact installed runtime and confirm source/notice manifest consistency.

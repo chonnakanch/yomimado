@@ -230,14 +230,20 @@ def collect() -> None:
             raise ValueError("Desktop vendor input hash differs")
         destination = output / "licenses/windows-vendors" / entry["name"]
         destination.mkdir(parents=True, exist_ok=True)
-        if archive.suffix == ".nupkg":
+        if archive.suffix in (".nupkg", ".whl"):
             with zipfile.ZipFile(archive) as source:
+                selected = entry.get("noticeFiles", ["LICENSE.txt", "NOTICE.txt"])
+                if not set(selected).issubset(entry["fileHashes"]):
+                    raise ValueError("Vendor notice is not checksum pinned")
                 for name, sha in entry["fileHashes"].items():
                     content = source.read(name)
                     if hashlib.sha256(content).hexdigest() != sha:
                         raise ValueError("SDK vendor file hash differs")
-                    if name in ("LICENSE.txt", "NOTICE.txt"):
-                        (destination / name).write_bytes(content)
+                    if name in selected:
+                        target = destination / Path(name).name
+                        if target.exists() and target.read_bytes() != content:
+                            raise ValueError("Colliding vendor notice filenames")
+                        target.write_bytes(content)
         else:
             shutil.copy2(archive, destination / "LICENSE.txt")
     installer_sources = read_json(ROOT / "services/ocr/windows-inputs.json")[

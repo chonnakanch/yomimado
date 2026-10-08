@@ -41,6 +41,19 @@ verification. [Windows DbgHelp is not redistributable](https://learn.microsoft.c
 VC redistributables remain app-local and need separate exact redistribution
 terms/provenance; removing OS DLLs does not approve those binaries.
 
+The original `mkl-2025.2.0-py2.py3-none-win_amd64.whl` is pinned solely to
+preserve its full Intel October 2022 binary licence and bundled third-party
+texts, which Torch's wheel notice omits. Its SHA-256 is
+`b6ec153e4a073421dbb52ef99c7be97e66cde0272e4a1e3569b090b6f0130253`;
+no MKL wheel code is installed by this collection. The terms restrict modification
+and reverse engineering. OpenCV's retained IPP also carries Intel binary terms.
+These restrictions require resolving GPL compatibility and exact static vendor
+scope before public distribution, rather than treating source collection or
+ordinary binary redistribution permission as clearance. A source-built Windows
+Torch without MKL/Intel OpenMP and OpenCV without IPP are concrete alternatives
+if compatible distribution rights cannot be established. No replacement build
+or compatibility decision is claimed yet.
+
 The 2026-10-07 wheel audit inspected original bytes whose SHA-256 pins are in
 `services/ocr/windows-inputs.json`. Counts below describe build inputs; the
 frozen/installed inventory determines which files are delivered.

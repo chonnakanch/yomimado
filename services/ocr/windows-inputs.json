@@ -1229,6 +1229,36 @@
           "licenseSha256": "0dcf41516e608bbcb6cdc5229feb7b86fe4a643b85e7df251133c93408fdac73"
         }
       ]
+    },
+    {
+      "name": "Intel-MKL-2025.2.0-terms",
+      "filename": "mkl-2025.2.0-py2.py3-none-win_amd64.whl",
+      "url": "https://files.pythonhosted.org/packages/91/ae/025174ee141432b974f97ecd2aea529a3bdb547392bde3dd55ce48fe7827/mkl-2025.2.0-py2.py3-none-win_amd64.whl",
+      "sha256": "b6ec153e4a073421dbb52ef99c7be97e66cde0272e4a1e3569b090b6f0130253",
+      "noticeFiles": [
+        "mkl-2025.2.0.data/data/share/doc/mkl/licensing/third-party-programs-IntelMPI.txt",
+        "mkl-2025.2.0.data/data/share/doc/mkl/licensing/third-party-programs-benchmarks.txt",
+        "mkl-2025.2.0.data/data/share/doc/mkl/licensing/third-party-programs-level-zero.txt",
+        "mkl-2025.2.0.data/data/share/doc/mkl/licensing/third-party-programs-oneMath.txt",
+        "mkl-2025.2.0.data/data/share/doc/mkl/licensing/third-party-programs-oneTBB.txt",
+        "mkl-2025.2.0.data/data/share/doc/mkl/licensing/third-party-programs-openmp.txt",
+        "mkl-2025.2.0.data/data/share/doc/mkl/licensing/third-party-programs-safestring.txt",
+        "mkl-2025.2.0.data/data/share/doc/mkl/licensing/third-party-programs.txt",
+        "mkl-2025.2.0.dist-info/LICENSE.txt"
+      ],
+      "fileHashes": {
+        "mkl-2025.2.0.data/data/share/doc/mkl/licensing/third-party-programs-IntelMPI.txt": "82fa46762c37662a52ab9df58781813c1dc6c268ae2b6f9cf2d83183e706aa09",
+        "mkl-2025.2.0.data/data/share/doc/mkl/licensing/third-party-programs-benchmarks.txt": "1f1224af12a7d3e51150ce6f762e32472076a31f6e44db41d3b651a7fa20f2f5",
+        "mkl-2025.2.0.data/data/share/doc/mkl/licensing/third-party-programs-level-zero.txt": "cfe7d2ba4b4cd53271c7f91937e906256c0f14ea62ba33ffb556664b8d39aa59",
+        "mkl-2025.2.0.data/data/share/doc/mkl/licensing/third-party-programs-oneMath.txt": "2ba4e9858c253331691370f4e8e3899ca6a5baa20907f189f5970635870b860d",
+        "mkl-2025.2.0.data/data/share/doc/mkl/licensing/third-party-programs-oneTBB.txt": "d507da4fffae647ebc1bbb7e12cc5cca8087d36b0d78cc75caa96cae37688cb1",
+        "mkl-2025.2.0.data/data/share/doc/mkl/licensing/third-party-programs-openmp.txt": "8fdfbbdfed13bca3641da35182e7ee1bb92a99f302ce8b0deb981ac1f18adee2",
+        "mkl-2025.2.0.data/data/share/doc/mkl/licensing/third-party-programs-safestring.txt": "415000d1887939ffc6826e0ed3f099cebcab6aaeda2da0acb017110a456b3d42",
+        "mkl-2025.2.0.data/data/share/doc/mkl/licensing/third-party-programs.txt": "6fb57367c2107b8b3347e0e9db10d368c7b9ea898a08132b2f841b24b86f076f",
+        "mkl-2025.2.0.dist-info/LICENSE.txt": "7721633d0ddff43fae25ebfd405f8166a0ce730cbcec44f2f3ad9d5eb8ac9a6f"
+      },
+      "sourceReview": "pending",
+      "scope": "MKL 2025.2 binary terms/third-party notices; exact static Torch linkage and GPL compatibility remain unapproved"
     }
   ],
   "installerSourceInputs": [
