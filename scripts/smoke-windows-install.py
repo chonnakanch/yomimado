@@ -46,9 +46,14 @@ def loaded_modules(pid: int, runtime: Path) -> list[dict]:
                 "Frozen runtime loaded an external native module: " + str(path)
             )
         name = item["name"].lower()
-        if name.startswith(
-            ("vcruntime", "msvcp", "vcomp", "concrt", "libiomp", "mkl")
-        ) and not path.is_relative_to(runtime.resolve()):
+        windows_cpp = name == "msvcp_win.dll" and path.parent == system / "System32"
+        if (
+            not windows_cpp
+            and name.startswith(
+                ("vcruntime", "msvcp", "vcomp", "concrt", "libiomp", "mkl")
+            )
+            and not path.is_relative_to(runtime.resolve())
+        ):
             raise RuntimeError(
                 "Frozen runtime used a system/developer copy instead of its app-local library: "
                 + name

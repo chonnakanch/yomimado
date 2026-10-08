@@ -549,7 +549,8 @@ def verify_resources(resources: Path) -> dict:
             # VC runtimes must be app-local; a developer runner having them in
             # System32 is not evidence that a clean user's PC will have them.
             if (
-                name.startswith(
+                name != "msvcp_win.dll"
+                and name.startswith(
                     (
                         "vcruntime",
                         "msvcp",

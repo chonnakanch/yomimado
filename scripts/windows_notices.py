@@ -338,7 +338,8 @@ def installer_inputs(installed: Path, installer: Path) -> dict:
             if name in bundled or name.startswith(("api-ms-win-", "ext-ms-win-")):
                 continue
             if (
-                name.startswith(("vcruntime", "msvcp", "vcomp", "concrt"))
+                name != "msvcp_win.dll"
+                and name.startswith(("vcruntime", "msvcp", "vcomp", "concrt"))
                 or not (system / name).is_file()
             ):
                 raise ValueError("Missing desktop app-local native dependency: " + name)

@@ -192,6 +192,7 @@ class WindowsReleaseTests(unittest.TestCase):
         for path, error in (
             (self.root / "developer/torch_cpu.dll", "external"),
             (system / "System32/msvcp140.dll", "app-local"),
+            (system / "Temp/msvcp_win.dll", "app-local"),
             (runtime / "cudart64.dll", "CUDA"),
         ):
             modules = json.dumps(
@@ -213,6 +214,7 @@ class WindowsReleaseTests(unittest.TestCase):
                 runtime / "torch_cpu.dll",
                 runtime / "msvcp140.dll",
                 system / "System32/kernel32.dll",
+                system / "System32/msvcp_win.dll",
             )
         ]
         with (

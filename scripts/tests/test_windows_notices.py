@@ -25,6 +25,7 @@ class WindowsNoticeTests(unittest.TestCase):
             exe = installed / "yomimado.exe"
             exe.write_bytes(b"MZsynthetic")
             (system / "msvcp140.dll").write_bytes(b"MZsystem-developer-runtime")
+            (system / "msvcp_win.dll").write_bytes(b"MZwindows-os-library")
             with (
                 patch.dict(
                     "os.environ", {"LOCALAPPDATA": str(root), "SystemRoot": str(root)}
@@ -33,7 +34,10 @@ class WindowsNoticeTests(unittest.TestCase):
                 patch.object(
                     release,
                     "pe_info",
-                    return_value={"machine": "0x8664", "imports": ["msvcp140.dll"]},
+                    return_value={
+                        "machine": "0x8664",
+                        "imports": ["msvcp140.dll", "msvcp_win.dll"],
+                    },
                 ),
             ):
                 with self.assertRaisesRegex(ValueError, "desktop app-local"):
