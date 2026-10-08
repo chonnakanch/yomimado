@@ -528,16 +528,9 @@ pub fn run() {
             #[cfg(any(debug_assertions, not(target_os = "macos")))]
             let service = None;
             #[cfg(all(not(debug_assertions), target_os = "windows"))]
-            let windows_service = match windows_service::start(app) {
-                Ok(service) => Some(service),
-                Err(error) => {
-                    use tauri_plugin_dialog::DialogExt;
-                    app.dialog()
-                        .message(format!("Local OCR service could not start: {error}"))
-                        .title("YomiMado startup failed")
-                        .blocking_show();
-                    return Err(error.into());
-                }
+            let (windows_service, startup_error) = match windows_service::start(app) {
+                Ok(service) => (Some(service), None),
+                Err(error) => (None, Some(error.to_string())),
             };
             #[cfg(all(debug_assertions, target_os = "windows"))]
             let windows_service = None;
@@ -548,6 +541,21 @@ pub fn run() {
                 #[cfg(target_os = "windows")]
                 windows_service: Mutex::new(windows_service),
             });
+            #[cfg(all(not(debug_assertions), target_os = "windows"))]
+            if let Some(error) = startup_error {
+                use tauri_plugin_dialog::DialogExt;
+                // Keep the event loop running for the native dialog. Blocking
+                // here deadlocks it; returning a setup error destroys it early.
+                if let Some(main) = app.get_webview_window("main") {
+                    main.hide()?;
+                }
+                let handle = app.handle().clone();
+                app.dialog()
+                    .message(format!("Local OCR service could not start: {error}"))
+                    .title("YomiMado startup failed")
+                    .show(move |_| handle.exit(1));
+                return Ok(());
+            }
             let manual =
                 Shortcut::try_from(MANUAL_CAPTURE_SHORTCUT).map_err(|error| error.to_string())?;
             app.global_shortcut().on_shortcut(manual, |app, _, event| {

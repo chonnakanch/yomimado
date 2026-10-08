@@ -21,6 +21,8 @@ Its source omits the Windows GUI subsystem, enables model setup only for macOS,
 and creates capture windows synchronously from IPC/shortcut handlers. A
 replacement fixes those paths and adds installed Windows UI regression checks;
 its new installer hash needs fresh human confirmation.
+It also replaces the blocking startup-error dialog with an asynchronous dialog;
+CI checks occupied-port acknowledgement and the original app's responsiveness.
 The installed desktop reports `NotSigned`. Earlier CI passed installed startup/quit,
 CPU/native loading without Python/CUDA on PATH, OCR geometry, tokenization,
 dictionary/kanji, uncached translation and persistence after restart.

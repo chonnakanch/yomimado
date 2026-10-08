@@ -48,6 +48,7 @@ if ((Get-FileHash $DetectorModel -Algorithm SHA256).Hash.ToLower() -ne $Expected
 }
 if (Test-Path $ModelPath) { throw 'Expected a fresh Actions profile without a detector.' }
 $Process = $null
+$SecondProcess = $null
 $MainWindow = [IntPtr]::Zero
 $ModelCreated = $false
 $Record = @{ windows11HardwareVerified=$false; cases=@() }
@@ -96,6 +97,27 @@ try {
         if ((Get-Button $Name).Current.IsEnabled) { throw "Scan is enabled without a detector: $Name" }
     }
     $Record.missingModelPanel = $true
+    # A second instance must explain the occupied service port, then exit
+    # normally after acknowledgement without blocking the first app.
+    $SecondProcess = Start-Process (Join-Path $Installed 'yomimado.exe') -PassThru
+    Wait-Check {
+        $SecondProcess.Refresh()
+        if ($SecondProcess.HasExited) { throw 'Second instance exited without its startup error dialog.' }
+        @([YomiMadoUiNative]::Windows($SecondProcess.Id) | Where-Object {
+            [System.Windows.Automation.AutomationElement]::FromHandle($_).Current.Name -eq 'YomiMado startup failed'
+        }).Count -eq 1
+    } 'Occupied-port startup error dialog did not appear.'
+    $ErrorWindow = @([YomiMadoUiNative]::Windows($SecondProcess.Id) | Where-Object {
+        [System.Windows.Automation.AutomationElement]::FromHandle($_).Current.Name -eq 'YomiMado startup failed'
+    })[0]
+    $ErrorElement = [System.Windows.Automation.AutomationElement]::FromHandle($ErrorWindow)
+    $ErrorText = ($ErrorElement.FindAll([System.Windows.Automation.TreeScope]::Descendants, [System.Windows.Automation.Condition]::TrueCondition) | ForEach-Object { $_.Current.Name }) -join ' '
+    if ($ErrorText -notmatch 'Port 8766 is occupied') { throw 'Second instance did not explain the occupied port.' }
+    if (-not [YomiMadoUiNative]::SetForegroundWindow($ErrorWindow)) { throw 'Cannot focus startup error dialog.' }
+    [System.Windows.Forms.SendKeys]::SendWait('{ENTER}')
+    if (-not $SecondProcess.WaitForExit(15000) -or $SecondProcess.ExitCode -ne 1) { throw 'Startup error acknowledgement did not exit cleanly.' }
+    if (-not [YomiMadoUiNative]::Responding($MainWindow)) { throw 'Second instance blocked the original app.' }
+    $Record.occupiedPortDialog = $true
     # Exercise native dialog cancellation before staging the hash-checked fixture.
     Invoke-Button 'Select detector model file'
     Wait-Check { @([YomiMadoUiNative]::Windows($Process.Id) | Where-Object { $_ -ne $MainWindow }).Count -gt 0 } 'Model file dialog did not open.'
@@ -150,6 +172,10 @@ try {
     if ($null -ne $Process) {
         $Process.Refresh()
         if (-not $Process.HasExited) { Stop-Process -Id $Process.Id -ErrorAction SilentlyContinue }
+    }
+    if ($null -ne $SecondProcess) {
+        $SecondProcess.Refresh()
+        if (-not $SecondProcess.HasExited) { Stop-Process -Id $SecondProcess.Id -ErrorAction SilentlyContinue }
     }
     if ($ModelCreated) { Remove-Item $ModelPath -ErrorAction SilentlyContinue }
 }

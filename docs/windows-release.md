@@ -11,7 +11,9 @@ shortcut. The candidate therefore **fails the human installer gate** and must
 not be approved or published. The replacement adds the Windows GUI subsystem,
 Windows model setup, asynchronous window commands and a worker for shortcut
 window creation; installed UI regression checks now exercise model setup,
-buttons, shortcuts and cancellation. These changes need hosted execution and
+buttons, shortcuts and cancellation. Startup errors use a nonblocking dialog;
+CI also checks occupied-port acknowledgement without blocking the original app.
+These changes need hosted execution and
 new exact-installer confirmation. See the [source worksheet](windows-source-review.md) and
 [numbered PC checklist](windows-installed-test.md). The maintainer has a separate Windows 11 PC,
 with no live agent access; it is now available for maintainer testing. Reported specs are
