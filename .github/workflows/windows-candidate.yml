@@ -57,6 +57,10 @@ jobs:
         with:
           python-version: "3.11.9" # Bootstrap only; frozen runtime is source-built 3.11.17.
           architecture: x64
+      - name: Restore hash-pinned original dictionary snapshots
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python scripts/windows_dictionary_seed.py
       - name: Select pinned native toolchain and record runner
         run: |
           $ErrorActionPreference = 'Stop'
@@ -152,6 +156,7 @@ jobs:
             services/ocr/build/windows/python-build.log
             services/ocr/build/windows/build-last-command.log
             services/ocr/build/windows/python-build.json
+            services/ocr/build/windows/dictionary-seed.json
             services/ocr/build/windows/windows-inventory.json
             services/ocr/build/windows/windows-native-configuration.json
             services/ocr/build/windows/pyinstaller/warn-yomimado-ocr.txt

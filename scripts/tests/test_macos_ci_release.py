@@ -126,6 +126,8 @@ class VersionTests(unittest.TestCase):
             "services/ocr/windows-inputs.json",
             "services/ocr/windows_packaged_main.py",
             "scripts/windows_python.py",
+            "scripts/windows_dictionary_seed.py",
+            "scripts/verify-windows-ui.ps1",
             "apps/desktop/src-tauri/tauri.windows-release.conf.json",
         ):
             with self.subTest(path=path), patch.object(ci, "git", return_value=path):

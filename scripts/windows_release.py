@@ -625,6 +625,7 @@ def package(installer: Path, output: Path, installed: Path) -> None:
             SERVICE / "windows-inputs.json",
             ROOT / "scripts/windows_python.py",
             ROOT / "scripts/windows_notices.py",
+            ROOT / "scripts/windows_dictionary_seed.py",
         ):
             archive.add(path, arcname="recipes/" + path.name)
     subprocess.run(

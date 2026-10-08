@@ -110,6 +110,8 @@ def verify_reuse(root: Path = ROOT) -> None:
         "apps/desktop/src-tauri/tauri.windows-release.conf.json",
         "scripts/build-windows-prerelease.ps1",
         "scripts/verify-windows-install.ps1",
+        "scripts/verify-windows-ui.ps1",
+        "scripts/windows_dictionary_seed.py",
         "scripts/windows_release.py",
         "scripts/windows_private_draft.py",
         "scripts/windows_notices.py",

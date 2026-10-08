@@ -235,6 +235,16 @@ before compilation; a private candidate also retains the original two gzip
 files in `windows-dictionary-snapshots.tar.gz`. For a later rebuild, extract
 that verified archive into `apps/desktop/src-tauri/resources/ocr/assets/`;
 changed upstream bytes are still rejected and never automatically repinned.
+Replacement run `37780050429` at `2f41b64` rejected a subsequently moved JMdict
+download before compilation. Windows CI now restores the two original gzip
+files from the exact private candidate's dictionary archive, SHA-256
+`5c0a690c74b1d361b061b0ec02b7bace314e1cdcdc985c1ed4675270c15e0db8`,
+checks draft/asset identity and both manifest hashes, and retains a seed record.
+Only dictionary originals are reused; no Windows runtime/source approval is
+inherited. Authentication stays in an HTTP header and is stripped on redirects
+to GitHub's signed asset storage. Both new Windows-only verification/seed scripts
+are explicitly allowed by the macOS reuse guard; shared runtime inputs remain
+protected. No macOS packaging recipe or publisher is changed.
 Hosted run `37721943728` passes the complete installed frozen-learning smoke,
 including actual loaded DLL paths and saved-data/cache restart. The recipe
 retains required `torch.testing` imports, excludes OS DbgHelp/WinTrust/UCRT/API
