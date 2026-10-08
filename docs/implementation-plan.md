@@ -52,7 +52,14 @@ and frontend build pass; hosted Windows Python/service/frontend/Rust tests and
 freezing pass. Hosted run `37589437962` also built NSIS and passed exact installed
 resource verification, desktop startup and process cleanup. Real installed OCR
 exposed an excluded `torch.testing` import; that recipe is corrected, and copied
-Windows OS DLLs are removed before the next verification. Complete installed
+Windows OS DLLs are removed. Run `37717190035` reached real installed horizontal
+and vertical OCR/geometry, tokenization, dictionary/kanji, uncached translation
+and save assertions; its loaded-module diagnostic failed before restart
+verification because Windows PowerShell inherited incompatible PS7 modules.
+That diagnostic is corrected. Run `37720960120` rejected a moved daily
+KANJIDIC2 snapshot; a deliberate 2026-10-08 snapshot and early asset checking
+are committed, with original dictionaries retained in candidate delivery.
+Complete installed
 OCR/learning checks, actual native/source review and exact installed-app
 confirmation are still pending. No public Windows
 release integration or x64 hardware coverage is claimed.

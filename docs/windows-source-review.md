@@ -65,7 +65,7 @@ frozen/installed inventory determines which files are delivered.
 | Windows input          | EXE/DLL/PYD inputs | Exact embedded notice findings / public gate                                                                                                                                                                                                                            |
 | ---------------------- | -----------------: | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | SudachiPy 0.6.10       |                  1 | No wheel licence files; verified Apache/MIT upstream texts now supplemented. Rust/vendor source review remains open.                                                                                                                                                    |
-| Fugashi 1.5.2          |                  2 | Fugashi and MeCab notices present. Preserve exact MeCab source and Windows recipe for its hashed DLL.                                                                                                                                                                   |
+| Fugashi 1.5.2          |                  2 | Fugashi/MeCab notices present; exact MeCab binary/source/Windows recipe bound below. Final source delivery and static compiler-runtime terms remain open.                                                                                                               |
 | NumPy 1.26.4           |                 20 | BSD/OpenBLAS/LAPACK and GPL GCC runtime exception texts present; full libquadmath LGPL supplemented. OpenBLAS/GCC sources and replacement recipe remain open.                                                                                                           |
 | OpenCV 4.11.0.86       |                  2 | Full third-party notice present. FFmpeg plugin removed; identify retained IPP/static codec inputs and exact source/build coverage.                                                                                                                                      |
 | Pillow 11.3.0          |                  8 | Full vendor notice present including FreeType. Verify exact Windows codec versions, source coverage and FreeType attribution choice.                                                                                                                                    |
@@ -73,6 +73,43 @@ frozen/installed inventory determines which files are delivered.
 | Shapely 2.0.7          |                  6 | Full GEOS LGPL and Windows runtime notice present. Exact GEOS source and replacement/rebuild recipe remain open.                                                                                                                                                        |
 | Torch 2.8.0+cpu        |                 16 | LICENSE/NOTICE present. `libiomp5md.dll`/stubs and static CPU vendors need exact licence/source/build mapping; absence of a standalone MKL DLL is insufficient.                                                                                                         |
 | torchvision 0.23.0+cpu |                  8 | Only torchvision LICENSE present despite JPEG/PNG/WebP/zlib DLLs. The private recipe excludes its unused `image.pyd` and codec DLLs; `_C.pyd` imports only Torch, VC and OS libraries. Installed OCR must verify that exclusion before this gap is considered resolved. |
+
+Additional Windows source preparation (2026-10-08): Fugashi's original
+`windows.yml` selects chezou's `mecab-0.996-msvc-5` release. Its original
+`mecab-msvc-x64.zip` has SHA-256
+`ca7eb528c8bc9c5802152424d9e3a0d0e3ea0e47847e70e44d0caf9381722062`.
+The `libmecab.dll` member is byte-identical to the frozen Fugashi DLL:
+`d8ddc0791437ce8c4a187ae7c69a2f683ce423683b7a5ecfda1c4cef436c1cab`.
+The release tag resolves to source commit
+`337b0529850c4276e6d404aca70e8d35f3f3ba1d`; its original
+[source archive](https://codeload.github.com/chezou/mecab/tar.gz/337b0529850c4276e6d404aca70e8d35f3f3ba1d)
+has SHA-256 `af339b19ed2d755d6acf419d87588374b5a8598def0c9a6d1dc26406f5aab4d7`.
+The source offers the BSD option already preserved by Fugashi. The exact
+`mecab/src/Makefile.x64.msvc` and `ci/win/build.bat` are retained in that
+archive, using MSVC 2015, `/MACHINE:X64` and a static `/MT` runtime. Source
+binding is now established; Windows rebuilding and compiler-runtime terms
+remain unverified. The vendor ZIP's IPADic data and executables are audit
+inputs only and are not installed. Original archives are retained privately in
+`services/ocr/build/windows-audit/`, pending assembly of the final source delivery.
+
+The original Windows Torch and torchvision wheels' `version.py` files identify
+`a1cb3cc05d46d198467bebbb6e8fba50a325d4e7` and
+`824e8c8726b65fd9d5abdc9702f81c2b0c4c0dc8`, respectively. They match the
+retained preferred-source roots; Torch's reported oneDNN revision also matches
+the retained submodule `8d263e693366ef8db40acc569cc7d8edf644556d`.
+This source identity comparison does not clear the different Windows static
+vendors, Intel binary terms or build configurations.
+
+The exact OpenBLAS commit named by NumPy's Windows DLL resolves to
+`c2f4bdbbb43a1d20a7342f40122e18e573ce436a`. Its retained original
+[source archive](https://codeload.github.com/OpenMathLib/OpenBLAS/tar.gz/c2f4bdbbb43a1d20a7342f40122e18e573ce436a)
+has SHA-256 `9c0f2b8d1f6839f8b0d1309417e06d38eabfa76ba52d9fe80f79df496d5afddc`.
+The retained original [GCC 10.3.0 preferred source](https://ftp.gnu.org/gnu/gcc/gcc-10.3.0/gcc-10.3.0.tar.xz)
+has SHA-256 `64f404c1a650f27fc33da242e1f2df54952e3963a49e06e73f6940f3223ac344`.
+NumPy's original build helper selects the Scientific Python nightly Windows
+OpenBLAS vendor ZIP; that original vendor download currently returns HTTP 403.
+The exact compiler patches, static libquadmath scope and replacement/relinking
+recipe remain open. Collecting these source roots does not resolve them.
 
 Review steps:
 

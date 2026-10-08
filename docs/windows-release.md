@@ -3,6 +3,10 @@
 Status — 2026-10-08: hosted Windows tests, service freeze, NSIS construction,
 installation and desktop startup/cleanup pass at `9dd6e6f`. Installed OCR failed
 because the freeze excluded `torch.testing`; the recipe now retains it.
+Run `37717190035` subsequently reached real horizontal/vertical OCR geometry,
+tokenization, word/kanji lookup, uncached translation and save assertions.
+Its module diagnostic failed before restart verification; the inherited PS7
+module-path issue is corrected. The latest candidate is rerunning those checks.
 Actual native/source review and complete installed-app verification remain
 pending. See the [source worksheet](windows-source-review.md) and
 [numbered PC checklist](windows-installed-test.md). The maintainer has a separate Windows 11 PC,
@@ -216,6 +220,10 @@ Real installed OCR then returned `No module named 'torch.testing'`; that freeze
 exclusion is removed. The actual inventory also revealed copied Windows OS DLLs.
 The recipe now removes OS DbgHelp/WinTrust/UCRT/API-set copies, keeps app-local
 VC runtimes, and records exclusions; installed loading must pass again.
+Run `37717190035` then passed the initial OCR/learning/save assertions, but
+Windows PowerShell's `Get-FileHash` failed under the inherited PS7 module path.
+The diagnostic now starts with Windows PowerShell's own module path. This
+partial result does not attest to restart persistence or loaded DLL coverage.
 Native/source review and complete installed-runtime checks remain pending.
 No complete Windows OCR installer is claimed to work yet. This macOS session
 cannot validate Windows DLL loading, SmartScreen or physical display capture.
