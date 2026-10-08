@@ -35,6 +35,9 @@ def loaded_modules(pid: int, runtime: Path) -> list[dict]:
             [str(powershell), "-NoProfile", "-NonInteractive", "-Command", script],
             text=True,
             encoding="utf-8",
+            # A Python child of pwsh inherits PS7 modules, incompatible with
+            # Windows PowerShell. Let the OS shell construct its own module path.
+            env={k: v for k, v in os.environ.items() if k.upper() != "PSMODULEPATH"},
         )
     )
     for item in modules:

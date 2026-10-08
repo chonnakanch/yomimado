@@ -26,6 +26,20 @@ smoke_spec.loader.exec_module(smoke)
 
 
 class WindowsReleaseTests(unittest.TestCase):
+    def test_windows_powershell_diagnostics_do_not_inherit_ps7_modules(self):
+        with (
+            patch.dict(
+                "os.environ",
+                {"SystemRoot": str(self.root), "PSModulePath": "incompatible-PS7"},
+            ),
+            patch.object(smoke.subprocess, "check_output", return_value="[]") as query,
+        ):
+            self.assertEqual(smoke.loaded_modules(42, self.root / "runtime"), [])
+            self.assertNotIn("PSModulePath", query.call_args.kwargs["env"])
+            self.assertEqual(
+                query.call_args.kwargs["env"]["SystemRoot"], str(self.root)
+            )
+
     def setUp(self):
         self.temp = tempfile.TemporaryDirectory()
         self.addCleanup(self.temp.cleanup)
