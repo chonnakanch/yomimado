@@ -31,7 +31,10 @@ Those Windows Server 2022 checks do not pass any Windows 11 hardware,
 browser/SmartScreen, capture/scaling or human installer case below.
 
 The candidate workflow stages an owner-only GitHub draft with `SHA256SUMS.txt`
-and `windows-candidate.json`. It creates no tag and has no publication operation.
+and `windows-candidate.json` after exact installed startup/resource/native checks.
+It retains a diagnostic setup even if later UI/learning checks fail; check the
+run summary's individual outcomes before testing, and never approve failed or
+skipped cases. It creates no tag and has no publication operation.
 Installer/source archives are never uploaded as public Actions artifacts.
 GitHub blocks Actions tokens from creating a draft targeting workflow changes
 relative to main. Before staging, create an **empty draft** in the owner UI with

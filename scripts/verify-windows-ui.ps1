@@ -189,7 +189,10 @@ try {
     Wait-Check { [YomiMadoUiNative]::GetForegroundWindow() -eq $ModelDialogHandle } 'Model file dialog did not receive focus.'
     if (-not [YomiMadoUiNative]::ClickButton($CancelButton)) { throw 'Cannot click the native model dialog Cancel control.' }
     Wait-Check { -not [YomiMadoUiNative]::IsWindowVisible($ModelDialogHandle) } 'Model dialog cancellation hung.'
-    Wait-Check { (Get-Button 'Select detector model file').Current.IsEnabled } 'Cancelled model import did not finish in the frontend.'
+    Wait-Check {
+        $Button = Get-Button 'Select detector model file'
+        $null -ne $Button -and $Button.Current.IsEnabled
+    } 'Cancelled model import did not finish in the frontend.'
     if ((Get-Button 'Scan manga page').Current.IsEnabled) { throw 'Cancelled import incorrectly enables scanning.' }
     $Record.modelDialogCancellation = $true
     Write-Host 'Model import dialog cancellation passed.'

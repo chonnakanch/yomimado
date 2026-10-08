@@ -106,6 +106,7 @@ jobs:
           if ((Get-FileHash $model -Algorithm SHA256).Hash.ToLower() -ne '1a86ace74961413cbd650002e7bb4dcec4980ffa21b2f19b86933372071d718f') { throw 'Smoke-only model hash differs' }
           "YOMIMADO_SMOKE_DETECTOR=$model" | Add-Content $env:GITHUB_ENV
       - name: Verify installed model setup, buttons and shortcuts
+        id: installed_ui
         timeout-minutes: 8
         run: |
           $ErrorActionPreference = 'Stop'
@@ -118,6 +119,10 @@ jobs:
             if ($LASTEXITCODE) { throw 'Installed Windows UI regression failed' }
           } finally { $env:PSModulePath = $modules }
       - name: Verify frozen installed learning and persistence
+        id: installed_learning
+        # Runtime learning is independent of the UI driver. Complete it even
+        # after a UI failure, while retaining the failed overall job status.
+        if: ${{ !cancelled() && env.YOMIMADO_INSTALLED != '' && env.YOMIMADO_SMOKE_DETECTOR != '' }}
         run: |
           $ErrorActionPreference = 'Stop'
           $model = $env:YOMIMADO_SMOKE_DETECTOR
@@ -131,6 +136,11 @@ jobs:
             throw 'Installed frozen smoke failed'
           }
       - name: Export unpublished test candidate and hashes
+        id: private_export
+        # Retain the exact setup for diagnosis after verified startup even if a
+        # later UI/learning check fails. The job remains failed; no approval or
+        # public publisher exists, and the candidate's gates stay false.
+        if: ${{ !cancelled() && env.YOMIMADO_INSTALLED != '' && env.YOMIMADO_INSTALLER != '' }}
         run: |
           $output = Join-Path $env:RUNNER_TEMP 'windows-candidate'
           & services/ocr/build/windows/venv/Scripts/python.exe scripts/windows_release.py package --installer $env:YOMIMADO_INSTALLER --installed $env:YOMIMADO_INSTALLED --output $output
@@ -141,7 +151,9 @@ jobs:
           }
           Get-Content "$output/SHA256SUMS.txt" | Add-Content $env:GITHUB_STEP_SUMMARY
           'Private test only. Source review and exact-installer human confirmation remain OPEN. No Windows 11 hardware/scaling test is claimed.' | Add-Content $env:GITHUB_STEP_SUMMARY
+          'Installed UI: ${{ steps.installed_ui.outcome }}; installed learning: ${{ steps.installed_learning.outcome }}. Any failed/skipped check means diagnostic candidate only.' | Add-Content $env:GITHUB_STEP_SUMMARY
       - name: Stage owner-only draft and verify uploaded hashes
+        if: ${{ !cancelled() && steps.private_export.outcome == 'success' }}
         env:
           GH_TOKEN: ${{ github.token }}
         run: |

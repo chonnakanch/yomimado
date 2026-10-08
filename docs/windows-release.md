@@ -52,6 +52,15 @@ dialog and clicks its enabled native `IDCANCEL` control, with frontend completio
 and close assertions retained. It also records native child-control diagnostics
 on failure. The replacement still needs a complete passing run.
 
+Run `37798943690` at `7a8c4d82a9f10461c02ba7e94399c206bf9648a8` built
+and installed the zlib setup. Its native Cancel control closed the dialog, but
+the next frontend wait accessed a missing button while its label was temporarily
+`Checking model…`. The wait now treats that as pending, with the same timeout
+and enabled-button assertion. The workflow also runs frozen learning independently
+of the UI driver and retains the exact startup-verified setup in an owner-only
+draft for diagnosis even if later UI/learning checks fail. Any failed or skipped
+case is recorded, the job stays failed, and both approval flags remain false.
+
 Private verification builds now use NSIS zlib compression instead of LZMA:
 compression dominated the failed reruns after a successful desktop compile.
 This may increase the download size. The complete installed payload, native
@@ -126,6 +135,9 @@ Concrete packaging gaps:
   source-built Python, hash-pinned Windows wheels and
   CPU Torch, freezes the service, builds per-user NSIS, installs it, checks
   startup/quit and frozen learning, and exports a test candidate with hashes.
+  A later UI/learning failure retains an owner-only diagnostic candidate and
+  records the failed/skipped outcomes; it never changes the failed job or grants
+  installer/public-distribution approval.
   Native/source evidence remains unapproved. macOS clearance does not approve
   Windows inputs. The main publisher is unchanged; no public Windows path exists.
 
