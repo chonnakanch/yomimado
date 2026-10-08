@@ -31,6 +31,8 @@ if ((git status --porcelain)) { throw 'Commit changes before building a candidat
 $Revision = git rev-parse HEAD
 if ($Prepare) {
     New-Item -ItemType Directory -Force $Build | Out-Null
+    # Fail on moved daily dictionaries before compiling Python/Rust or freezing.
+    Invoke-Checked python @('scripts/windows_release.py', 'download-assets')
     Invoke-Checked python @('scripts/windows_release.py', 'download')
     Invoke-Checked python @('scripts/windows_python.py')
     $RuntimePython = Join-Path $Build 'Python-3.11.17/PCbuild/amd64/python.exe'

@@ -200,6 +200,14 @@ collects original sdists and source/binary archives; it does not claim complete
 corresponding-source coverage. The selected compiler/SDK fail closed if absent
 from the hosted image. Dictionary downloads also fail if the daily snapshot
 moves; supply the pinned snapshot or deliberately rebuild with new hashes. Candidate CI may assist development before publication CI is enabled.
+Run `37720960120` rejected changed upstream KANJIDIC2 bytes before freezing.
+The deliberate replacement has creation date 2026-10-08 and SHA-256
+`5fc25740c21180e0c2983d3ed546a8009d7891d9dceb4714cd36dd528be2bb58`.
+JMdict remains the pinned 2026-10-07 snapshot. Pinned asset downloads now run
+before compilation; a private candidate also retains the original two gzip
+files in `windows-dictionary-snapshots.tar.gz`. For a later rebuild, extract
+that verified archive into `apps/desktop/src-tauri/resources/ocr/assets/`;
+changed upstream bytes are still rejected and never automatically repinned.
 Hosted run `37589437962` built CPython 3.11.17, passed service/frontend and all
 38 Windows Rust tests, froze the OCR executable, built NSIS and verified exact
 installed resources, startup and normal-exit process cleanup. Known setuptools

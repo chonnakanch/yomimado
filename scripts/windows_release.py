@@ -211,13 +211,18 @@ def assert_no_detector(directory: Path) -> None:
             raise ValueError("Detector/unapproved weights in delivery: " + str(path))
 
 
-def prepare_assets() -> None:
+def download_assets() -> None:
     assets = RESOURCES / "assets"
     for entry in read_json(SERVICE / "windows-assets.json"):
         target = assets / entry["path"]
         if not target.resolve().is_relative_to(assets.resolve()):
             raise ValueError("Unsafe asset path")
         fetch(entry, target)
+
+
+def prepare_assets() -> None:
+    download_assets()
+    assets = RESOURCES / "assets"
     detector = BUILD / "detector"
     revision = "440b978563c71b758e31aaa315d100faba1efa2f"
     if not detector.exists():
@@ -590,6 +595,15 @@ def package(installer: Path, output: Path, installed: Path) -> None:
     shutil.copy2(installer, output / installer.name)
     with tarfile.open(output / "windows-notices.tar.gz", "w:gz") as archive:
         archive.add(installed / "ocr/notices", arcname="notices")
+    # Preserve original daily dictionary snapshots for reproducible rebuilds.
+    with tarfile.open(
+        output / "windows-dictionary-snapshots.tar.gz", "w:gz"
+    ) as archive:
+        for entry in read_json(SERVICE / "windows-assets.json"):
+            if entry["path"] in ("JMdict_e.gz", "kanjidic2.xml.gz"):
+                archive.add(
+                    installed / "ocr/assets" / entry["path"], arcname=entry["path"]
+                )
     # This is a private worksheet/source collection, not an approved GPL delivery.
     source = output / "windows-source-preparation.tar.gz"
     with tarfile.open(source, "w:gz") as archive:
@@ -642,6 +656,7 @@ def main() -> None:
         "command",
         choices=[
             "download",
+            "download-assets",
             "assets",
             "inventory",
             "configuration",
@@ -661,6 +676,8 @@ def main() -> None:
     args = parser.parse_args()
     if args.command == "download":
         download_inputs()
+    elif args.command == "download-assets":
+        download_assets()
     elif args.command == "installer-inventory":
         if not args.installed or not args.installer:
             raise ValueError(
