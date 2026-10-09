@@ -10,7 +10,7 @@ execution, not a substitute for the separate Windows 11 PC tests.
 
 The maintainer reports that the replacement installs, offers detector import,
 and works for OCR, shortcuts, dictionary lookup, saving and viewing saved entries.
-Two user-local screenshots show OCR regions close to the text across the page,
+User-local screenshots show OCR regions close to the text across the page,
 with uneven padding and some character edges outside the boxes. No clear global
 position/scale error is apparent; detector boundary precision remains an observation
 for follow-up, not a diagnosed coordinate bug or a passed scaling matrix.
@@ -23,10 +23,16 @@ cases and approval of the full human installer gate are still pending.
 
 The System/About report confirms **64-bit operating system, x64-based processor**,
 Windows 11 Home **25H2**, build **26200.9457**, Core i5-14500 and 32 GB RAM.
-Previously reported: RTX 4070 Super and one 2K monitor. Exact display resolution
-and scaling remain unconfirmed. Browser/SmartScreen, console behavior, offline use,
+Previously reported: RTX 4070 Super and one monitor. The 2026-10-09 Settings
+screenshot confirms **2560 × 1440**, landscape, at **100%** scaling. OCR
+screenshots labelled 100%, 125% and 150% show no obvious page-wide drift.
+Visual alignment is recorded at all three scales; selection accuracy, hit-testing,
+popup placement and relaunch after each scale change still need specific results.
+Browser/SmartScreen, console behavior, offline use,
 uncached translation, relaunch/reboot persistence, upgrade/uninstall and the
-100%/125%/150% scaling matrix remain untested on that PC unless separately reported.
+remaining scaling interactions and multiple-monitor cases remain untested on that
+PC unless separately reported. Screenshots stay user-local; personal account details
+are omitted from the record.
 Native licence/source clearance and human exact-installer approval remain open;
 macOS packaging and the main publisher are unchanged. See the
 [source worksheet](windows-source-review.md) and [numbered PC checklist](windows-installed-test.md).
@@ -256,6 +262,8 @@ first-run isolation; existing-machine results must be labelled accurately.
 - [ ] Alignment at 100%, 125% and 150% scaling; two monitors with different
       scaling, one left of the primary monitor, plus layout changes where
       available. Specify missing hardware cases instead of claiming coverage.
+      Visual OCR alignment is observed at all three scales on the 2560 × 1440
+      display; selection, hit-testing, popup and scale-change/relaunch cases remain open.
 - [ ] Offline capture/lookup/uncached translation; saved words/sentences and
       translation cache across relaunch, then shortcut/capture after reboot.
 - [ ] Save/remove only synthetic test entries. Check upgrade/reinstall preserves

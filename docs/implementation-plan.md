@@ -84,11 +84,14 @@ with uneven boundary padding; no clear global scale offset is apparent. The
 maintainer's 2026-10-09 PowerShell setup hash matches the private draft's checksum
 file and GitHub asset digest:
 `51b0091103c10c03ecd3748039bd4db0631381fb43885fe7163b889821fba207`.
-The named functional reports are bound to that installer; display settings,
-boundary follow-up and remaining manual cases are pending. No manga screenshots
+The named functional reports are bound to that installer. Settings confirms
+2560 × 1440, landscape, at 100%; maintainer-labelled OCR screenshots show close
+visual alignment at 100%, 125% and 150% without obvious page-wide drift.
+Selection accuracy, hit-testing, popup placement and scale-change/relaunch cases,
+boundary follow-up and other manual cases remain pending. No manga screenshots
 are added to public fixtures or delivery. The maintainer's System/About report
 confirms a 64-bit OS and x64 processor, Windows 11 Home 25H2 build 26200.9457,
-Core i5-14500 and 32 GB RAM. Exact display resolution/scaling remain unconfirmed.
+Core i5-14500 and 32 GB RAM. Multiple-monitor/mixed-scaling cases remain untested.
 No public Windows release integration or passing Windows 11 installer gate is claimed.
 Windows source/native and installer gates remain open. Add joint release-on-main
 publication only after those gates pass, using one publisher for both platforms.
@@ -207,15 +210,16 @@ image captured
 - [x] unit tests for negative monitor origins
 - [x] tests for 1x / 2x scale conversions
 - [x] manual test on one macOS Retina display
-- [ ] manual test on Windows with non-100% display scaling (planned with a packaged pre-release build)
+- [ ] manual test on Windows with non-100% display scaling (visual OCR alignment observed at 125%/150%; selection-drag accuracy pending)
 
 ## Done when
 
 A user can select the Japanese text shown in the supplied screenshots and save/capture an image that visually matches the selected screen region.
 
 Status: the flow is implemented and the user has exercised it on macOS Retina.
-The Windows non-100% scaling check is still open; Windows capture has not been
-manually signed off for this milestone.
+Windows screenshots show visual OCR alignment at 100%/125%/150% on the verified
+installer, but selection-drag accuracy and the remaining interaction checks have
+not been manually signed off for this milestone.
 
 ---
 
@@ -409,9 +413,9 @@ Do not put coordinate math directly into UI components. Create one transformatio
 
 - [x] macOS Retina (user-tested)
 - [ ] macOS non-Retina if available
-- [ ] Windows 100% (planned with a packaged pre-release build)
-- [ ] Windows 125% (planned with a packaged pre-release build)
-- [ ] Windows 150% (planned with a packaged pre-release build)
+- [ ] Windows 100% (visual alignment observed at 2560 × 1440; scale-specific interaction checks pending)
+- [ ] Windows 125% (visual alignment observed; scale-specific interaction checks pending)
+- [ ] Windows 150% (visual alignment observed; scale-specific interaction checks pending)
 - [x] two-monitor layout with different aspect ratios (user-tested on macOS)
 - [ ] monitor placed to the left of primary display
 

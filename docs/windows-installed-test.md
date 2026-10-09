@@ -31,18 +31,34 @@ SHA-256 `7da2a72053ce9522904b07f2100b9c7e7594545e173d8d5504cc48d3eac5119c`,
 as recorded by GitHub's artifact API. This identifies the evidence ZIP, **not**
 the setup EXE; its own checksum file must supply the installer hash.
 
-| Manual case                                                                          | Reported result  | Limit                                                                                                                |
-| ------------------------------------------------------------------------------------ | ---------------- | -------------------------------------------------------------------------------------------------------------------- |
-| Setup and detector-import panel                                                      | Pass reported    | Exact setup hash verified; import/cancel/wrong-file/relaunch cases need confirmation                                 |
-| OCR and shortcuts                                                                    | Pass reported    | Exact shortcut/scanning/scaling matrix not reported                                                                  |
-| Dictionary lookup, saving and viewing                                                | Pass reported    | Kanji, saved sentences and restart/reboot persistence not specifically confirmed                                     |
-| OCR boundary precision                                                               | Observation open | Boxes are close to text, with uneven padding/clipped character edges; no clear global offset in supplied screenshots |
-| Browser/SmartScreen, console/cleanup, offline and uncached translation               | Untested         | No specific PC result supplied                                                                                       |
-| Upgrade/uninstall, WebView2 prerequisite cases, 100%/125%/150% and multiple monitors | Untested         | Exact resolution/scaling and remaining hardware cases unavailable                                                    |
+| Manual case                                                            | Reported result  | Limit                                                                                                                     |
+| ---------------------------------------------------------------------- | ---------------- | ------------------------------------------------------------------------------------------------------------------------- |
+| Setup and detector-import panel                                        | Pass reported    | Exact setup hash verified; import/cancel/wrong-file/relaunch cases need confirmation                                      |
+| OCR and shortcuts                                                      | Pass reported    | Visual alignment recorded at three scales below; exact shortcut/scanning and scale-specific interaction cases remain open |
+| Dictionary lookup, saving and viewing                                  | Pass reported    | Kanji, saved sentences and restart/reboot persistence not specifically confirmed                                          |
+| OCR boundary precision                                                 | Observation open | Boxes are close to text, with uneven padding/clipped character edges; no clear global offset in supplied screenshots      |
+| Browser/SmartScreen, console/cleanup, offline and uncached translation | Untested         | No specific PC result supplied                                                                                            |
+| Upgrade/uninstall, WebView2 prerequisite cases and multiple monitors   | Untested         | No specific PC result supplied; mixed scaling and left-of-primary cases remain untested                                   |
 
-The two supplied manga screenshots remain user-local evidence and are not copied
+Display evidence — 2026-10-09, for the verified setup above: Windows Settings
+shows **2560 × 1440**, landscape, at **100%** scaling. The maintainer supplied
+OCR screenshots labelled **100%**, **125%** and **150%** on that display.
+At each scale, regions remain near the text across the page without an obvious
+page-wide offset or accumulating drift. Record this as visual alignment evidence
+at all three scales, with uneven detector boundaries still observed. Exact
+selection-drag accuracy, click/hover targets, popup placement and relaunch after
+each scale change are not specifically confirmed by these screenshots.
+
+| Scale | Visual OCR alignment                         | Interaction/relaunch coverage |
+| ----- | -------------------------------------------- | ----------------------------- |
+| 100%  | Observed; Settings confirms scale/resolution | Pending specific result       |
+| 125%  | Observed; scale reported by maintainer       | Pending specific result       |
+| 150%  | Observed; scale reported by maintainer       | Pending specific result       |
+
+The supplied manga and Settings screenshots remain user-local evidence and are not copied
 into the repository or source delivery. They support visual capture/overlay/popup
-operation on the reported 2K display, not exact scaling coverage or every OCR result.
+operation and the visual scaling observations above, not every interaction or OCR result.
+Personal account details visible in Settings are omitted from the test record.
 
 Earlier candidate `79065df7ba34a3aaa4ddb3a1ebb30e164405742a`, run `37721943728`,
 failed the human gate with a blank console, missing model setup, inactive scan
@@ -69,10 +85,10 @@ verify that empty draft. No credentials belong in git, logs or test reports.
 Confirmed by the maintainer's System/About report (2026-10-08): **64-bit operating
 system, x64-based processor**, Windows 11 Home **25H2**, OS build **26200.9457**,
 Intel Core i5-14500 and 32 GB RAM. Previously reported: RTX 4070 Super and one
-2K display; exact resolution and scaling remain unconfirmed. Device/product
-identifiers are intentionally omitted. The PC architecture is confirmed, while
+display, now confirmed at 2560 × 1440 with visual OCR evidence at 100%/125%/150%.
+Device/product identifiers are intentionally omitted. The PC architecture is confirmed, while
 the replacement has reported functional passes bound to the verified setup hash;
-the prior candidate failed. Record resolution and scaling during retesting.
+the prior candidate failed. Record scaling when reporting the remaining interaction cases.
 GPU acceleration is not used; a CUDA installation is not required.
 
 Fill in: candidate commit, setup filename/SHA-256, browser, System type,
@@ -103,7 +119,8 @@ observations. Use only synthetic text/images and disposable study entries.
    sentence translation explicitly; a cached result alone is insufficient.
 5. Try page scan, a saved scan area and Ctrl+Shift+S. Verify overlay visibility,
    focus, cancellation, and no leftover full-screen input-blocking selector.
-6. Repeat alignment and hit-testing at 100%, 125% and 150% display scaling.
+6. Visual OCR alignment is recorded at 100%, 125% and 150% display scaling.
+   Complete selection-drag accuracy, click/hover and popup-placement checks at each scale.
    Relaunch after changing scaling. If available test two monitors with different
    scaling, a monitor left of primary and layout changes. Otherwise mark those
    hardware cases untested; one 2K monitor does not cover them.
