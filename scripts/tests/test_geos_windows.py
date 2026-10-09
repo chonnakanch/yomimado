@@ -1,5 +1,6 @@
 """Reject unsafe source extraction and misleading Windows replacement evidence."""
 
+import copy
 import importlib.util
 import io
 import sys
@@ -7,6 +8,7 @@ import tarfile
 import tempfile
 import unittest
 from pathlib import Path
+from urllib.request import Request
 
 sys.path.insert(0, str(Path(__file__).parents[1]))
 spec = importlib.util.spec_from_file_location(
@@ -19,9 +21,107 @@ probe_spec = importlib.util.spec_from_file_location(
 )
 probe = importlib.util.module_from_spec(probe_spec)
 probe_spec.loader.exec_module(probe)
+installed_spec = importlib.util.spec_from_file_location(
+    "geos_installed", Path(__file__).parents[1] / "geos-installed-windows.py"
+)
+installed = importlib.util.module_from_spec(installed_spec)
+installed_spec.loader.exec_module(installed)
 
 
 class GeosWindowsTests(unittest.TestCase):
+    def test_asset_redirect_does_not_forward_token_or_accept_other_hosts(self):
+        req = Request(
+            "https://api.github.com/repos/example/releases/assets/1",
+            headers={"Authorization": "Bearer synthetic-test"},
+        )
+        handler = installed.AssetRedirect()
+        redirected = handler.redirect_request(
+            req,
+            None,
+            302,
+            "",
+            {},
+            "https://release-assets.githubusercontent.com/example",
+        )
+        self.assertIsNone(redirected.get_header("Authorization"))
+        for url in (
+            "http://release-assets.githubusercontent.com/example",
+            "https://example.com/asset",
+        ):
+            with self.subTest(url=url), self.assertRaises(ValueError):
+                handler.redirect_request(req, None, 302, "", {}, url)
+
+    def test_installed_probe_requires_exact_candidate_and_private_gates(self):
+        release = {
+            "draft": True,
+            "target_commitish": installed.REVISION,
+            "tag_name": "windows-private-test-" + installed.REVISION,
+        }
+        provenance = {
+            "sourceRevision": installed.REVISION,
+            "mode": "private-test",
+            "installedAppVerified": False,
+            "publicDistributionApproved": False,
+            "assets": {installed.SETUP: installed.SETUP_SHA256},
+        }
+        installed.verify_candidate(release, provenance)
+        for target, key, value in (
+            ("release", "draft", False),
+            ("release", "target_commitish", "a" * 40),
+            ("provenance", "installedAppVerified", True),
+            ("provenance", "publicDistributionApproved", True),
+            ("provenance", "assets", {installed.SETUP: "b" * 64}),
+        ):
+            r, p = copy.deepcopy(release), copy.deepcopy(provenance)
+            (r if target == "release" else p)[key] = value
+            with self.subTest(key=key), self.assertRaises(ValueError):
+                installed.verify_candidate(r, p)
+
+    def test_installed_replacement_rejects_changed_application_or_missing_learning(
+        self,
+    ):
+        before = {"app.exe": "a", "old.dll": "b", "wrapper.dll": "c"}
+        after = {"app.exe": "a", "new.dll": "d", "wrapper.dll": "e"}
+        installed.verify_changes(
+            before,
+            after,
+            ["old.dll", "wrapper.dll"],
+            {"new.dll": "d", "wrapper.dll": "e"},
+        )
+        with self.assertRaises(ValueError):
+            installed.verify_changes(
+                before,
+                {**after, "app.exe": "tampered"},
+                ["old.dll", "wrapper.dll"],
+                {"new.dll": "d", "wrapper.dll": "e"},
+            )
+        expected = {"/tmp/geos.dll": "a", "/tmp/geos_c.dll": "b"}
+        report = {
+            "runtimeSha256": installed.RUNTIME_SHA256,
+            "geometry": ["vertical", "horizontal"],
+            "loadedModules": [{"path": p, "sha256": h} for p, h in expected.items()],
+            **{
+                k: True
+                for k in (
+                    "tokenization",
+                    "dictionaries",
+                    "kanji",
+                    "uncachedTranslation",
+                    "savedDataAndTranslationCacheSurvivedRestart",
+                )
+            },
+        }
+        installed.verify_smoke(report, expected)
+        for key, value in (
+            ("kanji", False),
+            ("loadedModules", []),
+            ("runtimeSha256", "c" * 64),
+            ("geometry", ["horizontal"]),
+        ):
+            wrong = {**report, key: value}
+            with self.subTest(key=key), self.assertRaises(ValueError):
+                installed.verify_smoke(wrong, expected)
+
     def test_module_collector_excludes_its_own_executable(self):
         for name in ("geos.dll", "geos_c-hash.dll", "GEOS.DLL"):
             self.assertTrue(probe.is_geos_dll(Path(name)))

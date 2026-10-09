@@ -127,11 +127,31 @@ has GitHub SHA-256
 It retains the CMake cache, commands, upstream test/build logs, original notice
 hashes and `replacement-verification.json`, including both DLL digests and
 actual loaded paths. This is an evidence ZIP hash, not an installer or DLL hash.
-The evidence ZIP and its contained reports have not yet been inspected locally:
-browser access is unavailable while the development Mac is locked. The run's
-successful step outcomes and artifact identity were independently read from
-GitHub's API. Inspect the hash-verified archive and retain its reports in final
-source delivery before clearing corresponding-source coverage.
+The evidence ZIP is downloaded and hash-verified locally on 2026-10-09.
+Its reports bind the recipe/probe hashes to the exact source revision and the
+CMake cache hash to its retained bytes. CTest records **431 of 431 tests passed**.
+Both reports contain matching geometry fingerprints; the replacement report's
+actual loaded DLL hashes match both AMD64 PE records. The C wrapper imports
+`geos.dll` under its recorded replacement name. Reports are retained privately
+under `services/ocr/build/windows-geos-run-37877467511/`. Final source delivery
+must retain those reports, original sources and full notice texts together;
+archive inspection does not approve the full installed-service replacement.
+
+Prepared follow-up on 2026-10-09: the audit now downloads the exact unchanged
+`c69eff996f7e` private setup through a read-only Actions token, verifies the draft,
+provenance and setup hashes, and installs it on a disposable runner. Signed
+asset redirects strip authentication headers. All installed resource hashes and
+AMD64 payloads must verify before replacement. The baseline and replacement
+each run real horizontal/vertical OCR, tokenization, dictionary/kanji, uncached
+translation and saved-data/cache restart without developer Python/CUDA on the
+service PATH. Actual loaded GEOS paths/hashes must identify the expected pair.
+An exhaustive installed-file comparison permits only the exact two-library plan;
+EXE/PYDs/assets remain unchanged, and the original libraries are restored even
+after a smoke failure. Original GEOS/vendor notice texts now accompany textual
+evidence. No installer is rebuilt, uploaded or published. Hosted installed-service
+replacement execution remains pending. Local guard tests reject changed
+application files, wrong candidate/gates, missing learning/native evidence and
+credential-bearing or unexpected asset redirects; 130 release-script tests pass.
 
 The Windows Shapely wheel reports GEOS **3.11.4**. Its original source is
 `https://download.osgeo.org/geos/geos-3.11.4.tar.bz2`, SHA-256

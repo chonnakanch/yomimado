@@ -51,7 +51,23 @@ diagnostics from this run are retained locally in ignored
 matches GitHub's SHA-256
 `3338d19da7239420cf791b506232e3a7e08ededaa6d9180fc7f675947eea93aa`.
 
-Ninety of the 94 frozen files match original interpreter/wheel bytes. The four
+Current exact-candidate inspection (2026-10-09): run `37802965979` at
+`c69eff996f7e85ea88ecb4f0407e05cf5d8ec8b5` retains the same **94 AMD64
+service PE files**, 201 original native inputs and 128 actual loaded modules.
+The downloaded `windows-preparation-evidence` ZIP (ID `11563655639`, 109,829
+bytes) matches GitHub SHA-256
+`7da2a72053ce9522904b07f2100b9c7e7594545e173d8d5504cc48d3eac5119c`.
+Its checksum/provenance and installer inventory bind the maintainer-tested setup
+`51b0091103c10c03ecd3748039bd4db0631381fb43885fe7163b889821fba207`.
+All actually loaded app-local service hashes match the frozen inventory.
+Installed geometry covers both orientations; tokenization, dictionaries, kanji,
+uncached translation, saved-data/cache restart, bundled startup and quit cleanup
+pass without Python/CUDA on PATH. The desktop is AMD64, GUI subsystem, unsigned;
+setup/uninstaller retain x86 host stubs. Original CPython build outputs differ
+from the earlier run and must use this candidate's exact inventory. Reports are
+retained privately in `services/ocr/build/windows-run-37802965979/`.
+
+Ninety of the current 94 frozen files match original interpreter/wheel bytes. The four
 remaining files below require explicit provenance rather than an inferred wheel
 owner. The frozen EXE is modified by PyInstaller as expected; that explains why
 its hash differs, but does not replace retained bootloader/build evidence.
@@ -61,7 +77,7 @@ its hash differs, but does not replace retained bootloader/build evidence.
 | `msvcp140.dll`         | `0fa7eb792d3fbcf2233e4ea47e9144b9b1309ba8ed5d4731a72fffa8f4f556d6` | Identify the exact runner/app-local VC runtime origin and redistribution terms |
 | `vcruntime140.dll`     | `4d292623516f65c80482081e62d5dadb759dc16e851de5db24c3cbb57b87db83` | Identify the exact runner/app-local VC runtime origin and redistribution terms |
 | `vcruntime140_1.dll`   | `a113f192195f245f17389e6ecbed8005990bcb2476ddad33f7c4c6c86327afe5` | Identify the exact runner/app-local VC runtime origin and redistribution terms |
-| `yomimado-ocr.exe`     | `3b4e7c05b84e88b421be9edece042f33bab3795ea979fb09bb3a87083f4dbc61` | Bind the PyInstaller bootloader, appended application and exact freeze recipe  |
+| `yomimado-ocr.exe`     | `c9911d9abe692c86f9de803af9f97cbb59af10339583dd86c8a673f036b73398` | Bind the PyInstaller bootloader, appended application and exact freeze recipe  |
 
 The earlier inventory exposed copied Windows DbgHelp/WinTrust/UCRT/API-set DLLs.
 The recipe removes these OS components and records their original hashes,
@@ -86,7 +102,10 @@ Shapely baseline/replacement probe. The application EXE and PYDs remain unchange
 the probe checks synthetic geometry and actual loaded replacement DLL hashes.
 This resolves execution of the isolated replacement method, without changing
 the current installer or approving final source coverage. Full installed OCR
-replacement, archive inspection and final source-delivery assembly remain open;
+replacement and final source-delivery assembly remain open. The hash-verified
+diagnostic ZIP is now inspected locally: all 431 upstream tests pass, retained
+cache/recipe/probe hashes match and actual replacement DLL hashes match the PE
+inventory. Original sources and full notices still need final delivery assembly;
 the worksheet records the exact diagnostic artifact identity and limitations.
 
 The original `mkl-2025.2.0-py2.py3-none-win_amd64.whl` is pinned solely to

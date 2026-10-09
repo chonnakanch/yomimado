@@ -161,6 +161,13 @@ def main() -> None:
     if source.exists():
         shutil.rmtree(source)
     extract_source(archive, work)
+    for notice in source.rglob("*"):
+        if notice.is_file() and notice.name.lower().startswith(
+            ("copying", "license", "notice")
+        ):
+            target = BUILD / "notices" / notice.relative_to(source)
+            target.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(notice, target)
     python_dir = BUILD / "venv"
     venv.create(python_dir, with_pip=True)
     python = str(python_dir / "Scripts/python.exe")

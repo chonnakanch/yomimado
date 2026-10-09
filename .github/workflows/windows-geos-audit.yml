@@ -8,6 +8,7 @@ name: Windows GEOS source audit
       - .github/workflows/windows-geos-audit.yml
       - scripts/build-geos-windows.py
       - scripts/geos-windows-probe.py
+      - scripts/geos-installed-windows.py
       - scripts/tests/test_geos_windows.py
       - docs/windows-geos-build-inputs.json
   workflow_dispatch:
@@ -22,7 +23,7 @@ jobs:
   source-replacement:
     if: github.repository == 'chonnakanch/yomimado' && github.ref == 'refs/heads/develop'
     runs-on: windows-2022
-    timeout-minutes: 60
+    timeout-minutes: 90
     defaults:
       run:
         shell: pwsh
@@ -61,6 +62,23 @@ jobs:
           if ($LASTEXITCODE) { throw 'GEOS build/replacement failed' }
           'GEOS source CTest and isolated frozen DLL replacement passed. Full installed OCR replacement and source/public-distribution approval remain open.' | Add-Content $env:GITHUB_STEP_SUMMARY
           Get-Content services/ocr/build/windows-geos-audit/replacement-verification.json | Add-Content $env:GITHUB_STEP_SUMMARY
+      - name: Verify replacement in exact private installed OCR service
+        timeout-minutes: 30
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $python = 'services/ocr/build/windows-geos-audit/venv/Scripts/python.exe'
+          & $python -c "import sys; sys.path.insert(0, 'scripts'); from windows_release import ROOT, read_json, fetch; p = next(p for p in read_json(ROOT / 'services/ocr/windows-inputs.json')['packages'] if p['name'] == 'pillow'); fetch(p, ROOT / 'services/ocr/build/windows-geos-audit/inputs' / p['filename'])"
+          if ($LASTEXITCODE) { throw 'Pinned smoke Pillow fetch failed' }
+          $pillow = Get-ChildItem services/ocr/build/windows-geos-audit/inputs/pillow-*.whl
+          if ($pillow.Count -ne 1) { throw 'Ambiguous smoke Pillow input' }
+          & $python -m pip install --no-index --no-deps $pillow.FullName
+          if ($LASTEXITCODE) { throw 'Pinned smoke Pillow install failed' }
+          & $python scripts/geos-installed-windows.py
+          if ($LASTEXITCODE) { throw 'Exact installed OCR replacement failed' }
+          'Exact private installed OCR/learning replacement passed; original runner installation restored. Source/public and human installer approval remain open.' | Add-Content $env:GITHUB_STEP_SUMMARY
+          Get-Content services/ocr/build/windows-geos-audit/installed-replacement-verification.json | Add-Content $env:GITHUB_STEP_SUMMARY
       - name: Retain textual source/replacement evidence
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
@@ -70,7 +88,11 @@ jobs:
             services/ocr/build/windows-geos-audit/*.json
             services/ocr/build/windows-geos-audit/*.log
             services/ocr/build/windows-geos-audit/CMakeCache.txt
+            services/ocr/build/windows-geos-audit/notices/
             services/ocr/build/windows/python-build.json
             services/ocr/build/windows/python-build.log
           retention-days: 14
           if-no-files-found: error
+      - name: Remove temporary installed-test detector
+        if: always()
+        run: Remove-Item (Join-Path $env:RUNNER_TEMP 'yomimado-geos-installed/comictextdetector.pt.onnx') -ErrorAction SilentlyContinue

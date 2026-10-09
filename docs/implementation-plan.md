@@ -118,7 +118,12 @@ hash checks, a pinned Windows GEOS build, upstream CTest and replacement of
 both DLLs in an isolated frozen Shapely probe. Actual loaded paths/hashes and
 geometry results are checked, while EXE/PYD hashes stay unchanged. This does
 not modify the working private installer, establish full installed OCR
-replacement or approve source/installer gates. Final source assembly, Intel-free
+replacement or approve source/installer gates. The evidence ZIP is now locally
+hash-verified and inspected: all 431 CTests pass; recipe/cache/probe bindings and
+actual loaded replacement DLL hashes match. The next audit prepares baseline and
+replacement OCR/learning checks in a disposable installation of the exact tested
+setup, preserving all other installed bytes and restoring the original DLLs.
+Hosted full-service replacement remains pending. Final source assembly, Intel-free
 Torch/OpenCV builds and the remaining PC cases remain open; see the
 [native worksheet](windows-native-rebuild.md).
 

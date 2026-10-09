@@ -131,6 +131,7 @@ class VersionTests(unittest.TestCase):
             ".github/workflows/windows-geos-audit.yml",
             "scripts/build-geos-windows.py",
             "scripts/geos-windows-probe.py",
+            "scripts/geos-installed-windows.py",
             ".github/workflows/windows-opencv-audit.yml",
             "scripts/build-opencv-windows.py",
             "scripts/opencv-windows-probe.py",

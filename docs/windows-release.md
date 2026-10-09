@@ -54,7 +54,10 @@ pinned GEOS source build, upstream tests and DLL replacement in an isolated
 frozen Shapely probe. Source/tool/notice pins and actual loaded-DLL checks pass;
 the [native worksheet](windows-native-rebuild.md) records exact scope and
 evidence identity. The current installer is unchanged. Full installed OCR
-replacement, final source delivery and Intel-free Torch/OpenCV builds remain
+replacement is now prepared for execution against that exact private setup:
+baseline/replacement OCR and learning smoke, actual DLL hashes and an exhaustive
+installed-file comparison, with original DLL restoration. It remains unverified
+until its hosted run passes. Final source delivery and Intel-free Torch/OpenCV builds remain
 separate work; the human gate is not approved by this audit.
 
 Earlier candidate `79065df7ba34a3aaa4ddb3a1ebb30e164405742a` passed runtime
