@@ -90,6 +90,16 @@ No public Windows release integration or passing Windows 11 installer gate is cl
 Windows source/native and installer gates remain open. Add joint release-on-main
 publication only after those gates pass, using one publisher for both platforms.
 
+Independent native progress (2026-10-09): **Windows GEOS source audit** run
+`37877467511` at `a10db77ec91d5e1e0f96f444b0a98376c641774a` passes source/tool/notice
+hash checks, a pinned Windows GEOS build, upstream CTest and replacement of
+both DLLs in an isolated frozen Shapely probe. Actual loaded paths/hashes and
+geometry results are checked, while EXE/PYD hashes stay unchanged. This does
+not modify the working private installer, establish full installed OCR
+replacement or approve source/installer gates. Final source assembly, Intel-free
+Torch/OpenCV builds and the remaining PC cases remain open; see the
+[native worksheet](windows-native-rebuild.md).
+
 Status audit (2026-10-05): the capture → local OCR → interactive overlay →
 learning-popup flow works with user-installed models on macOS and has been
 manually exercised on a Retina display. The desktop (55), Rust (36), and OCR

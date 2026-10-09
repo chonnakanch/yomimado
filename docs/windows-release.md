@@ -29,6 +29,15 @@ Native licence/source clearance and human exact-installer approval remain open;
 macOS packaging and the main publisher are unchanged. See the
 [source worksheet](windows-source-review.md) and [numbered PC checklist](windows-installed-test.md).
 
+Work independent of PC access progresses in **Windows GEOS source audit**:
+run `37877467511` at `a10db77ec91d5e1e0f96f444b0a98376c641774a` passes a
+pinned GEOS source build, upstream tests and DLL replacement in an isolated
+frozen Shapely probe. Source/tool/notice pins and actual loaded-DLL checks pass;
+the [native worksheet](windows-native-rebuild.md) records exact scope and
+evidence identity. The current installer is unchanged. Full installed OCR
+replacement, final source delivery and Intel-free Torch/OpenCV builds remain
+separate work; the human gate is not approved by this audit.
+
 Earlier candidate `79065df7ba34a3aaa4ddb3a1ebb30e164405742a` passed runtime
 checks in run `37721943728`, but failed the human gate: a blank terminal,
 absent detector panel, inactive scan buttons and a shortcut freeze. Its replacement

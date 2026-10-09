@@ -1,7 +1,8 @@
 # Windows native source work remaining
 
 This is an execution worksheet for the public-distribution gate, not an
-approved source delivery or a claim that these Windows rebuilds have run.
+approved source delivery. Individual results below distinguish passing
+isolated checks from unrun full-runtime builds and replacement tests.
 Use the exact candidate's `windows-inventory.json`,
 `windows-native-configuration.json` and `windows-installer-inputs.json`.
 Preserve originals, patches, build commands, compiler versions, full vendor
@@ -59,7 +60,7 @@ loaded DLL paths/hashes must identify only the replacement libraries.
 The C wrapper retains the imported hashed name and loads the new `geos.dll`.
 Only textual build/source/replacement diagnostics are exported. Neither
 installer resources nor the current candidate are modified; no binary,
-weights, tag, publication or approval is produced. Hosted execution is pending.
+weights, tag, publication or approval is produced.
 Even a passing isolated probe does not establish replacement in the full
 installed OCR service or final corresponding-source/licence clearance.
 
@@ -72,6 +73,27 @@ test. Actual rebuilt-library replacement is still unverified; the complete
 rerun must pass before recording that result. Original source and Ryu licence
 hashes are additionally pinned and checked without changing the GEOS source.
 
+Corrected [audit run `37877467511`](https://github.com/chonnakanch/yomimado/actions/runs/37877467511)
+at `a10db77ec91d5e1e0f96f444b0a98376c641774a` **passes** source/tool/notice
+checks, CPython and GEOS builds, upstream CTest, original-wheel byte binding,
+baseline and replacement synthetic geometry, unchanged EXE/PYD hashes, and
+actual loaded replacement DLL paths/hashes. This is Windows Server 2022 x64
+execution of an isolated frozen probe; it does not cover the full installed
+OCR service, Windows 11 hardware, source-delivery approval or the installer gate.
+The current `c69eff996f7e` private installer is unchanged.
+
+Its textual `windows-geos-source-evidence` artifact (ID `11593186615`, 45,079 bytes)
+has GitHub SHA-256
+`63d92c5663d0f77f9a57386297d02cd0fff92487237d827a953f6d6d8fcc0291`.
+It retains the CMake cache, commands, upstream test/build logs, original notice
+hashes and `replacement-verification.json`, including both DLL digests and
+actual loaded paths. This is an evidence ZIP hash, not an installer or DLL hash.
+The evidence ZIP and its contained reports have not yet been inspected locally:
+browser access is unavailable while the development Mac is locked. The run's
+successful step outcomes and artifact identity were independently read from
+GitHub's API. Inspect the hash-verified archive and retain its reports in final
+source delivery before clearing corresponding-source coverage.
+
 The Windows Shapely wheel reports GEOS **3.11.4**. Its original source is
 `https://download.osgeo.org/geos/geos-3.11.4.tar.bz2`, SHA-256
 `364c88ccfc38aa50cf65c700e7b2ae4706ed103326128493dbf750c78d136d2c`.
@@ -83,7 +105,8 @@ it builds GEOS with CMake/Ninja, `CMAKE_BUILD_TYPE=Release` and
 `BUILD_SHARED_LIBS=ON`, runs CTest and installs it. Adapt its original HTTP
 download to the HTTPS URL above, verify the hash before extraction, and pin
 CMake/Ninja rather than copying its unpinned `pip install` command. Record
-these changes. This Windows recipe and replacement test remain unrun.
+these changes. The isolated Windows source build/replacement audit now passes
+as recorded above; full installed OCR replacement and final delivery remain open.
 
 In the inspected frozen runtime, the three Shapely PYDs import
 `geos_c-2ec21252057a9a4d4390485e0e576a5a.dll`; that DLL imports

@@ -73,7 +73,16 @@ terms/provenance; removing OS DLLs does not approve those binaries.
 
 The [native rebuild worksheet](windows-native-rebuild.md) gives exact source
 revisions, proposed Intel-free builds and GEOS replacement requirements. Those
-Windows rebuild/replacement tests are unrun; the worksheet conveys no approval.
+Intel-free builds remain unrun; the worksheet conveys no approval.
+Independent progress on 2026-10-09: GEOS source/replacement run `37877467511`
+at `a10db77ec91d5e1e0f96f444b0a98376c641774a` passes source/tool/notice
+hash checks, native Windows CPython/GEOS builds, upstream CTest and a frozen
+Shapely baseline/replacement probe. The application EXE and PYDs remain unchanged;
+the probe checks synthetic geometry and actual loaded replacement DLL hashes.
+This resolves execution of the isolated replacement method, without changing
+the current installer or approving final source coverage. Full installed OCR
+replacement, archive inspection and final source-delivery assembly remain open;
+the worksheet records the exact diagnostic artifact identity and limitations.
 
 The original `mkl-2025.2.0-py2.py3-none-win_amd64.whl` is pinned solely to
 preserve its full Intel October 2022 binary licence and bundled third-party
