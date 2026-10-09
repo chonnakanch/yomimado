@@ -37,6 +37,12 @@ jobs:
         with:
           python-version: "3.11.9" # Bootstrap only; probe uses source-built 3.11.17.
           architecture: x64
+      - name: Check exact private draft access before rebuilding
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          python scripts/geos-installed-windows.py --check-private-draft
+          if ($LASTEXITCODE) { throw 'Protected private installer input access required; draft must stay unpublished' }
       - name: Select pinned MSVC and SDK
         run: |
           $ErrorActionPreference = 'Stop'

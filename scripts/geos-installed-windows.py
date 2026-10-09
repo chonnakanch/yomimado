@@ -12,6 +12,7 @@ import shutil
 import subprocess
 import sys
 from pathlib import Path
+from urllib.error import HTTPError
 from urllib.parse import urlparse
 from urllib.request import HTTPRedirectHandler, Request, build_opener
 
@@ -25,6 +26,29 @@ PROVENANCE_SHA256 = "aa69d7008c69c31ec5840448fe7e30829a12dc50922f744c815de595235
 RUNTIME_SHA256 = "c9911d9abe692c86f9de803af9f97cbb59af10339583dd86c8a673f036b73398"
 DESKTOP_SHA256 = "8ea510ab664dfbdbd6c14b0b8f55ebf3e20361487eaa413676bcb78d5baf5e47"
 BUILD = ROOT / "services/ocr/build/windows-geos-audit"
+
+
+def private_release() -> dict:
+    # Resolve the fixed identity directly; a read token's release listing can
+    # omit drafts. Keep token permissions unchanged and fail before rebuilding.
+    tag = "windows-private-test-" + REVISION
+    try:
+        release = request(API + "/releases/tags/" + tag)
+    except HTTPError as error:
+        if error.code in {403, 404}:
+            raise RuntimeError(
+                "Exact private draft is inaccessible to this job token. "
+                "An owner must provide protected access to the existing private "
+                "installer; do not publish the draft or broaden this audit token."
+            ) from None
+        raise
+    if (
+        release.get("draft") is not True
+        or release.get("target_commitish") != REVISION
+        or release.get("tag_name") != tag
+    ):
+        raise ValueError("Private release identity differs")
+    return release
 
 
 class AssetRedirect(HTTPRedirectHandler):
@@ -129,16 +153,7 @@ def main() -> None:
     audit = read_json(BUILD / "replacement-verification.json")
     if audit.get("passed") is not True:
         raise ValueError("Pinned GEOS build/frozen replacement must pass first")
-    selected = [
-        r
-        for r in request(API + "/releases?per_page=100")
-        if r["tag_name"] == "windows-private-test-" + REVISION
-    ]
-    if len(selected) != 1:
-        raise ValueError("Missing or ambiguous exact private draft")
-    release = selected[0]
-    if release.get("draft") is not True or release.get("target_commitish") != REVISION:
-        raise ValueError("Private release identity differs")
+    release = private_release()
     assets = {a["name"]: a for a in release["assets"]}
     if len(assets) != len(release["assets"]):
         raise ValueError("Duplicate private release asset names")
@@ -252,4 +267,10 @@ def main() -> None:
 
 
 if __name__ == "__main__":
-    main()
+    if sys.argv[1:] == ["--check-private-draft"]:
+        private_release()
+        print("Exact unpublished draft is visible; asset byte checks remain required.")
+    elif len(sys.argv) == 1:
+        main()
+    else:
+        raise ValueError("Expected no arguments or --check-private-draft")

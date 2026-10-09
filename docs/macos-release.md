@@ -399,6 +399,14 @@ through both the UI and public API. `develop` remains unmerged; remote tag
 inspection confirms no tags. Hosted workflow execution and the new candidate's
 installed-app confirmation remain pending the first merge.
 
+2026-10-09 bootstrap access risk: the Windows GEOS audit's `contents: read`
+token cannot see its existing owner-only draft in the release listing. The macOS
+build uses the fixed seed-tag endpoint instead and has not yet executed on
+GitHub; its ability to download draft assets with the read-only token is therefore
+unverified. A Windows direct-tag preflight is being checked before choosing any
+protected input-access change. Preserve the private seed and protected publisher;
+do not publish the seed or widen build-job permissions to bypass this check.
+
 The hobby target uses GitHub's job-scoped token and no Apple keys, passwords or
 signing/notarization secrets. Only the protected publish job has
 `contents: write`; actions are pinned to commit hashes. The Apple Silicon job

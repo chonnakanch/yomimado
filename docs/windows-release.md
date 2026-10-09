@@ -57,7 +57,11 @@ evidence identity. The current installer is unchanged. Full installed OCR
 replacement is now prepared for execution against that exact private setup:
 baseline/replacement OCR and learning smoke, actual DLL hashes and an exhaustive
 installed-file comparison, with original DLL restoration. It remains unverified
-until its hosted run passes. Final source delivery and Intel-free Torch/OpenCV builds remain
+until its hosted run passes. The first installed extension run cannot see the
+private draft with its read-only release listing; a direct fixed-tag access
+preflight is prepared without widening token permissions. See the native worksheet
+for the protected-input requirement if that request is also denied.
+Final source delivery and Intel-free Torch/OpenCV builds remain
 separate work; the human gate is not approved by this audit.
 
 Earlier candidate `79065df7ba34a3aaa4ddb3a1ebb30e164405742a` passed runtime

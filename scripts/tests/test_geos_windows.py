@@ -8,6 +8,8 @@ import tarfile
 import tempfile
 import unittest
 from pathlib import Path
+from unittest.mock import patch
+from urllib.error import HTTPError
 from urllib.request import Request
 
 sys.path.insert(0, str(Path(__file__).parents[1]))
@@ -29,6 +31,40 @@ installed_spec.loader.exec_module(installed)
 
 
 class GeosWindowsTests(unittest.TestCase):
+    def test_draft_access_uses_fixed_identity_and_rejects_missing_or_published(self):
+        release = {
+            "draft": True,
+            "target_commitish": installed.REVISION,
+            "tag_name": "windows-private-test-" + installed.REVISION,
+        }
+        with patch.object(installed, "request", return_value=release) as request:
+            self.assertEqual(installed.private_release(), release)
+            request.assert_called_once_with(
+                installed.API + "/releases/tags/" + release["tag_name"]
+            )
+        for key, value in (("draft", False), ("target_commitish", "a" * 40)):
+            with (
+                self.subTest(key=key),
+                patch.object(
+                    installed, "request", return_value={**release, key: value}
+                ),
+                self.assertRaises(ValueError),
+            ):
+                installed.private_release()
+        for status in (403, 404):
+            with (
+                self.subTest(status=status),
+                patch.object(
+                    installed,
+                    "request",
+                    side_effect=HTTPError(
+                        "https://api.github.com", status, "", {}, None
+                    ),
+                ),
+                self.assertRaisesRegex(RuntimeError, "provide protected access"),
+            ):
+                installed.private_release()
+
     def test_asset_redirect_does_not_forward_token_or_accept_other_hosts(self):
         req = Request(
             "https://api.github.com/repos/example/releases/assets/1",

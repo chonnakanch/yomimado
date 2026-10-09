@@ -161,7 +161,7 @@ under `services/ocr/build/windows-geos-run-37877467511/`. Final source delivery
 must retain those reports, original sources and full notice texts together;
 archive inspection does not approve the full installed-service replacement.
 
-Prepared follow-up on 2026-10-09: the audit now downloads the exact unchanged
+Prepared follow-up on 2026-10-09: the audit is configured to download the exact unchanged
 `c69eff996f7e` private setup through a read-only Actions token, verifies the draft,
 provenance and setup hashes, and installs it on a disposable runner. Signed
 asset redirects strip authentication headers. All installed resource hashes and
@@ -173,9 +173,18 @@ An exhaustive installed-file comparison permits only the exact two-library plan;
 EXE/PYDs/assets remain unchanged, and the original libraries are restored even
 after a smoke failure. Original GEOS/vendor notice texts now accompany textual
 evidence. No installer is rebuilt, uploaded or published. Hosted installed-service
-replacement execution remains pending. Local guard tests reject changed
+replacement execution remains pending. Run `37935912253` at
+`082b241d6b24f127bbfd632b8b37f969e951b039` passes the source build, upstream
+tests and isolated replacement, then cannot find the draft in its read-only
+token's release listing. No installer is downloaded or replaced in that run.
+GitHub's [release API documentation](https://docs.github.com/en/rest/releases/releases#list-releases)
+requires push access to include drafts in listings. The audit now checks the
+fixed draft tag endpoint before spending time rebuilding, retaining `contents: read`.
+If that request is also inaccessible, protected owner-authorized input access is
+required; do not publish the draft or add an unprotected write token to this audit.
+Local guard tests reject changed
 application files, wrong candidate/gates, missing learning/native evidence and
-credential-bearing or unexpected asset redirects; 130 release-script tests pass.
+credential-bearing or unexpected asset redirects; 132 release-script tests pass.
 
 The Windows Shapely wheel reports GEOS **3.11.4**. Its original source is
 `https://download.osgeo.org/geos/geos-3.11.4.tar.bz2`, SHA-256
