@@ -41,8 +41,24 @@ OFF = (
     "BUILD_CAFFE2",
     "BUILD_BINARY",
     "CAFFE2_USE_MSVC_STATIC_RUNTIME",
+    "USE_MAGMA",
+    "SLEEF_BUILD_DFT",
+    "SLEEF_BUILD_QUAD",
+    "SLEEF_BUILD_TESTS",
+    "SLEEF_BUILD_BENCH",
+    "SLEEF_ENABLE_CUDA",
 )
-ON = ("BUILD_PYTHON", "BUILD_SHARED_LIBS", "USE_NUMPY", "CMAKE_EXPORT_COMPILE_COMMANDS")
+ON = (
+    "BUILD_PYTHON",
+    "BUILD_SHARED_LIBS",
+    "USE_NUMPY",
+    "CMAKE_EXPORT_COMPILE_COMMANDS",
+    "SLEEF_DISABLE_SSL",
+    "SLEEF_DISABLE_FFTW",
+    "SLEEF_DISABLE_MPFR",
+    "CMAKE_DISABLE_FIND_PACKAGE_OpenSSL",
+    "CMAKE_DISABLE_FIND_PACKAGE_OpenMP",
+)
 
 
 def verify_cache(cache: str) -> None:
@@ -224,6 +240,25 @@ def main() -> None:
         "install-tools",
     )
     base = ROOT / "services/ocr/build/windows/Python-3.11.17"
+    # CMake FindPython requires pyconfig.h alongside Python.h. Windows CPython
+    # keeps it in PC; stage original bytes without changing the source build.
+    python_include = BUILD / "python-include"
+    if python_include.exists():
+        shutil.rmtree(python_include)
+    shutil.copytree(base / "Include", python_include)
+    shutil.copy2(base / "PC/pyconfig.h", python_include / "pyconfig.h")
+    write_json(
+        BUILD / "python-header-staging.json",
+        {
+            "pythonBuildRecordSha256": digest(base.parent / "python-build.json"),
+            "pyconfigSourceSha256": digest(base / "PC/pyconfig.h"),
+            "stagedHeaders": {
+                p.relative_to(python_include).as_posix(): digest(p)
+                for p in sorted(python_include.rglob("*"))
+                if p.is_file()
+            },
+        },
+    )
 
     def path(value):
         return str(value).replace("\\", "/")
@@ -257,7 +292,7 @@ def main() -> None:
             "-DCMAKE_C_FLAGS=" + flags,
             "-DCMAKE_CXX_FLAGS=" + flags,
             "-DPython_EXECUTABLE=" + path(python),
-            "-DPython_INCLUDE_DIR=" + path(base / "Include"),
+            "-DPython_INCLUDE_DIR=" + path(python_include),
             "-DPython_LIBRARY=" + path(base / "PCbuild/amd64/python311.lib"),
             "-DCMAKE_INSTALL_PREFIX=" + path(source / "torch"),
         ],

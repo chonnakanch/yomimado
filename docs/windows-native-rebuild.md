@@ -58,6 +58,19 @@ source-built wheel. Only textual inputs/commands/logs/notices/results leave the
 runner. This build is unverified until hosted execution succeeds; matching
 torchvision, model inference, frozen service and exact installed OCR replacement
 remain separate gates. No tested installer or macOS runtime is changed.
+First [run `37939801320`](https://github.com/chonnakanch/yomimado/actions/runs/37939801320)
+at `61143751c5c79238acfcb57df15c37f9cc8492bc` builds pinned CPython,
+verifies all selected source commits/notices, downloads the pinned Eigen/tool
+inputs and reaches Eigen CPU configuration. CMake FindPython then cannot read
+`Include/pyconfig.h`; Windows CPython retains that original file under `PC`.
+The recipe now stages unchanged original Python headers with `pyconfig.h`,
+records their hashes and the CPython build-record hash, and uses that staged
+include directory. Optional SLEEF SSL/MPFR/FFTW testing and host OpenMP/OpenSSL
+discovery are explicitly disabled. The downloaded first-run textual evidence
+ZIP (ID `11620263065`, 171,654 bytes) matches GitHub SHA-256
+`9652640a457a714e9f0dd5af1224cd512666d9a4f042b1d62c530ad52ab0b9cf`.
+No Torch compilation or inference pass is claimed from that run; a complete
+rerun is required.
 
 Build OpenCV from the pinned `opencv-python-4.11.0.86.tar.gz` input
 (`03d60ccae62304860d232272e4a4fda93c39d595780cb40b161b310244b736a4`)
