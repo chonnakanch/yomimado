@@ -106,7 +106,12 @@ No public Windows release integration or passing Windows 11 installer gate is cl
 Windows OpenCV source execution is prepared independently (2026-10-09): pinned
 source/tool/vendor notices, a static PYD with IPP/video/GPU backends disabled,
 synthetic geometry and CPU detector inference in native/frozen probes. The
-Windows audit workflow exports textual evidence only; hosted results are pending.
+Windows audit workflow exports textual evidence only. Run `37934320710` passes
+source/native/frozen checks; local archive inspection verifies exact notice,
+recipe/cache/probe hashes and matching geometry/detector results. It also reveals
+the static CRT default remained enabled despite the requested DLL runtime.
+Explicit disabling and actual generated compiler-command/PE-import checks are
+prepared; corrected runtime-linkage execution remains pending.
 The tested installer, macOS seed and publication gates remain unchanged.
 
 Windows source/native and installer gates remain open. Add joint release-on-main

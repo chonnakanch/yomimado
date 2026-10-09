@@ -32,6 +32,20 @@ class OpenCVWindowsTests(unittest.TestCase):
             "D:/a/source with spaces/PCbuild/amd64/python311.lib",
         )
 
+    def test_real_compile_commands_reject_static_or_debug_runtime(self):
+        commands = [{"file": "core.cpp", "command": "cl.exe /MD /O2 core.cpp"}]
+        self.assertEqual(audit.verify_compile_commands(commands), 1)
+        for command in (
+            "cl.exe /MT core.cpp",
+            "cl.exe /MDd core.cpp",
+            "cl.exe /MD /MT core.cpp",
+            "cl.exe core.cpp",
+        ):
+            with self.subTest(command=command), self.assertRaises(ValueError):
+                audit.verify_compile_commands([{**commands[0], "command": command}])
+        with self.assertRaises(ValueError):
+            audit.verify_compile_commands([])
+
     def information(self):
         return (
             "To be built: core imgproc imgcodecs calib3d features2d flann dnn highgui python3\n"

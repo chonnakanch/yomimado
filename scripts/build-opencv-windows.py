@@ -67,6 +67,7 @@ OFF = (
     "WITH_QUIRC",
     "OPENCV_ENABLE_NONFREE",
     "BUILD_SHARED_LIBS",
+    "BUILD_WITH_STATIC_CRT",
     "BUILD_TESTS",
     "BUILD_PERF_TESTS",
     "BUILD_EXAMPLES",
@@ -78,6 +79,7 @@ OFF = (
     "BUILD_opencv_gapi",
 )
 ON = (
+    "CMAKE_EXPORT_COMPILE_COMMANDS",
     "WITH_PROTOBUF",
     "BUILD_PROTOBUF",
     "WITH_PNG",
@@ -143,6 +145,26 @@ def verify_information(info: str) -> None:
         re.MULTILINE | re.IGNORECASE,
     ):
         raise ValueError("Forbidden OpenCV backend enabled")
+
+
+def verify_compile_commands(commands: list[dict]) -> int:
+    compiled = [
+        item
+        for item in commands
+        if Path(item["file"]).suffix.lower() in {".c", ".cc", ".cpp", ".cxx"}
+    ]
+    if not compiled:
+        raise ValueError("Missing actual C/C++ compiler commands")
+    for item in compiled:
+        command = item["command"]
+        if not re.search(r"(?:^|\s)/MD(?:\s|$)", command) or re.search(
+            r"(?:^|\s)/(?:MTd?|MDd)(?:\s|$)", command
+        ):
+            raise ValueError(
+                "OpenCV/vendor compiler command does not use Release DLL runtime: "
+                + item["file"]
+            )
+    return len(compiled)
 
 
 def verify_probe(report: dict, expected: Path, frozen: bool, binary_hash: str) -> None:
@@ -310,6 +332,9 @@ def main(detector: Path) -> None:
     cache = build_dir / "CMakeCache.txt"
     shutil.copy2(cache, BUILD / "CMakeCache.txt")
     verify_cache(cache.read_text(errors="replace"))
+    compiler_commands = build_dir / "compile_commands.json"
+    shutil.copy2(compiler_commands, BUILD / "compile_commands.json")
+    compiled_count = verify_compile_commands(read_json(compiler_commands))
     # Disabled optional vendors must not cause unrecorded network inputs.
     if list((BUILD / "downloads").rglob("*")):
         downloaded = [
@@ -333,8 +358,13 @@ def main(detector: Path) -> None:
         env,
     )
     (binary,) = list(build_dir.rglob("cv2*.pyd"))
-    if pe_info_in_venv(python, binary)["machine"] != "0x8664":
+    binary_info = pe_info_in_venv(python, binary)
+    if binary_info["machine"] != "0x8664":
         raise ValueError("OpenCV is not AMD64")
+    if not any(name.startswith("vcruntime140") for name in binary_info["imports"]):
+        raise ValueError(
+            "OpenCV DLL runtime imports missing despite configured linkage"
+        )
     shutil.copy2(binary, site / binary.name)
     run(
         [
@@ -441,6 +471,8 @@ def main(detector: Path) -> None:
             "recipeSha256": digest(Path(__file__)),
             "probeSha256": digest(ROOT / "scripts/opencv-windows-probe.py"),
             "cmakeCacheSha256": digest(BUILD / "CMakeCache.txt"),
+            "compileCommandsSha256": digest(BUILD / "compile_commands.json"),
+            "releaseDllRuntimeCompileCommands": compiled_count,
             "options": options,
             "compiler": os.environ["VCToolsVersion"],
             "sdk": os.environ["WindowsSDKVersion"],

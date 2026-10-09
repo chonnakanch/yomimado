@@ -93,8 +93,13 @@ Intel-free builds remain unrun; the worksheet conveys no approval. The separate
 **Windows OpenCV source audit** now prepares a pinned static PYD without IPP,
 then checks synthetic geometry, actual CPU detector inference and a frozen
 probe's loaded-native paths/hashes. Original source/vendor notice pins are in
-`docs/windows-opencv-build-inputs.json`. Hosted execution remains pending;
-it does not alter the tested installer or approve full installed OCR/source delivery.
+`docs/windows-opencv-build-inputs.json`. Run `37934320710` passes native/frozen
+geometry and detector inference without IPP; its downloaded evidence hashes,
+notices, actual modules and source/recipe bindings are verified locally. Inspection
+also exposes OpenCV's still-enabled static CRT default despite the requested DLL
+linkage. That is explicitly disabled, with generated compile-command and actual
+PE import checks added for the next run. Corrected linkage and full installed
+OCR/source delivery remain unverified; the tested installer is unchanged.
 Independent progress on 2026-10-09: GEOS source/replacement run `37877467511`
 at `a10db77ec91d5e1e0f96f444b0a98376c641774a` passes source/tool/notice
 hash checks, native Windows CPython/GEOS builds, upstream CTest and a frozen

@@ -78,7 +78,24 @@ invalid escape. The recipe now normalizes all CMake path values to forward
 slashes, with a regression check for Windows paths containing spaces. No
 OpenCV compilation or inference pass is claimed; the complete rerun is required.
 Torch replacement and full installed OCR remain separate.
-Local verification: 127 release-script tests pass, including rejection of unsafe
+Corrected [run `37934320710`](https://github.com/chonnakanch/yomimado/actions/runs/37934320710)
+at `3be03080dc59cbd16868da35e51a65b3697a9eb6` passes compilation, native
+and frozen geometry/image checks and CPU detector inference on both fixtures.
+The textual artifact (ID `11618091892`, 115,832 bytes) is downloaded and verified
+against GitHub SHA-256
+`94cfa98529913d471e886d94b89661483f94073d22a3f5c76ad7049b7e71d07d`.
+Recipe/probe/cache/full-notice hashes match; native and frozen detector/geometry
+results match, and both load the same AMD64 PYD bytes
+`b10865944723640e72b482613894730f376d71ba65cb51d0652efd1cccbc8f37`.
+Its imports are only `kernel32.dll` and `python311.dll`; IPP removal passes.
+However, archive inspection reveals **`BUILD_WITH_STATIC_CRT=ON`** despite the
+requested `CMAKE_MSVC_RUNTIME_LIBRARY`. This run does not validate the proposed
+DLL compiler-runtime linkage. The recipe now explicitly disables static CRT,
+retains and checks all generated C/C++ compile commands for Release `/MD`
+(rejecting `/MT` and debug runtime flags), and requires a VC runtime PE import.
+The corrected linkage rerun remains pending. Reports stay private under
+`services/ocr/build/windows-opencv-run-37934320710/`. No installer is modified.
+Local verification: 131 release-script tests pass, including rejection of unsafe
 source extraction, enabled IPP/backends, wrong loaded PYD paths/hashes and wrong
 probe architecture/version. Synthetic image geometry runs on the development
 Mac; that does not claim Windows execution. Python lint/format, workflow lint

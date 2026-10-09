@@ -127,7 +127,10 @@ desktop reports `NotSigned`; browser/SmartScreen behavior is still untested.
 Independent IPP removal is prepared in **Windows OpenCV source audit**, with
 original source/vendor notice pins, accepted CMake cache checks, synthetic
 image/geometry and actual CPU detector inference in native/frozen probes.
-Hosted execution is pending. It exports textual evidence only and leaves the
+Run `37934320710` passes these native/frozen checks. Locally hash-verified
+evidence reveals the static CRT default remains enabled despite requested DLL
+linkage; explicit disabling, generated `/MD` compiler-command checks and VC
+runtime PE-import checks are added for a required rerun. It exports textual evidence only and leaves the
 tested setup unchanged; full installed OCR replacement and Torch's MKL/OpenMP
 replacement remain separate. See [the native worksheet](windows-native-rebuild.md).
 
