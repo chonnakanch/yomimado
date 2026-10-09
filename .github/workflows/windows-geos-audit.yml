@@ -20,8 +20,28 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  source-replacement:
+  input-protection:
     if: github.repository == 'chonnakanch/yomimado' && github.ref == 'refs/heads/develop'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      actions: read
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
+        with:
+          python-version: "3.11.17"
+      - name: Require protected private-input access before creating a deployment
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python scripts/geos-installed-windows.py --check-input-protection
+
+  source-replacement:
+    needs: input-protection
+    if: github.repository == 'chonnakanch/yomimado' && github.ref == 'refs/heads/develop'
+    environment: windows-native-input
     runs-on: windows-2022
     timeout-minutes: 90
     defaults:
@@ -39,7 +59,7 @@ jobs:
           architecture: x64
       - name: Check exact private draft access before rebuilding
         env:
-          GH_TOKEN: ${{ github.token }}
+          GH_TOKEN: ${{ secrets.WINDOWS_PRIVATE_INPUT_TOKEN }}
         run: |
           python scripts/geos-installed-windows.py --check-private-draft
           if ($LASTEXITCODE) { throw 'Protected private installer input access required; draft must stay unpublished' }
@@ -71,7 +91,7 @@ jobs:
       - name: Verify replacement in exact private installed OCR service
         timeout-minutes: 30
         env:
-          GH_TOKEN: ${{ github.token }}
+          GH_TOKEN: ${{ secrets.WINDOWS_PRIVATE_INPUT_TOKEN }}
         run: |
           $ErrorActionPreference = 'Stop'
           $python = 'services/ocr/build/windows-geos-audit/venv/Scripts/python.exe'

@@ -231,12 +231,33 @@ Run `37938465690` at `f252ed7d1af767866af54a18a78e08c1b5e31d00`
 confirms the direct draft-tag request is also inaccessible. It stops before any
 source rebuild or installer download. This is a concrete external input-access
 blocker: protected owner-authorized access is required; do not publish the draft
-or add an unprotected write token to this audit. An owner can arrange a dedicated
-reviewer-protected input job/environment for this exact private asset, then rerun
-the audit; the job must retain the fixed setup/source/provenance checks above.
-Local guard tests reject changed
-application files, wrong candidate/gates, missing learning/native evidence and
-credential-bearing or unexpected asset redirects; 132 release-script tests pass.
+or add an unprotected write token to this audit.
+The workflow now prepares a dedicated protected input consumer. Its read-only
+plan validates the existing environment before a Windows deployment can be
+created; an absent, unprotected, bypassable or wrong-branch environment fails
+closed. The Windows job keeps `contents: read` and uses the environment's
+separate read-only owner token only for private draft GET requests. The exact
+setup/source/provenance checks above remain required. This is private input
+access approval, not publication, source clearance or the human installer gate.
+
+Owner setup required in GitHub Settings (no credential in chat or git):
+
+1. Create environment **`windows-native-input`**, add the maintainer as a
+   required reviewer, disable administrator bypass and permit only the branch
+   **`develop`** through selected branch rules. No tag rules or wildcard branches.
+2. Create a short-lived fine-grained owner token restricted to this repository
+   with **Contents: read**. Store it only as the environment secret
+   **`WINDOWS_PRIVATE_INPUT_TOKEN`**. Its owner identity must have existing push
+   access for draft visibility. No Contents/Workflows write permission is needed.
+3. Run the workflow from the latest `develop`, review its exact private setup
+   hash above and manually approve **only this private-input deployment**.
+   The agent must not approve it. The preflight must see the unchanged draft;
+   then the build and installed OCR replacement checks can execute.
+4. Remove/revoke the input token after testing. The protected publication
+   environment and final exact-installer approval remain separate.
+   Local guard tests reject changed
+   application files, wrong candidate/gates, missing learning/native evidence and
+   credential-bearing or unexpected asset redirects; 136 release-script tests pass.
 
 The Windows Shapely wheel reports GEOS **3.11.4**. Its original source is
 `https://download.osgeo.org/geos/geos-3.11.4.tar.bz2`, SHA-256

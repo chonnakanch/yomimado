@@ -26,6 +26,41 @@ PROVENANCE_SHA256 = "aa69d7008c69c31ec5840448fe7e30829a12dc50922f744c815de595235
 RUNTIME_SHA256 = "c9911d9abe692c86f9de803af9f97cbb59af10339583dd86c8a673f036b73398"
 DESKTOP_SHA256 = "8ea510ab664dfbdbd6c14b0b8f55ebf3e20361487eaa413676bcb78d5baf5e47"
 BUILD = ROOT / "services/ocr/build/windows-geos-audit"
+INPUT_ENVIRONMENT = "windows-native-input"
+
+
+def verify_input_protection(environment: dict, policies: dict) -> None:
+    if (
+        environment.get("name") != INPUT_ENVIRONMENT
+        or environment.get("can_admins_bypass") is not False
+        or environment.get("deployment_branch_policy")
+        != {"protected_branches": False, "custom_branch_policies": True}
+        or [(p.get("name"), p.get("type")) for p in policies.get("branch_policies", [])]
+        != [("develop", "branch")]
+        or not any(
+            r.get("type") == "required_reviewers" and r.get("reviewers")
+            for r in environment.get("protection_rules", [])
+        )
+    ):
+        raise ValueError(
+            "windows-native-input requires a human reviewer, no administrator "
+            "bypass and a develop-only branch rule before private token access"
+        )
+
+
+def check_input_protection() -> None:
+    endpoint = API + "/environments/" + INPUT_ENVIRONMENT
+    try:
+        verify_input_protection(
+            request(endpoint), request(endpoint + "/deployment-branch-policies")
+        )
+    except HTTPError as error:
+        if error.code in {403, 404}:
+            raise RuntimeError(
+                "Owner must configure reviewer-protected windows-native-input "
+                "and its read-only draft-access secret; see the native worksheet."
+            ) from None
+        raise
 
 
 def private_release() -> dict:
@@ -38,8 +73,9 @@ def private_release() -> dict:
         if error.code in {403, 404}:
             raise RuntimeError(
                 "Exact private draft is inaccessible to this job token. "
-                "An owner must provide protected access to the existing private "
-                "installer; do not publish the draft or broaden this audit token."
+                "An owner must provide protected access through the environment's "
+                "WINDOWS_PRIVATE_INPUT_TOKEN; do not publish the draft or broaden "
+                "the Actions token."
             ) from None
         raise
     if (
@@ -270,7 +306,12 @@ if __name__ == "__main__":
     if sys.argv[1:] == ["--check-private-draft"]:
         private_release()
         print("Exact unpublished draft is visible; asset byte checks remain required.")
+    elif sys.argv[1:] == ["--check-input-protection"]:
+        check_input_protection()
+        print(
+            "Required reviewer, no administrator bypass and develop-only input protection verified."
+        )
     elif len(sys.argv) == 1:
         main()
     else:
-        raise ValueError("Expected no arguments or --check-private-draft")
+        raise ValueError("Expected no arguments or a private-input preflight")

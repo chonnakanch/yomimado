@@ -31,6 +31,32 @@ installed_spec.loader.exec_module(installed)
 
 
 class GeosWindowsTests(unittest.TestCase):
+    def test_private_input_requires_real_reviewer_without_bypass_or_other_branch(self):
+        environment = {
+            "name": installed.INPUT_ENVIRONMENT,
+            "can_admins_bypass": False,
+            "deployment_branch_policy": {
+                "protected_branches": False,
+                "custom_branch_policies": True,
+            },
+            "protection_rules": [
+                {"type": "required_reviewers", "reviewers": [{"id": 1}]}
+            ],
+        }
+        policies = {"branch_policies": [{"name": "develop", "type": "branch"}]}
+        installed.verify_input_protection(environment, policies)
+        for key, value in (
+            ("can_admins_bypass", True),
+            ("protection_rules", []),
+            ("name", "macos-release"),
+        ):
+            with self.subTest(key=key), self.assertRaises(ValueError):
+                installed.verify_input_protection({**environment, key: value}, policies)
+        with self.assertRaises(ValueError):
+            installed.verify_input_protection(
+                environment, {"branch_policies": [{"name": "*", "type": "branch"}]}
+            )
+
     def test_draft_access_uses_fixed_identity_and_rejects_missing_or_published(self):
         release = {
             "draft": True,
