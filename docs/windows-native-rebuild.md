@@ -131,7 +131,25 @@ both MSVC flag prefixes and still rejects static/debug forms with either prefix;
 compilation, PE imports and frozen inference still require the corrected rerun.
 Reports stay private under
 `services/ocr/build/windows-opencv-run-37934320710/`. No installer is modified.
-Local verification: 131 release-script tests pass, including rejection of unsafe
+
+Corrected [run `37938195277`](https://github.com/chonnakanch/yomimado/actions/runs/37938195277)
+at `23ad7f119cf99881aa634855f4394e6b45deac02` passes the complete audit.
+Its evidence ZIP (ID `11621171125`, 141,038 bytes) is downloaded and independently
+verified against GitHub SHA-256
+`8880f575652c84d5200719ef4b65c60cf9651b051efeafb9fcdab39fd8145fbf`.
+Recipe/probe/cache/compile-command hashes and all ten retained full notice texts
+match. All **648** actual C/C++ commands select Release DLL runtime, the cache
+disables static CRT, and the AMD64 PYD imports `vcruntime140.dll`,
+`vcruntime140_1.dll`, `msvcp140.dll`, `concrt140.dll` and Windows UCRT APIs.
+Native and frozen probes load the unchanged PYD SHA-256
+`f2ac973b04cd0c2b5f4708f247eb1004bc2562ffe6bfa53aa5caaea5d6781f93`
+from their expected locations; both fixtures' geometry and CPU detector outputs
+match. IPP-free OpenCV with DLL compiler-runtime linkage now passes this isolated
+audit. Full installed OCR, final compiler/source/notice clearance and delivery
+remain open. Reports stay private under
+`services/ocr/build/windows-opencv-run-37938195277/`.
+
+Local verification: 135 release-script tests pass, including rejection of unsafe
 source extraction, enabled IPP/backends, wrong loaded PYD paths/hashes and wrong
 probe architecture/version. Synthetic image geometry runs on the development
 Mac; that does not claim Windows execution. Python lint/format, workflow lint

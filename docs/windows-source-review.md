@@ -102,8 +102,11 @@ geometry and detector inference without IPP; its downloaded evidence hashes,
 notices, actual modules and source/recipe bindings are verified locally. Inspection
 also exposes OpenCV's still-enabled static CRT default despite the requested DLL
 linkage. That is explicitly disabled, with generated compile-command and actual
-PE import checks added for the next run. Corrected linkage and full installed
-OCR/source delivery remain unverified; the tested installer is unchanged.
+PE import checks added for the next run. Corrected run `37938195277` passes:
+its downloaded evidence ZIP hash, recipe/cache/notice hashes, all 648 DLL-runtime
+compiler commands, actual AMD64 VC imports and native/frozen detector outputs
+are independently verified. Full installed OCR/source delivery remains
+unverified; the tested installer is unchanged.
 Independent progress on 2026-10-09: GEOS source/replacement run `37877467511`
 at `a10db77ec91d5e1e0f96f444b0a98376c641774a` passes source/tool/notice
 hash checks, native Windows CPython/GEOS builds, upstream CTest and a frozen

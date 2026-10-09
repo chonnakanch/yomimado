@@ -64,6 +64,10 @@ for the protected-input requirement. Run `37938465690` also denies the direct
 request, so the installed GEOS extension has a concrete external input-access
 blocker. Independent Torch source-build preparation is now executable in
 **Windows Torch source audit**; it does not alter the tested setup.
+Independent OpenCV run `37938195277` now passes its IPP-free source build,
+DLL compiler-runtime linkage and native/frozen CPU detector probes, with its
+downloaded textual evidence independently hash-verified. Full installed
+recognition and final source coverage remain open.
 Final source delivery and Intel-free Torch/OpenCV builds remain
 separate work; the human gate is not approved by this audit.
 
