@@ -1,0 +1,76 @@
+name: Windows GEOS source audit
+
+# Independent source/replacement experiment. Never builds or publishes an installer.
+"on":
+  push:
+    branches: [develop]
+    paths:
+      - .github/workflows/windows-geos-audit.yml
+      - scripts/build-geos-windows.py
+      - scripts/geos-windows-probe.py
+      - scripts/tests/test_geos_windows.py
+      - docs/windows-geos-build-inputs.json
+  workflow_dispatch:
+
+permissions:
+  contents: read
+concurrency:
+  group: windows-geos-source-audit
+  cancel-in-progress: false
+
+jobs:
+  source-replacement:
+    if: github.repository == 'chonnakanch/yomimado' && github.ref == 'refs/heads/develop'
+    runs-on: windows-2022
+    timeout-minutes: 60
+    defaults:
+      run:
+        shell: pwsh
+    steps:
+      - name: Preserve original source bytes
+        run: git config --global core.autocrlf false
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
+        with:
+          python-version: "3.11.9" # Bootstrap only; probe uses source-built 3.11.17.
+          architecture: x64
+      - name: Select pinned MSVC and SDK
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $vswhere = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe"
+          $vs = & $vswhere -latest -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath
+          $bat = Join-Path $vs 'VC/Auxiliary/Build/vcvarsall.bat'
+          $vars = cmd /c "`"$bat`" x64 10.0.26100.0 -vcvars_ver=14.44.35207 >nul && set"
+          if ($LASTEXITCODE) { throw 'Pinned MSVC/SDK unavailable' }
+          foreach ($line in $vars) {
+            if ($line -match '^(PATH|INCLUDE|LIB|LIBPATH|VCToolsVersion|VCToolsInstallDir|WindowsSDKVersion|WindowsSdkDir|VSINSTALLDIR)=(.*)$') {
+              [Environment]::SetEnvironmentVariable($Matches[1], $Matches[2])
+              "$($Matches[1])=$($Matches[2])" | Add-Content $env:GITHUB_ENV
+            }
+          }
+          if ($env:VCToolsVersion.TrimEnd('\') -ne '14.44.35207' -or $env:WindowsSDKVersion.TrimEnd('\') -ne '10.0.26100.0') { throw 'Native tools differ' }
+      - name: Build pinned CPython
+        run: |
+          python scripts/windows_python.py
+          if ($LASTEXITCODE) { throw 'Source CPython build failed' }
+      - name: Build GEOS, run CTest and replace frozen probe DLLs
+        run: |
+          & services/ocr/build/windows/Python-3.11.17/PCbuild/amd64/python.exe scripts/build-geos-windows.py
+          if ($LASTEXITCODE) { throw 'GEOS build/replacement failed' }
+          'GEOS source CTest and isolated frozen DLL replacement passed. Full installed OCR replacement and source/public-distribution approval remain open.' | Add-Content $env:GITHUB_STEP_SUMMARY
+          Get-Content services/ocr/build/windows-geos-audit/replacement-verification.json | Add-Content $env:GITHUB_STEP_SUMMARY
+      - name: Retain textual source/replacement evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: windows-geos-source-evidence
+          path: |
+            services/ocr/build/windows-geos-audit/*.json
+            services/ocr/build/windows-geos-audit/*.log
+            services/ocr/build/windows-geos-audit/CMakeCache.txt
+            services/ocr/build/windows/python-build.json
+            services/ocr/build/windows/python-build.log
+          retention-days: 14
+          if-no-files-found: error

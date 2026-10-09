@@ -128,6 +128,9 @@ class VersionTests(unittest.TestCase):
             "scripts/windows_python.py",
             "scripts/windows_dictionary_seed.py",
             "scripts/verify-windows-ui.ps1",
+            ".github/workflows/windows-geos-audit.yml",
+            "scripts/build-geos-windows.py",
+            "scripts/geos-windows-probe.py",
             "apps/desktop/src-tauri/tauri.windows-release.conf.json",
         ):
             with self.subTest(path=path), patch.object(ci, "git", return_value=path):

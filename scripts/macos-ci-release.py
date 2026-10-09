@@ -107,6 +107,9 @@ def verify_reuse(root: Path = ROOT) -> None:
         # These inputs are used only by the independent Windows candidate path.
         # Shared OCR code, existing locks and macOS recipes still fail closed.
         ".github/workflows/windows-candidate.yml",
+        ".github/workflows/windows-geos-audit.yml",
+        "scripts/build-geos-windows.py",
+        "scripts/geos-windows-probe.py",
         "apps/desktop/src-tauri/tauri.windows-release.conf.json",
         "scripts/build-windows-prerelease.ps1",
         "scripts/verify-windows-install.ps1",

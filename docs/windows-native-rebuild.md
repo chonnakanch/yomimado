@@ -46,6 +46,23 @@ Do not substitute these builds into the macOS seed or shared development lock.
 
 ## GEOS source and library replacement
 
+Independent execution prepared on 2026-10-09: **Windows GEOS source audit**
+(`.github/workflows/windows-geos-audit.yml`) builds the pinned GEOS source with
+source-built CPython 3.11.17, MSVC 14.44.35207, SDK 10.0.26100.0,
+CMake 3.31.6 and Ninja 1.11.1.4. Original source/tool checksums and build-tool
+licence hashes are in [the input record](windows-geos-build-inputs.json).
+It runs upstream CTest, freezes a disposable Shapely 2.0.7 geometry probe,
+then replaces both GEOS libraries using the unchanged extensions' actual
+import names. Synthetic intersection/union, validity repair, rotated bounds,
+prepared geometry and vectorized operations must match the baseline;
+loaded DLL paths/hashes must identify only the replacement libraries.
+The C wrapper retains the imported hashed name and loads the new `geos.dll`.
+Only textual build/source/replacement diagnostics are exported. Neither
+installer resources nor the current candidate are modified; no binary,
+weights, tag, publication or approval is produced. Hosted execution is pending.
+Even a passing isolated probe does not establish replacement in the full
+installed OCR service or final corresponding-source/licence clearance.
+
 The Windows Shapely wheel reports GEOS **3.11.4**. Its original source is
 `https://download.osgeo.org/geos/geos-3.11.4.tar.bz2`, SHA-256
 `364c88ccfc38aa50cf65c700e7b2ae4706ed103326128493dbf750c78d136d2c`.
