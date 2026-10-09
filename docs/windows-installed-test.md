@@ -4,8 +4,9 @@ Status — 2026-10-09: the replacement's complete automated installed-app suite
 passes in [Windows run `37802965979`](https://github.com/chonnakanch/yomimado/actions/runs/37802965979)
 at `c69eff996f7e85ea88ecb4f0407e05cf5d8ec8b5`. The maintainer reports successful
 installation, detector import availability, OCR, shortcuts, dictionary lookup,
-saving and viewing saved entries on the confirmed Windows 11 x64 PC. The exact
-tested setup SHA-256 is **pending** because the PC is currently unavailable.
+saving and viewing saved entries on the confirmed Windows 11 x64 PC. On
+2026-10-09 the maintainer supplied the tested setup's PowerShell SHA-256;
+it matches the current draft's checksum file and GitHub asset digest exactly.
 The human installer gate remains **OPEN**, and source/native clearance is separate.
 
 Current [owner-only candidate draft](https://github.com/chonnakanch/yomimado/releases/edit/untagged-a171bf97df5f42e7448e):
@@ -15,6 +16,16 @@ successful workflow. Do not use the repeated setup filename to identify a build;
 compare the actual downloaded file hash with this draft's checksums before binding
 manual results. No public version tag or release is created.
 
+Verified setup SHA-256:
+`51b0091103c10c03ecd3748039bd4db0631381fb43885fe7163b889821fba207`.
+The owner-authenticated draft identifies this setup at the exact source commit
+above. Its downloaded `SHA256SUMS.txt` is 667 bytes, SHA-256
+`a6b4f0cb3f631d8dc8a3e3c0dd41ddf64276abbd2952adeb5aa35fee7440f9c0`,
+matching GitHub's checksum-file digest; its setup entry matches both the
+maintainer's report and GitHub's setup digest. The named manual results below
+are now bound to this exact installer. This confirms build identity, not the
+unreported checklist cases or full human installer approval.
+
 The run's diagnostic artifact `windows-preparation-evidence` is 109,829 bytes,
 SHA-256 `7da2a72053ce9522904b07f2100b9c7e7594545e173d8d5504cc48d3eac5119c`,
 as recorded by GitHub's artifact API. This identifies the evidence ZIP, **not**
@@ -22,7 +33,7 @@ the setup EXE; its own checksum file must supply the installer hash.
 
 | Manual case                                                                          | Reported result  | Limit                                                                                                                |
 | ------------------------------------------------------------------------------------ | ---------------- | -------------------------------------------------------------------------------------------------------------------- |
-| Setup and detector-import panel                                                      | Pass reported    | Actual setup hash and import/cancel/wrong-file/relaunch cases need confirmation                                      |
+| Setup and detector-import panel                                                      | Pass reported    | Exact setup hash verified; import/cancel/wrong-file/relaunch cases need confirmation                                 |
 | OCR and shortcuts                                                                    | Pass reported    | Exact shortcut/scanning/scaling matrix not reported                                                                  |
 | Dictionary lookup, saving and viewing                                                | Pass reported    | Kanji, saved sentences and restart/reboot persistence not specifically confirmed                                     |
 | OCR boundary precision                                                               | Observation open | Boxes are close to text, with uneven padding/clipped character edges; no clear global offset in supplied screenshots |
@@ -60,7 +71,7 @@ system, x64-based processor**, Windows 11 Home **25H2**, OS build **26200.9457**
 Intel Core i5-14500 and 32 GB RAM. Previously reported: RTX 4070 Super and one
 2K display; exact resolution and scaling remain unconfirmed. Device/product
 identifiers are intentionally omitted. The PC architecture is confirmed, while
-the replacement has reported functional passes awaiting exact hash binding;
+the replacement has reported functional passes bound to the verified setup hash;
 the prior candidate failed. Record resolution and scaling during retesting.
 GPU acceleration is not used; a CUDA installation is not required.
 

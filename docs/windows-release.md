@@ -15,9 +15,11 @@ with uneven padding and some character edges outside the boxes. No clear global
 position/scale error is apparent; detector boundary precision remains an observation
 for follow-up, not a diagnosed coordinate bug or a passed scaling matrix.
 The manga screenshots are not repository fixtures and are not included in delivery.
-The tested setup SHA-256 has not been confirmed: the PC is currently unavailable.
-Treat the named functional results as reported passes awaiting exact-installer
-binding, not approval of the human installer gate.
+On 2026-10-09 the maintainer's PowerShell setup SHA-256 matches the owner-only
+draft's checksum file and GitHub setup digest:
+`51b0091103c10c03ecd3748039bd4db0631381fb43885fe7163b889821fba207`.
+The named functional results are bound to this exact installer. Remaining PC
+cases and approval of the full human installer gate are still pending.
 
 The System/About report confirms **64-bit operating system, x64-based processor**,
 Windows 11 Home **25H2**, build **26200.9457**, Core i5-14500 and 32 GB RAM.
@@ -98,8 +100,8 @@ desktop reports `NotSigned`; browser/SmartScreen behavior is still untested.
 | 1 — Pinned environment/freeze | Passed in Windows Actions; CPython 3.11.17, pinned CPU wheels, frozen service                                                  | Native distribution review is tracked separately below                                                                                           |
 | 2 — Native licences/sources   | Actual inputs, notices and preferred-source bindings collected                                                                 | Complete Windows vendor/terms review and corresponding-source delivery; resolve Intel MKL/IPP compatibility or run compatible replacement builds |
 | 3 — Private installed app     | Exact NSIS installation, resource/data paths, bundled startup and normal quit cleanup pass                                     | Human startup/console/relaunch/occupied-port cases                                                                                               |
-| 4 — Installed runtime         | Geometry, tokenization, dictionaries, kanji, uncached translation, restart persistence, model exclusion and AMD64 payload pass | Finish native source approval; x64 PC architecture is confirmed, but exact-installer binding and remaining Windows 11 cases remain open          |
-| 5 — Separate PC               | Model import, OCR, shortcuts, dictionary lookup and saved-entry viewing reported working                                       | Bind results to setup hash; investigate boundary precision and complete remaining manual/scaling cases                                           |
+| 4 — Installed runtime         | Geometry, tokenization, dictionaries, kanji, uncached translation, restart persistence, model exclusion and AMD64 payload pass | Finish native source approval; x64 PC architecture and exact setup identity are confirmed, but remaining Windows 11 cases remain open            |
+| 5 — Separate PC               | Model import, OCR, shortcuts, dictionary lookup and saved-entry viewing reported working for the verified setup hash           | Investigate boundary precision and complete remaining manual/scaling cases                                                                       |
 | 6 — Joint release-on-main     | Existing macOS path preserved                                                                                                  | Deliberately gated on Windows source clearance and human exact-installer approval                                                                |
 
 ## Target and scope

@@ -80,9 +80,12 @@ at `c69eff996f7e85ea88ecb4f0407e05cf5d8ec8b5` passes the complete hosted
 build/install/UI/runtime/learning suite and owner-only draft asset hash checks.
 On 2026-10-09 the maintainer reports detector import, OCR, shortcuts, dictionary
 lookup, saving and viewing work. User-local screenshots show close OCR alignment
-with uneven boundary padding; no clear global scale offset is apparent. Exact
-setup hash binding, display settings, boundary follow-up and remaining manual
-cases are pending because the PC is currently unavailable. No manga screenshots
+with uneven boundary padding; no clear global scale offset is apparent. The
+maintainer's 2026-10-09 PowerShell setup hash matches the private draft's checksum
+file and GitHub asset digest:
+`51b0091103c10c03ecd3748039bd4db0631381fb43885fe7163b889821fba207`.
+The named functional reports are bound to that installer; display settings,
+boundary follow-up and remaining manual cases are pending. No manga screenshots
 are added to public fixtures or delivery. The maintainer's System/About report
 confirms a 64-bit OS and x64 processor, Windows 11 Home 25H2 build 26200.9457,
 Core i5-14500 and 32 GB RAM. Exact display resolution/scaling remain unconfirmed.
