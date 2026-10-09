@@ -31,14 +31,15 @@ SHA-256 `7da2a72053ce9522904b07f2100b9c7e7594545e173d8d5504cc48d3eac5119c`,
 as recorded by GitHub's artifact API. This identifies the evidence ZIP, **not**
 the setup EXE; its own checksum file must supply the installer hash.
 
-| Manual case                                                            | Reported result  | Limit                                                                                                                     |
-| ---------------------------------------------------------------------- | ---------------- | ------------------------------------------------------------------------------------------------------------------------- |
-| Setup and detector-import panel                                        | Pass reported    | Exact setup hash verified; import/cancel/wrong-file/relaunch cases need confirmation                                      |
-| OCR and shortcuts                                                      | Pass reported    | Visual alignment recorded at three scales below; exact shortcut/scanning and scale-specific interaction cases remain open |
-| Dictionary lookup, saving and viewing                                  | Pass reported    | Kanji, saved sentences and restart/reboot persistence not specifically confirmed                                          |
-| OCR boundary precision                                                 | Observation open | Boxes are close to text, with uneven padding/clipped character edges; no clear global offset in supplied screenshots      |
-| Browser/SmartScreen, console/cleanup, offline and uncached translation | Untested         | No specific PC result supplied                                                                                            |
-| Upgrade/uninstall, WebView2 prerequisite cases and multiple monitors   | Untested         | No specific PC result supplied; mixed scaling and left-of-primary cases remain untested                                   |
+| Manual case                                                                  | Reported result  | Limit                                                                                                                                         |
+| ---------------------------------------------------------------------------- | ---------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| Setup and detector-import panel                                              | Pass reported    | Exact setup hash verified; import/cancel/wrong-file/relaunch cases need confirmation                                                          |
+| OCR and shortcuts                                                            | Pass reported    | Visual alignment recorded at three scales below; exact shortcut/scanning and scale-specific interaction cases remain open                     |
+| Dictionary lookup, saving and viewing                                        | Pass reported    | Saved words/sentences also persist after app restart with maintainer confirmation; kanji and reboot cases remain open                         |
+| OCR boundary precision                                                       | Observation open | Boxes are close to text, with uneven padding/clipped character edges; no clear global offset in supplied screenshots                          |
+| Offline new-sentence translation and saved-word/sentence restart persistence | Pass reported    | Maintainer confirms the requested disconnect-internet/new-sentence/restart check; offline capture/lookup, cache and reboot are separate cases |
+| Browser/SmartScreen and console/cleanup                                      | Untested         | No specific PC result supplied                                                                                                                |
+| Upgrade/uninstall, WebView2 prerequisite cases and multiple monitors         | Untested         | No specific PC result supplied; mixed scaling and left-of-primary cases remain untested                                                       |
 
 Display evidence — 2026-10-09, for the verified setup above: Windows Settings
 shows **2560 × 1440**, landscape, at **100%** scaling. The maintainer supplied
@@ -56,8 +57,16 @@ are not specifically confirmed. On 2026-10-09 the maintainer additionally
 confirmed that Analyze words, Save sentence, Translate locally and Close respond
 at 100%, 125% and 150%, answering the explicit four-button check. Record button
 responsiveness as a reported pass for this installer at each scale. This does
-not establish a fresh uncached translation or saved-sentence persistence after restart.
+not by itself establish a fresh uncached translation or saved-sentence persistence after restart.
 Selection-drag accuracy and relaunch after each scale change remain unconfirmed.
+
+Offline/restart evidence — 2026-10-09: in response to the explicit instruction
+to disconnect internet, translate a new sentence, restart the app and confirm
+saved words/sentences remain, the maintainer confirms it works. Record reported
+passes for offline uncached sentence translation and saved-word/sentence
+persistence after app restart for the same verified installer. Offline
+capture/dictionary lookup, translation-cache persistence and capture/shortcuts
+after a Windows reboot were not part of that instruction and remain unconfirmed.
 
 | Scale | Visual OCR alignment                         | Region click and popup placement | Popup buttons                 | Remaining coverage                           |
 | ----- | -------------------------------------------- | -------------------------------- | ----------------------------- | -------------------------------------------- |
@@ -139,6 +148,9 @@ observations. Use only synthetic text/images and disposable study entries.
 7. Disconnect internet after WebView2/model setup. Repeat capture, lookup and an
    **uncached** translation. Save a synthetic word/sentence; relaunch, verify
    those entries and cached translation. Reboot, then test shortcuts/capture.
+   Offline new-sentence translation and saved-word/sentence persistence after app
+   restart are maintainer-confirmed. Offline capture/lookup, cached translation
+   persistence and reboot checks remain open.
 8. Remove only test entries. Upgrade/reinstall using disposable test data and
    verify imported model and intended learning data survive. Uninstall and
    record whether data is retained; do not delete unrelated user data. Test

@@ -30,11 +30,13 @@ Visual alignment is recorded at all three scales. Subsequent popup screenshots
 show the same selected region's matching text in a fully on-screen popup at each
 scale: region clicking and placement pass for that tested target. The maintainer
 also confirms Analyze words, Save sentence, Translate locally and Close respond
-at all three scales. This confirms responsiveness, not uncached translation or
-restart persistence. Selection accuracy, hover, other targets/edges and relaunch after
+at all three scales. In a subsequent explicit offline/restart check the maintainer
+confirms that a new sentence translates with internet disconnected and saved
+words/sentences remain after app restart on the same verified installer.
+Selection accuracy, hover, other targets/edges and relaunch after
 each scale change still need specific results.
-Browser/SmartScreen, console behavior, offline use,
-uncached translation, relaunch/reboot persistence, upgrade/uninstall and the
+Browser/SmartScreen, console behavior, offline capture/lookup,
+translation-cache persistence, reboot cases, upgrade/uninstall and the
 remaining scaling interactions and multiple-monitor cases remain untested on that
 PC unless separately reported. Screenshots stay user-local; personal account details
 are omitted from the record.
@@ -273,6 +275,9 @@ first-run isolation; existing-machine results must be labelled accurately.
       Selection, hover, other targets and relaunch remain open.
 - [ ] Offline capture/lookup/uncached translation; saved words/sentences and
       translation cache across relaunch, then shortcut/capture after reboot.
+      Offline uncached sentence translation and saved-word/sentence persistence
+      after app restart are maintainer-confirmed; capture/lookup, cache and reboot
+      cases remain open.
 - [ ] Save/remove only synthetic test entries. Check upgrade/reinstall preserves
       intended learning data and the imported model; document uninstall retention.
 

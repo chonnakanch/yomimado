@@ -89,8 +89,10 @@ The named functional reports are bound to that installer. Settings confirms
 visual alignment at 100%, 125% and 150% without obvious page-wide drift.
 Subsequent popup screenshots show that clicking the same tested region opens
 its matching text fully on-screen at each scale. The maintainer also confirms
-that all four popup buttons respond at 100%/125%/150%; uncached translation and
-restart persistence still need specific results. Selection accuracy, hover,
+that all four popup buttons respond at 100%/125%/150%. In the subsequent explicit
+offline/restart check, a new sentence translates with internet disconnected and
+saved words/sentences remain after app restart with maintainer confirmation.
+Offline capture/lookup, cache persistence and reboot cases remain open. Selection accuracy, hover,
 other targets/edges and scale-change/relaunch cases, boundary
 follow-up and other manual cases remain pending. No manga screenshots
 are added to public fixtures or delivery. The maintainer's System/About report
