@@ -88,8 +88,10 @@ The named functional reports are bound to that installer. Settings confirms
 2560 × 1440, landscape, at 100%; maintainer-labelled OCR screenshots show close
 visual alignment at 100%, 125% and 150% without obvious page-wide drift.
 Subsequent popup screenshots show that clicking the same tested region opens
-its matching text fully on-screen at each scale. Selection accuracy, hover,
-popup buttons, other targets/edges and scale-change/relaunch cases, boundary
+its matching text fully on-screen at each scale. The maintainer also confirms
+that all four popup buttons respond at 100%/125%/150%; uncached translation and
+restart persistence still need specific results. Selection accuracy, hover,
+other targets/edges and scale-change/relaunch cases, boundary
 follow-up and other manual cases remain pending. No manga screenshots
 are added to public fixtures or delivery. The maintainer's System/About report
 confirms a 64-bit OS and x64 processor, Windows 11 Home 25H2 build 26200.9457,
@@ -415,9 +417,9 @@ Do not put coordinate math directly into UI components. Create one transformatio
 
 - [x] macOS Retina (user-tested)
 - [ ] macOS non-Retina if available
-- [ ] Windows 100% (visual alignment, tested region click and on-screen popup observed at 2560 × 1440; remaining interactions pending)
-- [ ] Windows 125% (visual alignment, tested region click and on-screen popup observed; remaining interactions pending)
-- [ ] Windows 150% (visual alignment, tested region click and on-screen popup observed; remaining interactions pending)
+- [ ] Windows 100% (visual alignment, tested region click and on-screen popup observed at 2560 × 1440; popup buttons respond; selection/hover/other targets/relaunch pending)
+- [ ] Windows 125% (visual alignment, tested region click and on-screen popup observed; popup buttons respond; selection/hover/other targets/relaunch pending)
+- [ ] Windows 150% (visual alignment, tested region click and on-screen popup observed; popup buttons respond; selection/hover/other targets/relaunch pending)
 - [x] two-monitor layout with different aspect ratios (user-tested on macOS)
 - [ ] monitor placed to the left of primary display
 

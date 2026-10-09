@@ -28,8 +28,10 @@ screenshot confirms **2560 × 1440**, landscape, at **100%** scaling. OCR
 screenshots labelled 100%, 125% and 150% show no obvious page-wide drift.
 Visual alignment is recorded at all three scales. Subsequent popup screenshots
 show the same selected region's matching text in a fully on-screen popup at each
-scale: region clicking and placement pass for that tested target. Selection
-accuracy, hover, popup button responses, other targets/edges and relaunch after
+scale: region clicking and placement pass for that tested target. The maintainer
+also confirms Analyze words, Save sentence, Translate locally and Close respond
+at all three scales. This confirms responsiveness, not uncached translation or
+restart persistence. Selection accuracy, hover, other targets/edges and relaunch after
 each scale change still need specific results.
 Browser/SmartScreen, console behavior, offline use,
 uncached translation, relaunch/reboot persistence, upgrade/uninstall and the
@@ -267,7 +269,8 @@ first-run isolation; existing-machine results must be labelled accurately.
       available. Specify missing hardware cases instead of claiming coverage.
       Visual OCR alignment is observed at all three scales on the 2560 × 1440
       display. Clicking the tested region opens its matching popup fully on-screen
-      at each scale; selection, hover, buttons, other targets and relaunch remain open.
+      at each scale, and all four popup buttons respond with maintainer confirmation.
+      Selection, hover, other targets and relaunch remain open.
 - [ ] Offline capture/lookup/uncached translation; saved words/sentences and
       translation cache across relaunch, then shortcut/capture after reboot.
 - [ ] Save/remove only synthetic test entries. Check upgrade/reinstall preserves

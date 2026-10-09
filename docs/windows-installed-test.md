@@ -52,15 +52,18 @@ The maintainer then supplied three popup screenshots labelled 100%, 125% and
 text in a fully on-screen popup. Record a scoped pass for opening the matching
 popup from that region and keeping it on-screen at each scale. This tests one
 region near the lower-right of the page; other targets/edges and hover behavior
-are not specifically confirmed. The visible Analyze words, Save sentence,
-Translate locally and Close controls do not by themselves prove button responses.
+are not specifically confirmed. On 2026-10-09 the maintainer additionally
+confirmed that Analyze words, Save sentence, Translate locally and Close respond
+at 100%, 125% and 150%, answering the explicit four-button check. Record button
+responsiveness as a reported pass for this installer at each scale. This does
+not establish a fresh uncached translation or saved-sentence persistence after restart.
 Selection-drag accuracy and relaunch after each scale change remain unconfirmed.
 
-| Scale | Visual OCR alignment                         | Region click and popup placement | Remaining coverage                                    |
-| ----- | -------------------------------------------- | -------------------------------- | ----------------------------------------------------- |
-| 100%  | Observed; Settings confirms scale/resolution | Matching text; fully on-screen   | Selection, hover, buttons, other targets and relaunch |
-| 125%  | Observed; scale reported by maintainer       | Matching text; fully on-screen   | Selection, hover, buttons, other targets and relaunch |
-| 150%  | Observed; scale reported by maintainer       | Matching text; fully on-screen   | Selection, hover, buttons, other targets and relaunch |
+| Scale | Visual OCR alignment                         | Region click and popup placement | Popup buttons                 | Remaining coverage                           |
+| ----- | -------------------------------------------- | -------------------------------- | ----------------------------- | -------------------------------------------- |
+| 100%  | Observed; Settings confirms scale/resolution | Matching text; fully on-screen   | Respond; maintainer-confirmed | Selection, hover, other targets and relaunch |
+| 125%  | Observed; scale reported by maintainer       | Matching text; fully on-screen   | Respond; maintainer-confirmed | Selection, hover, other targets and relaunch |
+| 150%  | Observed; scale reported by maintainer       | Matching text; fully on-screen   | Respond; maintainer-confirmed | Selection, hover, other targets and relaunch |
 
 The supplied manga and Settings screenshots remain user-local evidence and are not copied
 into the repository or source delivery. They support visual capture/overlay/popup
@@ -127,8 +130,9 @@ observations. Use only synthetic text/images and disposable study entries.
 5. Try page scan, a saved scan area and Ctrl+Shift+S. Verify overlay visibility,
    focus, cancellation, and no leftover full-screen input-blocking selector.
 6. Visual OCR alignment, clicking the tested region and fully on-screen popup
-   placement are recorded at 100%, 125% and 150% display scaling. Complete
-   selection-drag accuracy, hover, popup buttons and additional targets/edges at each scale.
+   placement are recorded at 100%, 125% and 150% display scaling; the maintainer
+   confirms all four popup buttons respond at each scale. Complete selection-drag
+   accuracy, hover and additional targets/edges at each scale.
    Relaunch after changing scaling. If available test two monitors with different
    scaling, a monitor left of primary and layout changes. Otherwise mark those
    hardware cases untested; one 2K monitor does not cover them.
