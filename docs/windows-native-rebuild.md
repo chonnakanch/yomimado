@@ -93,7 +93,14 @@ requested `CMAKE_MSVC_RUNTIME_LIBRARY`. This run does not validate the proposed
 DLL compiler-runtime linkage. The recipe now explicitly disables static CRT,
 retains and checks all generated C/C++ compile commands for Release `/MD`
 (rejecting `/MT` and debug runtime flags), and requires a VC runtime PE import.
-The corrected linkage rerun remains pending. Reports stay private under
+Run `37936508507` at `1ea0b33b932b5ef1f8beb7c8e13758cb9b3f699b`
+reaches the corrected configuration but rejects CMake's actual `-MD` spelling
+before compilation. Its evidence ZIP (ID `11618732565`, 58,320 bytes) matches
+GitHub SHA-256 `9d9401647e1de2a59d8ed3f1798748ac6884134194fa3c300dc0644019f5d0c0`.
+All 648 retained C/C++ commands use Release DLL runtime. The verifier now accepts
+both MSVC flag prefixes and still rejects static/debug forms with either prefix;
+compilation, PE imports and frozen inference still require the corrected rerun.
+Reports stay private under
 `services/ocr/build/windows-opencv-run-37934320710/`. No installer is modified.
 Local verification: 131 release-script tests pass, including rejection of unsafe
 source extraction, enabled IPP/backends, wrong loaded PYD paths/hashes and wrong

@@ -157,8 +157,10 @@ def verify_compile_commands(commands: list[dict]) -> int:
         raise ValueError("Missing actual C/C++ compiler commands")
     for item in compiled:
         command = item["command"]
-        if not re.search(r"(?:^|\s)/MD(?:\s|$)", command) or re.search(
-            r"(?:^|\s)/(?:MTd?|MDd)(?:\s|$)", command
+        # CMake/Ninja emits -MD for this MSVC toolchain; cl accepts both
+        # prefixes. Reject static/debug forms regardless of their prefix.
+        if not re.search(r"(?:^|\s)[/-]MD(?:\s|$)", command) or re.search(
+            r"(?:^|\s)[/-](?:MTd?|MDd)(?:\s|$)", command
         ):
             raise ValueError(
                 "OpenCV/vendor compiler command does not use Release DLL runtime: "
