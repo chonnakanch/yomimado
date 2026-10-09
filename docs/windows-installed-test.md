@@ -45,15 +45,22 @@ shows **2560 × 1440**, landscape, at **100%** scaling. The maintainer supplied
 OCR screenshots labelled **100%**, **125%** and **150%** on that display.
 At each scale, regions remain near the text across the page without an obvious
 page-wide offset or accumulating drift. Record this as visual alignment evidence
-at all three scales, with uneven detector boundaries still observed. Exact
-selection-drag accuracy, click/hover targets, popup placement and relaunch after
-each scale change are not specifically confirmed by these screenshots.
+at all three scales, with uneven detector boundaries still observed.
 
-| Scale | Visual OCR alignment                         | Interaction/relaunch coverage |
-| ----- | -------------------------------------------- | ----------------------------- |
-| 100%  | Observed; Settings confirms scale/resolution | Pending specific result       |
-| 125%  | Observed; scale reported by maintainer       | Pending specific result       |
-| 150%  | Observed; scale reported by maintainer       | Pending specific result       |
+The maintainer then supplied three popup screenshots labelled 100%, 125% and
+150% in response to the region-click check. Each shows the same selected region's
+text in a fully on-screen popup. Record a scoped pass for opening the matching
+popup from that region and keeping it on-screen at each scale. This tests one
+region near the lower-right of the page; other targets/edges and hover behavior
+are not specifically confirmed. The visible Analyze words, Save sentence,
+Translate locally and Close controls do not by themselves prove button responses.
+Selection-drag accuracy and relaunch after each scale change remain unconfirmed.
+
+| Scale | Visual OCR alignment                         | Region click and popup placement | Remaining coverage                                    |
+| ----- | -------------------------------------------- | -------------------------------- | ----------------------------------------------------- |
+| 100%  | Observed; Settings confirms scale/resolution | Matching text; fully on-screen   | Selection, hover, buttons, other targets and relaunch |
+| 125%  | Observed; scale reported by maintainer       | Matching text; fully on-screen   | Selection, hover, buttons, other targets and relaunch |
+| 150%  | Observed; scale reported by maintainer       | Matching text; fully on-screen   | Selection, hover, buttons, other targets and relaunch |
 
 The supplied manga and Settings screenshots remain user-local evidence and are not copied
 into the repository or source delivery. They support visual capture/overlay/popup
@@ -119,8 +126,9 @@ observations. Use only synthetic text/images and disposable study entries.
    sentence translation explicitly; a cached result alone is insufficient.
 5. Try page scan, a saved scan area and Ctrl+Shift+S. Verify overlay visibility,
    focus, cancellation, and no leftover full-screen input-blocking selector.
-6. Visual OCR alignment is recorded at 100%, 125% and 150% display scaling.
-   Complete selection-drag accuracy, click/hover and popup-placement checks at each scale.
+6. Visual OCR alignment, clicking the tested region and fully on-screen popup
+   placement are recorded at 100%, 125% and 150% display scaling. Complete
+   selection-drag accuracy, hover, popup buttons and additional targets/edges at each scale.
    Relaunch after changing scaling. If available test two monitors with different
    scaling, a monitor left of primary and layout changes. Otherwise mark those
    hardware cases untested; one 2K monitor does not cover them.

@@ -26,8 +26,11 @@ Windows 11 Home **25H2**, build **26200.9457**, Core i5-14500 and 32 GB RAM.
 Previously reported: RTX 4070 Super and one monitor. The 2026-10-09 Settings
 screenshot confirms **2560 × 1440**, landscape, at **100%** scaling. OCR
 screenshots labelled 100%, 125% and 150% show no obvious page-wide drift.
-Visual alignment is recorded at all three scales; selection accuracy, hit-testing,
-popup placement and relaunch after each scale change still need specific results.
+Visual alignment is recorded at all three scales. Subsequent popup screenshots
+show the same selected region's matching text in a fully on-screen popup at each
+scale: region clicking and placement pass for that tested target. Selection
+accuracy, hover, popup button responses, other targets/edges and relaunch after
+each scale change still need specific results.
 Browser/SmartScreen, console behavior, offline use,
 uncached translation, relaunch/reboot persistence, upgrade/uninstall and the
 remaining scaling interactions and multiple-monitor cases remain untested on that
@@ -263,7 +266,8 @@ first-run isolation; existing-machine results must be labelled accurately.
       scaling, one left of the primary monitor, plus layout changes where
       available. Specify missing hardware cases instead of claiming coverage.
       Visual OCR alignment is observed at all three scales on the 2560 × 1440
-      display; selection, hit-testing, popup and scale-change/relaunch cases remain open.
+      display. Clicking the tested region opens its matching popup fully on-screen
+      at each scale; selection, hover, buttons, other targets and relaunch remain open.
 - [ ] Offline capture/lookup/uncached translation; saved words/sentences and
       translation cache across relaunch, then shortcut/capture after reboot.
 - [ ] Save/remove only synthetic test entries. Check upgrade/reinstall preserves
