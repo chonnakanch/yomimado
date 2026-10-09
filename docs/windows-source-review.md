@@ -88,8 +88,12 @@ VC redistributables remain app-local and need separate exact redistribution
 terms/provenance; removing OS DLLs does not approve those binaries.
 
 The [native rebuild worksheet](windows-native-rebuild.md) gives exact source
-revisions, proposed Intel-free builds and GEOS replacement requirements. Those
-Intel-free builds remain unrun; the worksheet conveys no approval. The separate
+revisions, independent Intel-free builds and GEOS replacement requirements.
+The new **Windows Torch source audit** pins original CPU source gitlinks, the
+previously missing Eigen 3.4.0 archive, full notice hashes and build tools, then
+checks native CPU tensors and actual PE/loading evidence. Its hosted execution,
+matched torchvision and full frozen/installed recognition remain unverified;
+the worksheet conveys no approval. The separate
 **Windows OpenCV source audit** now prepares a pinned static PYD without IPP,
 then checks synthetic geometry, actual CPU detector inference and a frozen
 probe's loaded-native paths/hashes. Original source/vendor notice pins are in

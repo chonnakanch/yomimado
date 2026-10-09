@@ -60,7 +60,10 @@ installed-file comparison, with original DLL restoration. It remains unverified
 until its hosted run passes. The first installed extension run cannot see the
 private draft with its read-only release listing; a direct fixed-tag access
 preflight is prepared without widening token permissions. See the native worksheet
-for the protected-input requirement if that request is also denied.
+for the protected-input requirement. Run `37938465690` also denies the direct
+request, so the installed GEOS extension has a concrete external input-access
+blocker. Independent Torch source-build preparation is now executable in
+**Windows Torch source audit**; it does not alter the tested setup.
 Final source delivery and Intel-free Torch/OpenCV builds remain
 separate work; the human gate is not approved by this audit.
 

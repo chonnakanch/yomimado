@@ -30,6 +30,35 @@ torchvision extension against this Torch; the original wheel's `_C.pyd`
 must not be presumed ABI compatible. Preserve its preferred sources and
 vendor graph independently.
 
+Prepared on 2026-10-09: **Windows Torch source audit**
+(`.github/workflows/windows-torch-audit.yml`) performs an independent native
+CPU build with the pinned Windows CPython/MSVC/SDK and CMake/Ninja tools.
+[Its input record](windows-torch-build-inputs.json) binds the original PyTorch
+commit and ten selected CPU source repositories to the parent's exact gitlinks,
+with hashes for 23 original tracked licence/notice files. Source checkouts do not
+use floating branches or initialize unused GPU/mobile dependencies. The build
+checks the accepted Eigen/CPU CMake cache and generated compiler commands before
+compilation; Windows upstream mimalloc remains a recorded source dependency.
+
+The previously missing Eigen input is upstream's pinned **3.4.0**, exact commit
+`3147391d946bb4b6c68edd901f2add6ac1f31f8c`. Its original GitLab archive is
+downloaded and verified locally, SHA-256
+`0c8c490764f9c2a793133491adca0cd073b73e0bde965c68cbe58d91b5ed4261`.
+The record preserves eight full original licence files, including MPL, BSD,
+Apache, LGPL and GPL texts. Upstream describes MPL-only header selection through
+`EIGEN_MPL2_ONLY`; the recipe requires that guard in actual compiler commands.
+This does not approve every Eigen file for binary inclusion or remove notice
+requirements. The native build uses unchanged preferred sources and upstream
+packaging after CMake installation, with separately pinned build tools.
+
+The proposed probe verifies CPU matrix multiplication, convolution and attention,
+all Torch PE architecture/imports, disabled MKL/OpenMP/oneDNN/CUDA, and the actual
+loaded paths/hashes of `torch_cpu.dll`, `torch_python.dll` and `c10.dll` from the
+source-built wheel. Only textual inputs/commands/logs/notices/results leave the
+runner. This build is unverified until hosted execution succeeds; matching
+torchvision, model inference, frozen service and exact installed OCR replacement
+remain separate gates. No tested installer or macOS runtime is changed.
+
 Build OpenCV from the pinned `opencv-python-4.11.0.86.tar.gz` input
 (`03d60ccae62304860d232272e4a4fda93c39d595780cb40b161b310244b736a4`)
 with IPP/IPP IW and FFmpeg disabled. Limit modules to those required by the
@@ -180,8 +209,13 @@ token's release listing. No installer is downloaded or replaced in that run.
 GitHub's [release API documentation](https://docs.github.com/en/rest/releases/releases#list-releases)
 requires push access to include drafts in listings. The audit now checks the
 fixed draft tag endpoint before spending time rebuilding, retaining `contents: read`.
-If that request is also inaccessible, protected owner-authorized input access is
-required; do not publish the draft or add an unprotected write token to this audit.
+Run `37938465690` at `f252ed7d1af767866af54a18a78e08c1b5e31d00`
+confirms the direct draft-tag request is also inaccessible. It stops before any
+source rebuild or installer download. This is a concrete external input-access
+blocker: protected owner-authorized access is required; do not publish the draft
+or add an unprotected write token to this audit. An owner can arrange a dedicated
+reviewer-protected input job/environment for this exact private asset, then rerun
+the audit; the job must retain the fixed setup/source/provenance checks above.
 Local guard tests reject changed
 application files, wrong candidate/gates, missing learning/native evidence and
 credential-bearing or unexpected asset redirects; 132 release-script tests pass.

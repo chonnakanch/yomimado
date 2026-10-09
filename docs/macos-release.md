@@ -403,8 +403,9 @@ installed-app confirmation remain pending the first merge.
 token cannot see its existing owner-only draft in the release listing. The macOS
 build uses the fixed seed-tag endpoint instead and has not yet executed on
 GitHub; its ability to download draft assets with the read-only token is therefore
-unverified. A Windows direct-tag preflight is being checked before choosing any
-protected input-access change. Preserve the private seed and protected publisher;
+unverified. The Windows direct-tag preflight also fails in run `37938465690`;
+review protected seed input access before the first main release execution.
+Preserve the private seed and protected publisher;
 do not publish the seed or widen build-job permissions to bypass this check.
 
 The hobby target uses GitHub's job-scoped token and no Apple keys, passwords or
