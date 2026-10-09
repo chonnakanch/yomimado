@@ -117,6 +117,8 @@ def verify_reuse(root: Path = ROOT) -> None:
         ".github/workflows/windows-torch-audit.yml",
         "scripts/build-torch-windows.py",
         "scripts/torch-windows-probe.py",
+        "scripts/build-torchvision-windows.py",
+        "scripts/torchvision-windows-probe.py",
         "apps/desktop/src-tauri/tauri.windows-release.conf.json",
         "scripts/build-windows-prerelease.ps1",
         "scripts/verify-windows-install.ps1",

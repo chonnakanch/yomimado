@@ -55,8 +55,8 @@ The proposed probe verifies CPU matrix multiplication, convolution and attention
 all Torch PE architecture/imports, disabled MKL/OpenMP/oneDNN/CUDA, and the actual
 loaded paths/hashes of `torch_cpu.dll`, `torch_python.dll` and `c10.dll` from the
 source-built wheel. Only textual inputs/commands/logs/notices/results leave the
-runner. This build is unverified until hosted execution succeeds; matching
-torchvision, model inference, frozen service and exact installed OCR replacement
+runner. This build is unverified until hosted execution succeeds; model inference,
+frozen service and exact installed OCR replacement
 remain separate gates. No tested installer or macOS runtime is changed.
 First [run `37939801320`](https://github.com/chonnakanch/yomimado/actions/runs/37939801320)
 at `61143751c5c79238acfcb57df15c37f9cc8492bc` builds pinned CPython,
@@ -80,6 +80,26 @@ These existing upstream header dependencies are retained without adding product
 telemetry or a new feature. Upstream wheel-stub compilation now also preserves
 the selected MSVC/SDK and receives the original Python headers/import-library
 paths. Compilation and CPU probe results remain unverified until a full run passes.
+
+Run `37941928033` at `64ab5de2d18f77c27e324c95ac9c7a5ef84d593f`
+stops at OpenTelemetry notice verification before configuration. Its `text`
+attributes let Windows' native line ending alter the checkout despite
+`core.autocrlf=false`. Checkout now also selects `core.eol=lf`; strict original
+notice hashes remain required. Downloaded textual evidence (ID `11623090010`,
+63,583 bytes) matches GitHub SHA-256
+`a8eeb9259e6a8aa996035a06b4368e5a4336aace77eeddaf52ce23b2f7e8327e`.
+
+The same isolated audit now prepares matched **torchvision 0.23.0+cpu** from
+preferred commit `824e8c8726b65fd9d5abdc9702f81c2b0c4c0dc8`.
+[Its input record](windows-torchvision-build-inputs.json) binds original setup and
+BSD licence bytes. A recorded minimal patch removes unused image/video extension
+builders while retaining CPU `_C` operators and Pillow-backed Python transforms.
+The runner preserves that exact patch, original full licence, pinned Pillow
+notices and wheel hash. The probe requires the expected Torch/vision source
+identities, CPU NMS selection, synthetic resize/tensor/normalization output,
+AMD64 imports and the actual loaded `_C.pyd` hash. Existing binary wheels are
+not assumed compatible with the new Torch. These source-built probes and the
+full frozen OCR/installer remain unverified until hosted execution succeeds.
 
 Build OpenCV from the pinned `opencv-python-4.11.0.86.tar.gz` input
 (`03d60ccae62304860d232272e4a4fda93c39d595780cb40b161b310244b736a4`)

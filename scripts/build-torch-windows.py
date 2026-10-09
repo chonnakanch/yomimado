@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import hashlib
+import importlib.util
 import os
 import platform
 import re
@@ -142,6 +143,8 @@ def main() -> None:
                 str(directory),
                 "-c",
                 "core.longpaths=true",
+                "-c",
+                "core.eol=lf",
                 "checkout",
                 "--detach",
                 "FETCH_HEAD",
@@ -166,7 +169,9 @@ def main() -> None:
                 raise ValueError("Torch parent gitlink differs from selected source")
         for name, sha in repo["noticeHashes"].items():
             if digest(directory / name) != sha:
-                raise ValueError("Preferred source notice differs")
+                raise ValueError(
+                    "Preferred source notice differs: " + repo["path"] + "/" + name
+                )
             target = notices / (repo["path"] or "pytorch") / name
             target.parent.mkdir(parents=True, exist_ok=True)
             shutil.copy2(directory / name, target)
@@ -339,16 +344,23 @@ def main() -> None:
     report = read_json(BUILD / "native-probe.json")
     if report.get("passed") is not True:
         raise ValueError("CPU Torch probe did not pass")
+    spec = importlib.util.spec_from_file_location(
+        "torchvision_windows_build", ROOT / "scripts/build-torchvision-windows.py"
+    )
+    vision = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(vision)
+    vision_report = vision.build(BUILD, python, env, run)
     write_json(
         BUILD / "build-verification.json",
         {
             "passed": True,
-            "scope": "Independent source-built CPU Torch wheel and tensor probe",
+            "scope": "Independent source-built CPU Torch/torchvision wheels and probes",
             "auditRevision": os.environ["GITHUB_SHA"],
             "recipeSha256": digest(Path(__file__)),
             "wheelSha256": digest(wheel),
             "cmakeCacheSha256": digest(BUILD / "CMakeCache.txt"),
             "nativeProbe": report,
+            "torchvision": vision_report,
             "sourceCoverageApproved": False,
             "installedRuntimeVerified": False,
             "publicDistributionApproved": False,

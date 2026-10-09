@@ -8,8 +8,12 @@ name: Windows Torch source audit
       - .github/workflows/windows-torch-audit.yml
       - scripts/build-torch-windows.py
       - scripts/torch-windows-probe.py
+      - scripts/build-torchvision-windows.py
+      - scripts/torchvision-windows-probe.py
       - scripts/tests/test_torch_windows.py
+      - scripts/tests/test_torchvision_windows.py
       - docs/windows-torch-build-inputs.json
+      - docs/windows-torchvision-build-inputs.json
   workflow_dispatch:
 
 permissions:
@@ -55,11 +59,11 @@ jobs:
         run: |
           python scripts/windows_python.py
           if ($LASTEXITCODE) { throw 'Source CPython build failed' }
-      - name: Build Eigen CPU Torch and verify native tensor operations
+      - name: Build Eigen CPU Torch and matched torchvision operators
         run: |
           & services/ocr/build/windows/Python-3.11.17/PCbuild/amd64/python.exe scripts/build-torch-windows.py
           if ($LASTEXITCODE) { throw 'CPU Torch source build/probe failed' }
-          'Source-built Eigen CPU Torch probe passed. Matched torchvision, full frozen OCR and source/public approval remain open.' | Add-Content $env:GITHUB_STEP_SUMMARY
+          'Source-built Eigen CPU Torch/torchvision probes passed. Full frozen OCR and source/public approval remain open.' | Add-Content $env:GITHUB_STEP_SUMMARY
           Get-Content services/ocr/build/windows-torch-audit/build-verification.json | Add-Content $env:GITHUB_STEP_SUMMARY
       - name: Retain textual source/native evidence
         if: always()
@@ -69,9 +73,11 @@ jobs:
           path: |
             services/ocr/build/windows-torch-audit/*.json
             services/ocr/build/windows-torch-audit/*.log
+            services/ocr/build/windows-torch-audit/*.patch
             services/ocr/build/windows-torch-audit/CMakeCache.txt
             services/ocr/build/windows-torch-audit/notices/
             services/ocr/build/windows/python-build.json
             services/ocr/build/windows/python-build.log
           retention-days: 14
           if-no-files-found: error
+          include-hidden-files: true # Retain copied .ci notices; no source checkout is uploaded.

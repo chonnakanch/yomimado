@@ -1,0 +1,10 @@
+{
+  "scope": "Matched Windows CPU torchvision extension source build; not installer or source approval",
+  "url": "https://github.com/pytorch/vision.git",
+  "revision": "824e8c8726b65fd9d5abdc9702f81c2b0c4c0dc8",
+  "setupSha256": "cf79b7ff8b49dcdb42f18081424571d684f4205f25ee6a48b0ff8e175e03c7d2",
+  "noticeHashes": {
+    "LICENSE": "6502f676851cfe25f8af75531dfb32375b7325b73c37e7b43741fa422893e71d"
+  },
+  "publicDistributionApproved": false
+}

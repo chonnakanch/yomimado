@@ -110,8 +110,11 @@ Windows audit workflow exports textual evidence only. Run `37934320710` passes
 source/native/frozen checks; local archive inspection verifies exact notice,
 recipe/cache/probe hashes and matching geometry/detector results. It also reveals
 the static CRT default remained enabled despite the requested DLL runtime.
-Explicit disabling and actual generated compiler-command/PE-import checks are
-prepared; corrected runtime-linkage execution remains pending.
+Corrected run `37938195277` passes with static CRT disabled: all 648 generated
+commands select the release DLL runtime, AMD64 imports use VC/UCRT and
+native/frozen geometry and detector outputs match. Downloaded textual evidence
+and original notices are verified independently; complete installed replacement
+and source/public approval remain open.
 The tested installer, macOS seed and publication gates remain unchanged.
 
 Windows source/native and installer gates remain open. Add joint release-on-main
