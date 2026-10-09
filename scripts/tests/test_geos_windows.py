@@ -14,9 +14,20 @@ spec = importlib.util.spec_from_file_location(
 )
 audit = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(audit)
+probe_spec = importlib.util.spec_from_file_location(
+    "geos_probe", Path(__file__).parents[1] / "geos-windows-probe.py"
+)
+probe = importlib.util.module_from_spec(probe_spec)
+probe_spec.loader.exec_module(probe)
 
 
 class GeosWindowsTests(unittest.TestCase):
+    def test_module_collector_excludes_its_own_executable(self):
+        for name in ("geos.dll", "geos_c-hash.dll", "GEOS.DLL"):
+            self.assertTrue(probe.is_geos_dll(Path(name)))
+        for name in ("geos-probe.exe", "geos-helper.pyd", "msvcp140.dll"):
+            self.assertFalse(probe.is_geos_dll(Path(name)))
+
     def report(self, paths):
         return {
             "passed": True,

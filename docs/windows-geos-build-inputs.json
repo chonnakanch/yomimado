@@ -3,7 +3,13 @@
   "source": {
     "filename": "geos-3.11.4.tar.bz2",
     "url": "https://download.osgeo.org/geos/geos-3.11.4.tar.bz2",
-    "sha256": "364c88ccfc38aa50cf65c700e7b2ae4706ed103326128493dbf750c78d136d2c"
+    "sha256": "364c88ccfc38aa50cf65c700e7b2ae4706ed103326128493dbf750c78d136d2c",
+    "licenseFiles": {
+      "geos-3.11.4/COPYING": "dc626520dcd53a22f727af3ee42c770e56c97a64fe3adb063799d8ab032fe551",
+      "geos-3.11.4/src/deps/ryu/LICENSE": "087edee322a9d2e527453ddc6731ccb4f015a36e55864b30715934f32a4879c1",
+      "geos-3.11.4/src/deps/ryu/LICENSE-Boost": "c9bff75738922193e67fa726fa225535870d2aa1059f91452c411736284ad566",
+      "geos-3.11.4/src/deps/ryu/LICENSE-Apache2": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4"
+    }
   },
   "tools": [
     {

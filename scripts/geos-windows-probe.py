@@ -11,6 +11,10 @@ from ctypes import wintypes
 from pathlib import Path
 
 
+def is_geos_dll(path: Path) -> bool:
+    return path.suffix.lower() == ".dll" and path.name.lower().startswith("geos")
+
+
 def geos_modules() -> list[dict]:
     kernel = ctypes.WinDLL("kernel32", use_last_error=True)
     kernel.GetCurrentProcess.restype = wintypes.HANDLE
@@ -39,7 +43,7 @@ def geos_modules() -> list[dict]:
         if not kernel.K32GetModuleFileNameExW(process, handle, name, len(name)):
             raise ctypes.WinError(ctypes.get_last_error())
         path = Path(name.value).resolve()
-        if path.name.lower().startswith("geos"):
+        if is_geos_dll(path):
             records.append(
                 {
                     "path": str(path),

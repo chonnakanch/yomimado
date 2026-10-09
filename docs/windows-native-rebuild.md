@@ -63,6 +63,15 @@ weights, tag, publication or approval is produced. Hosted execution is pending.
 Even a passing isolated probe does not establish replacement in the full
 installed OCR service or final corresponding-source/licence clearance.
 
+First [audit run `37876379469`](https://github.com/chonnakanch/yomimado/actions/runs/37876379469)
+at `ac10c48f41a8546d0dfe1c09a83bfd875ff81ffa` builds CPython and GEOS,
+passes upstream CTest and freezes the probe. It fails the baseline loaded-module
+assertion: the collector also selects its own `geos-probe.exe`, whose name starts
+with `geos`. The collector is corrected to accept DLLs only, with a regression
+test. Actual rebuilt-library replacement is still unverified; the complete
+rerun must pass before recording that result. Original source and Ryu licence
+hashes are additionally pinned and checked without changing the GEOS source.
+
 The Windows Shapely wheel reports GEOS **3.11.4**. Its original source is
 `https://download.osgeo.org/geos/geos-3.11.4.tar.bz2`, SHA-256
 `364c88ccfc38aa50cf65c700e7b2ae4706ed103326128493dbf750c78d136d2c`.

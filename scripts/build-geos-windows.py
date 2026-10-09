@@ -141,6 +141,13 @@ def main() -> None:
     inputs.mkdir(exist_ok=True)
     archive = inputs / record["source"]["filename"]
     fetch(record["source"], archive)
+    with tarfile.open(archive) as original:
+        for name, expected in record["source"]["licenseFiles"].items():
+            if (
+                hashlib.sha256(original.extractfile(name).read()).hexdigest()
+                != expected
+            ):
+                raise ValueError("GEOS/vendor licence checksum mismatch")
     for item in [*record["tools"], *packages]:
         path = inputs / item["filename"]
         fetch(item, path)
@@ -244,13 +251,12 @@ def replace_test(baseline: Path, installed: Path) -> None:
     (shapely_input,) = [p for p in lock["packages"] if p["name"] == "shapely"]
     with zipfile.ZipFile(BUILD / "inputs" / shapely_input["filename"]) as wheel:
         for name in wheel.namelist():
-            if name.endswith(".pyd") or name.startswith("shapely.libs/geos"):
-                if name.endswith((".pyd", ".dll")):
-                    path = baseline / "_internal" / name
-                    if digest(path) != hashlib.sha256(wheel.read(name)).hexdigest():
-                        raise ValueError(
-                            "Frozen probe changed pinned Shapely native bytes"
-                        )
+            if name.endswith(".pyd") or (
+                name.startswith("shapely.libs/geos") and name.endswith(".dll")
+            ):
+                path = baseline / "_internal" / name
+                if digest(path) != hashlib.sha256(wheel.read(name)).hexdigest():
+                    raise ValueError("Frozen probe changed pinned Shapely native bytes")
     replacement = BUILD / "replacement/geos-probe"
     if replacement.parent.exists():
         shutil.rmtree(replacement.parent)
