@@ -1,34 +1,47 @@
 # Windows candidate test record
 
-Status — 2026-10-08: the maintainer reports that setup completes, but launching
-opens a blank terminal, scan buttons do nothing and a capture shortcut freezes
-the app. The supplied screenshot shows no detector-import panel. The human
-installer gate is **FAILED / open**. The installed setup hash has not yet been
-confirmed on the PC. The maintainer confirms an x64 OS/processor and full Windows
-build below. Other checklist cases remain
-untested. Never
-approve this record from automated CI alone. Each rebuilt setup needs its own confirmation.
+Status — 2026-10-09: the replacement's complete automated installed-app suite
+passes in [Windows run `37802965979`](https://github.com/chonnakanch/yomimado/actions/runs/37802965979)
+at `c69eff996f7e85ea88ecb4f0407e05cf5d8ec8b5`. The maintainer reports successful
+installation, detector import availability, OCR, shortcuts, dictionary lookup,
+saving and viewing saved entries on the confirmed Windows 11 x64 PC. The exact
+tested setup SHA-256 is **pending** because the PC is currently unavailable.
+The human installer gate remains **OPEN**, and source/native clearance is separate.
 
-Candidate: `79065df7ba34a3aaa4ddb3a1ebb30e164405742a`, successful
-[Windows run `37721943728`](https://github.com/chonnakanch/yomimado/actions/runs/37721943728).
-Download from the [owner-only draft](https://github.com/chonnakanch/yomimado/releases/tag/untagged-e4524b4cbafe468fe44d)
-while signed in with repository release access. Setup:
-`YomiMado_0.1.0_x64-setup.exe` (893 MB), SHA-256:
-`01a28c0f4964b2df1733814670b3024d8aa18c525b544965a50189ec25ecab0a`.
-`SHA256SUMS.txt` in the same draft covers all seven other assets; its own
-GitHub digest is `ac6a442053f710ee3ca146f5627dea7aaed62c0348613c5c79f059133ccfb72a`.
-This candidate is retained for diagnosis and must not be approved or published.
-Its source omits the Windows GUI subsystem, enables model setup only for macOS,
-and creates capture windows synchronously from IPC/shortcut handlers. A
-replacement fixes those paths and adds installed Windows UI regression checks;
-its new installer hash needs fresh human confirmation.
-It also replaces the blocking startup-error dialog with an asynchronous dialog;
-CI checks occupied-port acknowledgement and the original app's responsiveness.
-The installed desktop reports `NotSigned`. Earlier CI passed installed startup/quit,
-CPU/native loading without Python/CUDA on PATH, OCR geometry, tokenization,
-dictionary/kanji, uncached translation and persistence after restart.
-Those Windows Server 2022 checks do not pass any Windows 11 hardware,
-browser/SmartScreen, capture/scaling or human installer case below.
+Current [owner-only candidate draft](https://github.com/chonnakanch/yomimado/releases/edit/untagged-a171bf97df5f42e7448e):
+`YomiMado_0.1.0_x64-setup.exe`, matching `SHA256SUMS.txt` and
+`windows-candidate.json`. All eight uploaded asset digests were verified by the
+successful workflow. Do not use the repeated setup filename to identify a build;
+compare the actual downloaded file hash with this draft's checksums before binding
+manual results. No public version tag or release is created.
+
+The run's diagnostic artifact `windows-preparation-evidence` is 109,829 bytes,
+SHA-256 `7da2a72053ce9522904b07f2100b9c7e7594545e173d8d5504cc48d3eac5119c`,
+as recorded by GitHub's artifact API. This identifies the evidence ZIP, **not**
+the setup EXE; its own checksum file must supply the installer hash.
+
+| Manual case                                                                          | Reported result  | Limit                                                                                                                |
+| ------------------------------------------------------------------------------------ | ---------------- | -------------------------------------------------------------------------------------------------------------------- |
+| Setup and detector-import panel                                                      | Pass reported    | Actual setup hash and import/cancel/wrong-file/relaunch cases need confirmation                                      |
+| OCR and shortcuts                                                                    | Pass reported    | Exact shortcut/scanning/scaling matrix not reported                                                                  |
+| Dictionary lookup, saving and viewing                                                | Pass reported    | Kanji, saved sentences and restart/reboot persistence not specifically confirmed                                     |
+| OCR boundary precision                                                               | Observation open | Boxes are close to text, with uneven padding/clipped character edges; no clear global offset in supplied screenshots |
+| Browser/SmartScreen, console/cleanup, offline and uncached translation               | Untested         | No specific PC result supplied                                                                                       |
+| Upgrade/uninstall, WebView2 prerequisite cases, 100%/125%/150% and multiple monitors | Untested         | Exact resolution/scaling and remaining hardware cases unavailable                                                    |
+
+The two supplied manga screenshots remain user-local evidence and are not copied
+into the repository or source delivery. They support visual capture/overlay/popup
+operation on the reported 2K display, not exact scaling coverage or every OCR result.
+
+Earlier candidate `79065df7ba34a3aaa4ddb3a1ebb30e164405742a`, run `37721943728`,
+failed the human gate with a blank console, missing model setup, inactive scan
+buttons and a shortcut freeze. Its setup hash was
+`01a28c0f4964b2df1733814670b3024d8aa18c525b544965a50189ec25ecab0a`;
+the [older draft](https://github.com/chonnakanch/yomimado/releases/tag/untagged-e4524b4cbafe468fe44d)
+is diagnostic only and must not be approved. The replacement's UI/runtime fixes
+and installed regression checks now pass; the earlier failure record is retained.
+Never approve this record from automated CI alone. Each rebuilt setup needs its
+own confirmation.
 
 The candidate workflow stages an owner-only GitHub draft with `SHA256SUMS.txt`
 and `windows-candidate.json` after exact installed startup/resource/native checks.
@@ -47,8 +60,8 @@ system, x64-based processor**, Windows 11 Home **25H2**, OS build **26200.9457**
 Intel Core i5-14500 and 32 GB RAM. Previously reported: RTX 4070 Super and one
 2K display; exact resolution and scaling remain unconfirmed. Device/product
 identifiers are intentionally omitted. The PC architecture is confirmed, while
-the replacement installer's functional tests remain open and the prior UI test
-failed. Record resolution and scaling during retesting.
+the replacement has reported functional passes awaiting exact hash binding;
+the prior candidate failed. Record resolution and scaling during retesting.
 GPU acceleration is not used; a CUDA installation is not required.
 
 Fill in: candidate commit, setup filename/SHA-256, browser, System type,

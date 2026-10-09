@@ -1,29 +1,40 @@
 # First Windows pre-release plan
 
-Status — 2026-10-08: run `37721943728` built the per-user NSIS candidate at
-`79065df7ba34a3aaa4ddb3a1ebb30e164405742a` and passed exact installed resource,
-startup/cleanup, native loading, horizontal/vertical OCR geometry, tokenization,
-word/kanji lookup, uncached translation and saved-data/cache restart checks.
-Native licence/source clearance and human installed-app verification remain
-open. The maintainer subsequently reports successful setup but a blank terminal,
-inactive scan buttons, no detector-import panel and a freeze on the capture
-shortcut. The candidate therefore **fails the human installer gate** and must
-not be approved or published. The replacement adds the Windows GUI subsystem,
-Windows model setup, asynchronous window commands and a worker for shortcut
-window creation; installed UI regression checks now exercise model setup,
-buttons, shortcuts and cancellation. Startup errors use a nonblocking dialog;
-CI also checks occupied-port acknowledgement without blocking the original app.
-These changes need hosted execution and
-new exact-installer confirmation. See the [source worksheet](windows-source-review.md) and
-[numbered PC checklist](windows-installed-test.md). The maintainer has a separate Windows 11 PC,
-with no live agent access; it is now available for maintainer testing. Reported specs are
-i5-14500, 32 GB RAM, RTX 4070 Super and one 2K monitor. The maintainer's
-System/About report confirms **64-bit operating system, x64-based processor**,
-Windows 11 Home **25H2**, build **26200.9457**. Exact display resolution and
-scaling remain unconfirmed. Build checks can run on a Windows GitHub Actions
-runner; the maintainer will perform installed-app checks locally and report
-results. Architecture is confirmed; functional coverage requires the new exact
-installer's recorded test results.
+Status — 2026-10-09: [Windows run `37802965979`](https://github.com/chonnakanch/yomimado/actions/runs/37802965979)
+passes all steps at `c69eff996f7e85ea88ecb4f0407e05cf5d8ec8b5`: pinned build,
+per-user NSIS installation, resource/native/startup checks, missing-model setup,
+import cancellation, occupied-port acknowledgement, scan buttons, both shortcuts,
+selector cancellation and frozen OCR/learning/persistence. The owner-only draft
+staging and uploaded-asset hash checks also pass. This is Windows Server 2022
+execution, not a substitute for the separate Windows 11 PC tests.
+
+The maintainer reports that the replacement installs, offers detector import,
+and works for OCR, shortcuts, dictionary lookup, saving and viewing saved entries.
+Two user-local screenshots show OCR regions close to the text across the page,
+with uneven padding and some character edges outside the boxes. No clear global
+position/scale error is apparent; detector boundary precision remains an observation
+for follow-up, not a diagnosed coordinate bug or a passed scaling matrix.
+The manga screenshots are not repository fixtures and are not included in delivery.
+The tested setup SHA-256 has not been confirmed: the PC is currently unavailable.
+Treat the named functional results as reported passes awaiting exact-installer
+binding, not approval of the human installer gate.
+
+The System/About report confirms **64-bit operating system, x64-based processor**,
+Windows 11 Home **25H2**, build **26200.9457**, Core i5-14500 and 32 GB RAM.
+Previously reported: RTX 4070 Super and one 2K monitor. Exact display resolution
+and scaling remain unconfirmed. Browser/SmartScreen, console behavior, offline use,
+uncached translation, relaunch/reboot persistence, upgrade/uninstall and the
+100%/125%/150% scaling matrix remain untested on that PC unless separately reported.
+Native licence/source clearance and human exact-installer approval remain open;
+macOS packaging and the main publisher are unchanged. See the
+[source worksheet](windows-source-review.md) and [numbered PC checklist](windows-installed-test.md).
+
+Earlier candidate `79065df7ba34a3aaa4ddb3a1ebb30e164405742a` passed runtime
+checks in run `37721943728`, but failed the human gate: a blank terminal,
+absent detector panel, inactive scan buttons and a shortcut freeze. Its replacement
+adds the Windows GUI subsystem, Windows model setup, asynchronous window commands
+and a worker for shortcut window creation. Startup errors use a nonblocking dialog.
+The complete hosted regression suite now passes in run `37802965979`.
 
 Replacement run `37782181350` at `f5c157d6f9a4b0efdb39908e5054fbd061a37956`
 built and installed NSIS, verified the x64 GUI executable/resources/startup,
@@ -67,7 +78,7 @@ This may increase the download size. The complete installed payload, native
 inventory, checksums and GitHub asset-size limit are still verified; it grants
 no source or installer approval. macOS packaging is unchanged.
 
-The [owner-only candidate draft](https://github.com/chonnakanch/yomimado/releases/tag/untagged-e4524b4cbafe468fe44d)
+The earlier [owner-only diagnostic draft](https://github.com/chonnakanch/yomimado/releases/tag/untagged-e4524b4cbafe468fe44d)
 contains `YomiMado_0.1.0_x64-setup.exe` (893 MB), `SHA256SUMS.txt`, provenance,
 notices, project/source preparation and the original dictionary snapshots.
 All eight uploaded asset digests were checked against GitHub. The installed
@@ -78,8 +89,8 @@ desktop reports `NotSigned`; browser/SmartScreen behavior is still untested.
 | 1 — Pinned environment/freeze | Passed in Windows Actions; CPython 3.11.17, pinned CPU wheels, frozen service                                                  | Native distribution review is tracked separately below                                                                                           |
 | 2 — Native licences/sources   | Actual inputs, notices and preferred-source bindings collected                                                                 | Complete Windows vendor/terms review and corresponding-source delivery; resolve Intel MKL/IPP compatibility or run compatible replacement builds |
 | 3 — Private installed app     | Exact NSIS installation, resource/data paths, bundled startup and normal quit cleanup pass                                     | Human startup/console/relaunch/occupied-port cases                                                                                               |
-| 4 — Installed runtime         | Geometry, tokenization, dictionaries, kanji, uncached translation, restart persistence, model exclusion and AMD64 payload pass | Finish native source approval; x64 PC architecture is confirmed, but Windows 11 functional cases remain open                                     |
-| 5 — Separate PC               | Setup completion reported; capture UI fails                                                                                    | Fix and retest blank console, absent detector setup, scan buttons and shortcut freeze; other cases untested                                      |
+| 4 — Installed runtime         | Geometry, tokenization, dictionaries, kanji, uncached translation, restart persistence, model exclusion and AMD64 payload pass | Finish native source approval; x64 PC architecture is confirmed, but exact-installer binding and remaining Windows 11 cases remain open          |
+| 5 — Separate PC               | Model import, OCR, shortcuts, dictionary lookup and saved-entry viewing reported working                                       | Bind results to setup hash; investigate boundary precision and complete remaining manual/scaling cases                                           |
 | 6 — Joint release-on-main     | Existing macOS path preserved                                                                                                  | Deliberately gated on Windows source clearance and human exact-installer approval                                                                |
 
 ## Target and scope
@@ -169,7 +180,7 @@ the macOS frozen runtime is not a Windows seed.
       translation and dictionary assets; exclude the detector weights.
       Run `37582948931` produced the executable; native/source approval and
       human installed-app approval remain open. Complete installed-runtime
-      automation subsequently passes in run `37721943728`.
+      and UI automation passes for the replacement in run `37802965979`.
 - [x] Run frozen health, synthetic vertical/horizontal OCR geometry, Sudachi,
       JMdict, KANJIDIC2, uncached translation and saved/cache restart smoke checks
       outside the checkout with fresh temporary data and empty model caches.
@@ -198,9 +209,9 @@ before treating any installer as a public candidate.
       Fail on absent runtime, missing notices, mixed architecture or model leakage.
 - [x] Run frontend/Rust/service tests on Windows and targeted lifecycle/path
       tests for changed code. Build with locked dependencies and record the
-      clean source commit and installer SHA-256. Run `37721943728` built and
-      installed `79065df7ba34`; its exact setup SHA-256 is
-      `01a28c0f4964b2df1733814670b3024d8aa18c525b544965a50189ec25ecab0a`.
+      clean source commit and installer SHA-256. Replacement run `37802965979`
+      builds/installs `c69eff996f7e`; its owner-only draft retains `SHA256SUMS.txt`
+      and provenance, with all uploaded asset digests verified by the workflow.
 - [x] Inspect the installed file inventory and PE architectures; detect missing
       DLL dependencies and developer-only paths. Repeat frozen smoke using the
       exact installed runtime and confirm source/notice manifest consistency.
