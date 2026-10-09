@@ -45,6 +45,39 @@ CUDA imports/loaded modules, and installed synthetic horizontal/vertical OCR,
 tokenization, dictionaries, kanji, uncached translation and restart persistence.
 Do not substitute these builds into the macOS seed or shared development lock.
 
+### Independent Windows OpenCV execution
+
+Prepared on 2026-10-09: **Windows OpenCV source audit**
+(`.github/workflows/windows-opencv-audit.yml`) builds the exact original
+`opencv-python-4.11.0.86` source's OpenCV tree with source-built CPython 3.11.17,
+MSVC 14.44.35207, SDK 10.0.26100.0, CMake 3.31.6 and Ninja 1.11.1.4.
+[The input record](windows-opencv-build-inputs.json) binds the original source
+and full selected vendor licence hashes. No macOS binary approval is reused.
+
+The static x64 PYD retains core/image/geometry/DNN and the detector's `imshow`
+import; GUI backends, videoio, FFmpeg, IPP/IPP IW, OpenMP, OpenCL and CUDA are
+disabled. The accepted CMake cache and actual build information must verify
+those settings and the exact four static vendors (protobuf, JPEG, PNG, zlib).
+Unrecorded vendor downloads are rejected. Source code is unchanged; the recipe
+retains full selected vendor texts and module-level source notices separately.
+
+The audit executes original synthetic horizontal/vertical shape geometry,
+homography and PNG/JPEG checks. It also loads the hash-pinned detector as a
+temporary external input and runs CPU ONNX inference on both original synthetic
+text fixtures. It repeats those checks in a disposable PyInstaller build,
+verifies the unchanged source-built PYD bytes and actual loaded paths/hashes,
+and rejects Intel/CUDA/video dependencies. This is a native/frozen detector
+probe, not full OCR recognition, installed-app replacement or source clearance.
+Only JSON/log/cache/notices text is uploaded; no binaries, weights, installer,
+tag, publication or approval is produced. The maintainer-tested setup is unchanged.
+Hosted execution is pending; a proposed recipe and local guard tests are not a
+passing Windows build. Torch replacement and full installed OCR remain separate.
+Local verification: 126 release-script tests pass, including rejection of unsafe
+source extraction, enabled IPP/backends, wrong loaded PYD paths/hashes and wrong
+probe architecture/version. Synthetic image geometry runs on the development
+Mac; that does not claim Windows execution. Python lint/format, workflow lint
+and YAML/JSON/document formatting pass.
+
 ## GEOS source and library replacement
 
 Independent execution prepared on 2026-10-09: **Windows GEOS source audit**

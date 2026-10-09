@@ -103,6 +103,12 @@ are added to public fixtures or delivery. The maintainer's System/About report
 confirms a 64-bit OS and x64 processor, Windows 11 Home 25H2 build 26200.9457,
 Core i5-14500 and 32 GB RAM. Multiple-monitor/mixed-scaling cases remain untested.
 No public Windows release integration or passing Windows 11 installer gate is claimed.
+Windows OpenCV source execution is prepared independently (2026-10-09): pinned
+source/tool/vendor notices, a static PYD with IPP/video/GPU backends disabled,
+synthetic geometry and CPU detector inference in native/frozen probes. The
+Windows audit workflow exports textual evidence only; hosted results are pending.
+The tested installer, macOS seed and publication gates remain unchanged.
+
 Windows source/native and installer gates remain open. Add joint release-on-main
 publication only after those gates pass, using one publisher for both platforms.
 

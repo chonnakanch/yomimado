@@ -131,6 +131,9 @@ class VersionTests(unittest.TestCase):
             ".github/workflows/windows-geos-audit.yml",
             "scripts/build-geos-windows.py",
             "scripts/geos-windows-probe.py",
+            ".github/workflows/windows-opencv-audit.yml",
+            "scripts/build-opencv-windows.py",
+            "scripts/opencv-windows-probe.py",
             "apps/desktop/src-tauri/tauri.windows-release.conf.json",
         ):
             with self.subTest(path=path), patch.object(ci, "git", return_value=path):

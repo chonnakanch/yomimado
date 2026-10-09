@@ -121,6 +121,13 @@ desktop reports `NotSigned`; browser/SmartScreen behavior is still untested.
 | 5 — Separate PC               | Model import, OCR, shortcuts, dictionary lookup and saved-entry viewing reported working for the verified setup hash                | Investigate boundary precision and complete remaining manual/scaling cases                                                                       |
 | 6 — Joint release-on-main     | Existing macOS path preserved                                                                                                       | Deliberately gated on Windows source clearance and human exact-installer approval                                                                |
 
+Independent IPP removal is prepared in **Windows OpenCV source audit**, with
+original source/vendor notice pins, accepted CMake cache checks, synthetic
+image/geometry and actual CPU detector inference in native/frozen probes.
+Hosted execution is pending. It exports textual evidence only and leaves the
+tested setup unchanged; full installed OCR replacement and Torch's MKL/OpenMP
+replacement remain separate. See [the native worksheet](windows-native-rebuild.md).
+
 ## Target and scope
 
 Initial planned target: **Windows 11 x64**, Rust

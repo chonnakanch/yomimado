@@ -1,0 +1,26 @@
+{
+  "scope": "Isolated Windows source-built OpenCV native/frozen CPU detector audit; not installer or source approval",
+  "source": {
+    "filename": "opencv-python-4.11.0.86.tar.gz",
+    "url": "https://files.pythonhosted.org/packages/17/06/68c27a523103dad5837dc5b87e71285280c4f098c60e4fe8a8db6486ab09/opencv-python-4.11.0.86.tar.gz",
+    "sha256": "03d60ccae62304860d232272e4a4fda93c39d595780cb40b161b310244b736a4",
+    "licenseFiles": {
+      "LICENSE.txt": "09d719058e782ac7bc71ba21c944e1136cde2bb957c0e888121f0218d6b5f02c",
+      "opencv/LICENSE": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+      "opencv/3rdparty/libjpeg-turbo/LICENSE.md": "e548c96c0c09397c94b5c5531836c02ff2c403f1f2b130cad8e3ec9439b5a7cc",
+      "opencv/3rdparty/libjpeg-turbo/README.ijg": "5c1f9094835d21f66ee0e9ce81c57264d2dd50801b19832d6723dc8cdbda080e",
+      "opencv/3rdparty/libpng/LICENSE": "7317e078e2d3b5d7ba5a6159e650945153262b44b76f6700f8e9edb261c5143e",
+      "opencv/3rdparty/zlib/LICENSE": "845efc77857d485d91fb3e0b884aaa929368c717ae8186b66fe1ed2495753243",
+      "opencv/3rdparty/protobuf/LICENSE": "6e5e117324afd944dcf67f36cf329843bc1a92229a8cd9bb573d7a83130fea7d",
+      "opencv/modules/core/3rdparty/SoftFloat/COPYING.txt": "0c5b08365136da52639d777f1ebfc03988b0169d80655c90c59f1b3fa3e526a2",
+      "opencv/modules/features2d/3rdparty/mscr/chi_table_LICENSE.txt": "676858659f4115246b41f2f44dcfbf17db52c6b1755f1102b78a87062dff0c07"
+    }
+  },
+  "smokeDetector": {
+    "url": "https://github.com/zyddnys/manga-image-translator/releases/download/beta-0.2.1/comictextdetector.pt.onnx",
+    "sha256": "1a86ace74961413cbd650002e7bb4dcec4980ffa21b2f19b86933372071d718f",
+    "distribution": "Temporary test input only; never exported or bundled"
+  },
+  "buildToolsManifest": "docs/windows-geos-build-inputs.json",
+  "probeInputsManifest": "services/ocr/windows-inputs.json"
+}

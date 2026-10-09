@@ -73,7 +73,12 @@ terms/provenance; removing OS DLLs does not approve those binaries.
 
 The [native rebuild worksheet](windows-native-rebuild.md) gives exact source
 revisions, proposed Intel-free builds and GEOS replacement requirements. Those
-Intel-free builds remain unrun; the worksheet conveys no approval.
+Intel-free builds remain unrun; the worksheet conveys no approval. The separate
+**Windows OpenCV source audit** now prepares a pinned static PYD without IPP,
+then checks synthetic geometry, actual CPU detector inference and a frozen
+probe's loaded-native paths/hashes. Original source/vendor notice pins are in
+`docs/windows-opencv-build-inputs.json`. Hosted execution remains pending;
+it does not alter the tested installer or approve full installed OCR/source delivery.
 Independent progress on 2026-10-09: GEOS source/replacement run `37877467511`
 at `a10db77ec91d5e1e0f96f444b0a98376c641774a` passes source/tool/notice
 hash checks, native Windows CPython/GEOS builds, upstream CTest and a frozen
