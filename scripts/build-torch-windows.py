@@ -86,6 +86,7 @@ def extract_eigen(archive: Path, record: dict, destination: Path) -> None:
 
 def run(command: list[str], name: str, *, cwd=None, env=None) -> None:
     write_json(BUILD / (name + ".command.json"), command)
+    print("Torch source audit: " + name, flush=True)
     with (BUILD / (name + ".log")).open("w", encoding="utf-8") as log:
         result = subprocess.run(
             command, cwd=cwd, env=env, stdout=log, stderr=subprocess.STDOUT, check=False
@@ -273,6 +274,13 @@ def main() -> None:
             "PYTORCH_BUILD_VERSION": "2.8.0+cpu",
             "PYTORCH_BUILD_NUMBER": "1",
             "MAX_JOBS": "2",
+            # Preserve the selected MSVC/SDK for upstream setuptools, and make
+            # source-built CPython's original headers/import library available
+            # to its small Python stub extension after native CMake installation.
+            "DISTUTILS_USE_SDK": "1",
+            "MSSdk": "1",
+            "INCLUDE": str(python_include) + ";" + env.get("INCLUDE", ""),
+            "LIB": str(base / "PCbuild/amd64") + ";" + env.get("LIB", ""),
         }
     )
     run(
