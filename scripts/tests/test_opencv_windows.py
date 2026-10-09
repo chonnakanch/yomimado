@@ -26,6 +26,12 @@ probe = load("opencv_windows_probe", "opencv-windows-probe.py")
 
 
 class OpenCVWindowsTests(unittest.TestCase):
+    def test_windows_cmake_library_paths_do_not_form_escape_sequences(self):
+        self.assertEqual(
+            audit.cmake_path(r"D:\a\source with spaces\PCbuild\amd64\python311.lib"),
+            "D:/a/source with spaces/PCbuild/amd64/python311.lib",
+        )
+
     def information(self):
         return (
             "To be built: core imgproc imgcodecs calib3d features2d flann dnn highgui python3\n"

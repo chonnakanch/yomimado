@@ -95,6 +95,12 @@ FORBIDDEN = re.compile(
 )
 
 
+def cmake_path(path: Path | str) -> str:
+    # OpenCV expands library paths through CMake source expressions. Native
+    # backslashes such as D:\a become escapes there, even with subprocess argv.
+    return str(path).replace("\\", "/")
+
+
 def extract_source(archive: Path, destination: Path) -> Path:
     root = destination.resolve()
     with tarfile.open(archive) as tar:
@@ -272,18 +278,18 @@ def main(detector: Path) -> None:
         "-DCMAKE_BUILD_TYPE=Release",
         "-DCMAKE_POLICY_DEFAULT_CMP0091=NEW",
         "-DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreadedDLL",
-        "-DCMAKE_CXX_FLAGS=/I" + str(base / "PC"),
-        "-DCMAKE_MAKE_PROGRAM=" + str(python_dir / "Scripts/ninja.exe"),
-        "-DPYTHON3_EXECUTABLE=" + python,
-        "-DPYTHON_DEFAULT_EXECUTABLE=" + python,
-        "-DPYTHON3_INCLUDE_DIR=" + str(base / "Include"),
-        "-DPYTHON3_INCLUDE_DIR2=" + str(base / "PC"),
-        "-DPYTHON3_LIBRARY=" + str(base / "PCbuild/amd64/python311.lib"),
-        "-DPYTHON3_NUMPY_INCLUDE_DIRS=" + numpy_include,
-        "-DPYTHON3_PACKAGES_PATH=" + str(site),
-        "-DOPENCV_PYTHON3_INSTALL_PATH=" + str(BUILD / "native"),
-        "-DCMAKE_INSTALL_PREFIX=" + str(BUILD / "install"),
-        "-DOPENCV_DOWNLOAD_PATH=" + str(BUILD / "downloads"),
+        '-DCMAKE_CXX_FLAGS=/I"' + cmake_path(base / "PC") + '"',
+        "-DCMAKE_MAKE_PROGRAM=" + cmake_path(python_dir / "Scripts/ninja.exe"),
+        "-DPYTHON3_EXECUTABLE=" + cmake_path(python),
+        "-DPYTHON_DEFAULT_EXECUTABLE=" + cmake_path(python),
+        "-DPYTHON3_INCLUDE_DIR=" + cmake_path(base / "Include"),
+        "-DPYTHON3_INCLUDE_DIR2=" + cmake_path(base / "PC"),
+        "-DPYTHON3_LIBRARY=" + cmake_path(base / "PCbuild/amd64/python311.lib"),
+        "-DPYTHON3_NUMPY_INCLUDE_DIRS=" + cmake_path(numpy_include),
+        "-DPYTHON3_PACKAGES_PATH=" + cmake_path(site),
+        "-DOPENCV_PYTHON3_INSTALL_PATH=" + cmake_path(BUILD / "native"),
+        "-DCMAKE_INSTALL_PREFIX=" + cmake_path(BUILD / "install"),
+        "-DOPENCV_DOWNLOAD_PATH=" + cmake_path(BUILD / "downloads"),
     ]
     env = os.environ.copy()
     env["PATH"] = str(python_dir / "Scripts") + os.pathsep + env["PATH"]

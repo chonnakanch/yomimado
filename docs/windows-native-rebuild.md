@@ -70,9 +70,15 @@ and rejects Intel/CUDA/video dependencies. This is a native/frozen detector
 probe, not full OCR recognition, installed-app replacement or source clearance.
 Only JSON/log/cache/notices text is uploaded; no binaries, weights, installer,
 tag, publication or approval is produced. The maintainer-tested setup is unchanged.
-Hosted execution is pending; a proposed recipe and local guard tests are not a
-passing Windows build. Torch replacement and full installed OCR remain separate.
-Local verification: 126 release-script tests pass, including rejection of unsafe
+First [audit run `37933246289`](https://github.com/chonnakanch/yomimado/actions/runs/37933246289)
+at `81988bb07121e9bb08c2cdaee4b8ee649a8dc685` builds CPython and verifies
+source/tool inputs, then fails OpenCV configuration: OpenCV expands the native
+Python library path through a CMake expression, interpreting `D:\\a` as an
+invalid escape. The recipe now normalizes all CMake path values to forward
+slashes, with a regression check for Windows paths containing spaces. No
+OpenCV compilation or inference pass is claimed; the complete rerun is required.
+Torch replacement and full installed OCR remain separate.
+Local verification: 127 release-script tests pass, including rejection of unsafe
 source extraction, enabled IPP/backends, wrong loaded PYD paths/hashes and wrong
 probe architecture/version. Synthetic image geometry runs on the development
 Mac; that does not claim Windows execution. Python lint/format, workflow lint
