@@ -33,10 +33,14 @@ also confirms Analyze words, Save sentence, Translate locally and Close respond
 at all three scales. In a subsequent explicit offline/restart check the maintainer
 confirms that a new sentence translates with internet disconnected and saved
 words/sentences remain after app restart on the same verified installer.
+The next four numbered checks also pass with maintainer confirmation: app/service
+processes disappear after quit, relaunch opens no terminal and retains model/data,
+offline OCR/dictionary lookup works, and both shortcuts plus page scan work after
+Windows reboot.
 Selection accuracy, hover, other targets/edges and relaunch after
 each scale change still need specific results.
-Browser/SmartScreen, console behavior, offline capture/lookup,
-translation-cache persistence, reboot cases, upgrade/uninstall and the
+Browser/SmartScreen, occupied-port handling, translation-cache persistence,
+saved-entry verification after reboot, upgrade/uninstall and the
 remaining scaling interactions and multiple-monitor cases remain untested on that
 PC unless separately reported. Screenshots stay user-local; personal account details
 are omitted from the record.
@@ -108,14 +112,14 @@ notices, project/source preparation and the original dictionary snapshots.
 All eight uploaded asset digests were checked against GitHub. The installed
 desktop reports `NotSigned`; browser/SmartScreen behavior is still untested.
 
-| Requested gate                | Current evidence                                                                                                               | Remaining work                                                                                                                                   |
-| ----------------------------- | ------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------ |
-| 1 — Pinned environment/freeze | Passed in Windows Actions; CPython 3.11.17, pinned CPU wheels, frozen service                                                  | Native distribution review is tracked separately below                                                                                           |
-| 2 — Native licences/sources   | Actual inputs, notices and preferred-source bindings collected                                                                 | Complete Windows vendor/terms review and corresponding-source delivery; resolve Intel MKL/IPP compatibility or run compatible replacement builds |
-| 3 — Private installed app     | Exact NSIS installation, resource/data paths, bundled startup and normal quit cleanup pass                                     | Human startup/console/relaunch/occupied-port cases                                                                                               |
-| 4 — Installed runtime         | Geometry, tokenization, dictionaries, kanji, uncached translation, restart persistence, model exclusion and AMD64 payload pass | Finish native source approval; x64 PC architecture and exact setup identity are confirmed, but remaining Windows 11 cases remain open            |
-| 5 — Separate PC               | Model import, OCR, shortcuts, dictionary lookup and saved-entry viewing reported working for the verified setup hash           | Investigate boundary precision and complete remaining manual/scaling cases                                                                       |
-| 6 — Joint release-on-main     | Existing macOS path preserved                                                                                                  | Deliberately gated on Windows source clearance and human exact-installer approval                                                                |
+| Requested gate                | Current evidence                                                                                                                    | Remaining work                                                                                                                                   |
+| ----------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 1 — Pinned environment/freeze | Passed in Windows Actions; CPython 3.11.17, pinned CPU wheels, frozen service                                                       | Native distribution review is tracked separately below                                                                                           |
+| 2 — Native licences/sources   | Actual inputs, notices and preferred-source bindings collected                                                                      | Complete Windows vendor/terms review and corresponding-source delivery; resolve Intel MKL/IPP compatibility or run compatible replacement builds |
+| 3 — Private installed app     | Exact NSIS installation and runtime checks pass; maintainer confirms quit cleanup, no terminal on relaunch and model/data retention | Remaining second-instance/occupied-port and installer cases                                                                                      |
+| 4 — Installed runtime         | Geometry, tokenization, dictionaries, kanji, uncached translation, restart persistence, model exclusion and AMD64 payload pass      | Finish native source approval; x64 PC architecture and exact setup identity are confirmed, but remaining Windows 11 cases remain open            |
+| 5 — Separate PC               | Model import, OCR, shortcuts, dictionary lookup and saved-entry viewing reported working for the verified setup hash                | Investigate boundary precision and complete remaining manual/scaling cases                                                                       |
+| 6 — Joint release-on-main     | Existing macOS path preserved                                                                                                       | Deliberately gated on Windows source clearance and human exact-installer approval                                                                |
 
 ## Target and scope
 
@@ -276,8 +280,9 @@ first-run isolation; existing-machine results must be labelled accurately.
 - [ ] Offline capture/lookup/uncached translation; saved words/sentences and
       translation cache across relaunch, then shortcut/capture after reboot.
       Offline uncached sentence translation and saved-word/sentence persistence
-      after app restart are maintainer-confirmed; capture/lookup, cache and reboot
-      cases remain open.
+      after app restart, offline OCR/lookup, and both shortcuts/page scan after reboot
+      are maintainer-confirmed; cache persistence and saved-entry verification after
+      reboot remain open.
 - [ ] Save/remove only synthetic test entries. Check upgrade/reinstall preserves
       intended learning data and the imported model; document uninstall retention.
 

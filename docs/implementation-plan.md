@@ -92,7 +92,11 @@ its matching text fully on-screen at each scale. The maintainer also confirms
 that all four popup buttons respond at 100%/125%/150%. In the subsequent explicit
 offline/restart check, a new sentence translates with internet disconnected and
 saved words/sentences remain after app restart with maintainer confirmation.
-Offline capture/lookup, cache persistence and reboot cases remain open. Selection accuracy, hover,
+The maintainer subsequently confirms all four lifecycle/reboot checks pass:
+app/service processes disappear after quit; relaunch opens no terminal and retains
+model/saved data; offline OCR/dictionary lookup works; both shortcuts and page
+scan work after Windows reboot. Translation-cache persistence and saved entries
+after reboot remain unconfirmed. Selection accuracy, hover,
 other targets/edges and scale-change/relaunch cases, boundary
 follow-up and other manual cases remain pending. No manga screenshots
 are added to public fixtures or delivery. The maintainer's System/About report
