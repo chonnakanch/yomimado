@@ -101,6 +101,42 @@
       "noticeHashes": {
         "LICENSE": "82ade5d7d9b029044b5fbbc326207fc47c2d44ee4dd71e8a559c36d728217de9"
       }
+    },
+    {
+      "path": "third_party/opentelemetry-cpp",
+      "url": "https://github.com/open-telemetry/opentelemetry-cpp.git",
+      "revision": "a799f4aed9c94b765dcdaabaeab7d5e7e2310878",
+      "noticeHashes": {
+        "LICENSE": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4",
+        "exporters/etw/include/opentelemetry/exporters/etw/LICENSE": "dec256fccc8edae478025dc26e7c0f7167a0e3a92689d40c6c08e24323e55180"
+      }
+    },
+    {
+      "path": "third_party/cpp-httplib",
+      "url": "https://github.com/yhirose/cpp-httplib.git",
+      "revision": "3af7f2c16147f3fbc6e4d717032daf505dc1652c",
+      "noticeHashes": {
+        "LICENSE": "4b45cbe16d7b71b89ae6127e26e0d90a029198ca5e958ad8e3d0b8bbed364d8b"
+      }
+    },
+    {
+      "path": "third_party/nlohmann",
+      "url": "https://github.com/nlohmann/json.git",
+      "revision": "55f93686c01528224f448c19128836e7df245f72",
+      "noticeHashes": {
+        "LICENSE.MIT": "46a65cffd1ea955132d95a8dd921640714a8d6b537d2e4e482d31145ae95b603",
+        "docs/mkdocs/docs/home/license.md": "d4b7ed0261c2c840e9ccc7d483b3b659bfddc8be797f3007da080f0c4a78d960"
+      }
+    },
+    {
+      "path": "third_party/flatbuffers",
+      "url": "https://github.com/google/flatbuffers.git",
+      "revision": "a2cd1ea3b6d3fee220106b5fed3f7ce8da9eb757",
+      "noticeHashes": {
+        "LICENSE": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+        "dart/LICENSE": "edd9b3459bee4c79b549a5ef66d06d12bd144ddb8d08e0b448fb421267f43dd5",
+        "swift/LICENSE": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30"
+      }
     }
   ],
   "eigen": {

@@ -34,8 +34,8 @@ Prepared on 2026-10-09: **Windows Torch source audit**
 (`.github/workflows/windows-torch-audit.yml`) performs an independent native
 CPU build with the pinned Windows CPython/MSVC/SDK and CMake/Ninja tools.
 [Its input record](windows-torch-build-inputs.json) binds the original PyTorch
-commit and ten selected CPU source repositories to the parent's exact gitlinks,
-with hashes for 23 original tracked licence/notice files. Source checkouts do not
+commit and fourteen selected CPU/header source repositories to the parent's exact gitlinks,
+with hashes for 31 original tracked licence/notice files. Source checkouts do not
 use floating branches or initialize unused GPU/mobile dependencies. The build
 checks the accepted Eigen/CPU CMake cache and generated compiler commands before
 compilation; Windows upstream mimalloc remains a recorded source dependency.
@@ -71,6 +71,15 @@ ZIP (ID `11620263065`, 171,654 bytes) matches GitHub SHA-256
 `9652640a457a714e9f0dd5af1224cd512666d9a4f042b1d62c530ad52ab0b9cf`.
 No Torch compilation or inference pass is claimed from that run; a complete
 rerun is required.
+Run `37941035678` at `9e08202bc782114227612c13ccf14f1996271f37`
+resolves Python header discovery and reaches CMake generation, then fails because
+the unconditional OpenTelemetry API include target lacks its preferred source.
+The source selection now also pins OpenTelemetry, cpp-httplib, nlohmann-json and
+FlatBuffers to the exact parent gitlinks and preserves their original notices.
+These existing upstream header dependencies are retained without adding product
+telemetry or a new feature. Upstream wheel-stub compilation now also preserves
+the selected MSVC/SDK and receives the original Python headers/import-library
+paths. Compilation and CPU probe results remain unverified until a full run passes.
 
 Build OpenCV from the pinned `opencv-python-4.11.0.86.tar.gz` input
 (`03d60ccae62304860d232272e4a4fda93c39d595780cb40b161b310244b736a4`)
