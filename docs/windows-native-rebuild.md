@@ -117,6 +117,27 @@ its own input record: the general Windows package manifest does not have a
 are verified locally; changed or absent notice pins fail closed. This corrects
 the preparation recipe before its first successful torchvision execution.
 
+Run `38015437061` at `3f2866d8dac6d82cb08f59cc6f8dde8735616ece`
+verifies the preferred sources, notices and compiler guards, then fails native
+compilation at `caffe2/core/common.cc` (build command 1015 of 1805). The retained
+`CMAKE_CXX_FLAGS` contains a quoted `/I` path; upstream substitutes it unchanged
+into the `CXX_FLAGS` entry of `CAFFE2_BUILD_STRINGS`, breaking the generated C++
+string. The source-built Python headers already include original `pyconfig.h`
+and are supplied through `Python_INCLUDE_DIR` and `INCLUDE`. The recipe removes
+the redundant flag, preserves the MPL guard and compiles the original
+build-options consumer before starting the long complete build.
+A local C++ check using the exact pinned upstream template reproduces the old
+syntax failure and passes with corrected flags; this does not establish MSVC
+execution, a completed Torch wheel or inference. The rerun remains required.
+
+Downloaded textual evidence (ID `11658066026`, 326,496 bytes) matches GitHub
+SHA-256 `4ea1ffa0d388dfa0d0265a2c4947d41d3c9898abc175d01a207fdc4e95c1a6e5`.
+The input record, all fifteen repository revisions, 31 original repository
+notices, eight Eigen notices, accepted CMake cache and 1,726 C/C++ plus four
+resource commands verify locally. No completed Torch/vision probe or installed
+replacement pass is claimed. Reports remain private under
+`services/ocr/build/windows-torch-run-38015437061/`.
+
 Build OpenCV from the pinned `opencv-python-4.11.0.86.tar.gz` input
 (`03d60ccae62304860d232272e4a4fda93c39d595780cb40b161b310244b736a4`)
 with IPP/IPP IW and FFmpeg disabled. Limit modules to those required by the

@@ -296,7 +296,10 @@ def main() -> None:
 
     cmake = str(BUILD / "venv/Scripts/cmake.exe")
     build = source / "build"
-    flags = '-DEIGEN_MPL2_ONLY /I"' + path(base / "PC") + '"'
+    # Original headers, including pyconfig.h, are already staged and supplied
+    # through Python_INCLUDE_DIR and INCLUDE. A quoted /I path here breaks the
+    # upstream CXX_FLAGS entry in CAFFE2_BUILD_STRINGS (core/macros.h).
+    flags = "-DEIGEN_MPL2_ONLY"
     env = os.environ.copy()
     env.update(
         {
@@ -343,6 +346,21 @@ def main() -> None:
     shutil.copy2(build / "compile_commands.json", BUILD / "compile_commands.json")
     command_counts = verify_commands(commands)
     write_json(BUILD / "compiler-verification.json", command_counts)
+    # Compile the upstream build-options string consumer before the long native
+    # build, so malformed generated C++ literals fail promptly under real MSVC.
+    run(
+        [
+            cmake,
+            "--build",
+            str(build),
+            "--target",
+            "caffe2/CMakeFiles/torch_cpu.dir/core/common.cc.obj",
+            "--parallel",
+            "2",
+        ],
+        "compile-build-options",
+        env=env,
+    )
     run(
         [cmake, "--build", str(build), "--target", "install", "--parallel", "2"],
         "compile-install",
