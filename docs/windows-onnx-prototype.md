@@ -88,7 +88,11 @@ This changes probe cleanup only; shared service files and parity expectations
 remain unchanged. Rerun [38046697111](https://github.com/chonnakanch/yomimado/actions/runs/38046697111)
 at `7fe0a34` passes that cleanup, then reveals the report writer using Windows
 cp1252 for Japanese text. JSON reports and child logs now explicitly use UTF-8,
-including redirected process streams. A new hosted comparison is required.
+including redirected process streams. Rerun [38047007527](https://github.com/chonnakanch/yomimado/actions/runs/38047007527)
+at `43497d4` completes the baseline and exposes the detector adapter reading
+upstream non-ASCII Python source using cp1252. The AST adapter now parses original
+source bytes, honoring Python source encodings; remaining prototype JSON file
+reads/writes explicitly use UTF-8. A new hosted comparison is required.
 The driver now reports the fixed synthetic probe's failure detail directly in
 an Actions annotation; failures remain failures and no expectation is weakened.
 Windows parity is not claimed from the successful preparatory steps.

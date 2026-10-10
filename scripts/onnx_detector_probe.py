@@ -101,7 +101,7 @@ def detector_class(repo: Path):
     if any(name == "utils" or name.startswith("utils.") for name in sys.modules):
         raise RuntimeError("Detector probe requires a fresh process")
     sys.path.insert(0, str(repo))
-    module_ast = ast.parse((repo / "utils/db_utils.py").read_text())
+    module_ast = ast.parse((repo / "utils/db_utils.py").read_bytes())
     module_ast = ast.fix_missing_locations(NumpySegmentation().visit(module_ast))
     if any(
         isinstance(node, ast.Name) and node.id == "torch"
@@ -166,7 +166,7 @@ def detector_class(repo: Path):
             self.conf_thresh, self.nms_thresh = 0.4, 0.35
             self.seg_rep = segmentation.SegDetectorRepresenter(thresh=0.3)
 
-    source = ast.parse((repo / "inference.py").read_text())
+    source = ast.parse((repo / "inference.py").read_bytes())
     original = next(
         node
         for node in source.body

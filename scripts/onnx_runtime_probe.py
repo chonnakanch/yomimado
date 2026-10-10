@@ -29,7 +29,9 @@ class OnnxRecognizer:
         self.tokenizer = AutoTokenizer.from_pretrained(
             model, tokenizer_type="bert-japanese", local_files_only=True
         )
-        config = json.loads((exported / "policies.json").read_text())["ocr"]
+        config = json.loads((exported / "policies.json").read_text(encoding="utf-8"))[
+            "ocr"
+        ]
         self.policy = Policy(**config)
 
     def __call__(self, image: Image.Image) -> str:
@@ -62,7 +64,9 @@ class OnnxTranslation:
         self.encoder = session(exported / "translation-encoder.onnx")
         self.decoder = session(exported / "translation-decoder.onnx")
         self.tokenizer = AutoTokenizer.from_pretrained(model, local_files_only=True)
-        config = json.loads((exported / "policies.json").read_text())["translation"]
+        config = json.loads((exported / "policies.json").read_text(encoding="utf-8"))[
+            "translation"
+        ]
         config["banned"] = tuple(config["banned"])
         self.policy = Policy(**config)
         self.exported = exported

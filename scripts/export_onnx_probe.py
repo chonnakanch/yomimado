@@ -26,7 +26,9 @@ def digest(path: Path) -> str:
 
 
 def verify_models(ocr: Path, translation: Path) -> dict:
-    manifest = json.loads((ROOT / "services/ocr/windows-assets.json").read_text())
+    manifest = json.loads(
+        (ROOT / "services/ocr/windows-assets.json").read_text(encoding="utf-8")
+    )
     verified = {}
     for key, directory in (("manga-ocr-base", ocr), ("opus-mt-ja-en", translation)):
         for asset in manifest:
@@ -149,7 +151,9 @@ def export(ocr: Path, translation: Path, output: Path) -> None:
                 dynamo=False,
             )
         del model
-    (output / "policies.json").write_text(json.dumps(policies, indent=2) + "\n")
+    (output / "policies.json").write_text(
+        json.dumps(policies, indent=2) + "\n", encoding="utf-8"
+    )
     graphs = list(output.glob("*.onnx"))
     if len(graphs) != 4:
         raise RuntimeError("Expected exactly four exported graphs")
@@ -166,7 +170,9 @@ def export(ocr: Path, translation: Path, output: Path) -> None:
         },
         "publicDistributionApproved": False,
     }
-    (output / "export.json").write_text(json.dumps(report, indent=2) + "\n")
+    (output / "export.json").write_text(
+        json.dumps(report, indent=2) + "\n", encoding="utf-8"
+    )
 
 
 if __name__ == "__main__":
