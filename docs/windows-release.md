@@ -41,6 +41,12 @@ checks pass without changing preferred code hashes. Four additional pure Python
 sources are bound to all 75 wheel Python files, bringing the prepared collection
 to 52 archives. LGPL replacement instructions are included in installed notices.
 
+The installed-module probe now recognizes the audited OpenCV extension's exact
+`cv2.cp311-win_amd64.pyd` filename as well as the original wheel's `cv2.pyd`.
+It still requires the selected CPU backend and rejects unsupported ABI names;
+loaded paths, native hashes and excluded dependencies remain separate gates.
+All 193 release-script tests pass before the next hosted check.
+
 Build policy update — 2026-10-10: the maintainer chooses to avoid long Torch
 source builds. **Windows Torch source audit** is now manual-only with a false-by-default
 explicit opt-in; no push starts it. Prebuilt Torch is now export-only in the new

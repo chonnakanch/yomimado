@@ -18,6 +18,18 @@ from urllib.request import Request, urlopen
 from PIL import Image
 
 
+def observed_cpu_inference(names: set[str], onnx_backend: bool) -> bool:
+    # The wheel uses cv2.pyd; the audited CPython 3.11 x64 build preserves its
+    # ABI filename. Module paths and hashes are checked separately below.
+    opencv = bool(names & {"cv2.pyd", "cv2.cp311-win_amd64.pyd"})
+    backend = (
+        "onnxruntime_pybind11_state.pyd" in names
+        if onnx_backend
+        else "torch_cpu.dll" in names
+    )
+    return opencv and backend
+
+
 def loaded_modules(pid: int, runtime: Path) -> list[dict]:
     """Check libraries actually loaded after inference, not just PE imports."""
     system = Path(os.environ["SystemRoot"]).resolve()
@@ -273,16 +285,8 @@ def main() -> None:
                     modules = loaded_modules(process.pid, resources / "runtime")
                     names = {m["name"].lower() for m in modules}
                     onnx_backend = (resources / "assets/onnx/export.json").is_file()
-                    inference_loaded = (
-                        any(
-                            name.startswith("onnxruntime_pybind11_state")
-                            for name in names
-                        )
-                        if onnx_backend
-                        else "torch_cpu.dll" in names
-                    )
                     check(
-                        inference_loaded and "cv2.pyd" in names,
+                        observed_cpu_inference(names, onnx_backend),
                         "Actual CPU/native inference modules were not observed",
                     )
                     if onnx_backend:

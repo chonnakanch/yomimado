@@ -27,6 +27,26 @@ smoke_spec.loader.exec_module(smoke)
 
 
 class WindowsReleaseTests(unittest.TestCase):
+    def test_installed_cpu_probe_accepts_selected_opencv_abi_and_backend(self):
+        for opencv in ("cv2.pyd", "cv2.cp311-win_amd64.pyd"):
+            with self.subTest(opencv=opencv):
+                self.assertTrue(
+                    smoke.observed_cpu_inference(
+                        {opencv, "onnxruntime_pybind11_state.pyd"}, True
+                    )
+                )
+                self.assertTrue(
+                    smoke.observed_cpu_inference({opencv, "torch_cpu.dll"}, False)
+                )
+        for modules in (
+            {"cv2.cp311-win_arm64.pyd", "onnxruntime_pybind11_state.pyd"},
+            {"cv2.pyd", "torch_cpu.dll"},
+            {"onnxruntime_pybind11_state.pyd"},
+            {"cv2.pyd"},
+        ):
+            with self.subTest(modules=modules):
+                self.assertFalse(smoke.observed_cpu_inference(modules, True))
+
     def test_frozen_executable_binds_original_bootloader_and_appended_pkg(self):
         bootloader = self.root / "run.exe"
         bootloader.write_bytes(b"synthetic original bootloader")
