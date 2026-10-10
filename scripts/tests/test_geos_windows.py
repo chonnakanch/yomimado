@@ -63,21 +63,19 @@ class GeosWindowsTests(unittest.TestCase):
             "target_commitish": installed.REVISION,
             "tag_name": "windows-private-test-" + installed.REVISION,
         }
-        with patch.object(installed, "request", return_value=release) as request:
+        with patch.object(installed, "request", return_value=[release]) as request:
             self.assertEqual(installed.private_release(), release)
-            request.assert_called_once_with(
-                installed.API + "/releases/tags/" + release["tag_name"]
-            )
+            request.assert_called_once_with(installed.API + "/releases?per_page=100")
         for key, value in (("draft", False), ("target_commitish", "a" * 40)):
             with (
                 self.subTest(key=key),
                 patch.object(
-                    installed, "request", return_value={**release, key: value}
+                    installed, "request", return_value=[{**release, key: value}]
                 ),
                 self.assertRaises(ValueError),
             ):
                 installed.private_release()
-        for status in (403, 404):
+        for status in (401, 403, 404):
             with (
                 self.subTest(status=status),
                 patch.object(
@@ -90,6 +88,73 @@ class GeosWindowsTests(unittest.TestCase):
                 self.assertRaisesRegex(RuntimeError, "provide protected access"),
             ):
                 installed.private_release()
+
+    def test_private_listing_rejects_hidden_duplicated_and_incomplete_drafts(self):
+        release = {"tag_name": "windows-private-test-" + installed.REVISION}
+        for records in ([], [release, release], [{}] * 100):
+            with (
+                self.subTest(count=len(records)),
+                patch.object(installed, "request", return_value=records),
+                self.assertRaises(installed.PrivateInputError),
+            ):
+                installed.private_release()
+
+    def test_preflight_retains_safe_failure_without_secret_or_response_body(self):
+        cases = (
+            ("", None, "missing-environment-secret"),
+            (
+                "synthetic-private-secret",
+                HTTPError("https://api.github.com", 401, "secret-response", {}, None),
+                "github-http-401",
+            ),
+            (
+                "synthetic-private-secret",
+                RuntimeError("secret-response"),
+                "unexpected-preflight-failure",
+            ),
+        )
+        for token, error, reason in cases:
+            with (
+                self.subTest(reason=reason),
+                tempfile.TemporaryDirectory() as tmp,
+                patch.dict(installed.os.environ, {"GH_TOKEN": token}),
+                patch.object(installed, "BUILD", Path(tmp)),
+                patch.object(installed, "request", side_effect=error),
+                patch("sys.stdout", new_callable=io.StringIO) as output,
+            ):
+                self.assertEqual(installed.check_private_draft(), 1)
+                record = (Path(tmp) / "private-input-preflight.json").read_text()
+                self.assertIn(reason, record)
+                for private in ("synthetic-private-secret", "secret-response"):
+                    self.assertNotIn(private, record + output.getvalue())
+                self.assertIn("::error::", output.getvalue())
+
+    def test_preflight_requires_exact_declared_assets_before_building(self):
+        release = {
+            "draft": True,
+            "target_commitish": installed.REVISION,
+            "tag_name": "windows-private-test-" + installed.REVISION,
+            "assets": [
+                {"name": name, "state": "uploaded", "digest": "sha256:" + sha}
+                for name, sha in (
+                    (installed.SETUP, installed.SETUP_SHA256),
+                    ("windows-candidate.json", installed.PROVENANCE_SHA256),
+                )
+            ],
+        }
+        with (
+            tempfile.TemporaryDirectory() as tmp,
+            patch.dict(installed.os.environ, {"GH_TOKEN": "synthetic-private-secret"}),
+            patch.object(installed, "BUILD", Path(tmp)),
+            patch.object(installed, "request", return_value=[release]),
+            patch("sys.stdout", new_callable=io.StringIO),
+        ):
+            self.assertEqual(installed.check_private_draft(), 0)
+            release["assets"][0]["digest"] = "sha256:" + "0" * 64
+            self.assertEqual(installed.check_private_draft(), 1)
+            record = installed.read_json(Path(tmp) / "private-input-preflight.json")
+            self.assertFalse(record["passed"])
+            self.assertFalse(record["publicDistributionApproved"])
 
     def test_asset_redirect_does_not_forward_token_or_accept_other_hosts(self):
         req = Request(

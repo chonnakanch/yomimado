@@ -283,13 +283,19 @@ replacement execution remains pending. Run `37935912253` at
 tests and isolated replacement, then cannot find the draft in its read-only
 token's release listing. No installer is downloaded or replaced in that run.
 GitHub's [release API documentation](https://docs.github.com/en/rest/releases/releases#list-releases)
-requires push access to include drafts in listings. The audit now checks the
-fixed draft tag endpoint before spending time rebuilding, retaining `contents: read`.
-Run `37938465690` at `f252ed7d1af767866af54a18a78e08c1b5e31d00`
-confirms the direct draft-tag request is also inaccessible. It stops before any
-source rebuild or installer download. This is a concrete external input-access
-blocker: protected owner-authorized access is required; do not publish the draft
-or add an unprotected write token to this audit.
+requires push access to include drafts in listings. Earlier direct tag preflights
+(including `37938465690` and the approved run `38016752910` at `485c672`)
+used the wrong lookup: GitHub documents
+[Get a release by tag name](https://docs.github.com/en/rest/releases/releases#get-a-release-by-tag-name)
+for published releases. Those failures do not establish that the configured owner
+token lacks draft access. The corrected preflight resolves the exact unpublished
+identity through the authenticated release listing, rejects missing/duplicate or
+incomplete listings, and validates the declared setup/provenance digests before
+building. It retains a fixed, credential-free diagnostic JSON and error annotation
+even on early failure; no response bodies, headers or exception text are exported.
+The existing protected environment check and maintainer approval passed in
+`38016752910`; corrected draft access and installed replacement still require a
+passing hosted run. Keep token permissions unchanged while testing this correction.
 The workflow now prepares a dedicated protected input consumer. Its read-only
 plan validates the existing environment before a Windows deployment can be
 created; an absent, unprotected, bypassable or wrong-branch environment fails
@@ -321,7 +327,8 @@ Owner setup required in GitHub Settings (no credential in chat or git):
    environment and final exact-installer approval remain separate.
    Local guard tests reject changed
    application files, wrong candidate/gates, missing learning/native evidence and
-   credential-bearing or unexpected asset redirects; 136 release-script tests pass.
+   credential-bearing or unexpected asset redirects. Preflight tests also reject
+   hidden/duplicate drafts, incorrect declared assets and leaked failure credentials.
 
 The Windows Shapely wheel reports GEOS **3.11.4**. Its original source is
 `https://download.osgeo.org/geos/geos-3.11.4.tar.bz2`, SHA-256

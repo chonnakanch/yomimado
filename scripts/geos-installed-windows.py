@@ -64,20 +64,34 @@ def check_input_protection() -> None:
 
 
 def private_release() -> dict:
-    # Resolve the fixed identity directly; a read token's release listing can
-    # omit drafts. Keep token permissions unchanged and fail before rebuilding.
+    # The by-tag endpoint is for published releases. Resolve this unpublished
+    # input through the authenticated listing and still require its exact identity.
     tag = "windows-private-test-" + REVISION
     try:
-        release = request(API + "/releases/tags/" + tag)
+        releases = request(API + "/releases?per_page=100")
     except HTTPError as error:
-        if error.code in {403, 404}:
-            raise RuntimeError(
-                "Exact private draft is inaccessible to this job token. "
-                "An owner must provide protected access through the environment's "
-                "WINDOWS_PRIVATE_INPUT_TOKEN; do not publish the draft or broaden "
-                "the Actions token."
+        if error.code in {401, 403, 404}:
+            raise PrivateInputError(
+                "github-http-" + str(error.code),
+                "GitHub rejected the protected private-input GET (HTTP "
+                + str(error.code)
+                + "); provide protected access through WINDOWS_PRIVATE_INPUT_TOKEN.",
+                error.code,
             ) from None
         raise
+    if not isinstance(releases, list) or len(releases) >= 100:
+        raise PrivateInputError(
+            "incomplete-release-list", "Cannot establish a complete draft listing."
+        )
+    matches = [r for r in releases if r.get("tag_name") == tag]
+    if len(matches) != 1:
+        raise PrivateInputError(
+            "exact-draft-not-visible",
+            "The protected token cannot see exactly one matching private draft. "
+            "Keep the draft unpublished and token permissions unchanged; "
+            "the owner must check repository selection and draft visibility.",
+        )
+    release = matches[0]
     if (
         release.get("draft") is not True
         or release.get("target_commitish") != REVISION
@@ -85,6 +99,59 @@ def private_release() -> dict:
     ):
         raise ValueError("Private release identity differs")
     return release
+
+
+class PrivateInputError(RuntimeError):
+    def __init__(self, reason: str, message: str, status: int | None = None):
+        super().__init__(message)
+        self.reason = reason
+        self.status = status
+
+
+def check_private_draft() -> int:
+    # Retain only fixed diagnostics, never exceptions, response bodies, headers,
+    # URLs or credentials. This record is useful even when access fails early.
+    report = {
+        "passed": False,
+        "installerSourceRevision": REVISION,
+        "installerSha256": SETUP_SHA256,
+        "sourceCoverageApproved": False,
+        "publicDistributionApproved": False,
+    }
+    try:
+        if not os.environ.get("GH_TOKEN", "").strip():
+            raise PrivateInputError(
+                "missing-environment-secret",
+                "WINDOWS_PRIVATE_INPUT_TOKEN is missing or empty in windows-native-input.",
+            )
+        release = private_release()
+        assets = {a["name"]: a for a in release["assets"]}
+        if len(assets) != len(release["assets"]):
+            raise ValueError("Duplicate assets")
+        for name, sha in (
+            (SETUP, SETUP_SHA256),
+            ("windows-candidate.json", PROVENANCE_SHA256),
+        ):
+            asset = assets[name]
+            if (
+                asset.get("state") != "uploaded"
+                or asset.get("digest") != "sha256:" + sha
+            ):
+                raise ValueError("Asset identity differs")
+        report.update(passed=True, reason="exact-draft-visible")
+        message = "Exact unpublished draft and declared asset digests verified; download byte checks remain required."
+    except PrivateInputError as error:
+        report.update(reason=error.reason, httpStatus=error.status)
+        message = str(error)
+    except (ValueError, KeyError, TypeError):
+        report.update(reason="private-input-identity-mismatch")
+        message = "Private draft identity or declared asset digests differ from the fixed tested setup."
+    except (OSError, RuntimeError):
+        report.update(reason="unexpected-preflight-failure")
+        message = "Private-input GET failed before identity verification; inspect the runner/network without disclosing credentials."
+    write_json(BUILD / "private-input-preflight.json", report)
+    print(("" if report["passed"] else "::error::") + message)
+    return 0 if report["passed"] else 1
 
 
 class AssetRedirect(HTTPRedirectHandler):
@@ -304,8 +371,7 @@ def main() -> None:
 
 if __name__ == "__main__":
     if sys.argv[1:] == ["--check-private-draft"]:
-        private_release()
-        print("Exact unpublished draft is visible; asset byte checks remain required.")
+        sys.exit(check_private_draft())
     elif sys.argv[1:] == ["--check-input-protection"]:
         check_input_protection()
         print(
