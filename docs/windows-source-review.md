@@ -218,6 +218,14 @@ does not yet contain the supplement. Exact static linkage, complete source revie
 and verification of a newly packaged installer remain open. A Pillow rebuild is
 not required solely to add these notices.
 
+Installed-file binding is separately verified against the current exact setup's
+retained inventory: all **seven** bundled Pillow PYDs (including `_avif`) are
+byte-identical to their corresponding members of the pinned Windows 11.3.0
+wheel. Its eighth native member, `_imagingmorph`, is absent from the frozen
+runtime. The eight-input wheel count above is not the installed-file count.
+This establishes which wheel supplies those PYDs; it does not independently
+prove the complete statically linked vendor source graph.
+
 Private candidate run `38016054660` stops before compilation because the generated
 Gitiles libwebp archive has changed tar timestamps. A fresh response contains the
 same 341 file contents as the retained original; its compressed/archive hashes

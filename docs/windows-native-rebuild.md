@@ -296,6 +296,11 @@ even on early failure; no response bodies, headers or exception text are exporte
 The existing protected environment check and maintainer approval passed in
 `38016752910`; corrected draft access and installed replacement still require a
 passing hosted run. Keep token permissions unchanged while testing this correction.
+The correction is commit `220bd0bf2d9e4fce616cb8f70b7059e107451a01`;
+[run `38017337839`](https://github.com/chonnakanch/yomimado/actions/runs/38017337839)
+awaits a fresh human private-input review. All 148 release-script tests,
+Python lint/format, documentation formatting and workflow syntax pass locally;
+the reviewed macOS release-seed reuse check still passes.
 The workflow now prepares a dedicated protected input consumer. Its read-only
 plan validates the existing environment before a Windows deployment can be
 created; an absent, unprotected, bypassable or wrong-branch environment fails
