@@ -15,6 +15,7 @@ import tarfile
 import tomllib
 import zipfile
 from pathlib import Path, PurePosixPath
+from urllib.parse import urlsplit
 from urllib.request import urlopen
 
 from windows_release import BUILD, RESOURCES, ROOT, digest, fetch, read_json, write_json
@@ -22,6 +23,78 @@ from windows_release import BUILD, RESOURCES, ROOT, digest, fetch, read_json, wr
 DESKTOP = ROOT / "apps/desktop"
 UPSTREAM = ROOT / "THIRD_PARTY_LICENSES/upstream"
 PREFIXES = ("license", "licence", "copying", "notice", "copyright")
+
+
+def canonical_source_tar(original: Path, destination: Path) -> None:
+    """Keep all paths, modes and source bytes; remove variable Gitiles metadata."""
+    with tarfile.open(original) as source:
+        members = sorted(source.getmembers(), key=lambda member: member.name)
+        seen = set()
+        total = 0
+        for member in members:
+            path = PurePosixPath(member.name)
+            if (
+                path.is_absolute()
+                or ".." in path.parts
+                or path.as_posix() != member.name
+                or "\\" in member.name
+                or ":" in member.name
+                or member.name in seen
+                or not (member.isfile() or member.isdir())
+                or member.mode & ~0o777
+                not in (0, 0o100000 if member.isfile() else 0o040000)
+            ):
+                raise ValueError("Unsafe or duplicate preferred-source member")
+            seen.add(member.name)
+            total += member.size
+        if not members or total > 128 * 1024 * 1024:
+            raise ValueError("Unexpected preferred-source archive size")
+        with tarfile.open(destination, "w", format=tarfile.PAX_FORMAT) as target:
+            for member in members:
+                normalized = tarfile.TarInfo(member.name)
+                normalized.type = member.type
+                normalized.mode = member.mode & 0o777
+                normalized.size = member.size if member.isfile() else 0
+                target.addfile(
+                    normalized, source.extractfile(member) if member.isfile() else None
+                )
+
+
+def native_notice_source(entry: dict, destination: Path) -> None:
+    if entry.get("archiveNormalization") != "gitiles-tar-v1":
+        fetch(entry, destination)
+        return
+    url = urlsplit(entry["url"])
+    revision = entry["revision"]
+    if (
+        url.scheme != "https"
+        or url.hostname not in {"chromium.googlesource.com", "aomedia.googlesource.com"}
+        or len(revision) != 40
+        or any(character not in "0123456789abcdef" for character in revision)
+        or not url.path.endswith("/+archive/" + revision + ".tar.gz")
+        or url.query
+        or url.fragment
+        or url.netloc != url.hostname
+    ):
+        raise ValueError("Unpinned Gitiles preferred-source URL")
+    if destination.is_file() and digest(destination) == entry["sha256"]:
+        return
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    downloaded = destination.with_name(destination.name + ".download")
+    normalized = destination.with_name(destination.name + ".canonical")
+    try:
+        with (
+            urlopen(entry["url"], timeout=120) as response,
+            downloaded.open("wb") as out,
+        ):
+            shutil.copyfileobj(response, out)
+        canonical_source_tar(downloaded, normalized)
+        if digest(normalized) != entry["sha256"]:
+            raise ValueError("Preferred-source tree checksum changed")
+        normalized.replace(destination)
+    finally:
+        downloaded.unlink(missing_ok=True)
+        normalized.unlink(missing_ok=True)
 
 
 def license_files(directory: Path) -> list[Path]:

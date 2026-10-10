@@ -196,7 +196,11 @@ def download_inputs() -> None:
     for entry in record.get("installerSourceInputs", []):
         fetch(entry, BUILD / "sources/installer" / entry["filename"])
     for entry in record.get("nativeNoticeInputs", []):
-        fetch(entry, BUILD / "sources/native-notices" / entry["filename"])
+        from windows_notices import native_notice_source
+
+        native_notice_source(
+            entry, BUILD / "sources/native-notices" / entry["filename"]
+        )
     # Collecting sdists does not approve embedded BLAS/codec/compiler libraries.
     write_json(BUILD / "download-record.json", record)
 

@@ -218,6 +218,20 @@ does not yet contain the supplement. Exact static linkage, complete source revie
 and verification of a newly packaged installer remain open. A Pillow rebuild is
 not required solely to add these notices.
 
+Private candidate run `38016054660` stops before compilation because the generated
+Gitiles libwebp archive has changed tar timestamps. A fresh response contains the
+same 341 file contents as the retained original; its compressed/archive hashes
+differ. The three Gitiles source inputs now select exact upstream commits and use
+an explicit `gitiles-tar-v1` canonical tar format: sorted paths, unchanged contents,
+file types and permission bits, zero timestamps/owner fields, and no variable PAX
+metadata. The complete canonical archive must match its pinned SHA-256 before it
+is accepted. Links, duplicate/escaping paths and unexpected modes are rejected.
+Fresh libwebp, AOM and libyuv downloads all match the independently computed pins
+and original notice hashes. Original collected archive digests remain recorded.
+Dav1d keeps its original byte-level archive check. Registry wheels, models and
+dictionaries keep the existing exact-byte check. A test proves timestamp changes
+are accepted while changed source bytes are rejected. Hosted rerun remains required.
+
 The SudachiPy 0.6.10 tag resolves to
 `7e2f287bbfffc036421cf960802e41a696727747`. Its original
 [preferred-source archive](https://codeload.github.com/WorksApplications/sudachi.rs/tar.gz/7e2f287bbfffc036421cf960802e41a696727747)

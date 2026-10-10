@@ -16,6 +16,95 @@ import windows_release as release
 
 
 class WindowsNoticeTests(unittest.TestCase):
+    def test_gitiles_metadata_can_vary_but_source_bytes_cannot(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+
+            def archive(name, timestamp, content):
+                path = root / name
+                with tarfile.open(path, "w:gz") as source:
+                    member = tarfile.TarInfo("src/library.c")
+                    member.mode = 0o100644
+                    member.mtime = timestamp
+                    member.size = len(content)
+                    source.addfile(member, io.BytesIO(content))
+                return path
+
+            original = archive("original.tar.gz", 123, b"original source\n")
+            refreshed = archive("refreshed.tar.gz", 456, b"original source\n")
+            changed = archive("changed.tar.gz", 456, b"changed source\n")
+            expected = root / "expected.tar"
+            notices.canonical_source_tar(original, expected)
+            entry = {
+                "archiveNormalization": "gitiles-tar-v1",
+                "url": "https://chromium.googlesource.com/project/+archive/"
+                + "a" * 40
+                + ".tar.gz",
+                "revision": "a" * 40,
+                "sha256": notices.digest(expected),
+            }
+            output = root / "accepted.tar"
+            with patch.object(
+                notices, "urlopen", return_value=io.BytesIO(refreshed.read_bytes())
+            ):
+                notices.native_notice_source(entry, output)
+            self.assertEqual(output.read_bytes(), expected.read_bytes())
+            with tarfile.open(output) as source:
+                member = source.getmember("src/library.c")
+                self.assertEqual(member.mode, 0o644)
+                self.assertEqual(member.mtime, 0)
+                self.assertEqual(
+                    source.extractfile(member).read(), b"original source\n"
+                )
+            with (
+                patch.object(
+                    notices, "urlopen", return_value=io.BytesIO(changed.read_bytes())
+                ),
+                self.assertRaisesRegex(ValueError, "tree checksum changed"),
+            ):
+                notices.native_notice_source(entry, root / "rejected.tar")
+            self.assertFalse((root / "rejected.tar").exists())
+            self.assertFalse((root / "rejected.tar.download").exists())
+            self.assertFalse((root / "rejected.tar.canonical").exists())
+
+    def test_canonical_source_rejects_links_escaping_and_duplicate_paths(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            for names in (("../source",), ("/source",), ("source", "source")):
+                archive = root / "unsafe.tar"
+                with tarfile.open(archive, "w") as source:
+                    for name in names:
+                        source.addfile(tarfile.TarInfo(name))
+                with self.assertRaisesRegex(ValueError, "Unsafe or duplicate"):
+                    notices.canonical_source_tar(archive, root / "canonical.tar")
+            with tarfile.open(archive, "w") as source:
+                link = tarfile.TarInfo("link")
+                link.type = tarfile.SYMTYPE
+                link.linkname = "elsewhere"
+                source.addfile(link)
+            with self.assertRaisesRegex(ValueError, "Unsafe or duplicate"):
+                notices.canonical_source_tar(archive, root / "canonical.tar")
+
+    def test_normalized_source_requires_exact_commit_on_original_host(self):
+        entry = {
+            "archiveNormalization": "gitiles-tar-v1",
+            "revision": "a" * 40,
+            "sha256": "unused",
+        }
+        for url in (
+            "https://example.com/+archive/" + "a" * 40 + ".tar.gz",
+            "https://chromium.googlesource.com/project/+archive/main.tar.gz",
+            "https://user:secret@chromium.googlesource.com/project/+archive/"
+            + "a" * 40
+            + ".tar.gz",
+        ):
+            with (
+                patch.object(notices, "urlopen") as network,
+                self.assertRaisesRegex(ValueError, "Unpinned Gitiles"),
+            ):
+                notices.native_notice_source({**entry, "url": url}, Path("unused"))
+            network.assert_not_called()
+
     def test_native_notices_preserve_bytes_and_reject_changed_source(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
