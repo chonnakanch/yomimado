@@ -545,6 +545,10 @@ def inventory_inputs() -> None:
     toc = BUILD / "pyinstaller/yomimado-ocr/Analysis-00.toc"
     analyzed = analysis_native_inputs(toc, [g[0] for g in Analysis._GUTS])
     inputs.extend(analyzed)
+    if (notices / "windows-vc-replacement.json").is_file():
+        from windows_vc_runtime import bound_inputs
+
+        inputs.extend(bound_inputs(RESOURCES, check_sources=True))
     frozen = RESOURCES / "runtime"
     executable_input = frozen_executable_input(
         toc.with_name("EXE-00.toc"),
@@ -795,6 +799,10 @@ def verify_resources(
     }
     if actual_files != read_json(manifest):
         raise ValueError("Installed resource hashes differ")
+    if (resources / "notices/windows-vc-replacement.json").is_file():
+        from windows_vc_runtime import bound_inputs
+
+        bound_inputs(resources)
     manifest_names = {"windows-inputs.json", "windows-assets.json"}
     # New builds use current inputs. A historical exact-installer audit may
     # explicitly supply its independently pinned original manifest hashes.

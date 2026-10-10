@@ -125,6 +125,7 @@ def verify_reuse(root: Path = ROOT) -> None:
         "scripts/windows_onnx_sources.py",
         "scripts/windows_native_sources.py",
         "scripts/windows_sudachi_runtime.py",
+        "scripts/windows_vc_runtime.py",
         ".github/workflows/windows-vc-provenance.yml",
         "scripts/audit-vc-provenance.ps1",
         ".github/workflows/windows-onnx-prototype.yml",

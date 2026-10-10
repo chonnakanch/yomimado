@@ -6,6 +6,15 @@ checks. A short read-only Actions inspection compares the observed VC DLL hashes
 with the hosted image's canonical REDIST files. This uses no private credential,
 changes no installer and does not require a long source build.
 
+Canonical VC replacement preparation — 2026-10-11: the successful read-only
+audit finds no canonical match for any of the six historical copies. The new
+private recipe pins VC143 14.44.35211.0 originals and copies unchanged bytes
+over standard/renamed runtime inputs, retaining original/replacement hashes
+and canonical provenance. Installed execution and conditional redistribution
+approval remain open. Run `38070613690` stops at Sudachi's final link because
+PyO3 cannot find the in-tree `python311.lib`; the binding recipe now explicitly
+adds that source-built import-library directory and records its hash.
+
 Comparison environment correction — 2026-10-11: run `38067916664` fails in the
 original detector's NumPy `bool8` alias before producing an installer. The
 export/comparison environment now retains its original NumPy 1.26.4 wheel,

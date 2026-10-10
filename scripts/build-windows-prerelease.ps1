@@ -89,6 +89,7 @@ if (Test-Path $Runtime) { Remove-Item $Runtime -Recurse -Force }
 Copy-Item (Join-Path $Build 'dist/yomimado-ocr') $Runtime -Recurse
 # Remove unused native codec extensions before inventory and exact installed smoke.
 Invoke-Checked $Python @('scripts/windows_release.py', 'prune')
+Invoke-Checked $Python @('scripts/windows_vc_runtime.py', 'stage')
 if (-not $Onnx) { Invoke-Checked $Python @('scripts/create-manga-ocr-warmup.py', (Join-Path $Runtime '_internal/manga_ocr/assets/example.jpg')) }
 $Notices = Join-Path $Resources 'notices'
 New-Item -ItemType Directory -Force $Notices | Out-Null
@@ -104,6 +105,7 @@ Copy-Item (Join-Path $Root 'docs/windows-source-review.md') $Notices
 Copy-Item (Join-Path $Root 'docs/windows-native-replacement.md') $Notices
 Copy-Item (Join-Path $Root 'docs/windows-numpy-runtime.md') $Notices
 Copy-Item (Join-Path $Root 'docs/windows-sudachi-runtime.md') $Notices
+Copy-Item (Join-Path $Root 'docs/windows-microsoft-runtime.md') $Notices
 if ($Onnx) {
     Copy-Item (Join-Path $Root 'scripts/onnx-probe-inputs.json') $Notices
     Copy-Item (Join-Path $Resources 'assets/onnx/export.json') (Join-Path $Notices 'windows-onnx-export.json')

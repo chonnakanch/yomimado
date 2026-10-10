@@ -4,6 +4,18 @@ Reviewed 2026-10-11. Status: conditional redistribution evidence remains open.
 This records actual inputs and the remaining decisions; it does not accept a
 Microsoft agreement for the maintainer or approve an installer.
 
+The successful provenance run `38071435853` at `4badc93` is independently
+verified: artifact `11676279560` has SHA-256
+`d2aec89a9b6c75e0249cac835c257a9055131faccde93eecddab93f9a127b7df`.
+None of the six historical files matches the runner's canonical REDIST copies.
+The private recipe now selects [exact VC143 originals](windows-vc-runtime-inputs.json),
+version **14.44.35211.0**, from `14.44.35112/x64/Microsoft.VC143.CRT`.
+It replaces existing standard/renamed runtime inputs without altering any PE
+bytes, follows normal/delay-loaded VC dependencies, and retains every original
+and replacement hash. Inventory binds the replacements to canonical originals.
+The next Windows installed test must verify this replacement; provenance is
+separate from contractual redistribution permission.
+
 ## Actual files and canonical inputs
 
 The verified historical ONNX inventory from run `38066505590` contains six
@@ -56,9 +68,10 @@ this does not make application libraries such as Intel MKL/IPP System Libraries.
 
 ## Remaining public gates
 
-1. Bind the new candidate's actual VC DLLs to unchanged canonical distributable
-   inputs, with exact versions and notices. Resolve the old Shapely copy and
-   any tool-directory bytes that do not match canonical originals.
+1. Verify the new candidate's actual VC DLLs against unchanged canonical
+   distributable inputs, with exact versions and notices. The prepared recipe
+   replaces the old Shapely copy and tool-directory inputs; its installed
+   execution remains pending.
 2. Establish the maintainer's applicable redistribution grant and satisfy its
    distribution/end-user requirements specifically for Microsoft components.
    Do not impose proprietary restrictions on YomiMado's GPL code. An alternative
