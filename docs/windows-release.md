@@ -64,12 +64,22 @@ Its subsequent draft lookup used the published-release tag endpoint incorrectly;
 the corrected lookup uses the authenticated listing and retains safe preflight
 diagnostics. Corrected run `38017337839` received approval. Its first attempt
 stopped because the token was stored as a variable rather than a secret. Attempt 2
-now receives the secret but cannot see the matching private draft in the API
-listing. Confirm repository selection and the exact draft's continued existence
-before changing token permissions. Installed GEOS replacement has not executed.
-See the native worksheet for the protected-input requirement. Installed GEOS
-replacement remains unverified. Independent Torch source-build preparation is executable in
-**Windows Torch source audit**; it does not alter the tested setup.
+receives the secret but cannot see the matching private draft in the API listing.
+The owner confirms the draft still exists and explicitly authorizes repository-only
+Contents write access, with Workflows disabled, then updates the secret.
+Attempt 3 passes private-input access, all 431 GEOS tests and isolated frozen
+replacement, but fails the installed-service step before producing its OCR report.
+Its downloaded evidence hash is verified. A definite verifier mismatch is fixed:
+the historical setup must use its pinned original manifests instead of today's
+changed source-input manifest. Phase diagnostics and tests preserve all exact
+file/asset/architecture gates. A reviewed rerun is required; installed GEOS
+replacement remains unverified. See the native worksheet for scope and hashes.
+**Windows Torch source audit** also reaches native compilation, then fails on a
+quoted include flag inside generated C++ build-option strings. The redundant flag
+is removed and that source object is compiled early on rerun. Its downloaded
+source/notice/cache/compiler evidence verifies; completed Torch/vision inference
+and full installed replacement remain open. Neither experiment changes the
+maintainer-tested setup.
 Independent OpenCV run `37938195277` now passes its IPP-free source build,
 DLL compiler-runtime linkage and native/frozen CPU detector probes, with its
 downloaded textual evidence independently hash-verified. Full installed

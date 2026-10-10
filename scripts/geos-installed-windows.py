@@ -25,6 +25,12 @@ SETUP_SHA256 = "51b0091103c10c03ecd3748039bd4db0631381fb43885fe7163b889821fba207
 PROVENANCE_SHA256 = "aa69d7008c69c31ec5840448fe7e30829a12dc50922f744c815de5952358e95b"
 RUNTIME_SHA256 = "c9911d9abe692c86f9de803af9f97cbb59af10339583dd86c8a673f036b73398"
 DESKTOP_SHA256 = "8ea510ab664dfbdbd6c14b0b8f55ebf3e20361487eaa413676bcb78d5baf5e47"
+# Original bytes from REVISION, also bound to the tested setup's inventory.
+# Later source/notice additions must not redefine this historical installation.
+MANIFEST_HASHES = {
+    "windows-inputs.json": "1e75e22fa08eec1589cc517b6dbf9a88af6f043e6a3a74733a36f814103141cc",
+    "windows-assets.json": "c5f745cfcfdd0f30fb11eeb52467c373bea9386b34a24ecd8fefe753e76e5878",
+}
 BUILD = ROOT / "services/ocr/build/windows-geos-audit"
 INPUT_ENVIRONMENT = "windows-native-input"
 
@@ -244,7 +250,7 @@ def verify_changes(before: dict, after: dict, removed: list[str], copies: dict) 
         raise ValueError("Replacement changed files outside the exact GEOS plan")
 
 
-def main() -> None:
+def main(progress: dict) -> None:
     if sys.platform != "win32" or os.environ.get("GITHUB_ACTIONS") != "true":
         raise ValueError("Requires disposable Windows Actions execution")
     # This venv has the pinned pefile dependency used by the existing PE parser.
@@ -256,12 +262,19 @@ def main() -> None:
     audit = read_json(BUILD / "replacement-verification.json")
     if audit.get("passed") is not True:
         raise ValueError("Pinned GEOS build/frozen replacement must pass first")
+
+    def phase(name: str) -> None:
+        progress["phase"] = name
+        write_json(BUILD / "installed-replacement-progress.json", progress)
+
+    phase("resolve exact private draft")
     release = private_release()
     assets = {a["name"]: a for a in release["assets"]}
     if len(assets) != len(release["assets"]):
         raise ValueError("Duplicate private release asset names")
     temporary = Path(os.environ["RUNNER_TEMP"]) / "yomimado-geos-installed"
     temporary.mkdir(exist_ok=True)
+    phase("download exact provenance")
     download_asset(
         assets["windows-candidate.json"],
         temporary / "windows-candidate.json",
@@ -269,22 +282,27 @@ def main() -> None:
     )
     verify_candidate(release, read_json(temporary / "windows-candidate.json"))
     installer = temporary / SETUP
+    phase("download exact installer")
     download_asset(assets[SETUP], installer, SETUP_SHA256)
     installed = Path(os.environ["LOCALAPPDATA"]) / "YomiMado"
     if installed.exists():
         raise ValueError("Disposable runner already has an installation")
+    phase("install exact setup")
     subprocess.run([str(installer), "/S", "/D=" + str(installed)], check=True)
-    verify_resources(installed / "ocr")
+    phase("verify original installed resources")
+    verify_resources(installed / "ocr", manifest_hashes=MANIFEST_HASHES)
     if digest(installed / "yomimado.exe") != DESKTOP_SHA256:
         raise ValueError("Installed desktop differs from tested candidate")
     runtime = installed / "ocr/runtime"
     if digest(runtime / "yomimado-ocr.exe") != RUNTIME_SHA256:
         raise ValueError("Installed service differs from tested candidate")
     model = temporary / "comictextdetector.pt.onnx"
+    phase("obtain smoke-only detector")
     fetch(
         read_json(ROOT / "docs/windows-opencv-build-inputs.json")["smokeDetector"],
         model,
     )
+    phase("resolve original GEOS layout")
     plan = geos.replacement_plan(runtime / "_internal", BUILD / "geos-install/bin")
     before = snapshot(installed)
     backup = temporary / "original-geos"
@@ -306,14 +324,16 @@ def main() -> None:
             name,
         )
         report = read_json(result)
-        verify_smoke(report, expected)
         write_json(BUILD / (name + ".json"), report)
+        verify_smoke(report, expected)
         return report
 
     try:
+        phase("baseline installed OCR")
         baseline = smoke(
             "installed-baseline", {str(p): digest(p) for p in plan["remove"]}
         )
+        phase("replace only GEOS libraries")
         for p in plan["remove"]:
             p.unlink()
         for src, dst in plan["copy"]:
@@ -328,35 +348,38 @@ def main() -> None:
             [p.relative_to(installed).as_posix() for p in plan["remove"]],
             copies,
         )
+        phase("replacement installed OCR")
         replacement = smoke(
             "installed-replacement",
             {str(dst): digest(src) for src, dst in plan["copy"]},
         )
-        write_json(
-            BUILD / "installed-replacement-verification.json",
-            {
-                "passed": True,
-                "scope": "Exact private setup installed service; disposable GEOS replacement only",
-                "installerSha256": SETUP_SHA256,
-                "installerSourceRevision": REVISION,
-                "auditRevision": os.environ["GITHUB_SHA"],
-                "recipeSha256": digest(Path(__file__)),
-                "unchangedInstalledFiles": len(before) - len(plan["remove"]),
-                "removedLibraries": {
-                    p.relative_to(installed).as_posix(): before[
-                        p.relative_to(installed).as_posix()
-                    ]
-                    for p in plan["remove"]
-                },
-                "replacementLibraries": copies,
-                "baseline": baseline,
-                "replacement": replacement,
-                "sourceCoverageApproved": False,
-                "publicDistributionApproved": False,
-                "windows11HardwareVerified": False,
+        verification = {
+            "passed": True,
+            "scope": "Exact private setup installed service; disposable GEOS replacement only",
+            "installerSha256": SETUP_SHA256,
+            "installerSourceRevision": REVISION,
+            "auditRevision": os.environ["GITHUB_SHA"],
+            "recipeSha256": digest(Path(__file__)),
+            "unchangedInstalledFiles": len(before) - len(plan["remove"]),
+            "removedLibraries": {
+                p.relative_to(installed).as_posix(): before[
+                    p.relative_to(installed).as_posix()
+                ]
+                for p in plan["remove"]
             },
-        )
+            "replacementLibraries": copies,
+            "baseline": baseline,
+            "replacement": replacement,
+            "sourceCoverageApproved": False,
+            "publicDistributionApproved": False,
+            "windows11HardwareVerified": False,
+        }
+    except Exception:
+        progress["failedPhase"] = progress["phase"]
+        raise
     finally:
+        # Diagnostic I/O must not interrupt restoration of the original DLLs.
+        progress["phase"] = "restore original installed files"
         for _, dst in plan["copy"]:
             dst.unlink(missing_ok=True)
         for p in plan["remove"]:
@@ -364,6 +387,10 @@ def main() -> None:
         model.unlink(missing_ok=True)
         if snapshot(installed) != before:
             raise ValueError("Original installed files were not restored exactly")
+        progress["originalFilesRestored"] = True
+    write_json(BUILD / "installed-replacement-verification.json", verification)
+    progress.update(passed=True, phase="complete")
+    write_json(BUILD / "installed-replacement-progress.json", progress)
     print(
         "Exact installed OCR/learning GEOS replacement passed; original installation restored. Source/public/installer approval remains open."
     )
@@ -378,6 +405,27 @@ if __name__ == "__main__":
             "Required reviewer, no administrator bypass and develop-only input protection verified."
         )
     elif len(sys.argv) == 1:
-        main()
+        progress = {
+            "passed": False,
+            "phase": "validate source-built probe",
+            "installerSourceRevision": REVISION,
+            "installerSha256": SETUP_SHA256,
+            "manifestHashes": MANIFEST_HASHES,
+            "sourceCoverageApproved": False,
+            "publicDistributionApproved": False,
+        }
+        try:
+            main(progress)
+        except Exception as error:
+            # No exception text, response bodies or signed URLs in artifacts.
+            progress["errorType"] = type(error).__name__
+            if isinstance(error, HTTPError):
+                progress["httpStatus"] = error.code
+            write_json(BUILD / "installed-replacement-progress.json", progress)
+            print(
+                "::error::Exact installed GEOS check failed at: "
+                + progress.get("failedPhase", progress["phase"])
+            )
+            raise
     else:
         raise ValueError("Expected no arguments or a private-input preflight")

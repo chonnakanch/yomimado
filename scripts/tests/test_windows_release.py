@@ -408,7 +408,7 @@ class WindowsReleaseTests(unittest.TestCase):
         release.seal_resources(self.root)
         return exe
 
-    def verify(self, machine="0x8664"):
+    def verify(self, machine="0x8664", **kwargs):
         with (
             patch.object(
                 release,
@@ -421,7 +421,71 @@ class WindowsReleaseTests(unittest.TestCase):
                 release, "pe_info", return_value={"machine": machine, "imports": []}
             ),
         ):
-            return release.verify_resources(self.root)
+            return release.verify_resources(self.root, **kwargs)
+
+    def test_historical_installer_requires_explicit_exact_manifest_hashes(self):
+        self.resources()
+        notices = self.root / "notices"
+        (notices / "windows-inputs.json").write_text('{"packages": []}\n')
+        pins = {
+            name: release.digest(notices / name)
+            for name in ("windows-inputs.json", "windows-assets.json")
+        }
+        release.seal_resources(self.root)
+        with self.assertRaisesRegex(ValueError, "Installed input manifest differs"):
+            self.verify()
+        self.verify(manifest_hashes=pins)
+        with self.assertRaisesRegex(ValueError, "architecture"):
+            self.verify("0x14c", manifest_hashes=pins)
+        (notices / "windows-inputs.json").write_text('{"packages": ["changed"]}\n')
+        release.seal_resources(self.root)
+        with self.assertRaisesRegex(ValueError, "Installed input manifest differs"):
+            self.verify(manifest_hashes=pins)
+
+    def test_historical_manifest_does_not_skip_exact_asset_verification(self):
+        self.resources()
+        assets = self.root / "assets"
+        assets.mkdir()
+        asset = assets / "synthetic.txt"
+        asset.write_text("synthetic asset")
+        release.write_json(
+            self.root / "notices/windows-assets.json",
+            [{"path": asset.name, "sha256": release.digest(asset)}],
+        )
+        pins = {
+            name: release.digest(self.root / "notices" / name)
+            for name in ("windows-inputs.json", "windows-assets.json")
+        }
+        release.seal_resources(self.root)
+        with patch.object(
+            release, "pe_info", return_value={"machine": "0x8664", "imports": []}
+        ):
+            release.verify_resources(self.root, manifest_hashes=pins)
+            asset.write_text("changed synthetic asset")
+            release.seal_resources(self.root)
+            with self.assertRaisesRegex(ValueError, "Installed asset changed"):
+                release.verify_resources(self.root, manifest_hashes=pins)
+
+    def test_historical_manifest_hashes_cannot_be_partial_or_malformed(self):
+        self.resources()
+        pins = {
+            name: release.digest(self.root / "notices" / name)
+            for name in ("windows-inputs.json", "windows-assets.json")
+        }
+        for wrong in (
+            {},
+            {"windows-inputs.json": pins["windows-inputs.json"]},
+            {**pins, "windows-assets.json": "not a hash"},
+            {**pins, "windows-assets.json": None},
+            {**pins, "unexpected.json": "a" * 64},
+        ):
+            with (
+                self.subTest(pins=wrong),
+                self.assertRaisesRegex(
+                    ValueError, "Exact Windows manifest hashes required"
+                ),
+            ):
+                self.verify(manifest_hashes=wrong)
 
     def test_installed_native_hash_is_bound_to_inventory(self):
         exe = self.resources()

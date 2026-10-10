@@ -323,22 +323,46 @@ passed the protected environment check and received the maintainer's approval.
 Attempt 1 stopped because the environment secret was missing or empty; the owner
 corrected its placement from environment variables to environment secrets.
 Attempt 2 now reaches the authenticated release listing but cannot see exactly
-one matching private draft. This is the current external input-access blocker:
+one matching private draft. This exposed an external input-access blocker:
 confirm the token selects this repository and that the exact draft above still
 exists before proposing any permission change. GitHub requires push access for
 draft listings; token presence and successful public listing alone do not prove
 draft access. No GEOS source rebuild, installer download or installed replacement
-has executed in this run. All 148 release-script tests,
+had executed in attempt 2. All 148 release-script tests,
 Python lint/format, documentation formatting and workflow syntax pass locally;
 the reviewed macOS release-seed reuse check still passes.
 On 2026-10-10 the owner confirms the exact old draft opens while signed in and
 explicitly authorizes a replacement token with **Contents: read and write**,
 restricted to this repository, with **Workflows disabled**. This credential has
 repository/release write capability; the reviewed GEOS consumer still performs
-only GET requests. The owner must update the environment secret and rerun the
-unchanged audit. Token access and installed replacement remain unverified until
-that rerun passes. This permission approval does not approve source delivery,
+only GET requests. The owner updated the environment secret and reran the
+unchanged audit. This permission approval does not approve source delivery,
 publication or the final installer.
+
+Attempt 3 (job `114117016340`) passes protected draft access, the GEOS source
+build, all **431** upstream tests and isolated frozen replacement. The exact
+installed-service step fails before producing baseline/replacement evidence.
+Its downloaded textual artifact (ID `11657354146`, 61,130 bytes) matches GitHub
+SHA-256 `fdc55cef0f8163c317591e75b2c810b686cfaea9688e8cc9b919f5f5d142279f`.
+Recipe/probe/cache hashes, retained full notices, matching geometry fingerprints
+and both actual AMD64 replacement DLL paths/hashes verify locally. The artifact
+has no exception log for the installed step; no installed pass is claimed.
+
+Local inspection identifies a definite historical-input mismatch: the verifier
+compares the old setup with today's changed `windows-inputs.json`. The original
+`c69eff996f7e` source bytes and retained tested inventory agree on manifest
+SHA-256 `1e75e22fa08eec1589cc517b6dbf9a88af6f043e6a3a74733a36f814103141cc`;
+the unchanged original asset manifest is
+`c5f745cfcfdd0f30fb11eeb52467c373bea9386b34a24ecd8fefe753e76e5878`.
+The historical audit now explicitly requires those two hashes. New candidate
+verification still requires current inputs; file sealing, exact assets, AMD64
+native inventory and import checks remain enforced in both cases. The installed
+audit now retains fixed phase/error-type/HTTP-status diagnostics without response
+bodies or signed URLs, and writes its passing verification only after exact
+original-file restoration. These fixes require a reviewed Windows rerun.
+All 151 local release-script tests pass, including rejection of changed/partial
+historical manifests, asset tampering and mixed architecture. Reports stay private
+under `services/ocr/build/windows-geos-run-38017337839/`.
 
 The workflow now prepares a dedicated protected input consumer. Its read-only
 plan validates the existing environment before a Windows deployment can be

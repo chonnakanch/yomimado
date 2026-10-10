@@ -7,6 +7,7 @@ import hashlib
 import json
 import os
 import platform
+import re
 import shutil
 import subprocess
 import sys
@@ -505,7 +506,9 @@ def prune_unused_native() -> None:
     write_json(RESOURCES / "notices/windows-excluded-native.json", removed)
 
 
-def verify_resources(resources: Path) -> dict:
+def verify_resources(
+    resources: Path, *, manifest_hashes: dict[str, str] | None = None
+) -> dict:
     assert_no_detector(resources)
     required = [
         "LICENSE",
@@ -531,10 +534,20 @@ def verify_resources(resources: Path) -> dict:
     }
     if actual_files != read_json(manifest):
         raise ValueError("Installed resource hashes differ")
-    for name in ("windows-inputs.json", "windows-assets.json"):
-        if digest(resources / "notices" / name) != digest(SERVICE / name):
+    manifest_names = {"windows-inputs.json", "windows-assets.json"}
+    # New builds use current inputs. A historical exact-installer audit may
+    # explicitly supply its independently pinned original manifest hashes.
+    if manifest_hashes is None:
+        manifest_hashes = {name: digest(SERVICE / name) for name in manifest_names}
+    if set(manifest_hashes) != manifest_names or any(
+        not isinstance(sha, str) or not re.fullmatch(r"[0-9a-f]{64}", sha)
+        for sha in manifest_hashes.values()
+    ):
+        raise ValueError("Exact Windows manifest hashes required")
+    for name, sha in manifest_hashes.items():
+        if digest(resources / "notices" / name) != sha:
             raise ValueError("Installed input manifest differs: " + name)
-    for entry in read_json(SERVICE / "windows-assets.json"):
+    for entry in read_json(resources / "notices/windows-assets.json"):
         if digest(resources / "assets" / entry["path"]) != entry["sha256"]:
             raise ValueError("Installed asset changed: " + entry["path"])
     inventory = read_json(resources / "notices/windows-inventory.json")
