@@ -51,6 +51,17 @@
     "nativeInputs": {},
     "noticeInputs": {
       "flatbuffers-25.2.10.dist-info/LICENSE": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30"
+    },
+    "source": {
+      "name": "python-flatbuffers-25.2.10",
+      "filename": "flatbuffers-1c514626e83c.tar.gz",
+      "url": "https://codeload.github.com/google/flatbuffers/tar.gz/1c514626e83c20fffa8557e75641848e1e15cd5e",
+      "sha256": "efac5e331f544cac1fa13a6a4cb18823e31c5709997971b8744e86573fe45dc9",
+      "noticeHashes": {
+        "flatbuffers-1c514626e83c20fffa8557e75641848e1e15cd5e/LICENSE": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30"
+      },
+      "preferredSourceSha256": "8440c7e727096094ef2d16787eb4fc1a5054a0487f8ce29e627c1cafdec5c422",
+      "wheelSourcePrefix": "flatbuffers-1c514626e83c20fffa8557e75641848e1e15cd5e/python/"
     }
   },
   {
@@ -62,6 +73,17 @@
     "nativeInputs": {},
     "noticeInputs": {
       "coloredlogs-15.0.1.dist-info/LICENSE.txt": "0bef4ffb1855b65570304f2018c6d44e4bab97bd5df8716ecd7800014d717267"
+    },
+    "source": {
+      "name": "python-coloredlogs-15.0.1",
+      "filename": "coloredlogs-15.0.1.tar.gz",
+      "url": "https://files.pythonhosted.org/packages/cc/c7/eed8f27100517e8c0e6b923d5f0845d0cb99763da6fdee00478f91db7325/coloredlogs-15.0.1.tar.gz",
+      "sha256": "7c991aa71a4577af2f82600d8f8f3a89f936baeaf9b50a9c197da014e5bf16b0",
+      "noticeHashes": {
+        "coloredlogs-15.0.1/LICENSE.txt": "0bef4ffb1855b65570304f2018c6d44e4bab97bd5df8716ecd7800014d717267"
+      },
+      "preferredSourceSha256": "272623c6cc81c46dd6b92cdc13e7166137b7c895f088ed1f270564f017b8f9ab",
+      "wheelSourcePrefix": "coloredlogs-15.0.1/"
     }
   },
   {
@@ -73,6 +95,17 @@
     "nativeInputs": {},
     "noticeInputs": {
       "humanfriendly-10.0.dist-info/LICENSE.txt": "4ac48f4117809f2734066150450f120b3bb110ac1d3b32170795e0560dbbc1f5"
+    },
+    "source": {
+      "name": "python-humanfriendly-10.0",
+      "filename": "humanfriendly-10.0.tar.gz",
+      "url": "https://files.pythonhosted.org/packages/cc/3f/2c29224acb2e2df4d2046e4c73ee2662023c58ff5b113c4c1adac0886c43/humanfriendly-10.0.tar.gz",
+      "sha256": "6b0b831ce8f15f7300721aa49829fc4e83921a9a301cc7f606be6686a2288ddc",
+      "noticeHashes": {
+        "humanfriendly-10.0/LICENSE.txt": "4ac48f4117809f2734066150450f120b3bb110ac1d3b32170795e0560dbbc1f5"
+      },
+      "preferredSourceSha256": "475158524ef2438bca85c6d6ac1a037ce1fe2498de3c414b43b45c6813ed6060",
+      "wheelSourcePrefix": "humanfriendly-10.0/"
     }
   },
   {
@@ -84,6 +117,18 @@
     "nativeInputs": {},
     "noticeInputs": {
       "pyreadline3-3.5.4.dist-info/LICENSE.md": "8fc4d8de61b40533023b16e64528d13371a2e9c68677df79ed5e93ba570471bd"
+    },
+    "source": {
+      "name": "python-pyreadline3-3.5.4",
+      "filename": "pyreadline3-3.5.4.tar.gz",
+      "url": "https://files.pythonhosted.org/packages/0f/49/4cea918a08f02817aabae639e3d0ac046fef9f9180518a3ad394e22da148/pyreadline3-3.5.4.tar.gz",
+      "sha256": "8d57d53039a1c75adba8e50dd3d992b28143480816187ea5efbd5c78e6c885b7",
+      "noticeHashes": {
+        "pyreadline3-3.5.4/LICENSE.md": "8fc4d8de61b40533023b16e64528d13371a2e9c68677df79ed5e93ba570471bd",
+        "pyreadline3-3.5.4/doc/COPYING": "6f6a9ae014dcf9f04752760ea3a3b7816014e417c16d7456ebcee5ecdf4a8532"
+      },
+      "preferredSourceSha256": "eeba787164fe720b18cae46ebfb0efec0299218c34265cc01cfea9f408c33a31",
+      "wheelSourcePrefix": "pyreadline3-3.5.4/src/"
     }
   }
 ]

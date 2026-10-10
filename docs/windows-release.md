@@ -34,6 +34,13 @@ archives and unchanged original notices; local collection and all 190 release
 script tests pass. Source review, installed ONNX runtime checks and fresh human
 testing of the resulting exact setup remain open. No public release is enabled.
 
+Run `38064440449` proceeds beyond OpenCV retention, then rejects a historical
+raw Gitiles archive hash. Three affected vendor entries now use the previously
+pinned canonical-download recipe and exact commits; fresh-download source/notice
+checks pass without changing preferred code hashes. Four additional pure Python
+sources are bound to all 75 wheel Python files, bringing the prepared collection
+to 52 archives. LGPL replacement instructions are included in installed notices.
+
 Build policy update — 2026-10-10: the maintainer chooses to avoid long Torch
 source builds. **Windows Torch source audit** is now manual-only with a false-by-default
 explicit opt-in; no push starts it. Prebuilt Torch is now export-only in the new

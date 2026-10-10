@@ -79,6 +79,24 @@ the exact Sudachi dependency graph, compiler-runtime scope, Microsoft runtime
 redistribution and installed binary bindings still require the review below.
 Source and public approval remain false.
 
+The subsequent source-download check in run `38064440449` rejects the historical
+raw Gitiles WebP archive hash. The new delivery manifest now uses the existing
+`gitiles-tar-v1` recipe and exact source commits for WebP, AOM and libyuv. Fresh
+downloads of all three pass the canonical input, preferred-tree and original
+notice checks; preferred-source hashes remain unchanged. Variable transport
+metadata is not accepted as a change to source bytes.
+
+Four added pure Python runtime packages now have original preferred sources:
+FlatBuffers 25.2.10, coloredlogs 15.0.1, humanfriendly 10.0 and pyreadline3 3.5.4.
+Their 75 wheel Python files match the source bytes exactly. FlatBuffers' PyPI
+sdist omits its licence, so the retained official source commit
+`1c514626e83c20fffa8557e75641848e1e15cd5e` supplies the unchanged full Apache
+text and matching Python files. Source preparation now has 52 archives and
+explicit wheel/source code hashes; empty original-notice selections are rejected.
+The [native replacement instructions](windows-native-replacement.md) are copied
+into installed notices and included in project sources. Their historical GEOS
+test scope and still-open OpenBLAS/compiler gap remain explicit.
+
 The [original-runtime GPL review](windows-gpl-compatibility.md) now records the
 actual detector-to-OpenCV/Torch calls, loaded binary hashes, exact Intel terms
 and exception checks. Public distribution of this combination conflicts with

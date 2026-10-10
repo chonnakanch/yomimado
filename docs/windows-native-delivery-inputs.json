@@ -130,15 +130,18 @@
       "preferredSourceSha256": "63a6cae7b5edcf9892d1213491174adf0ae4f9eccf1c9989008f9b08f935bf59"
     },
     {
-      "filename": "libwebp-v1.5.0-preferred.tar.gz",
-      "url": "https://chromium.googlesource.com/webm/libwebp/+archive/refs/tags/v1.5.0.tar.gz",
-      "sha256": "797f7353e85879a74b63b6b8c6bf054dcc74f8c04f2e216495edf4b89cf850ac",
+      "filename": "libwebp-v1.5.0-preferred.tar.canonical.tar",
+      "url": "https://chromium.googlesource.com/webm/libwebp/+archive/a4d7a715337ded4451fec90ff8ce79728e04126c.tar.gz",
+      "sha256": "94de08d522cf5a7fb3c97312659ddeb4f1318740afc9f76db1304e15354897e5",
       "noticeHashes": {
         "COPYING": "5aec868f669e384a22372a4e8a1a6cd7d44c64cd451f960ca69cc170d1e13acf",
         "PATENTS": "cc3273e0694ea5896145e0677699b53471b03ea43021ddc50e7923fbb9f5023c"
       },
       "name": "pillow-libwebp-v1.5.0-preferred",
-      "preferredSourceSha256": "b4cfed588cc870f07b8a1770f752af71fedc67fbb1910f7d524e690c3fec434a"
+      "preferredSourceSha256": "b4cfed588cc870f07b8a1770f752af71fedc67fbb1910f7d524e690c3fec434a",
+      "archiveNormalization": "gitiles-tar-v1",
+      "revision": "a4d7a715337ded4451fec90ff8ce79728e04126c",
+      "originalCollectedSha256": "797f7353e85879a74b63b6b8c6bf054dcc74f8c04f2e216495edf4b89cf850ac"
     },
     {
       "filename": "freetype-2.13.3.tar.gz",
@@ -159,9 +162,9 @@
       "preferredSourceSha256": "71bc52b9a2c7beeea8086d22d8e937f984561d50551f6844c3dce3d08e06a5d4"
     },
     {
-      "filename": "aom-v3.12.1.tar.gz",
-      "url": "https://aomedia.googlesource.com/aom/+archive/refs/tags/v3.12.1.tar.gz",
-      "sha256": "532c9f68296b277d283d24ed744ff57852d8858d69d3eed97efa9d4915f6f24c",
+      "filename": "aom-v3.12.1.tar.canonical.tar",
+      "url": "https://aomedia.googlesource.com/aom/+archive/10aece4157eb79315da205f39e19bf6ab3ee30d0.tar.gz",
+      "sha256": "5f3e3120e74567a7ef7de31ed3b72d8d836571ef8866e4134de6fecf7ec37cd5",
       "noticeHashes": {
         "LICENSE": "4764a286d8b2faeaf42f4418e7d7a28d58fc8fd4d00a3d0a7f44b0a4099de7f2",
         "PATENTS": "661fb8e504744e95587b556b94a58343448300606a41bea8c7a9b97125696e61",
@@ -176,7 +179,10 @@
         "third_party/x86inc/LICENSE": "719d8fa235f2068e0ae6d6a7dceb0a7720d7840f0f0ebed29957989e6ded3cd8"
       },
       "name": "pillow-aom-v3.12.1",
-      "preferredSourceSha256": "e931afcbb9369d7d1897c46c185035573020e8c0c13bb5708c91369b451c291d"
+      "preferredSourceSha256": "e931afcbb9369d7d1897c46c185035573020e8c0c13bb5708c91369b451c291d",
+      "archiveNormalization": "gitiles-tar-v1",
+      "revision": "10aece4157eb79315da205f39e19bf6ab3ee30d0",
+      "originalCollectedSha256": "532c9f68296b277d283d24ed744ff57852d8858d69d3eed97efa9d4915f6f24c"
     },
     {
       "filename": "dav1d-1.5.1.tar.bz2",
@@ -200,7 +206,8 @@
       "archiveNormalization": "gitiles-tar-v1",
       "revision": "4db2af62dab48895226be6b52737247e898ebe36",
       "name": "pillow-libyuv-4db2af62",
-      "preferredSourceSha256": "69c942b47a6c65ae523473a4a80d45ba79abcf9395df5b06daf37aaeedc81f62"
+      "preferredSourceSha256": "69c942b47a6c65ae523473a4a80d45ba79abcf9395df5b06daf37aaeedc81f62",
+      "originalCollectedSha256": "90498812787bf60c00e36c7f265481d0f724fe0677fdd6832eced35104b085de"
     },
     {
       "url": "https://static.crates.io/crates/aho-corasick/aho-corasick-1.1.3.crate",

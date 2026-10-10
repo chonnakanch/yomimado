@@ -6,6 +6,7 @@ import gzip
 import hashlib
 import shutil
 import tarfile
+import zipfile
 from pathlib import Path, PurePosixPath
 
 from windows_notices import native_notice_source
@@ -13,6 +14,7 @@ from windows_onnx_sources import source_tree
 from windows_release import BUILD, RESOURCES, ROOT, digest, read_json, write_json
 
 MANIFEST = ROOT / "docs/windows-native-delivery-inputs.json"
+PYTHON_MANIFEST = ROOT / "scripts/onnx-probe-inputs.json"
 
 
 def retain_archive(
@@ -33,6 +35,8 @@ def retain_archive(
     if digest(tree) != entry["preferredSourceSha256"]:
         raise ValueError("Preferred native source tree differs")
     expected_notices = entry["noticeHashes"]
+    if not expected_notices:
+        raise ValueError("Native source has no pinned original notices")
     for name in expected_notices:
         relative = PurePosixPath(name)
         if (
@@ -84,15 +88,32 @@ def collect(resources: Path = RESOURCES) -> None:
     destination = BUILD / "sources/windows-native"
     notices = resources / "notices/windows-native-sources"
     records = []
-    for entry in read_json(MANIFEST)["archives"]:
+    packages = [
+        package for package in read_json(PYTHON_MANIFEST) if package.get("source")
+    ]
+    python_records = []
+    for package in packages:
+        wheel = ROOT / "services/ocr/build/onnx-prototype/inputs" / package["filename"]
+        original = BUILD / "native-source-inputs" / package["source"]["filename"]
+        native_notice_source(package["source"], original)
+        native_notice_source(package, wheel)
+        python_records.append(verify_python_source(package, wheel, original))
+    entries = read_json(MANIFEST)["archives"] + [
+        package["source"] for package in packages
+    ]
+    if len({entry["name"] for entry in entries}) != len(entries):
+        raise ValueError("Duplicate source delivery identity")
+    for entry in entries:
         original = BUILD / "native-source-inputs" / entry["filename"]
         print("Retaining native preferred source: " + entry["name"], flush=True)
         native_notice_source(entry, original)
         records.append(retain_archive(entry, original, destination, notices))
     record = {
         "manifestSha256": digest(MANIFEST),
+        "pythonManifestSha256": digest(PYTHON_MANIFEST),
         "recipeSha256": digest(Path(__file__)),
         "sources": records,
+        "pythonWheelSources": python_records,
         "sourceCoverageApproved": False,
         "publicDistributionApproved": False,
     }
@@ -100,9 +121,45 @@ def collect(resources: Path = RESOURCES) -> None:
     write_json(notices / "source-preparation.json", record)
     for target in (destination, notices):
         shutil.copy2(MANIFEST, target / MANIFEST.name)
+        shutil.copy2(PYTHON_MANIFEST, target / PYTHON_MANIFEST.name)
     shutil.copy2(Path(__file__), destination / Path(__file__).name)
     for name in ("windows_notices.py", "windows_onnx_sources.py", "windows_release.py"):
         shutil.copy2(ROOT / "scripts" / name, destination / name)
+
+
+def verify_python_source(package: dict, wheel: Path, original: Path) -> dict:
+    """Bind all pure Python wheel code to unchanged preferred-source bytes."""
+    if (
+        digest(wheel) != package["sha256"]
+        or digest(original) != package["source"]["sha256"]
+    ):
+        raise ValueError("Python wheel/source original differs")
+    with zipfile.ZipFile(wheel) as archive:
+        expected = {
+            name: hashlib.sha256(archive.read(name)).hexdigest()
+            for name in archive.namelist()
+            if name.endswith(".py") and ".dist-info/" not in name
+        }
+    if not expected:
+        raise ValueError("Pure Python wheel contains no source files")
+    prefix = package["source"]["wheelSourcePrefix"]
+    found = {}
+    with tarfile.open(original, "r|*") as archive:
+        for member in archive:
+            name = member.name.removeprefix(prefix)
+            if member.name == name or name not in expected:
+                continue
+            if not member.isfile() or name in found:
+                raise ValueError("Invalid Python preferred-source member")
+            found[name] = hashlib.sha256(archive.extractfile(member).read()).hexdigest()
+    if found != expected:
+        raise ValueError("Python wheel code differs from preferred source")
+    return {
+        "package": package["package"],
+        "wheelSha256": package["sha256"],
+        "sourceSha256": package["source"]["sha256"],
+        "pythonHashes": expected,
+    }
 
 
 if __name__ == "__main__":
