@@ -28,7 +28,7 @@ class TorchWindowsTests(unittest.TestCase):
     def test_windows_resources_are_distinct_from_cpp_guard_checks(self):
         cpp = {
             "file": "kernel.cpp",
-            "command": "cl -DEIGEN_MPL2_ONLY -MD -c kernel.cpp",
+            "command": "cl -DEIGEN_MPL2_ONLY /DWIN32 /D_WINDOWS -MD -c kernel.cpp",
         }
         resource = {
             "file": r"build\version.rc",
@@ -44,6 +44,8 @@ class TorchWindowsTests(unittest.TestCase):
             [{**cpp, "command": cpp["command"].replace("-MD", "-MT")}],
             [{**cpp, "command": cpp["command"].replace("-MD", "/MDd")}],
             [{**cpp, "command": cpp["command"].replace("-DEIGEN_MPL2_ONLY", "")}],
+            [{**cpp, "command": cpp["command"].replace("/DWIN32", "")}],
+            [{**cpp, "command": cpp["command"].replace("/D_WINDOWS", "")}],
             [cpp, {**cpp, "command": "cl /MD kernel.cpp"}],
         ):
             with self.subTest(commands=wrong), self.assertRaises(ValueError):

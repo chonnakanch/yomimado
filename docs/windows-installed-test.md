@@ -1,9 +1,9 @@
 # Windows candidate test record
 
-Newer private preparation candidate — 2026-10-10: [run `38019354851`](https://github.com/chonnakanch/yomimado/actions/runs/38019354851)
-at `87731d65c50499a67ec7683e889402638ba557ca` passes the complete automated
+Newer private preparation candidate — 2026-10-10: [run `38022182370`](https://github.com/chonnakanch/yomimado/actions/runs/38022182370)
+at `65ac794370fe2b0f60d7ed968ac0be2c04ca4d51` passes the complete automated
 suite and private uploaded-asset checks. Its setup SHA-256 is
-`5db98f6b460d71367ff88f4f17c976ac62239b97fde56d92fe8f67c9dee31443`.
+`4639a6351eb8ec708cc824fe96c98a0e1f82ccf304eb1e9641d19823a6d1782d`.
 No manual result below applies to this rebuilt setup. Wait for the pending native
 replacements before requesting another PC test; then use the numbered checklist
 with the final candidate's exact hash. Source/native and human gates remain open.

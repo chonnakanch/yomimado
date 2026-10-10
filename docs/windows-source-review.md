@@ -5,7 +5,28 @@ Windows binary, or attest to a test that has not run. A private candidate may
 be assembled to inspect actual inputs; public distribution is blocked until
 all entries below have concrete evidence.
 
-Latest automated candidate inspection — 2026-10-10: [run `38019354851`](https://github.com/chonnakanch/yomimado/actions/runs/38019354851)
+Latest automated inspection — 2026-10-10: [run `38022182370`](https://github.com/chonnakanch/yomimado/actions/runs/38022182370)
+at `65ac794370fe2b0f60d7ed968ac0be2c04ca4d51` passes the complete hosted suite
+and private upload checks. Downloaded artifact `11660046107` (124,199 bytes)
+matches GitHub SHA-256
+`b573952fce9a392da72f7a41b2fb3e106c5d58820909af614b4fd9b9891b6aa8`.
+Available raw checksums and setup/provenance identity verify; setup SHA-256:
+`4639a6351eb8ec708cc824fe96c98a0e1f82ccf304eb1e9641d19823a6d1782d`.
+There are 94 AMD64 service PE files and 347 input records (201 original
+interpreter/wheel entries plus 146 freezer-discovered entries). Exactly 93 frozen
+files now have hash-identical original input bindings; the modified service EXE
+still needs explicit bootloader/build coverage. All 82 app-local loaded-module
+hashes match. The current pinned input manifest, complete installed UI and frozen
+learning/persistence checks pass. Desktop SHA-256:
+`f3f9a745308e868f2a642d7a199642829edaa6cb1771555355abab0358a0f11d`;
+service SHA-256: `c885adf456a54f87cd1b3f33c34545c55c0d35fab8310be09f7cb2e4e9709c18`.
+Actual DLL origins are now established below, without approving redistribution
+terms. No new native replacement is bundled by this candidate, and no manual
+results apply to its rebuilt setup. Actual setup/source/notices archive bytes
+remain undownloaded locally. Reports stay private under
+`services/ocr/build/windows-run-38022182370/`.
+
+Earlier automated candidate inspection — 2026-10-10: [run `38019354851`](https://github.com/chonnakanch/yomimado/actions/runs/38019354851)
 at `87731d65c50499a67ec7683e889402638ba557ca` passes every build, installed UI,
 OCR/learning/persistence and private-draft upload/hash step. Downloaded evidence
 artifact `11658311143` (111,186 bytes) matches GitHub SHA-256
@@ -90,17 +111,17 @@ setup/uninstaller retain x86 host stubs. Original CPython build outputs differ
 from the earlier run and must use this candidate's exact inventory. Reports are
 retained privately in `services/ocr/build/windows-run-37802965979/`.
 
-Ninety of the current 94 frozen files match original interpreter/wheel bytes. The four
+Ninety of the maintainer-tested setup's 94 frozen files match original interpreter/wheel bytes. The four
 remaining files below require explicit provenance rather than an inferred wheel
 owner. The frozen EXE is modified by PyInstaller as expected; that explains why
 its hash differs, but does not replace retained bootloader/build evidence.
 
-| Installed runtime file | SHA-256                                                            | Open binding                                                                   |
-| ---------------------- | ------------------------------------------------------------------ | ------------------------------------------------------------------------------ |
-| `msvcp140.dll`         | `0fa7eb792d3fbcf2233e4ea47e9144b9b1309ba8ed5d4731a72fffa8f4f556d6` | Identify the exact runner/app-local VC runtime origin and redistribution terms |
-| `vcruntime140.dll`     | `4d292623516f65c80482081e62d5dadb759dc16e851de5db24c3cbb57b87db83` | Identify the exact runner/app-local VC runtime origin and redistribution terms |
-| `vcruntime140_1.dll`   | `a113f192195f245f17389e6ecbed8005990bcb2476ddad33f7c4c6c86327afe5` | Identify the exact runner/app-local VC runtime origin and redistribution terms |
-| `yomimado-ocr.exe`     | `c9911d9abe692c86f9de803af9f97cbb59af10339583dd86c8a673f036b73398` | Bind the PyInstaller bootloader, appended application and exact freeze recipe  |
+| Installed runtime file | SHA-256                                                            | Open binding                                                                                 |
+| ---------------------- | ------------------------------------------------------------------ | -------------------------------------------------------------------------------------------- |
+| `msvcp140.dll`         | `0fa7eb792d3fbcf2233e4ea47e9144b9b1309ba8ed5d4731a72fffa8f4f556d6` | Hash-identical MSVC 14.44.35207 input identified below; redistribution terms remain open     |
+| `vcruntime140.dll`     | `4d292623516f65c80482081e62d5dadb759dc16e851de5db24c3cbb57b87db83` | Hash-identical hosted Python 3.11.9 input identified below; redistribution terms remain open |
+| `vcruntime140_1.dll`   | `a113f192195f245f17389e6ecbed8005990bcb2476ddad33f7c4c6c86327afe5` | Hash-identical hosted Python 3.11.9 input identified below; redistribution terms remain open |
+| `yomimado-ocr.exe`     | `c9911d9abe692c86f9de803af9f97cbb59af10339583dd86c8a673f036b73398` | Bind the PyInstaller bootloader, appended application and exact freeze recipe                |
 
 The earlier inventory exposed copied Windows DbgHelp/WinTrust/UCRT/API-set DLLs.
 The recipe removes these OS components and records their original hashes,
@@ -122,6 +143,18 @@ This is prepared for a new hosted candidate; the previously recorded VC origins
 remain open until Windows evidence is downloaded and reviewed. Source paths do
 not grant redistribution rights, and the modified service EXE's bootloader/build
 binding remains a separate gate. macOS inventory/packaging is unchanged.
+
+Hosted provenance verification now passes in run `38022182370`. Its 146 freezer
+inputs identify `msvcp140.dll` under the pinned MSVC **14.44.35207**
+`VC/Tools/MSVC/.../bin/HostX64/x64` directory and both `vcruntime140` DLLs under
+the runner's hosted **Python 3.11.9 x64** bootstrap directory. Their source and
+installed hashes exactly match the three values in the table above. The inventory
+retains full absolute input paths, destinations and PE imports. This closes the
+missing origin evidence, while exact Microsoft redistribution terms and final
+source/runtime approval remain open. The source-built CPython 3.11.17 interpreter
+is still the actual service; its copied VC DLLs differ from those selected by
+PyInstaller. The freeze recipe digest matches the current source. The TOC digest
+is retained, but its original bytes are not part of the downloaded textual evidence.
 
 The [native rebuild worksheet](windows-native-rebuild.md) gives exact source
 revisions, independent Intel-free builds and GEOS replacement requirements.
@@ -155,6 +188,13 @@ diagnostic ZIP is now inspected locally: all 431 upstream tests pass, retained
 cache/recipe/probe hashes match and actual replacement DLL hashes match the PE
 inventory. Original sources and full notices still need final delivery assembly;
 the worksheet records the exact diagnostic artifact identity and limitations.
+
+Subsequent exact installed replacement passes in run `38021809403`, with its
+downloaded evidence independently verified: all original/replacement loaded GEOS
+paths/hashes, both OCR orientations, learning/persistence, 5,400 other unchanged
+installed files and exact restoration. See the native worksheet for replacement
+hashes and scope. Final source/notices assembly, replacement packaging and human
+approval remain open; the downloadable setup is unchanged.
 
 The original `mkl-2025.2.0-py2.py3-none-win_amd64.whl` is pinned solely to
 preserve its full Intel October 2022 binary licence and bundled third-party

@@ -1,6 +1,20 @@
 # First Windows pre-release plan
 
-Latest automated candidate — 2026-10-10: [run `38019354851`](https://github.com/chonnakanch/yomimado/actions/runs/38019354851)
+Latest automated candidate — 2026-10-10: [run `38022182370`](https://github.com/chonnakanch/yomimado/actions/runs/38022182370)
+at `65ac794370fe2b0f60d7ed968ac0be2c04ca4d51` passes every build/install/UI/
+OCR/learning/persistence and owner-only draft upload/hash step. Downloaded evidence
+matches GitHub SHA-256
+`b573952fce9a392da72f7a41b2fb3e106c5d58820909af614b4fd9b9891b6aa8`.
+Exact setup SHA-256:
+`4639a6351eb8ec708cc824fe96c98a0e1f82ccf304eb1e9641d19823a6d1782d`.
+Its private draft identity is `windows-private-test-65ac794370fe2b0f60d7ed968ac0be2c04ca4d51`.
+The new freezer record binds all three app-local VC DLLs to actual original
+input paths/hashes; compiler/runtime terms and final source assembly remain open.
+This candidate still uses the existing native runtime, not the separately audited
+GEOS/OpenCV replacements or a completed source-built Torch. No PC retest is
+requested yet, and no human result transfers from the `51b0091103c1…` setup.
+
+Earlier automated candidate — 2026-10-10: [run `38019354851`](https://github.com/chonnakanch/yomimado/actions/runs/38019354851)
 at `87731d65c50499a67ec7683e889402638ba557ca` passes the complete Windows
 build/install/UI/OCR/learning/persistence suite and owner-only draft upload checks.
 The downloaded evidence ZIP matches GitHub SHA-256
@@ -95,12 +109,23 @@ Its downloaded evidence verifies and confirms exact original-file restoration.
 Windows path keys are now normalized consistently with collision rejection;
 a regression reproduces the mismatch without weakening content checks. The
 corrected replacement still needs a new reviewed run; the tested setup is unchanged.
+Corrected run `38021809403` now passes exact installed baseline/replacement OCR,
+learning and persistence, actual replacement DLL loading, all 431 upstream tests,
+5,400 unchanged installed files and exact original-file restoration. Its downloaded
+evidence verifies independently. Packaging the replacement and final Windows
+source/human approval remain separate; the downloadable installer is unchanged.
 **Windows Torch source audit** also reaches native compilation, then fails on a
 quoted include flag inside generated C++ build-option strings. The redundant flag
 is removed and that source object is compiled early on rerun. Its downloaded
 source/notice/cache/compiler evidence verifies; completed Torch/vision inference
 and full installed replacement remain open. Neither experiment changes the
 maintainer-tested setup.
+The quoted-string correction passes real MSVC in rerun `38020734345`, which then
+fails at the autograd engine's Unix-only `pthread_atfork` call. The build recipe
+had replaced Windows default compiler flags and dropped `WIN32`. Extra flags
+now initialize through the environment while preserving defaults; command checks
+require Windows definitions and the early build includes the failing object.
+The corrected Torch build still requires hosted execution.
 Independent OpenCV run `37938195277` now passes its IPP-free source build,
 DLL compiler-runtime linkage and native/frozen CPU detector probes, with its
 downloaded textual evidence independently hash-verified. Full installed

@@ -138,6 +138,24 @@ resource commands verify locally. No completed Torch/vision probe or installed
 replacement pass is claimed. Reports remain private under
 `services/ocr/build/windows-torch-run-38015437061/`.
 
+Rerun `38020734345` at `d2b52dde989c91cbbbf548a198e7be3d03ec2102`
+passes the early real-MSVC `common.cc` compilation, resolving execution of the
+quoted-build-string correction. The full build then fails at command 782 of
+1586 in `torch/csrc/autograd/engine.cpp`: `pthread_atfork` is undeclared.
+The original source guards that Unix call with `!defined(WIN32)`. Overriding
+`CMAKE_C_FLAGS`/`CMAKE_CXX_FLAGS` removed CMake's Windows defaults, including
+`WIN32` and `_WINDOWS`. The recipe now initializes only the extra MPL flag via
+`CFLAGS`/`CXXFLAGS`, preserving platform defaults as documented by
+[CMake's flag initialization](https://cmake.org/cmake/help/v3.31/variable/CMAKE_LANG_FLAGS_INIT.html).
+All actual C/C++ commands must retain both platform definitions, the MPL guard
+and release DLL runtime before compilation. The early MSVC check also compiles
+the original autograd engine object. No upstream Torch source patch is needed.
+Downloaded artifact `11659617145` (326,818 bytes) matches GitHub SHA-256
+`64665f3def50c62a50dbd7909783b8d949a74106bc4bbbe61ebd776d9b66e7cc`;
+all pinned source revisions, 31 repository notices and eight Eigen notices verify.
+Completed Torch/vision wheels, inference and full installed replacement remain
+open. Reports stay private under `services/ocr/build/windows-torch-run-38020734345/`.
+
 Build OpenCV from the pinned `opencv-python-4.11.0.86.tar.gz` input
 (`03d60ccae62304860d232272e4a4fda93c39d595780cb40b161b310244b736a4`)
 with IPP/IPP IW and FFmpeg disabled. Limit modules to those required by the
@@ -381,6 +399,23 @@ and retain rejection of unrelated application changes. Installed replacement
 remains unverified until the corrected reviewed rerun passes. Reports stay private
 under `services/ocr/build/windows-geos-run-38020734338/`.
 
+Corrected [run `38021809403`](https://github.com/chonnakanch/yomimado/actions/runs/38021809403)
+at `6be7046c222372ad2b7d3278303444e4a2ecc328` passes every hosted step.
+Downloaded artifact `11658387573` (86,602 bytes) matches GitHub SHA-256
+`82d56571d7b2ddee7fd3aefcdbd2991b8915602cdb893fbda6622212152ad575`.
+Independent checks confirm all 431 CTest cases, five original notice texts,
+recipe/probe/cache hashes, exact original and replacement loaded-DLL paths/hashes,
+both OCR orientations, tokenization, dictionaries, kanji, uncached translation
+and saved-data/cache restart. Exactly **5,400 other installed files** are unchanged,
+and the complete original installation is restored. Actual replacement hashes:
+`geos_c` = `269e3555b1126fa5c39ceac82166d8ba66f02e31b6aee6c0da3f92641971d166`,
+`geos.dll` = `e06316e49eb5b151bc9810310a7134b73decb69c65e3deca18b174f43e83db26`.
+This verifies the replacement method in the exact `51b0091103c1…` setup on Windows
+Server 2022. It does not alter the downloadable installer or establish Windows 11
+hardware coverage for those new DLLs. Final replacement packaging/source assembly
+and exact-installer human approval remain open. Reports stay private under
+`services/ocr/build/windows-geos-run-38021809403/`.
+
 The workflow now prepares a dedicated protected input consumer. Its read-only
 plan validates the existing environment before a Windows deployment can be
 created; an absent, unprotected, bypassable or wrong-branch environment fails
@@ -431,7 +466,8 @@ it builds GEOS with CMake/Ninja, `CMAKE_BUILD_TYPE=Release` and
 download to the HTTPS URL above, verify the hash before extraction, and pin
 CMake/Ninja rather than copying its unpinned `pip install` command. Record
 these changes. The isolated Windows source build/replacement audit now passes
-as recorded above; full installed OCR replacement and final delivery remain open.
+and exact installed OCR replacement pass as recorded above. Final replacement
+packaging, source/notices delivery and human installer approval remain open.
 
 In the inspected frozen runtime, the three Shapely PYDs import
 `geos_c-2ec21252057a9a4d4390485e0e576a5a.dll`; that DLL imports

@@ -84,11 +84,15 @@ def verify_commands(commands: list[dict]) -> dict:
         command = item["command"]
         if (
             "-DEIGEN_MPL2_ONLY" not in command
+            or not all(
+                re.search(r"(?:^|\s)[/-]D" + name + r"(?:=1)?(?:\s|$)", command)
+                for name in ("WIN32", "_WINDOWS")
+            )
             or not re.search(r"(?:^|\s)[/-]MD(?:\s|$)", command)
             or re.search(r"(?:^|\s)[/-]M(?:T[d]?|Dd)(?:\s|$)", command)
         ):
             raise ValueError(
-                "Actual C/C++ command lacks MPL guard or release DLL runtime"
+                "Actual C/C++ command lacks MPL/platform guards or release DLL runtime"
             )
         counts["cppCommands"] += 1
     if not counts["cppCommands"]:
@@ -307,6 +311,10 @@ def main() -> None:
             "PYTORCH_BUILD_VERSION": "2.8.0+cpu",
             "PYTORCH_BUILD_NUMBER": "1",
             "MAX_JOBS": "2",
+            # Initialize with our extra guard while retaining CMake's Windows
+            # defaults, including WIN32 used by upstream autograd fork guards.
+            "CFLAGS": flags,
+            "CXXFLAGS": flags,
             # Preserve the selected MSVC/SDK for upstream setuptools, and make
             # source-built CPython's original headers/import library available
             # to its small Python stub extension after native CMake installation.
@@ -330,8 +338,6 @@ def main() -> None:
             "-DBLAS=Eigen",
             "-DCMAKE_BUILD_TYPE=Release",
             "-DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreadedDLL",
-            "-DCMAKE_C_FLAGS=" + flags,
-            "-DCMAKE_CXX_FLAGS=" + flags,
             "-DPython_EXECUTABLE=" + path(python),
             "-DPython_INCLUDE_DIR=" + path(python_include),
             "-DPython_LIBRARY=" + path(base / "PCbuild/amd64/python311.lib"),
@@ -346,8 +352,8 @@ def main() -> None:
     shutil.copy2(build / "compile_commands.json", BUILD / "compile_commands.json")
     command_counts = verify_commands(commands)
     write_json(BUILD / "compiler-verification.json", command_counts)
-    # Compile the upstream build-options string consumer before the long native
-    # build, so malformed generated C++ literals fail promptly under real MSVC.
+    # Compile the build-options consumer and Windows autograd fork guard before
+    # the long complete build, so both regressions fail promptly under real MSVC.
     run(
         [
             cmake,
@@ -355,6 +361,7 @@ def main() -> None:
             str(build),
             "--target",
             "caffe2/CMakeFiles/torch_cpu.dir/core/common.cc.obj",
+            "caffe2/CMakeFiles/torch_cpu.dir/__/torch/csrc/autograd/engine.cpp.obj",
             "--parallel",
             "2",
         ],
