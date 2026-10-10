@@ -101,6 +101,17 @@ AMD64 imports and the actual loaded `_C.pyd` hash. Existing binary wheels are
 not assumed compatible with the new Torch. These source-built probes and the
 full frozen OCR/installer remain unverified until hosted execution succeeds.
 
+Run `37943467439` at `bba93e491f1d6198285917a3cec9bacf3840cd1c`
+verifies all selected sources/notices and generates the Eigen CPU build. Its
+compiler guard incorrectly treats four protobuf Windows `.rc` resource commands
+as C/C++ compilation. The corrected guard explicitly separates resources, while
+requiring the MPL-only Eigen define and release DLL runtime on every C/C++
+command and rejecting unexpected source types. Local inspection of the retained
+cache and commands passes for 1,726 C/C++ and four resource commands. No native
+compilation or Torch/vision inference pass is claimed. The downloaded textual
+evidence (ID `11622408001`, 309,825 bytes) matches GitHub SHA-256
+`bb87076217c46562b72b6acb766516b1a3ddf82757c5a41ebcab7598b4fdeaa5`.
+
 Build OpenCV from the pinned `opencv-python-4.11.0.86.tar.gz` input
 (`03d60ccae62304860d232272e4a4fda93c39d595780cb40b161b310244b736a4`)
 with IPP/IPP IW and FFmpeg disabled. Limit modules to those required by the

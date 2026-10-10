@@ -71,6 +71,31 @@ def verify_cache(cache: str) -> None:
         raise ValueError("Unexpected Torch BLAS/build type")
 
 
+def verify_commands(commands: list[dict]) -> dict:
+    counts = {"cppCommands": 0, "resourceCommands": 0}
+    for item in commands:
+        suffix = Path(item["file"]).suffix.lower()
+        if suffix == ".rc":
+            # Windows resources do not include Eigen or link a C runtime.
+            counts["resourceCommands"] += 1
+            continue
+        if suffix not in {".c", ".cc", ".cpp", ".cxx"}:
+            raise ValueError("Unexpected Torch compiler input type")
+        command = item["command"]
+        if (
+            "-DEIGEN_MPL2_ONLY" not in command
+            or not re.search(r"(?:^|\s)[/-]MD(?:\s|$)", command)
+            or re.search(r"(?:^|\s)[/-]M(?:T[d]?|Dd)(?:\s|$)", command)
+        ):
+            raise ValueError(
+                "Actual C/C++ command lacks MPL guard or release DLL runtime"
+            )
+        counts["cppCommands"] += 1
+    if not counts["cppCommands"]:
+        raise ValueError("No Torch C/C++ compiler commands")
+    return counts
+
+
 def extract_eigen(archive: Path, record: dict, destination: Path) -> None:
     root = destination.resolve()
     with tarfile.open(archive) as tar:
@@ -316,8 +341,8 @@ def main() -> None:
     verify_cache((build / "CMakeCache.txt").read_text(errors="replace"))
     commands = read_json(build / "compile_commands.json")
     shutil.copy2(build / "compile_commands.json", BUILD / "compile_commands.json")
-    if not commands or not all("-DEIGEN_MPL2_ONLY" in c["command"] for c in commands):
-        raise ValueError("Actual commands lack MPL-only Eigen guard")
+    command_counts = verify_commands(commands)
+    write_json(BUILD / "compiler-verification.json", command_counts)
     run(
         [cmake, "--build", str(build), "--target", "install", "--parallel", "2"],
         "compile-install",
@@ -359,6 +384,7 @@ def main() -> None:
             "recipeSha256": digest(Path(__file__)),
             "wheelSha256": digest(wheel),
             "cmakeCacheSha256": digest(BUILD / "CMakeCache.txt"),
+            "compilerCommands": command_counts,
             "nativeProbe": report,
             "torchvision": vision_report,
             "sourceCoverageApproved": False,
