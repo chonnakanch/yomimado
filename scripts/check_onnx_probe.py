@@ -32,6 +32,15 @@ def reject_torch(event, arguments):
         raise ImportError("The ONNX child must not import " + arguments[0])
 
 
+def failure_annotation(message: str) -> None:
+    # Only the fixed synthetic probe's text/logs reach this helper. No credentials
+    # or private fixture inputs are used by the read-only prototype workflow.
+    print(message, file=sys.stderr)
+    if os.environ.get("GITHUB_ACTIONS") == "true":
+        escaped = message.replace("%", "%25").replace("\r", "%0D").replace("\n", "%0A")
+        print("::error title=Windows ONNX comparison failed::" + escaped, flush=True)
+
+
 def worker(args) -> dict:
     if args.worker == "onnx":
         os.environ["USE_TORCH"] = "0"
@@ -219,14 +228,25 @@ def main() -> None:
         if backend == "onnx" and args.onnx_pythonpath:
             env["PYTHONPATH"] = args.onnx_pythonpath
         with (args.output / (backend + ".log")).open("w") as log:
-            subprocess.run(
-                command,
-                check=True,
-                stdout=log,
-                stderr=subprocess.STDOUT,
-                timeout=900,
-                env=env,
-            )
+            try:
+                subprocess.run(
+                    command,
+                    check=True,
+                    stdout=log,
+                    stderr=subprocess.STDOUT,
+                    timeout=900,
+                    env=env,
+                )
+            except (subprocess.CalledProcessError, subprocess.TimeoutExpired):
+                log.flush()
+                failure_annotation(
+                    backend
+                    + " worker failed:\n"
+                    + (args.output / (backend + ".log")).read_text(
+                        encoding="utf-8", errors="replace"
+                    )[-6000:]
+                )
+                raise
         results[backend] = json.loads(output.read_text())
     report = {
         "exactOcrParity": results["baseline"]["ocr"] == results["onnx"]["ocr"],
@@ -248,6 +268,21 @@ def main() -> None:
             "torchAbsentFromOnnxWorker",
         )
     ):
+        failure_annotation(
+            json.dumps(
+                {
+                    "ocr": {
+                        backend: report["results"][backend]["ocr"]
+                        for backend in results
+                    },
+                    "translation": {
+                        backend: report["results"][backend]["translation"]
+                        for backend in results
+                    },
+                },
+                ensure_ascii=False,
+            )
+        )
         raise RuntimeError("ONNX parity gate failed; inspect comparison.json")
     print(
         "PASS: tested offline OCR/geometry and uncached translation parity; Torch absent from ONNX child"

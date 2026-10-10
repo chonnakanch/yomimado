@@ -78,6 +78,14 @@ Windows packaging. Manual dispatch on a non-default branch may not have a Run
 button until GitHub registers the workflow; its constrained push trigger avoids
 requiring changes to `main`.
 
+First hosted [run 38045851358](https://github.com/chonnakanch/yomimado/actions/runs/38045851358)
+at `cdb649e` finishes in about four minutes. Pinned preparation, all 11 unit tests
+and model conversion pass; the separate backend comparison fails. Its detailed
+child log/report is retained in the evidence artifact and must be inspected.
+The driver now reports the fixed synthetic probe's failure detail directly in
+an Actions annotation; failures remain failures and no expectation is weakened.
+Windows parity is not claimed from the successful preparatory steps.
+
 ## Exact dependency review scope
 
 `scripts/onnx-probe-inputs.json` binds seven exact official PyPI wheels to SHA-256,
@@ -94,6 +102,35 @@ proof that this CPU wheel includes MKL, nor proof that it does not. Exact native
 dependency/build/source review remains open. The prototype never marks these
 inputs publicly approved. ml_dtypes/Eigen and other embedded source notices also
 remain separate from the top-level package label.
+
+Offline PE inspection of the exact wheels finds **five AMD64** inputs, including
+the two export-only extensions. The three runtime members are:
+
+| Native member                      | SHA-256                                                            |
+| ---------------------------------- | ------------------------------------------------------------------ |
+| `onnxruntime.dll`                  | `b7d046825412fe3d6c582145f527a197817b2ed717a3a3f21c6e81896f5fce48` |
+| `onnxruntime_providers_shared.dll` | `121329b5f87d4c16ca422f1565322a529c8548683a56e338222bbc0c39f9a82c` |
+| `onnxruntime_pybind11_state.pyd`   | `cf57f10c1d276f54ff2e70d2b74fe6ef5de9f0c39430ba6ec6941acff6915dbb` |
+
+Their normal/delay import tables contain no MKL-named DLL, which does not rule
+out statically linked code. Both the main DLL and Python extension require
+`msvcp140_1.dll` in addition to the original candidate's three VC runtime DLLs;
+final packaging must bind its actual original redistributable input and terms.
+Recorded PE inputs/imports are retained locally in
+`services/ocr/build/onnx-prototype/native-pe-review.json`.
+
+The official v1.22.1 tag resolves to
+`89746dc19a0a1ae59ebf4b16df9acab8f99f3925`, matching the development Mac wheel's
+embedded build commit prefix. The pinned [CPU packaging stage](https://github.com/microsoft/onnxruntime/blob/89746dc19a0a1ae59ebf4b16df9acab8f99f3925/tools/ci_build/github/azure-pipelines/stages/py-cpu-packaging-stage.yml)
+has a Windows x64 CPython 3.11 leg using pybind/vcpkg and optional caller-supplied
+parameters. Its [parent](https://github.com/microsoft/onnxruntime/blob/89746dc19a0a1ae59ebf4b16df9acab8f99f3925/tools/ci_build/github/azure-pipelines/py-packaging-pipeline.yml)
+defaults those parameters to `--use_azure`; the experiment explicitly selects
+only CPUExecutionProvider. The [CMake configuration](https://github.com/microsoft/onnxruntime/blob/89746dc19a0a1ae59ebf4b16df9acab8f99f3925/cmake/CMakeLists.txt)
+defaults DNNL off. The wheel's full notice file matches this source revision's
+common notice file after CRLF normalization. These observations identify a
+promising recipe, not the exact released wheel's complete build attestation or
+vendor-source clearance. Original metadata/recipes and hashes are retained in
+`services/ocr/build/onnx-prototype/source-review/`.
 
 The final Windows runtime must resolve OpenCV/IPP, NumPy/BLAS, geometry libraries,
 codecs, Python/compiler runtime, installer and every other remaining item in

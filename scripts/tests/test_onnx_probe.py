@@ -1,13 +1,17 @@
 """Boundary cases for the isolated inference migration experiment."""
 
+import io
 import json
+import os
 import sys
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
 import numpy as np
 
 sys.path.insert(0, str(Path(__file__).parents[1]))
+from check_onnx_probe import failure_annotation
 from onnx_detector_probe import non_max_suppression
 from onnx_generation import Policy, beam_search, generation_scores
 
@@ -121,6 +125,17 @@ class GenerationTests(unittest.TestCase):
 
 
 class WorkflowTests(unittest.TestCase):
+    def test_failure_details_escape_github_annotation_control_characters(self):
+        stdout, stderr = io.StringIO(), io.StringIO()
+        with (
+            patch.dict(os.environ, {"GITHUB_ACTIONS": "true"}),
+            patch("sys.stdout", stdout),
+            patch("sys.stderr", stderr),
+        ):
+            failure_annotation("synthetic failure: 25%\r\nnext line")
+        self.assertIn("25%25%0D%0Anext line", stdout.getvalue())
+        self.assertIn("synthetic failure", stderr.getvalue())
+
     def test_evidence_upload_does_not_include_models_or_sources(self):
         workflow = (
             Path(__file__).parents[2] / ".github/workflows/windows-onnx-prototype.yml"
