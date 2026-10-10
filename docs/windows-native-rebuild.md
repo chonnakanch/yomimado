@@ -298,14 +298,16 @@ The existing protected environment check and maintainer approval passed in
 passing hosted run. Keep token permissions unchanged while testing this correction.
 The correction is commit `220bd0bf2d9e4fce616cb8f70b7059e107451a01`;
 [run `38017337839`](https://github.com/chonnakanch/yomimado/actions/runs/38017337839)
-passed the protected environment check and received the maintainer's approval,
-then stopped before any API request: `WINDOWS_PRIVATE_INPUT_TOKEN` is missing
-or empty in `windows-native-input`. The safe error annotation confirms that
-no token reached the job; it does not prove the configured token lacks draft
-permissions. This is the current external setup blocker. The owner must add or
-update the exact environment **secret**, then re-run all jobs on this same run;
-no code change, new public tag or broader token permission is needed to test that
-correction. All 148 release-script tests,
+passed the protected environment check and received the maintainer's approval.
+Attempt 1 stopped because the environment secret was missing or empty; the owner
+corrected its placement from environment variables to environment secrets.
+Attempt 2 now reaches the authenticated release listing but cannot see exactly
+one matching private draft. This is the current external input-access blocker:
+confirm the token selects this repository and that the exact draft above still
+exists before proposing any permission change. GitHub requires push access for
+draft listings; token presence and successful public listing alone do not prove
+draft access. No GEOS source rebuild, installer download or installed replacement
+has executed in this run. All 148 release-script tests,
 Python lint/format, documentation formatting and workflow syntax pass locally;
 the reviewed macOS release-seed reuse check still passes.
 The workflow now prepares a dedicated protected input consumer. Its read-only

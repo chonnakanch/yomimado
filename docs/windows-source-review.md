@@ -238,7 +238,16 @@ Fresh libwebp, AOM and libyuv downloads all match the independently computed pin
 and original notice hashes. Original collected archive digests remain recorded.
 Dav1d keeps its original byte-level archive check. Registry wheels, models and
 dictionaries keep the existing exact-byte check. A test proves timestamp changes
-are accepted while changed source bytes are rejected. Hosted rerun remains required.
+are accepted while changed source bytes are rejected. Hosted rerun `38016673211`
+at `902bcf6d3446fbeab65128cfa62ac93f5549a051` now passes preparation, freezing,
+NSIS building, installed startup/resource verification and frozen OCR learning/
+persistence. Its installed UI and private-draft staging steps fail; source/public
+gates remain open. GitHub retains evidence artifact `11657230994` (111,299 bytes),
+declared SHA-256
+`74534086117b2628efafc2b676156638f48912640c8a5997990017b2f147f674`.
+That artifact still needs download, independent hash verification and inspection
+to bind the new setup and identify the exact failed UI case. Current manual
+results remain bound only to the unchanged setup hash recorded above.
 
 The SudachiPy 0.6.10 tag resolves to
 `7e2f287bbfffc036421cf960802e41a696727747`. Its original

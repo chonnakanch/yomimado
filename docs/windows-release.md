@@ -62,10 +62,11 @@ private draft with its Actions token's read-only release listing. The protected
 owner-input environment and maintainer approval passed in run `38016752910`.
 Its subsequent draft lookup used the published-release tag endpoint incorrectly;
 the corrected lookup uses the authenticated listing and retains safe preflight
-diagnostics. Corrected run `38017337839` received approval but stops because
-`WINDOWS_PRIVATE_INPUT_TOKEN` is missing or empty in the protected environment.
-The owner must correct that environment secret and re-run the same source commit.
-Owner-token permissions remain unchanged until actual draft access can be tested.
+diagnostics. Corrected run `38017337839` received approval. Its first attempt
+stopped because the token was stored as a variable rather than a secret. Attempt 2
+now receives the secret but cannot see the matching private draft in the API
+listing. Confirm repository selection and the exact draft's continued existence
+before changing token permissions. Installed GEOS replacement has not executed.
 See the native worksheet for the protected-input requirement. Installed GEOS
 replacement remains unverified. Independent Torch source-build preparation is executable in
 **Windows Torch source audit**; it does not alter the tested setup.
@@ -75,6 +76,14 @@ downloaded textual evidence independently hash-verified. Full installed
 recognition and final source coverage remain open.
 Final source delivery and Intel-free Torch/OpenCV builds remain
 separate work; the human gate is not approved by this audit.
+
+Notice-supplement candidate run `38016673211` at
+`902bcf6d3446fbeab65128cfa62ac93f5549a051` builds and installs its NSIS setup,
+passes installed startup and frozen learning/persistence checks, and exports a
+diagnostic candidate. Its installed UI regression and owner-only draft staging
+steps fail. The retained evidence must be inspected before diagnosing the UI case
+or recording the new installer hash. This failed run does not replace the
+maintainer-tested setup or satisfy the installer gates.
 
 Earlier candidate `79065df7ba34a3aaa4ddb3a1ebb30e164405742a` passed runtime
 checks in run `37721943728`, but failed the human gate: a blank terminal,
