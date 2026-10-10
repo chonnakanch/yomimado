@@ -1,6 +1,9 @@
 name: Windows GEOS source audit
+run-name: GEOS private setup 51b0091103c1 — ${{ github.sha }}
 
 # Independent source/replacement experiment. Never builds or publishes an installer.
+# Develop pushes run this audit. GitHub's UI dispatch button requires a copy on
+# the default branch; do not merge to main just to obtain that button.
 "on":
   push:
     branches: [develop]
@@ -21,6 +24,7 @@ concurrency:
 
 jobs:
   input-protection:
+    name: Validate protected private-input environment
     if: github.repository == 'chonnakanch/yomimado' && github.ref == 'refs/heads/develop'
     runs-on: ubuntu-latest
     permissions:
@@ -39,6 +43,7 @@ jobs:
         run: python scripts/geos-installed-windows.py --check-input-protection
 
   source-replacement:
+    name: Verify GEOS in private setup 51b0091103c1
     needs: input-protection
     if: github.repository == 'chonnakanch/yomimado' && github.ref == 'refs/heads/develop'
     environment: windows-native-input

@@ -307,10 +307,16 @@ Owner setup required in GitHub Settings (no credential in chat or git):
    with **Contents: read**. Store it only as the environment secret
    **`WINDOWS_PRIVATE_INPUT_TOKEN`**. Its owner identity must have existing push
    access for draft visibility. No Contents/Workflows write permission is needed.
-3. Run the workflow from the latest `develop`, review its exact private setup
-   hash above and manually approve **only this private-input deployment**.
+3. A focused push to the audit's `develop` paths starts the workflow. Review the
+   resulting run's exact source revision and the private setup hash above, then
+   manually approve **only this private-input deployment**.
    The agent must not approve it. The preflight must see the unchanged draft;
    then the build and installed OCR replacement checks can execute.
+   For environment-only changes, use **Re-run all jobs** on the latest existing
+   audit run (which retains its recorded source revision), or request a verified
+   `develop` push. GitHub's **Run workflow** UI button requires the workflow on
+   the default branch; it is currently absent because this audit is only on
+   `develop`. Do not merge to `main` or change the default branch for this button.
 4. Remove/revoke the input token after testing. The protected publication
    environment and final exact-installer approval remain separate.
    Local guard tests reject changed
