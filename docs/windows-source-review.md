@@ -5,6 +5,14 @@ Windows binary, or attest to a test that has not run. A private candidate may
 be assembled to inspect actual inputs; public distribution is blocked until
 all entries below have concrete evidence.
 
+The [original-runtime GPL review](windows-gpl-compatibility.md) now records the
+actual detector-to-OpenCV/Torch calls, loaded binary hashes, exact Intel terms
+and exception checks. Public distribution of this combination conflicts with
+the FSF's published GPL interpretation; no applicable detector linking permission
+was found. This is a release review decision, not a judicial finding about past
+private testing. Compatible replacement libraries or sufficient rights-holder
+permission can resolve it; a source rebuild is the selected route, not the only one.
+
 Latest automated inspection — 2026-10-10: [run `38022182370`](https://github.com/chonnakanch/yomimado/actions/runs/38022182370)
 at `65ac794370fe2b0f60d7ed968ac0be2c04ca4d51` passes the complete hosted suite
 and private upload checks. Downloaded artifact `11660046107` (124,199 bytes)
@@ -206,8 +214,9 @@ These restrictions require resolving GPL compatibility and exact static vendor
 scope before public distribution, rather than treating source collection or
 ordinary binary redistribution permission as clearance. A source-built Windows
 Torch without MKL/Intel OpenMP and OpenCV without IPP are concrete alternatives
-if compatible distribution rights cannot be established. No replacement build
-or compatibility decision is claimed yet.
+if compatible distribution rights cannot be established. The original combination's
+compatibility decision and its limits are recorded in the linked review above;
+no completed Torch replacement or final Windows source approval is claimed.
 
 The 2026-10-07 wheel audit inspected original bytes whose SHA-256 pins are in
 `services/ocr/windows-inputs.json`. Counts below describe build inputs; the

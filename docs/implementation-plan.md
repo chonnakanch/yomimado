@@ -120,6 +120,13 @@ The tested installer, macOS seed and publication gates remain unchanged.
 Windows source/native and installer gates remain open. Add joint release-on-main
 publication only after those gates pass, using one publisher for both platforms.
 
+Original Windows GPL compatibility review (2026-10-10): exact detector calls,
+loaded binary bindings, Intel terms and exception checks are recorded in the
+[review](windows-gpl-compatibility.md). The original combined service conflicts
+with the FSF's published GPL interpretation; sufficient additional permission
+or compatible libraries are required by the project's release review. The chosen
+source rebuild is one resolution, not a universal Windows distribution requirement.
+
 Windows Torch audit update (2026-10-10): run `38024770382` passes the early
 Windows compiler corrections, then fails full compilation on an omitted Kineto
 header after about 84 minutes. Downloaded evidence, source/notice/cache and all

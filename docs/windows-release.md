@@ -326,6 +326,10 @@ the macOS frozen runtime is not a Windows seed.
       public distribution. Verify exact licences, notices and native provenance,
       including OpenCV, NumPy/BLAS, Torch/OpenMP, Pillow, GEOS and Python libraries.
       Select source builds or different binaries when concrete gaps require them.
+      The [original-runtime GPL review](windows-gpl-compatibility.md) identifies
+      a compatibility conflict under the FSF interpretation, with exact detector
+      calls and loaded IPP/MKL binary evidence. Resolve it through compatible
+      replacements or sufficient rights-holder permission before public delivery.
 - [ ] Preserve exact corresponding sources, build recipes, modifications and
       applicable relinking/replacement instructions for the actual bundled inputs.
       Verify archive hashes, source coverage and required notices; record review
