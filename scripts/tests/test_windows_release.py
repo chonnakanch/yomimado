@@ -26,6 +26,50 @@ smoke_spec.loader.exec_module(smoke)
 
 
 class WindowsReleaseTests(unittest.TestCase):
+    def test_freezer_analysis_binds_dll_origins_missing_from_wheel_inventory(self):
+        source = self.root / "System32/vcruntime140.dll"
+        source.parent.mkdir()
+        source.write_bytes(b"original runtime input")
+        toc = self.root / "Analysis-00.toc"
+        toc.write_text(repr(([], [("vcruntime140.dll", str(source), "BINARY")])))
+        with patch.object(release, "pe_info", return_value={"machine": "0x8664"}):
+            records = release.analysis_native_inputs(toc, ["scripts", "binaries"])
+        self.assertEqual(records[0]["path"], str(source))
+        self.assertEqual(records[0]["sha256"], release.digest(source))
+        self.assertEqual(records[0]["destination"], "vcruntime140.dll")
+        self.assertEqual(records[0]["machine"], "0x8664")
+
+    def test_freezer_analysis_rejects_executable_or_malformed_records(self):
+        source = self.root / "input.dll"
+        source.write_bytes(b"native input")
+        toc = self.root / "Analysis-00.toc"
+        for text in (
+            "__import__('os').system('must never execute')",
+            repr(([],)),
+            repr(({},)),
+            repr(([],)),
+            repr(([("x.dll", str(source), "SYMLINK")],)),
+            repr(([("../x.dll", str(source), "BINARY")],)),
+            repr(([("C:\\x.dll", str(source), "BINARY")],)),
+            repr(([("x.dll", "relative.dll", "BINARY")],)),
+            repr(([("x.dll", str(self.root / "missing.dll"), "BINARY")],)),
+            repr(
+                (
+                    [
+                        ("x.dll", str(source), "BINARY"),
+                        ("X.DLL", str(source), "BINARY"),
+                    ],
+                )
+            ),
+        ):
+            with (
+                self.subTest(text=text),
+                patch.object(release, "pe_info", return_value={"machine": "0x8664"}),
+                self.assertRaises((ValueError, SyntaxError, TypeError)),
+            ):
+                toc.write_text(text)
+                release.analysis_native_inputs(toc, ["binaries"])
+
     def test_desktop_rejects_console_subsystem_and_accepts_x64_gui(self):
         path = Path("yomimado.exe")
         with (

@@ -110,6 +110,19 @@ verification. [Windows DbgHelp is not redistributable](https://learn.microsoft.c
 VC redistributables remain app-local and need separate exact redistribution
 terms/provenance; removing OS DLLs does not approve those binaries.
 
+Additional provenance preparation — 2026-10-10: the Windows inventory now reads
+PyInstaller 6.16.0's literal `Analysis-00.toc` using that exact version's schema.
+It records each actual native source path, destination, SHA-256 and PE imports,
+including DLLs discovered outside interpreter/wheel inventories. Exact hash
+matches join the existing frozen `buildInputs`; the original TOC and freeze
+recipe digests remain in `freezeAnalysis`. Parsing executes no TOC code and
+rejects malformed records, unsafe/duplicate Windows destinations and absent
+sources. Tests retain the exact source hash/path and reject those invalid cases.
+This is prepared for a new hosted candidate; the previously recorded VC origins
+remain open until Windows evidence is downloaded and reviewed. Source paths do
+not grant redistribution rights, and the modified service EXE's bootloader/build
+binding remains a separate gate. macOS inventory/packaging is unchanged.
+
 The [native rebuild worksheet](windows-native-rebuild.md) gives exact source
 revisions, independent Intel-free builds and GEOS replacement requirements.
 The new **Windows Torch source audit** pins original CPU source gitlinks, the

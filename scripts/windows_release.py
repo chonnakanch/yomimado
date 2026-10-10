@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import ast
 import hashlib
 import json
 import os
@@ -306,6 +307,54 @@ def native_files(directory: Path):
                 raise ValueError("Native filename is not a PE binary: " + str(path))
 
 
+def analysis_native_inputs(toc: Path, fields: list[str]) -> list[dict]:
+    """Read the pinned freezer's literal TOC; never execute its contents."""
+    data = ast.literal_eval(toc.read_text(encoding="utf-8"))
+    if not isinstance(data, tuple) or len(data) != len(fields):
+        raise ValueError("Unexpected PyInstaller Analysis TOC schema")
+    entries = data[fields.index("binaries")]
+    if not isinstance(entries, list):
+        raise TypeError("Missing PyInstaller binary analysis")
+    inputs = []
+    destinations = set()
+    for entry in entries:
+        if (
+            not isinstance(entry, tuple)
+            or len(entry) != 3
+            or not all(isinstance(value, str) for value in entry)
+            or entry[2] not in {"BINARY", "EXTENSION"}
+        ):
+            raise ValueError("Unexpected PyInstaller native input entry")
+        destination, source, kind = entry
+        # These are Windows destination paths even when tests run on macOS.
+        relative = destination.replace("\\", "/")
+        if (
+            not relative
+            or relative.startswith("/")
+            or ":" in relative
+            or any(p in {"", ".", ".."} for p in relative.split("/"))
+            or relative.casefold() in destinations
+        ):
+            raise ValueError("Unsafe or duplicate PyInstaller native destination")
+        destinations.add(relative.casefold())
+        path = Path(source)
+        if not path.is_absolute() or not path.is_file():
+            raise ValueError("Missing absolute PyInstaller native source")
+        inputs.append(
+            {
+                "component": "PyInstaller-discovered-native-input",
+                "path": str(path),
+                "destination": relative,
+                "type": kind,
+                "sha256": digest(path),
+                **pe_info(path),
+            }
+        )
+    if not inputs:
+        raise ValueError("Empty PyInstaller native input analysis")
+    return inputs
+
+
 def inventory_inputs() -> None:
     """Inventory the actual interpreter, wheels and frozen image independently."""
     if sys.platform != "win32" or sys.maxsize <= 2**32:
@@ -360,6 +409,17 @@ def inventory_inputs() -> None:
                     **pe_info(path),
                 }
             )
+    # Wheel/interpreter inventories do not cover DLLs discovered on the runner.
+    # Bind the actual freezer source paths and hashes, including app-local VC
+    # runtimes, without inferring redistribution permission from their location.
+    import PyInstaller
+    from PyInstaller.building.build_main import Analysis
+
+    if PyInstaller.__version__ != "6.16.0":
+        raise ValueError("Requires pinned PyInstaller native input schema")
+    toc = BUILD / "pyinstaller/yomimado-ocr/Analysis-00.toc"
+    analyzed = analysis_native_inputs(toc, [g[0] for g in Analysis._GUTS])
+    inputs.extend(analyzed)
     frozen = RESOURCES / "runtime"
     by_hash = {}
     for item in inputs:
@@ -383,6 +443,13 @@ def inventory_inputs() -> None:
         "inputManifestSha256": digest(SERVICE / "windows-inputs.json"),
         "components": components,
         "nativeInputs": inputs,
+        "freezeAnalysis": {
+            "pyinstallerVersion": PyInstaller.__version__,
+            "analysisTocSha256": digest(toc),
+            "recipeSha256": digest(ROOT / "scripts/build-windows-prerelease.ps1"),
+            "nativeInputCount": len(analyzed),
+            "sourceCoverageApproved": False,
+        },
         "binaries": binaries,
         "publicDistributionApproved": False,
     }
