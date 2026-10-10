@@ -100,6 +100,7 @@ Copy-Item (Join-Path $Service 'windows-assets.json') $Notices
 Copy-Item (Join-Path $Build 'python-build.json') $Notices
 Copy-Item (Join-Path $Root 'docs/windows-source-review.md') $Notices
 Copy-Item (Join-Path $Root 'docs/windows-native-replacement.md') $Notices
+Copy-Item (Join-Path $Root 'docs/windows-numpy-runtime.md') $Notices
 if ($Onnx) {
     Copy-Item (Join-Path $Root 'scripts/onnx-probe-inputs.json') $Notices
     Copy-Item (Join-Path $Resources 'assets/onnx/export.json') (Join-Path $Notices 'windows-onnx-export.json')

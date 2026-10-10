@@ -738,6 +738,35 @@ def prune_unused_native() -> None:
     write_json(RESOURCES / "notices/windows-excluded-native.json", removed)
 
 
+def verify_onnx_runtime_paths(paths: list[str]) -> None:
+    """Reject inference packages/binaries, not other packages' helper names."""
+    excluded = {"torch", "torchvision", "torchsummary", "manga_ocr", "manga-ocr"}
+    for name in paths:
+        path = Path(name.replace("\\", "/").lower())
+        parts = path.parts[1:] if path.parts[:1] == ("_internal",) else path.parts
+        if not parts:
+            continue
+        package = parts[0]
+        if (
+            package in excluded
+            or package.endswith((".py", ".pyc"))
+            and Path(package).stem in excluded
+            or any(
+                package.startswith(prefix + "-")
+                and package.endswith((".dist-info", ".egg-info"))
+                for prefix in excluded
+            )
+            or path.suffix in {".dll", ".pyd", ".exe"}
+            and any(part in path.name for part in ("torch", "manga_ocr", "mkl"))
+        ):
+            raise ValueError("Torch/MKL package or binary in ONNX runtime: " + name)
+    if not any(
+        Path(name.replace("\\", "/")).name.lower() == "onnxruntime.dll"
+        for name in paths
+    ):
+        raise ValueError("ONNX runtime native DLL is missing")
+
+
 def verify_resources(
     resources: Path, *, manifest_hashes: dict[str, str] | None = None
 ) -> dict:
@@ -799,13 +828,7 @@ def verify_resources(
             str(p.relative_to(resources / "runtime")).lower()
             for p in (resources / "runtime").rglob("*")
         ]
-        if any(
-            any(part in name for part in ("torch", "manga_ocr", "manga-ocr", "mkl"))
-            for name in runtime_paths
-        ):
-            raise ValueError("Torch/MKL package or binary in ONNX runtime")
-        if not any(Path(name).name == "onnxruntime.dll" for name in runtime_paths):
-            raise ValueError("ONNX runtime native DLL is missing")
+        verify_onnx_runtime_paths(runtime_paths)
     bundled = {p.name.lower() for p in native_files(resources / "runtime")}
     if any(
         name in {"dbghelp.dll", "wintrust.dll", "ucrtbase.dll"}

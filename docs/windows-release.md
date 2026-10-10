@@ -1,5 +1,16 @@
 # First Windows pre-release plan
 
+Packaging verification — 2026-10-10: run `38066505590` reaches frozen resource
+verification, then rejects a substring match for Torch. Downloaded evidence
+`11675597657` matches SHA-256
+`94c3e377c7882f1a12979b54fce1256e4572838259d656f8382b2eadc1f3b922`;
+its 83 native files contain no Torch/MKL binary. The resource check now rejects
+actual excluded packages, metadata and native binaries while allowing other
+packages' optional helper names such as `transformers/pytorch_utils.py`.
+Regression tests retain forbidden-package rejection. The new NumPy review is
+also copied into installed notices. All 196 release-tool tests pass locally;
+fresh Windows packaging, installed runtime and human approval remain required.
+
 Windows BLAS replacement — 2026-10-10: the Windows lock now selects the official
 NumPy 2.4.6 prebuilt wheel. Its BLAS DLL exactly matches the tagged supplier's
 Windows x64 input, whose recipe explicitly rejects static libquadmath linkage.

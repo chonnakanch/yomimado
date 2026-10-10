@@ -27,6 +27,38 @@ smoke_spec.loader.exec_module(smoke)
 
 
 class WindowsReleaseTests(unittest.TestCase):
+    def test_onnx_package_check_allows_transformers_optional_helpers(self):
+        release.verify_onnx_runtime_paths(
+            [
+                "_internal",
+                "_internal/onnxruntime/capi/onnxruntime.dll",
+                "_internal/transformers/pytorch_utils.py",
+                "_internal/transformers/utils/dummy_torchvision_objects.py",
+                "_internal/onnxruntime/tools/pytorch_export_contrib_ops.py",
+            ]
+        )
+
+    def test_onnx_package_check_rejects_actual_packages_metadata_and_binaries(self):
+        for path in (
+            "_internal/torch",
+            "torch.py",
+            "_internal/torchvision/_C.pyd",
+            "_internal/manga_ocr/__init__.py",
+            "_internal/manga-ocr-0.1.16.dist-info/METADATA",
+            "_internal/torch-2.6.0.dist-info/METADATA",
+            "_internal/lib/torch_cpu.dll",
+            "_internal/lib/mkl_core.dll",
+            "_internal/torchsummary",
+            "_internal\\torch\\__init__.py",
+        ):
+            with (
+                self.subTest(path=path),
+                self.assertRaisesRegex(ValueError, "Torch/MKL"),
+            ):
+                release.verify_onnx_runtime_paths(["onnxruntime.dll", path])
+        with self.assertRaisesRegex(ValueError, "native DLL is missing"):
+            release.verify_onnx_runtime_paths(["transformers/pytorch_utils.py"])
+
     def test_installed_cpu_probe_accepts_selected_opencv_abi_and_backend(self):
         for opencv in ("cv2.pyd", "cv2.cp311-win_amd64.pyd"):
             with self.subTest(opencv=opencv):
