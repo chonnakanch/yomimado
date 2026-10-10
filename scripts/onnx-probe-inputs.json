@@ -130,5 +130,40 @@
       "preferredSourceSha256": "eeba787164fe720b18cae46ebfb0efec0299218c34265cc01cfea9f408c33a31",
       "wheelSourcePrefix": "pyreadline3-3.5.4/src/"
     }
+  },
+  {
+    "version": "1.26.4",
+    "filename": "numpy-1.26.4-cp311-cp311-win_amd64.whl",
+    "url": "https://files.pythonhosted.org/packages/3f/6b/5610004206cf7f8e7ad91c5a85a8c71b2f2f8051a0c0c4d5916b76d6cbb2/numpy-1.26.4-cp311-cp311-win_amd64.whl",
+    "sha256": "cd25bcecc4974d09257ffcd1f098ee778f7834c3ad767fe5db785be9a4aa9cb2",
+    "package": "numpy-baseline",
+    "nativeInputs": {
+      "numpy/core/_multiarray_tests.cp311-win_amd64.pyd": "c31d1abe635e9006caa9fedda260dd4e4fdba31fbdcc8ac0969ab0396a0c6c4e",
+      "numpy/core/_multiarray_umath.cp311-win_amd64.pyd": "c76d812fa5131fe21c8bf9ffbd910f27df80856f910fa61698f23f60cfd9d13e",
+      "numpy/core/_operand_flag_tests.cp311-win_amd64.pyd": "3c9344c097e9894c429f649356f7b5806346e1dc320a33f918b12c0e2dde9d44",
+      "numpy/core/_rational_tests.cp311-win_amd64.pyd": "e6a85ed6a07ac0875ec0c47a526901bef99b08ae8f523e620063ad1e73aa027e",
+      "numpy/core/_simd.cp311-win_amd64.pyd": "0eea703b53158021bdbf9feba1c712c58484abd545b5db37cf398cca5e3a0e58",
+      "numpy/core/_struct_ufunc_tests.cp311-win_amd64.pyd": "59b4b12116102ee06ca72023e51210f43116cc51a6909c2f1402f97cba5a451a",
+      "numpy/core/_umath_tests.cp311-win_amd64.pyd": "0f22ff6f1972c03fc83c1365202b577dee455be5d893a027179c767ab346a666",
+      "numpy/fft/_pocketfft_internal.cp311-win_amd64.pyd": "207c894d4a97d5eac328a87936b1c5a160cf1163d8b3f59b3c43792d9b5224a4",
+      "numpy/linalg/lapack_lite.cp311-win_amd64.pyd": "896b743ebc0f407320ca58877f21275739a74a3a15fc1568bfbe460ebcab08a4",
+      "numpy/linalg/_umath_linalg.cp311-win_amd64.pyd": "05922a2be823ec2e4d2378a73b05bb37f2816aeea86b613a9c80e25764ac8736",
+      "numpy/random/bit_generator.cp311-win_amd64.pyd": "9ad713f6a93c26bb733a90f877b50d51d7f22eef161aa58e40735a5cec149501",
+      "numpy/random/mtrand.cp311-win_amd64.pyd": "7dda3c60d25791c53c2eca99eab696347b6a8ee20f3f8307d7efbf086cbbc5bf",
+      "numpy/random/_bounded_integers.cp311-win_amd64.pyd": "05d5fe8a5a79b1d5836e58307afdd0c8570a7c4e1ed0b6a6294f3978db0dc6c4",
+      "numpy/random/_common.cp311-win_amd64.pyd": "f41809c03d13487fa8940cc30f5ff2125143ebf071bca10e081d026028c435fd",
+      "numpy/random/_generator.cp311-win_amd64.pyd": "003c7af2699a370efc1a90bf42ac3b449c27ff9c24b11136dd245bf50ed2240f",
+      "numpy/random/_mt19937.cp311-win_amd64.pyd": "36bbd3767a4efc1e5ddd4f96b7b705fc664e95a629abbe7e3b5e5951cdead3f0",
+      "numpy/random/_pcg64.cp311-win_amd64.pyd": "e09a53b33a1908aa4eb58a07166d5beaffe2072ceded2f80df59831adf7fb8df",
+      "numpy/random/_philox.cp311-win_amd64.pyd": "9a777f3f9a59f3d88de84dc3e499138335c3a6cf3bee1b875d9626d6cdf6e098",
+      "numpy/random/_sfc64.cp311-win_amd64.pyd": "180453afefeff645f9fdb2de54a3cb72d8becb87936ea82e2d7a56592aca3068",
+      "numpy.libs/libopenblas64__v0.3.23-293-gc2f4bdbb-gcc_10_3_0-2bde3a66a51006b2b53eb373ff767a3f.dll": "57b87772bf676b5c2d718c79dddc9f039d79ec3319fee1398cc305adff7b69e5"
+    },
+    "noticeInputs": {
+      "numpy/core/include/numpy/random/LICENSE.txt": "d544761558b510866c21f7e8a2d5716fca76e0b98117e3b6b86314db7244d150",
+      "numpy/ma/LICENSE": "d78dbb208b80d92b4d333e41a4baae50d12444f46e53199fa7726a91de6e2da7",
+      "numpy/random/LICENSE.md": "b4bc2f4fa1c95778f1ed3dd8f14706bece399475b978f9f34b5d3cd72521b48a",
+      "numpy-1.26.4.dist-info/LICENSE.txt": "e261222a74adff28f88160dac1c5cb302d93b67e9ca989eb83bf311e11a9970a"
+    }
   }
 ]

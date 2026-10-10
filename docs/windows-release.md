@@ -1,5 +1,13 @@
 # First Windows pre-release plan
 
+Comparison environment correction — 2026-10-11: run `38067916664` fails in the
+original detector's NumPy `bool8` alias before producing an installer. The
+export/comparison environment now retains its original NumPy 1.26.4 wheel,
+with exact native-member and notice hashes. The delivered ONNX environment
+still selects NumPy 2.4.6 and excludes Torch and the reference NumPy input.
+Tests enforce that separation; Windows parity and installed verification must
+pass before the replacement is usable. No macOS runtime input is changed.
+
 Tokenizer source preparation — 2026-10-11: the private ONNX path now prepares
 [a small locked Sudachi binding](windows-sudachi-runtime.md), retaining its
 deliberately resolved graph, original crates and notices. Offline Windows graph

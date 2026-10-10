@@ -24,6 +24,34 @@ BUILD = ROOT / "services/ocr/build/onnx-prototype"
 EXCLUDED = {"torch", "torchvision", "manga-ocr", "torchsummary"}
 
 
+def select_packages(
+    packages: list[dict], additions: list[dict], *, baseline: bool
+) -> list[dict]:
+    if baseline:
+        # Preserve the previously working reference, including the detector's
+        # NumPy 1.x aliases. This environment is export/comparison-only.
+        selected = [e for e in packages if e["name"] != "numpy"]
+        extra_names = {"onnx", "ml_dtypes", "numpy-baseline"}
+    else:
+        selected = [e for e in packages if e["name"] not in EXCLUDED]
+        extra_names = {
+            "onnxruntime",
+            "flatbuffers",
+            "coloredlogs",
+            "humanfriendly",
+            "pyreadline3",
+        }
+    selected += [e for e in additions if e["package"] in extra_names]
+    numpy = [
+        e
+        for e in selected
+        if e.get("name") == "numpy" or e.get("package") == "numpy-baseline"
+    ]
+    if len(numpy) != 1 or (baseline and numpy[0]["version"] != "1.26.4"):
+        raise ValueError("Exactly one pinned NumPy input required for each environment")
+    return selected
+
+
 def run(command, **kwargs):
     subprocess.run([str(item) for item in command], check=True, **kwargs)
 
@@ -55,23 +83,7 @@ def prepare(*, runtime: Path | None = None, baseline: Path | None = None) -> Non
                 *[BUILD / "inputs" / e["filename"] for e in tools],
             ]
         )
-        selected = (
-            list(packages)
-            if name == "baseline"
-            else [e for e in packages if e["name"] not in EXCLUDED]
-        )
-        extra_names = (
-            {"onnx", "ml_dtypes"}
-            if name == "baseline"
-            else {
-                "onnxruntime",
-                "flatbuffers",
-                "coloredlogs",
-                "humanfriendly",
-                "pyreadline3",
-            }
-        )
-        selected += [e for e in additions if e["package"] in extra_names]
+        selected = select_packages(packages, additions, baseline=name == "baseline")
         run(
             [
                 python,

@@ -8,6 +8,12 @@ Build a small vertical slice first. Do not implement future features before the 
 
 ## Current status
 
+Windows comparison correction (2026-10-11): the export-only reference retains
+NumPy 1.26.4 for the original detector's legacy aliases, while the delivered
+ONNX environment selects NumPy 2.4.6. Exact wheel/native/notice hashes and tests
+enforce separate environments. Hosted parity and installed verification remain
+open after run `38067916664` failed before producing an installer.
+
 Windows tokenizer preparation (2026-10-11): the ONNX candidate now builds only
 the small Sudachi binding with a retained, deliberately resolved offline Cargo
 graph, replacing the old wheel's incomplete published dependency evidence.
