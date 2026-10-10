@@ -131,6 +131,7 @@ def verify_reuse(root: Path = ROOT) -> None:
         ".github/workflows/webview-loader-probe.yml",
         "scripts/probe_webview_loader.py",
         "scripts/probe-webview-loader.cpp",
+        "scripts/source-webview-loader.cpp",
         ".github/workflows/windows-onnx-prototype.yml",
         "scripts/onnx-probe-inputs.json",
         "scripts/onnx_generation.py",

@@ -1,5 +1,6 @@
 // Isolated compatibility probe; this is not linked into YomiMado yet.
-#include <webview/detail/platform/windows/webview2/loader.hh>
+#include <WebView2.h>
+#include <WebView2EnvironmentOptions.h>
 #include <wrl.h>
 #include <chrono>
 #include <iostream>
@@ -11,14 +12,18 @@ int wmain(int argc, wchar_t **argv) {
   if (argc != 2 || FAILED(CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED))) {
     return 1;
   }
-  webview::detail::mswebview2::loader loader;
   LPWSTR version = nullptr;
-  HRESULT result = loader.get_available_browser_version_string(nullptr, &version);
+  HRESULT result = GetAvailableCoreWebView2BrowserVersionString(nullptr, &version);
   if (FAILED(result) || !version || !*version) {
     std::cerr << "Installed Evergreen discovery failed: " << std::hex << result;
     return 2;
   }
   std::wcout << L"Evergreen version: " << version << std::endl;
+  auto options = Microsoft::WRL::Make<CoreWebView2EnvironmentOptions>();
+  if (!options || FAILED(options->put_TargetCompatibleBrowserVersion(version)) ||
+      FAILED(options->put_Language(L"en-US"))) {
+    return 7;
+  }
   CoTaskMemFree(version);
   if (GetModuleHandleW(L"WebView2Loader.dll")) {
     std::cerr << "Microsoft SDK loader unexpectedly loaded";
@@ -55,7 +60,7 @@ int wmain(int argc, wchar_t **argv) {
         }
         return S_OK;
       });
-  result = loader.create_environment_with_options(nullptr, argv[1], nullptr, created.Get());
+  result = CreateCoreWebView2EnvironmentWithOptions(nullptr, argv[1], options.Get(), created.Get());
   if (FAILED(result)) {
     std::cerr << "Environment call failed: " << std::hex << result;
     return 5;

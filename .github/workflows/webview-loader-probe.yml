@@ -6,6 +6,7 @@ name: Windows source-only WebView loader probe
       - .github/workflows/webview-loader-probe.yml
       - scripts/probe_webview_loader.py
       - scripts/probe-webview-loader.cpp
+      - scripts/source-webview-loader.cpp
   workflow_dispatch:
 permissions:
   contents: read
@@ -40,6 +41,7 @@ jobs:
           path: |
             services/ocr/build/webview-loader-probe/verification.json
             services/ocr/build/webview-loader-probe/compile.log
+            services/ocr/build/webview-loader-probe/library-compile.log
             services/ocr/build/webview-loader-probe/probe.log
             services/ocr/build/webview-loader-probe/loader.patch
             services/ocr/build/webview-loader-probe/*.tar.gz

@@ -27,6 +27,15 @@ Evergreen version, prove the Microsoft SDK loader is not loaded, create an actua
 environment and controller through the open implementation, and finish within
 one minute. Native Windows execution remains pending.
 
+The initial direct-class probe passes run `38073007641` at `841c14a`. Its
+downloaded evidence ZIP matches SHA-256
+`6853bce4a07723f482f0e9f48298ab41ff4806037ce802bf3db5f632872c3ca8`;
+installed Evergreen `131.0.2903.86` discovery, environment and controller pass.
+The next probe compiles the two exact C ABI entrypoints used by locked wry
+0.55.1 into a static library, then links and calls that library with non-null
+environment options. The adapter catches C++ exceptions before the Rust ABI
+boundary. Unused SDK loader entrypoints are not implemented or claimed.
+
 **Windows source-only WebView loader probe** is an independent, five-minute,
 read-only Actions workflow on `develop`. It has no private credential and does
 not rebuild an installer or Torch. Its artifact retains original sources, the

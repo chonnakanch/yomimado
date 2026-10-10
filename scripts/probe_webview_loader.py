@@ -63,7 +63,12 @@ def prepare() -> Path:
     sdk.mkdir(exist_ok=True)
     with zipfile.ZipFile(BUILD / INPUTS[1][0]) as archive:
         # Only public headers/notices; no Microsoft loader object is extracted.
-        for name in ("build/native/include/WebView2.h", "LICENSE.txt", "NOTICE.txt"):
+        for name in (
+            "build/native/include/WebView2.h",
+            "build/native/include/WebView2EnvironmentOptions.h",
+            "LICENSE.txt",
+            "NOTICE.txt",
+        ):
             (sdk / Path(name).name).write_bytes(archive.read(name))
     fixes = {
         "core/include/webview/detail/platform/windows/webview2/loader.hh": (
@@ -103,6 +108,41 @@ def prepare() -> Path:
     return tree
 
 
+def build_library(tree: Path) -> dict:
+    common = [
+        "cl",
+        "/nologo",
+        "/EHsc",
+        "/std:c++14",
+        "/MD",
+        "/O2",
+        "/DWEBVIEW_PLATFORM_WINDOWS",
+        "/DWEBVIEW_EDGE",
+        "/I" + str(tree / "core/include"),
+        "/I" + str(BUILD / "sdk"),
+    ]
+    library = BUILD / "WebView2LoaderStatic.lib"
+    obj = BUILD / "source-loader.obj"
+    commands = [
+        common
+        + ["/c", str(ROOT / "scripts/source-webview-loader.cpp"), "/Fo:" + str(obj)],
+        ["lib", "/nologo", "/MACHINE:X64", "/OUT:" + str(library), str(obj)],
+    ]
+    with (BUILD / "library-compile.log").open("w", encoding="utf-8") as log:
+        for command in commands:
+            result = subprocess.run(
+                command, capture_output=True, text=True, timeout=90, check=False
+            )
+            log.write(result.stdout + result.stderr)
+            if result.returncode:
+                raise RuntimeError("Source loader library compile failed")
+    return {
+        "commands": commands,
+        "librarySha256": sha(library),
+        "adapterSha256": sha(ROOT / "scripts/source-webview-loader.cpp"),
+    }
+
+
 def main() -> None:
     record = {
         "inputs": INPUTS,
@@ -112,6 +152,7 @@ def main() -> None:
     }
     try:
         tree = prepare()
+        record.update(build_library(tree))
         record["patchSha256"] = sha(BUILD / "loader.patch")
         executable = BUILD / "loader-probe.exe"
         command = [
@@ -129,6 +170,7 @@ def main() -> None:
             "/Fe:" + str(executable),
             "/Fo:" + str(BUILD / "loader-probe.obj"),
             "/link",
+            str(BUILD / "WebView2LoaderStatic.lib"),
             "advapi32.lib",
             "ole32.lib",
             "user32.lib",
