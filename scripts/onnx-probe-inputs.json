@@ -1,0 +1,89 @@
+[
+  {
+    "package": "onnx",
+    "version": "1.18.0",
+    "filename": "onnx-1.18.0-cp311-cp311-win_amd64.whl",
+    "url": "https://files.pythonhosted.org/packages/44/b0/435fd764011911e8f599e3361f0f33425b1004662c1ea33a0ad22e43db2d/onnx-1.18.0-cp311-cp311-win_amd64.whl",
+    "sha256": "a5810194f0f6be2e58c8d6dedc6119510df7a14280dd07ed5f0f0a85bd74816a",
+    "nativeInputs": {
+      "onnx/onnx_cpp2py_export.cp311-win_amd64.pyd": "016e3e15876eedeb915a45d35fad3e8e3116dda06892bccbd7bc20e25d12d8d0"
+    },
+    "noticeInputs": {
+      "onnx-1.18.0.dist-info/licenses/LICENSE": "3ddf9be5c28fe27dad143a5dc76eea25222ad1dd68934a047064e56ed2fa40c5"
+    }
+  },
+  {
+    "package": "onnxruntime",
+    "version": "1.22.1",
+    "filename": "onnxruntime-1.22.1-cp311-cp311-win_amd64.whl",
+    "url": "https://files.pythonhosted.org/packages/a8/01/e536397b03e4462d3260aee5387e6f606c8fa9d2b20b1728f988c3c72891/onnxruntime-1.22.1-cp311-cp311-win_amd64.whl",
+    "sha256": "f28a42bb322b4ca6d255531bb334a2b3e21f172e37c1741bd5e66bc4b7b61f03",
+    "nativeInputs": {
+      "onnxruntime/capi/onnxruntime.dll": "b7d046825412fe3d6c582145f527a197817b2ed717a3a3f21c6e81896f5fce48",
+      "onnxruntime/capi/onnxruntime_providers_shared.dll": "121329b5f87d4c16ca422f1565322a529c8548683a56e338222bbc0c39f9a82c",
+      "onnxruntime/capi/onnxruntime_pybind11_state.pyd": "cf57f10c1d276f54ff2e70d2b74fe6ef5de9f0c39430ba6ec6941acff6915dbb"
+    },
+    "noticeInputs": {
+      "onnxruntime/LICENSE": "c250d6278f0b47a6439fb7592b08b58a55eb9f535aa49a1db63211c3f982b674",
+      "onnxruntime/ThirdPartyNotices.txt": "e00f828e0a33de591a355ae6606d2625f5758da7d2c844db7821c9dd3e3647b6"
+    }
+  },
+  {
+    "package": "ml_dtypes",
+    "version": "0.5.1",
+    "filename": "ml_dtypes-0.5.1-cp311-cp311-win_amd64.whl",
+    "url": "https://files.pythonhosted.org/packages/60/30/d3f0fc9499a22801219679a7f3f8d59f1429943c6261f445fb4bfce20718/ml_dtypes-0.5.1-cp311-cp311-win_amd64.whl",
+    "sha256": "15ad0f3b0323ce96c24637a88a6f44f6713c64032f27277b069f285c3cf66478",
+    "nativeInputs": {
+      "ml_dtypes/_ml_dtypes_ext.cp311-win_amd64.pyd": "890945d0024545f7c4dcdd26d06b8d7460db1ca069953c8a0ad57a2f2ecdc760"
+    },
+    "noticeInputs": {
+      "ml_dtypes-0.5.1.dist-info/LICENSE": "3ddf9be5c28fe27dad143a5dc76eea25222ad1dd68934a047064e56ed2fa40c5",
+      "ml_dtypes-0.5.1.dist-info/LICENSE.eigen": "9221c2f936159b8446d329249fb4c0f25be510f447383a0f13336ac7985668a3"
+    }
+  },
+  {
+    "package": "flatbuffers",
+    "version": "25.2.10",
+    "filename": "flatbuffers-25.2.10-py2.py3-none-any.whl",
+    "url": "https://files.pythonhosted.org/packages/b8/25/155f9f080d5e4bc0082edfda032ea2bc2b8fab3f4d25d46c1e9dd22a1a89/flatbuffers-25.2.10-py2.py3-none-any.whl",
+    "sha256": "ebba5f4d5ea615af3f7fd70fc310636fbb2bbd1f566ac0a23d98dd412de50051",
+    "nativeInputs": {},
+    "noticeInputs": {
+      "flatbuffers-25.2.10.dist-info/LICENSE": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30"
+    }
+  },
+  {
+    "package": "coloredlogs",
+    "version": "15.0.1",
+    "filename": "coloredlogs-15.0.1-py2.py3-none-any.whl",
+    "url": "https://files.pythonhosted.org/packages/a7/06/3d6badcf13db419e25b07041d9c7b4a2c331d3f4e7134445ec5df57714cd/coloredlogs-15.0.1-py2.py3-none-any.whl",
+    "sha256": "612ee75c546f53e92e70049c9dbfcc18c935a2b9a53b66085ce9ef6a6e5c0934",
+    "nativeInputs": {},
+    "noticeInputs": {
+      "coloredlogs-15.0.1.dist-info/LICENSE.txt": "0bef4ffb1855b65570304f2018c6d44e4bab97bd5df8716ecd7800014d717267"
+    }
+  },
+  {
+    "package": "humanfriendly",
+    "version": "10.0",
+    "filename": "humanfriendly-10.0-py2.py3-none-any.whl",
+    "url": "https://files.pythonhosted.org/packages/f0/0f/310fb31e39e2d734ccaa2c0fb981ee41f7bd5056ce9bc29b2248bd569169/humanfriendly-10.0-py2.py3-none-any.whl",
+    "sha256": "1697e1a8a8f550fd43c2865cd84542fc175a61dcb779b6fee18cf6b6ccba1477",
+    "nativeInputs": {},
+    "noticeInputs": {
+      "humanfriendly-10.0.dist-info/LICENSE.txt": "4ac48f4117809f2734066150450f120b3bb110ac1d3b32170795e0560dbbc1f5"
+    }
+  },
+  {
+    "package": "pyreadline3",
+    "version": "3.5.4",
+    "filename": "pyreadline3-3.5.4-py3-none-any.whl",
+    "url": "https://files.pythonhosted.org/packages/5a/dc/491b7661614ab97483abf2056be1deee4dc2490ecbf7bff9ab5cdbac86e1/pyreadline3-3.5.4-py3-none-any.whl",
+    "sha256": "eaf8e6cc3c49bcccf145fc6067ba8643d1df34d604a1ec0eccbf7a18e6d3fae6",
+    "nativeInputs": {},
+    "noticeInputs": {
+      "pyreadline3-3.5.4.dist-info/LICENSE.md": "8fc4d8de61b40533023b16e64528d13371a2e9c68677df79ed5e93ba570471bd"
+    }
+  }
+]

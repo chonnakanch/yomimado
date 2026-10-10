@@ -136,6 +136,16 @@ drop-in Windows Python CPU replacement is established. Exact compatible binary
 inputs, a proven alternative inference backend or sufficient additional permission
 remain needed before public distribution. No new runtime or installer is approved.
 
+Windows ONNX feasibility (2026-10-10): implemented isolated hash-pinned model
+conversion, NumPy generation and detector filtering with a Torch-free inference
+process. Local horizontal/vertical synthetic OCR responses and three uncached
+translations match the baseline exactly; 11 focused tests pass. The independent
+Windows hosted prototype uses prebuilt inputs, without a Torch source build.
+Windows execution, native-source review, frozen packaging and exact-installer
+human approval remain open. See [the prototype record](windows-onnx-prototype.md).
+The maintainer confirmed clearing all 58 historical Actions runs; deletion and
+removal of the temporary cleanup job are [recorded](windows-actions-history.md).
+
 Windows Torch audit update (2026-10-10): run `38024770382` passes the early
 Windows compiler corrections, then fails full compilation on an omitted Kineto
 header after about 84 minutes. Downloaded evidence, source/notice/cache and all

@@ -1,5 +1,16 @@
 # First Windows pre-release plan
 
+ONNX experiment — 2026-10-10: an [isolated prototype](windows-onnx-prototype.md)
+converts the existing recognition/translation models using prebuilt Torch and
+executes with CPU ONNX Runtime plus NumPy detector filtering. Local synthetic
+horizontal/vertical OCR responses and three uncached translations match exactly,
+with no Torch imports in the ONNX process. The new **Windows ONNX feasibility**
+workflow must establish Windows execution before packaging. Existing installer,
+macOS runtime, source clearance and protected human approval are unchanged.
+The maintainer requested and confirmed deletion of all 58 historical Actions
+runs; [the verified cleanup record](windows-actions-history.md) preserves their
+identities. Earlier Actions links below intentionally no longer resolve.
+
 Build policy update — 2026-10-10: the maintainer chooses to avoid long Torch
 source builds. **Windows Torch source audit** is now manual-only with a false-by-default
 explicit opt-in; no push starts it. The separate installer workflow already uses

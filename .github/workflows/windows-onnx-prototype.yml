@@ -1,0 +1,72 @@
+name: Windows ONNX feasibility
+
+# Isolated experiment. Prebuilt CPU inputs; no Torch/native source compilation.
+"on":
+  push:
+    branches: [develop]
+    paths:
+      - .github/workflows/windows-onnx-prototype.yml
+      - scripts/*onnx*probe.py
+      - scripts/onnx_generation.py
+      - scripts/onnx-probe-inputs.json
+      - scripts/tests/test_onnx_probe.py
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: windows-onnx-prototype
+  cancel-in-progress: true
+jobs:
+  prototype:
+    if: github.repository == 'chonnakanch/yomimado' && github.ref == 'refs/heads/develop'
+    runs-on: windows-2022
+    timeout-minutes: 40
+    defaults:
+      run:
+        shell: pwsh
+    steps:
+      - name: Preserve original source bytes
+        run: git config --global core.autocrlf false
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
+        with:
+          python-version: "3.11.9" # Prototype bootstrap, not the final frozen runtime.
+          architecture: x64
+      - name: Prepare hash-pinned prebuilt inputs and separate runtime without Torch
+        run: python scripts/prepare_onnx_probe.py
+      - name: Test generation and filtering boundaries
+        run: |
+          & services/ocr/build/onnx-prototype/baseline/Scripts/python.exe -m unittest discover -s scripts/tests -p test_onnx_probe.py
+          if ($LASTEXITCODE) { throw 'Prototype unit tests failed' }
+      - name: Convert original licensed local recognition and translation models
+        env:
+          HF_HUB_OFFLINE: "1"
+          TRANSFORMERS_OFFLINE: "1"
+        run: |
+          & services/ocr/build/onnx-prototype/baseline/Scripts/python.exe scripts/export_onnx_probe.py --ocr-model services/ocr/build/onnx-prototype/assets/manga-ocr-base --translation-model services/ocr/build/onnx-prototype/assets/opus-mt-ja-en --output services/ocr/build/onnx-prototype/models 2>&1 | Tee-Object services/ocr/build/onnx-prototype/export.log
+          if ($LASTEXITCODE) { throw 'Model export failed' }
+      - name: Compare offline OCR geometry and uncached translation in actual Windows x64 runtime
+        env:
+          PYTHONPATH: services/ocr
+        run: |
+          & services/ocr/build/onnx-prototype/baseline/Scripts/python.exe scripts/check_onnx_probe.py --onnx-python services/ocr/build/onnx-prototype/runtime/Scripts/python.exe --ocr-model services/ocr/build/onnx-prototype/assets/manga-ocr-base --translation-model services/ocr/build/onnx-prototype/assets/opus-mt-ja-en --detector-repo services/ocr/build/onnx-prototype/assets/comic-text-detector --detector-model services/ocr/build/onnx-prototype/smoke-detector.onnx --exported services/ocr/build/onnx-prototype/models --output services/ocr/build/onnx-prototype/comparison
+          if ($LASTEXITCODE) { throw 'Windows ONNX parity failed; inspect retained logs' }
+          'Offline tested OCR/geometry and translation parity passed. Prototype only; no installed app, native source clearance or human approval.' | Add-Content $env:GITHUB_STEP_SUMMARY
+      - name: Retain textual evidence only
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: windows-onnx-feasibility-evidence
+          path: |
+            services/ocr/build/onnx-prototype/preparation.json
+            services/ocr/build/onnx-prototype/models/export.json
+            services/ocr/build/onnx-prototype/export.log
+            services/ocr/build/onnx-prototype/comparison/*.json
+            services/ocr/build/onnx-prototype/comparison/*.log
+          if-no-files-found: ignore
+          retention-days: 14
+      - name: Remove smoke-only detector
+        if: always()
+        run: Remove-Item services/ocr/build/onnx-prototype/smoke-detector.onnx -ErrorAction SilentlyContinue

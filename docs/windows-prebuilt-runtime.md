@@ -1,5 +1,11 @@
 # Windows prebuilt runtime investigation
 
+Follow-up: the maintainer selected an isolated ONNX experiment. Its initial
+[local comparison](windows-onnx-prototype.md) passes the bounded OCR/translation
+fixtures without Torch in the inference process. Windows execution, final
+native/source review and installed packaging remain open; this does not change
+the drop-in Torch findings below.
+
 Reviewed 2026-10-10 following the maintainer's decision to avoid long source
 builds. **No compatible drop-in Torch replacement has been established in the
 packages checked below.** This is a bounded investigation, not a claim that no
@@ -43,10 +49,10 @@ installs pinned prebuilt Torch wheels and does not call the Torch source builder
 Its previous roughly 30-minute duration does not imply a time guarantee for a
 new runtime. The macOS seed path and publisher are unchanged.
 
-The previously started [source run `38040678348`](https://github.com/chonnakanch/yomimado/actions/runs/38040678348)
-was still running at this review's status check. The connected browser is signed
-out; cancellation was requested from the maintainer. No subsequent long source
-run was dispatched by this investigation.
+The maintainer cancelled source run `38040678348`; the public API confirmed
+`cancelled`. On subsequent explicit instruction, all 58 historical Actions runs
+were deleted and their identities were [recorded](windows-actions-history.md).
+No subsequent long source run was dispatched by this investigation.
 
 ## Remaining decision and release gates
 

@@ -14,8 +14,9 @@ import re
 import shutil
 import subprocess
 import tarfile
-import tomllib
 from pathlib import Path
+
+import tomllib
 
 SEED_REVISION = "5120506bdf5cf5fa93e2780484985473038f2195"
 ROOT = Path(__file__).resolve().parent.parent
@@ -54,15 +55,21 @@ def version(root: Path = ROOT) -> str:
         read_json(desktop / "package-lock.json")["version"],
         read_json(desktop / "package-lock.json")["packages"][""]["version"],
         read_json(desktop / "src-tauri/tauri.conf.json")["version"],
-        tomllib.loads((desktop / "src-tauri/Cargo.toml").read_text())["package"]["version"],
+        tomllib.loads((desktop / "src-tauri/Cargo.toml").read_text())["package"][
+            "version"
+        ],
         next(
             p["version"]
-            for p in tomllib.loads((desktop / "src-tauri/Cargo.lock").read_text())["package"]
+            for p in tomllib.loads((desktop / "src-tauri/Cargo.lock").read_text())[
+                "package"
+            ]
             if p["name"] == "yomimado" and "source" not in p
         ),
     }
     if len(versions) != 1:
-        raise ValueError("App, npm and Cargo versions must agree before merging to main")
+        raise ValueError(
+            "App, npm and Cargo versions must agree before merging to main"
+        )
     result = versions.pop()
     is_prerelease(result)
     return result
@@ -114,6 +121,23 @@ def verify_reuse(root: Path = ROOT) -> None:
         ".github/workflows/windows-opencv-audit.yml",
         "scripts/build-opencv-windows.py",
         "scripts/opencv-windows-probe.py",
+        ".github/workflows/windows-onnx-prototype.yml",
+        "scripts/onnx-probe-inputs.json",
+        "scripts/onnx_generation.py",
+        "scripts/onnx_detector_probe.py",
+        "scripts/onnx_runtime_probe.py",
+        "scripts/export_onnx_probe.py",
+        "scripts/check_onnx_probe.py",
+        "scripts/prepare_onnx_probe.py",
+        "THIRD_PARTY_LICENSES/windows-onnx-probe/coloredlogs/LICENSE.txt",
+        "THIRD_PARTY_LICENSES/windows-onnx-probe/flatbuffers/LICENSE",
+        "THIRD_PARTY_LICENSES/windows-onnx-probe/humanfriendly/LICENSE.txt",
+        "THIRD_PARTY_LICENSES/windows-onnx-probe/pyreadline3/LICENSE.md",
+        "THIRD_PARTY_LICENSES/windows-onnx-probe/ml_dtypes/LICENSE",
+        "THIRD_PARTY_LICENSES/windows-onnx-probe/ml_dtypes/LICENSE.eigen",
+        "THIRD_PARTY_LICENSES/windows-onnx-probe/onnx/LICENSE",
+        "THIRD_PARTY_LICENSES/windows-onnx-probe/onnxruntime/LICENSE",
+        "THIRD_PARTY_LICENSES/windows-onnx-probe/onnxruntime/ThirdPartyNotices.txt",
         ".github/workflows/windows-torch-audit.yml",
         "scripts/build-torch-windows.py",
         "scripts/torch-windows-probe.py",
@@ -198,7 +222,9 @@ def prepare_sources(seed: Path, notices: Path, output: Path, root: Path = ROOT) 
     write_json(output / "ci-followup.json", followup)
     worksheet = read_json(output / "source-delivery.worksheet.json")
     worksheet["projectRevision"] = revision
-    next(e for e in worksheet["components"] if e["id"] == "project:yomimado").update(project)
+    next(e for e in worksheet["components"] if e["id"] == "project:yomimado").update(
+        project
+    )
     write_json(output / "source-delivery.worksheet.json", worksheet)
     omissions = read_json(output / "source-asset-omissions.json")
     omissions["archives"].pop(old_archive)
@@ -253,7 +279,10 @@ def package(directory: Path, sources: Path, notices: Path) -> dict:
 
 def verify_artifact(directory: Path, expected: dict) -> None:
     prefix = f"YomiMado_{expected['version']}"
-    names = {prefix + suffix for suffix in ("_aarch64.dmg", "_sources.tar.gz", "_notices.tar.gz")}
+    names = {
+        prefix + suffix
+        for suffix in ("_aarch64.dmg", "_sources.tar.gz", "_notices.tar.gz")
+    }
     if (
         set(expected["assets"]) != names
         or expected["tag"] != "v" + expected["version"]
@@ -269,7 +298,10 @@ def verify_artifact(directory: Path, expected: dict) -> None:
     if any(p.is_symlink() or not p.is_file() for p in directory.iterdir()):
         raise ValueError("Release files must be regular files")
     for name, checksum in expected["assets"].items():
-        if not re.fullmatch(r"[0-9a-f]{64}", checksum) or digest(directory / name) != checksum:
+        if (
+            not re.fullmatch(r"[0-9a-f]{64}", checksum)
+            or digest(directory / name) != checksum
+        ):
             raise ValueError("Transferred artifact hash mismatch: " + name)
         if (directory / (name + ".sha256")).read_text() != f"{checksum}  {name}\n":
             raise ValueError("Incorrect checksum sidecar")
