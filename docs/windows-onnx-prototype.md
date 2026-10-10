@@ -121,12 +121,31 @@ telemetry. Translation cache identity includes graph/policy hashes and survives
 install-path changes. The freezer excludes Torch, torchvision and Manga OCR;
 the existing desktop hidden-child-console and process cleanup remain in use.
 
+The IPP-free OpenCV source recipe that passed its independent Windows audit is
+now selected for the ONNX candidate. It keeps DLL CRT linkage, binds source,
+compiler-command and notice hashes before replacing the wheel extension, and
+retains the actual cp311 ABI filename. Full-service parity and installed checks
+must verify this replacement; earlier isolated probe approval cannot transfer.
+
+`windows-onnx-native-inputs.json` pins preferred ONNX Runtime/vcpkg source trees
+and 25 vendor/build-helper archives, including the older FlatBuffers override.
+All 25 vendor archive hashes match their original port recipes. Source delivery
+retains code/recipes/licences with canonical metadata, excludes test models/media
+and prebuilt binaries, and records each exclusion hash. This is source preparation,
+not exact-wheel build attestation or complete public source approval.
+
 **Windows private candidate** now selects this path, reruns complete offline
 parity before freezing, and verifies the exact installed learning/UI/runtime
 including ONNX DLL loading and absence of Torch/CUDA/MKL modules. This is a
 private diagnostic candidate until those checks and native-source review pass.
 A new exact setup hash and maintainer test record are required; older setup
 approval cannot transfer. No main publisher or protected approval is changed.
+
+First packaged attempt [38048563546](https://github.com/chonnakanch/yomimado/actions/runs/38048563546)
+at `51a7b23` passes final-Python parity and freezing but fails resource verification:
+`collect-all onnxruntime` copies the vendor's `datasets/logreg_iris.onnx` example.
+No setup is exported. Packaging now collects runtime Python/native modules and
+metadata without dataset files; model-exclusion checks remain strict.
 
 ## Exact dependency review scope
 

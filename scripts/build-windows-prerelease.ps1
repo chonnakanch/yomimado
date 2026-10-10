@@ -39,6 +39,10 @@ if ($Prepare) {
     if ($Onnx) {
         # The baseline is export-only. No Torch package enters the frozen runtime.
         Invoke-Checked $RuntimePython @('scripts/prepare_onnx_probe.py', '--runtime', (Join-Path $Build 'venv'), '--baseline', (Join-Path $Build 'onnx-baseline'))
+        # Reuse the independently verified focused IPP-free build recipe.
+        # Prebuilt Torch remains export-only; no Torch source compilation occurs.
+        Invoke-Checked $RuntimePython @('scripts/build-opencv-windows.py', (Join-Path $Service 'build/onnx-prototype/smoke-detector.onnx'))
+        Invoke-Checked $Python @('scripts/windows_opencv_runtime.py', 'replace')
     } else {
         Invoke-Checked $RuntimePython @('-m', 'venv', (Join-Path $Build 'venv'))
         # Installing local, hash-verified inputs must not consult an index or resolve.
@@ -65,7 +69,9 @@ if ($Onnx) {
     $Graphs = Join-Path $Assets 'onnx'
     Invoke-Checked $Baseline @('scripts/export_onnx_probe.py', '--ocr-model', (Join-Path $Assets 'manga-ocr-base'), '--translation-model', (Join-Path $Assets 'opus-mt-ja-en'), '--output', $Graphs)
     Invoke-Checked $Baseline @('scripts/check_onnx_probe.py', '--ocr-model', (Join-Path $Assets 'manga-ocr-base'), '--translation-model', (Join-Path $Assets 'opus-mt-ja-en'), '--detector-repo', $Detector, '--detector-model', (Join-Path $Service 'build/onnx-prototype/smoke-detector.onnx'), '--exported', $Graphs, '--output', (Join-Path $Build 'onnx-comparison'), '--onnx-python', $Python, '--onnx-pythonpath', $Service)
-    $Freeze += @('--paths', $PSScriptRoot, '--collect-all', 'onnxruntime', '--hidden-import', 'pyclipper', '--hidden-import', 'shapely.geometry')
+    # collect-all also copies vendor example ONNX models. Collect Python/native
+    # runtime inputs and metadata without those unneeded datasets.
+    $Freeze += @('--paths', $PSScriptRoot, '--collect-binaries', 'onnxruntime', '--collect-submodules', 'onnxruntime', '--copy-metadata', 'onnxruntime', '--hidden-import', 'pyclipper', '--hidden-import', 'shapely.geometry')
     foreach ($Name in @('torch', 'torchvision', 'manga_ocr', 'torchsummary', 'onnx', 'ml_dtypes')) { $Freeze += @('--exclude-module', $Name) }
 } else {
     Invoke-Checked $Python @('-c', 'import sys; sys.path.insert(0,sys.argv[1]); from inference import TextDetector; import torch; assert torch.version.cuda is None', $Detector)
@@ -97,6 +103,8 @@ if ($Onnx) {
     Copy-Item (Join-Path $Root 'scripts/onnx-probe-inputs.json') $Notices
     Copy-Item (Join-Path $Resources 'assets/onnx/export.json') (Join-Path $Notices 'windows-onnx-export.json')
     Copy-Item (Join-Path $Root 'THIRD_PARTY_LICENSES/windows-onnx-probe') (Join-Path $Notices 'windows-onnx-inputs') -Recurse -Force
+    Invoke-Checked $Python @('scripts/windows_opencv_runtime.py', 'retain')
+    Invoke-Checked $Python @('scripts/windows_onnx_sources.py')
 }
 [IO.File]::WriteAllText((Join-Path $Notices 'project-revision.txt'), "$Revision`n")
 @{mode='private-test'; authenticodeSigned=$false; publicDistributionApproved=$false; installedAppVerified=$false} | ConvertTo-Json | Set-Content (Join-Path $Notices 'distribution.json') -Encoding utf8NoBOM

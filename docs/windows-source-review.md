@@ -5,6 +5,33 @@ Windows binary, or attest to a test that has not run. A private candidate may
 be assembled to inspect actual inputs; public distribution is blocked until
 all entries below have concrete evidence.
 
+Current runtime preparation — 2026-10-10: the maintainer rejects long Torch
+source builds. **Windows ONNX feasibility** passes at `4d49cb7` in run
+`38047950684` (4 minutes 6 seconds). The new private candidate removes Torch/
+torchvision from inference, uses prebuilt CPU ONNX Runtime 1.22.1, and selects
+the independently audited IPP-free OpenCV source recipe. New installed inventory,
+native loading and fresh exact-installer approval remain required. Older Torch
+inventory and compatibility findings below describe historical candidates.
+
+The [ONNX native input manifest](windows-onnx-native-inputs.json) now binds the
+official v1.22.1 source revision, Windows CPU packaging recipes, exact vcpkg
+baseline/overlay ports, older FlatBuffers override and 25 vendor/build-helper
+source archives. All 25 archives match original port SHA-512 recipes as well as
+retained SHA-256 pins. The manifest includes full original notice-file hashes.
+The source collector preserves code/recipes, original notices and explicit
+test-model/media/prebuilt-binary exclusions; canonical tree hashes are checked
+independently before delivery. MLAS uses in-tree CPU kernels; DNNL defaults off;
+the global recipe defines `EIGEN_MPL2_ONLY`. The original generic wheel notice
+is retained unchanged, including entries for components not selected by this
+CPU recipe. Exact final wheel/loaded-DLL identity and compiled vendor scope
+still require the candidate evidence. These source/recipe findings are not an
+assertion of complete binary-build attestation or public approval.
+
+First frozen ONNX attempt `38048563546` at `51a7b23` reaches resource validation
+after final-Python parity, then rejects an ONNX Runtime bundled example model.
+The freezer is narrowed to runtime modules/binaries and metadata; arbitrary
+ONNX files remain prohibited. No installer or public release resulted.
+
 The [original-runtime GPL review](windows-gpl-compatibility.md) now records the
 actual detector-to-OpenCV/Torch calls, loaded binary hashes, exact Intel terms
 and exception checks. Public distribution of this combination conflicts with

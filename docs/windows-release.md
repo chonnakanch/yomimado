@@ -10,6 +10,10 @@ in 4 minutes 6 seconds. **Windows private candidate** now selects the ONNX
 backend, repeating parity under final Python 3.11.17 before freezing and checking
 the installed setup. Native-source clearance, fresh exact-installer testing and
 protected human approval remain open; macOS and the main publisher are unchanged.
+The first frozen attempt `38048563546` rejects an unneeded ORT example model
+before setup export. Packaging now collects only runtime Python/native inputs
+and metadata, selects the audited IPP-free OpenCV recipe and retains the pinned
+ONNX preferred-source/vendor/notice preparation. Its new installed gates must pass.
 The maintainer requested and confirmed deletion of all 58 historical Actions
 runs; [the verified cleanup record](windows-actions-history.md) preserves their
 identities. Earlier Actions links below intentionally no longer resolve.
