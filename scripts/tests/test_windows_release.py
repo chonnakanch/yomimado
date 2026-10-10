@@ -7,6 +7,7 @@ import subprocess
 import sys
 import tempfile
 import unittest
+import zipfile
 from pathlib import Path
 from unittest.mock import patch
 
@@ -26,6 +27,71 @@ smoke_spec.loader.exec_module(smoke)
 
 
 class WindowsReleaseTests(unittest.TestCase):
+    def test_frozen_executable_binds_original_bootloader_and_appended_pkg(self):
+        bootloader = self.root / "run.exe"
+        bootloader.write_bytes(b"synthetic original bootloader")
+        payload = self.root / "application.pkg"
+        payload.write_bytes(b"compressed application")
+        frozen = self.root / "frozen.exe"
+        frozen.write_bytes(bootloader.read_bytes() + payload.read_bytes())
+        wheel = self.root / "inputs/pyinstaller.whl"
+        wheel.parent.mkdir()
+        with zipfile.ZipFile(wheel, "w") as archive:
+            archive.writestr(
+                "PyInstaller/bootloader/Windows-64bit-intel/run.exe",
+                bootloader.read_bytes(),
+            )
+        toc = self.root / "EXE-00.toc"
+        fields = ["exefiles", "pkgname", "append_pkg", "strip", "upx"]
+        toc.write_text(
+            repr(
+                (
+                    [("run.exe", str(bootloader), "EXECUTABLE")],
+                    str(payload),
+                    True,
+                    False,
+                    False,
+                )
+            )
+        )
+        manifest = {
+            "packages": [
+                {
+                    "name": "pyinstaller",
+                    "filename": wheel.name,
+                    "sha256": release.digest(wheel),
+                    "source": {"sha256": "preferred-source"},
+                }
+            ]
+        }
+        with (
+            patch.object(release, "BUILD", self.root),
+            patch.object(release, "read_json", return_value=manifest),
+            patch.object(release, "pe_info", return_value={"machine": "0x8664"}),
+            patch.object(
+                release, "executable_code_sha256", return_value="unchanged-code"
+            ) as code,
+        ):
+            record = release.frozen_executable_input(toc, fields, frozen)
+            self.assertEqual(record["bootloaderSha256"], release.digest(bootloader))
+            self.assertEqual(record["applicationPkgSha256"], release.digest(payload))
+            self.assertEqual(record["applicationPkgOffset"], bootloader.stat().st_size)
+            self.assertEqual(record["frozenExecutableSha256"], release.digest(frozen))
+            self.assertFalse(record["sourceCoverageApproved"])
+            frozen.write_bytes(bootloader.read_bytes() + b"altered application")
+            with self.assertRaisesRegex(ValueError, "exact application"):
+                release.frozen_executable_input(toc, fields, frozen)
+            frozen.write_bytes(bootloader.read_bytes() + payload.read_bytes())
+            code.side_effect = ["original-code", "changed-code"]
+            with self.assertRaisesRegex(ValueError, "changed original bootloader code"):
+                release.frozen_executable_input(toc, fields, frozen)
+            bootloader.write_bytes(b"changed bootloader")
+            with self.assertRaisesRegex(ValueError, "original AMD64 wheel"):
+                release.frozen_executable_input(toc, fields, frozen)
+            toc.write_text("__import__('os').system('never execute')")
+            with self.assertRaises(ValueError):
+                release.frozen_executable_input(toc, fields, frozen)
+
     def test_freezer_analysis_binds_dll_origins_missing_from_wheel_inventory(self):
         source = self.root / "System32/vcruntime140.dll"
         source.parent.mkdir()

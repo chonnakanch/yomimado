@@ -32,6 +32,23 @@ after final-Python parity, then rejects an ONNX Runtime bundled example model.
 The freezer is narrowed to runtime modules/binaries and metadata; arbitrary
 ONNX files remain prohibited. No installer or public release resulted.
 
+The downloaded successful prototype artifact `11668511516` matches GitHub
+SHA-256 `3beab1d4ae20e3ba89f0333bd85688a8f73176e897621b13924bcfbd9df2d796`.
+Its actual ORT build string identifies commit `89746dc19a`, matching the retained
+v1.22.1 preferred source. Runtime imports exclude Torch and its three fresh
+translations and complete synthetic OCR responses match the baseline. This is
+bootstrap Python 3.11.9 evidence; final installed coverage remains separate.
+
+The frozen-service inventory now reads the pinned literal `EXE-00.toc` without
+executing it, checks the selected AMD64 bootloader against the exact original
+PyInstaller wheel member, compares its executable code section with the frozen
+EXE, and requires the EXE to end with the exact recorded application PKG bytes.
+Original Analysis/EXE/PKG/PYZ records and the generated spec are retained with
+hashes in delivery notices. This permits expected resource/checksum edits while
+rejecting changed bootloader code or application bytes. Preferred bootloader
+source/build recipes are supplied by the already pinned PyInstaller sdist;
+hosted execution of this new check remains required.
+
 The [original-runtime GPL review](windows-gpl-compatibility.md) now records the
 actual detector-to-OpenCV/Torch calls, loaded binary hashes, exact Intel terms
 and exception checks. Public distribution of this combination conflicts with

@@ -13,6 +13,7 @@ import shutil
 import subprocess
 import sys
 import tarfile
+import zipfile
 from importlib import metadata
 from pathlib import Path
 from urllib.request import urlopen
@@ -397,6 +398,87 @@ def analysis_native_inputs(toc: Path, fields: list[str]) -> list[dict]:
     return inputs
 
 
+def executable_code_sha256(data: bytes) -> str:
+    """Hash executable code independently of resource/checksum edits."""
+    import hashlib
+
+    import pefile
+
+    with pefile.PE(data=data, fast_load=True) as executable:
+        sections = [s for s in executable.sections if s.Name.rstrip(b"\0") == b".text"]
+        if len(sections) != 1 or not sections[0].Misc_VirtualSize:
+            raise ValueError("Missing unique bootloader code section")
+        return hashlib.sha256(
+            sections[0].get_data(length=sections[0].Misc_VirtualSize)
+        ).hexdigest()
+
+
+def frozen_executable_input(toc: Path, fields: list[str], frozen: Path) -> dict:
+    """Bind the selected original bootloader and the exact appended application."""
+    data = ast.literal_eval(toc.read_text(encoding="utf-8"))
+    if not isinstance(data, tuple) or len(data) != len(fields):
+        raise ValueError("Unexpected PyInstaller EXE TOC schema")
+    values = dict(zip(fields, data, strict=True))
+    entries = values["exefiles"]
+    if (
+        not isinstance(entries, list)
+        or len(entries) != 1
+        or not isinstance(entries[0], tuple)
+        or len(entries[0]) != 3
+        or entries[0][0] != "run.exe"
+        or entries[0][2] != "EXECUTABLE"
+        or values["append_pkg"] is not True
+        or values["strip"] is not False
+        or values["upx"] is not False
+    ):
+        raise ValueError("Unexpected Windows bootloader/build mode")
+    bootloader = Path(entries[0][1])
+    payload = Path(values["pkgname"])
+    if not all(p.is_absolute() and p.is_file() for p in (bootloader, payload)):
+        raise ValueError("Missing absolute freezer inputs")
+    package = next(
+        p
+        for p in read_json(SERVICE / "windows-inputs.json")["packages"]
+        if p["name"] == "pyinstaller"
+    )
+    wheel = BUILD / "inputs" / package["filename"]
+    if digest(wheel) != package["sha256"]:
+        raise ValueError("Original PyInstaller wheel differs")
+    member = "PyInstaller/bootloader/Windows-64bit-intel/run.exe"
+    with zipfile.ZipFile(wheel) as archive:
+        original = archive.read(member)
+    if (
+        bootloader.read_bytes() != original
+        or pe_info(bootloader)["machine"] != "0x8664"
+    ):
+        raise ValueError("Selected bootloader differs from original AMD64 wheel")
+    executable = frozen.read_bytes()
+    appended = payload.read_bytes()
+    if (
+        not appended
+        or len(executable) <= len(appended)
+        or not executable.endswith(appended)
+    ):
+        raise ValueError("Frozen executable does not contain the exact application PKG")
+    code_hash = executable_code_sha256(original)
+    if executable_code_sha256(executable) != code_hash:
+        raise ValueError("Frozen executable changed original bootloader code")
+    return {
+        "bootloaderPath": str(bootloader),
+        "bootloaderSha256": digest(bootloader),
+        "bootloaderWheelMember": member,
+        "wheelSha256": package["sha256"],
+        "preferredSource": package["source"],
+        "codeSectionSha256": code_hash,
+        "applicationPkgSha256": digest(payload),
+        "applicationPkgSize": len(appended),
+        "applicationPkgOffset": len(executable) - len(appended),
+        "frozenExecutableSha256": digest(frozen),
+        "exeTocSha256": digest(toc),
+        "sourceCoverageApproved": False,
+    }
+
+
 def inventory_inputs() -> None:
     """Inventory the actual interpreter, wheels and frozen image independently."""
     if sys.platform != "win32" or sys.maxsize <= 2**32:
@@ -455,6 +537,7 @@ def inventory_inputs() -> None:
     # Bind the actual freezer source paths and hashes, including app-local VC
     # runtimes, without inferring redistribution permission from their location.
     import PyInstaller
+    from PyInstaller.building.api import EXE
     from PyInstaller.building.build_main import Analysis
 
     if PyInstaller.__version__ != "6.16.0":
@@ -463,6 +546,24 @@ def inventory_inputs() -> None:
     analyzed = analysis_native_inputs(toc, [g[0] for g in Analysis._GUTS])
     inputs.extend(analyzed)
     frozen = RESOURCES / "runtime"
+    executable_input = frozen_executable_input(
+        toc.with_name("EXE-00.toc"),
+        [g[0] for g in EXE._GUTS],
+        frozen / "yomimado-ocr.exe",
+    )
+    retained = notices / "windows-freeze"
+    retained.mkdir(parents=True, exist_ok=True)
+    for item in (
+        toc,
+        toc.with_name("EXE-00.toc"),
+        toc.with_name("PKG-00.toc"),
+        toc.with_name("PYZ-00.toc"),
+        BUILD / "yomimado-ocr.spec",
+    ):
+        shutil.copy2(item, retained / item.name)
+    executable_input["retainedBuildFiles"] = {
+        item.name: digest(item) for item in retained.iterdir() if item.is_file()
+    }
     by_hash = {}
     for item in inputs:
         by_hash.setdefault(item["sha256"], []).append(item)
@@ -490,6 +591,7 @@ def inventory_inputs() -> None:
             "analysisTocSha256": digest(toc),
             "recipeSha256": digest(ROOT / "scripts/build-windows-prerelease.ps1"),
             "nativeInputCount": len(analyzed),
+            "executableInput": executable_input,
             "sourceCoverageApproved": False,
         },
         "binaries": binaries,

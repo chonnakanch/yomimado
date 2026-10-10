@@ -19,6 +19,10 @@ the original wheel's Python wrapper imports excluded G-API bindings. The adapter
 now installs the audited extension directly, preserving its ABI filename and
 original wheel notices while removing that incompatible wrapper. No installer
 or approval was produced by that failed run.
+Run `38061947787` passes service tests with that correction, then exposes a
+Windows-only separator mismatch in the replacement record's test. Record paths
+now explicitly use portable forward slashes. Bootloader/code/application-PKG
+binding is also added to the frozen inventory; the next hosted run must verify it.
 The maintainer requested and confirmed deletion of all 58 historical Actions
 runs; [the verified cleanup record](windows-actions-history.md) preserves their
 identities. Earlier Actions links below intentionally no longer resolve.

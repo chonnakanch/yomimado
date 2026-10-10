@@ -74,7 +74,8 @@ def replace() -> None:
         )
     }
     wrapper_hashes = {
-        str(path.relative_to(package)): digest(path) for path in package.rglob("*.py")
+        path.relative_to(package).as_posix(): digest(path)
+        for path in package.rglob("*.py")
     }
     installed = package.parent / binary.name
     shutil.copy2(binary, installed)
@@ -91,7 +92,7 @@ def replace() -> None:
             "originalWheelExtensionSha256": old_hash,
             "removedWheelPythonSha256": wrapper_hashes,
             "preservedWheelNoticesSha256": {
-                str(name): digest(package / name) for name in notices
+                name.as_posix(): digest(package / name) for name in notices
             },
             "sourceExtension": str(binary),
             "installedExtension": str(installed),
