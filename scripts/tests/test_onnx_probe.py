@@ -1,9 +1,11 @@
 """Boundary cases for the isolated inference migration experiment."""
 
+import importlib.util
 import io
 import json
 import os
 import sys
+import types
 import unittest
 from pathlib import Path
 from unittest.mock import patch
@@ -122,6 +124,52 @@ class GenerationTests(unittest.TestCase):
     def test_invalid_generation_policy_is_rejected(self):
         with self.assertRaises(ValueError):
             beam_search(lambda ids: np.zeros((len(ids), 5)), Policy(0, 3, 0, 2))
+
+
+class TranslationInputTests(unittest.TestCase):
+    def test_windows_int32_tokenizer_inputs_obey_int64_graph_contract(self):
+        # The baseline test environment need not install the inference wheel.
+        # Test the real adapter using a session that enforces the ONNX graph ABI.
+        path = Path(__file__).parents[1] / "onnx_runtime_probe.py"
+        spec = importlib.util.spec_from_file_location("runtime_under_test", path)
+        module = importlib.util.module_from_spec(spec)
+        with patch.dict(sys.modules, {"onnxruntime": types.ModuleType("onnxruntime")}):
+            spec.loader.exec_module(module)
+
+        class Tokenizer:
+            def __call__(self, text, **kwargs):
+                return {
+                    "input_ids": np.array([[1, 2]], dtype=np.int32),
+                    "attention_mask": np.array([[1, 1]], dtype=np.int32),
+                }
+
+            def decode(self, *args, **kwargs):
+                return "School"
+
+        feeds = []
+
+        class Session:
+            def run(self, outputs, feed):
+                feeds.append(feed)
+                return [np.zeros((1, 2, 3), dtype=np.float32)]
+
+        provider = module.OnnxTranslation.__new__(module.OnnxTranslation)
+        provider.tokenizer = Tokenizer()
+        provider.encoder = Session()
+        provider.decoder = Session()
+        provider.policy = object()
+
+        def generate(step, policy):
+            step(np.array([[0, 1]], dtype=np.int64))
+            return [0, 1]
+
+        with patch.object(module, "beam_search", side_effect=generate):
+            self.assertEqual(provider.translate("学校"), "School")
+        self.assertEqual(len(feeds), 2)
+        for name in ("input_ids", "attention_mask"):
+            self.assertEqual(feeds[0][name].dtype, np.dtype("int64"))
+        self.assertEqual(feeds[1]["encoder_attention_mask"].dtype, np.dtype("int64"))
+        np.testing.assert_array_equal(feeds[0]["input_ids"], [[1, 2]])
 
 
 class WorkflowTests(unittest.TestCase):

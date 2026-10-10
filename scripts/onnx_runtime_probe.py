@@ -77,12 +77,17 @@ class OnnxTranslation:
         return "onnx-prototype:" + str(self.exported.resolve())
 
     def translate(self, text: str) -> str:
-        inputs = self.tokenizer(text, return_tensors="np")
-        if inputs.input_ids.shape[1] > 512:
+        # NumPy 1.x uses platform-sized integers in tokenizer output: int32 on
+        # Windows, int64 on macOS. Both exported Marian inputs require int64.
+        inputs = {
+            name: np.asarray(value, dtype=np.int64)
+            for name, value in self.tokenizer(text, return_tensors="np").items()
+        }
+        if inputs["input_ids"].shape[1] > 512:
             raise ValueError(
                 "The selected sentence is too long for the local translator"
             )
-        hidden = self.encoder.run(None, dict(inputs))[0]
+        hidden = self.encoder.run(None, inputs)[0]
 
         def step(ids: np.ndarray) -> np.ndarray:
             return self.decoder.run(
@@ -91,7 +96,7 @@ class OnnxTranslation:
                     "input_ids": ids,
                     "encoder_hidden_states": np.repeat(hidden, len(ids), axis=0),
                     "encoder_attention_mask": np.repeat(
-                        inputs.attention_mask, len(ids), axis=0
+                        inputs["attention_mask"], len(ids), axis=0
                     ),
                 },
             )[0][:, -1, :]

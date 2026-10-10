@@ -57,10 +57,10 @@ the full-prefix ONNX prototype. These include first-use costs inconsistently
 between operations and are observations, not a controlled benchmark or Windows
 speed claim. Long sentences/page workloads and memory use still need testing.
 
-Twelve focused tests cover class-aware suppression, strict confidence/IoU
+Thirteen focused tests cover class-aware suppression, strict confidence/IoU
 thresholds, the output cap, input preservation, repetition/banned tokens,
 forced EOS, completed-beam ranking, artifact exclusion and 20 randomized NMS
-comparisons with the actual torchvision CPU operator, plus annotation escaping.
+comparisons with the actual torchvision CPU operator, plus annotation escaping and Windows int32-to-int64 graph-input conversion.
 
 ## Windows execution
 
@@ -92,7 +92,12 @@ including redirected process streams. Rerun [38047007527](https://github.com/cho
 at `43497d4` completes the baseline and exposes the detector adapter reading
 upstream non-ASCII Python source using cp1252. The AST adapter now parses original
 source bytes, honoring Python source encodings; remaining prototype JSON file
-reads/writes explicitly use UTF-8. A new hosted comparison is required.
+reads/writes explicitly use UTF-8. Rerun [38047417854](https://github.com/chonnakanch/yomimado/actions/runs/38047417854)
+at `5f7bdd8` completes both ONNX OCR fixtures, then reveals NumPy 1.x's
+Windows tokenizer integers are int32 while the Marian graph requires int64.
+Both encoder IDs and masks now explicitly use int64; a regression test supplies
+int32 tokenizer output and checks both encoder and decoder input contracts.
+A new hosted comparison is required.
 The driver now reports the fixed synthetic probe's failure detail directly in
 an Actions annotation; failures remain failures and no expectation is weakened.
 Windows parity is not claimed from the successful preparatory steps.
