@@ -207,12 +207,54 @@ def download_inputs() -> None:
     write_json(BUILD / "download-record.json", record)
 
 
+def derived_onnx_graphs(directory: Path) -> dict[Path, str]:
+    """Allow only the four recorded conversions of the pinned learning models."""
+    exported = directory / "assets/onnx"
+    record_path = exported / "export.json"
+    if not record_path.is_file():
+        return {}
+    record = read_json(record_path)
+    expected_sources = {
+        item["path"]: item["sha256"]
+        for item in read_json(SERVICE / "windows-assets.json")
+        if item["path"].startswith(("manga-ocr-base/", "opus-mt-ja-en/"))
+    }
+    expected_files = {
+        "ocr-encoder.onnx",
+        "ocr-decoder.onnx",
+        "translation-encoder.onnx",
+        "translation-decoder.onnx",
+        "policies.json",
+    }
+    if (
+        record.get("sourceInputs") != expected_sources
+        or record.get("exporterSha256") != digest(ROOT / "scripts/export_onnx_probe.py")
+        or set(record.get("outputs", {})) != expected_files
+    ):
+        raise ValueError("Unbound Windows inference conversion provenance")
+    allowed = {}
+    for name, sha in record["outputs"].items():
+        path = exported / name
+        if (
+            not isinstance(sha, str)
+            or not re.fullmatch(r"[0-9a-f]{64}", sha)
+            or path.is_symlink()
+            or sha == DETECTOR_SHA256
+            or digest(path) != sha
+        ):
+            raise ValueError("Unapproved or changed Windows inference conversion")
+        if name.endswith(".onnx"):
+            allowed[path] = sha
+    return allowed
+
+
 def assert_no_detector(directory: Path) -> None:
+    converted = derived_onnx_graphs(directory)
     for path in directory.rglob("*"):
         if path.is_symlink():
             raise ValueError("Unexpected symlink: " + str(path))
         if path.is_file() and (
-            path.suffix.lower() in FORBIDDEN
+            (path.suffix.lower() in FORBIDDEN and path not in converted)
             or "comictextdetector.pt" in path.name.lower()
             or (path.stat().st_size > 10_000_000 and digest(path) == DETECTOR_SHA256)
         ):
@@ -457,21 +499,18 @@ def inventory_inputs() -> None:
     write_json(BUILD / "windows-inventory.json", record)
 
 
-def native_configuration() -> None:
+def native_configuration(*, backend: str = "torch") -> None:
     """Record compiled vendor versions/options for the exact Windows inputs."""
     import cv2
     import numpy
     import shapely
-    import torch
     from PIL import features
 
-    if sys.platform != "win32" or torch.version.cuda is not None:
+    if sys.platform != "win32":
         raise ValueError("Native configuration requires the Windows CPU environment")
     record = {
         "python": platform.python_version(),
-        "torch": str(torch.__version__),
-        "torchCuda": torch.version.cuda,
-        "torchBuild": torch.__config__.show(),
+        "backend": backend,
         "numpyBuild": numpy.show_config(mode="dicts"),
         "opencvBuild": cv2.getBuildInformation(),
         "geos": shapely.geos_version_string,
@@ -479,6 +518,30 @@ def native_configuration() -> None:
         "inputManifestSha256": digest(SERVICE / "windows-inputs.json"),
         "publicDistributionApproved": False,
     }
+    if backend == "torch":
+        import torch
+
+        if torch.version.cuda is not None:
+            raise ValueError("CUDA Torch cannot enter this CPU candidate")
+        record.update(
+            torch=str(torch.__version__),
+            torchCuda=None,
+            torchBuild=torch.__config__.show(),
+        )
+    elif backend == "onnx":
+        import onnxruntime
+
+        if any(name.split(".")[0] in {"torch", "torchvision"} for name in sys.modules):
+            raise ValueError("Torch leaked into ONNX configuration inspection")
+        record.update(
+            onnxruntime=onnxruntime.__version__,
+            onnxruntimeBuild=onnxruntime.get_build_info(),
+            availableProviders=onnxruntime.get_available_providers(),
+            selectedProvider="CPUExecutionProvider",
+            onnxInputManifestSha256=digest(ROOT / "scripts/onnx-probe-inputs.json"),
+        )
+    else:
+        raise ValueError("Unknown Windows inference backend")
     write_json(BUILD / "windows-native-configuration.json", record)
     write_json(RESOURCES / "notices/windows-native-configuration.json", record)
 
@@ -629,6 +692,18 @@ def verify_resources(
         raise ValueError("Installed native inventory differs")
     if any("cuda" in name.lower() or "cudnn" in name.lower() for name in actual):
         raise ValueError("CUDA binary in CPU candidate")
+    if derived_onnx_graphs(resources):
+        runtime_paths = [
+            str(p.relative_to(resources / "runtime")).lower()
+            for p in (resources / "runtime").rglob("*")
+        ]
+        if any(
+            any(part in name for part in ("torch", "manga_ocr", "manga-ocr", "mkl"))
+            for name in runtime_paths
+        ):
+            raise ValueError("Torch/MKL package or binary in ONNX runtime")
+        if not any(Path(name).name == "onnxruntime.dll" for name in runtime_paths):
+            raise ValueError("ONNX runtime native DLL is missing")
     bundled = {p.name.lower() for p in native_files(resources / "runtime")}
     if any(
         name in {"dbghelp.dll", "wintrust.dll", "ucrtbase.dll"}
@@ -714,6 +789,17 @@ def package(installer: Path, output: Path, installed: Path) -> None:
             ROOT / "scripts/windows_dictionary_seed.py",
         ):
             archive.add(path, arcname="recipes/" + path.name)
+        if (installed / "ocr/assets/onnx/export.json").is_file():
+            for name in (
+                "prepare_onnx_probe.py",
+                "export_onnx_probe.py",
+                "check_onnx_probe.py",
+                "onnx_runtime_probe.py",
+                "onnx_detector_probe.py",
+                "onnx_generation.py",
+                "onnx-probe-inputs.json",
+            ):
+                archive.add(ROOT / "scripts" / name, arcname="recipes/" + name)
     subprocess.run(
         [
             "git",
@@ -771,6 +857,7 @@ def main() -> None:
     parser.add_argument("--installer", type=Path)
     parser.add_argument("--revision")
     parser.add_argument("--output", type=Path)
+    parser.add_argument("--backend", choices=("torch", "onnx"), default="torch")
     args = parser.parse_args()
     if args.command == "download":
         download_inputs()
@@ -795,7 +882,7 @@ def main() -> None:
     elif args.command == "inventory":
         inventory_inputs()
     elif args.command == "configuration":
-        native_configuration()
+        native_configuration(backend=args.backend)
     elif args.command == "prune":
         prune_unused_native()
     elif args.command == "seal":

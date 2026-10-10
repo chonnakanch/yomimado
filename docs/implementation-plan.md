@@ -139,10 +139,12 @@ remain needed before public distribution. No new runtime or installer is approve
 Windows ONNX feasibility (2026-10-10): implemented isolated hash-pinned model
 conversion, NumPy generation and detector filtering with a Torch-free inference
 process. Local horizontal/vertical synthetic OCR responses and three uncached
-translations match the baseline exactly; 11 focused tests pass. The independent
+translations match the baseline exactly; 13 focused tests pass. The independent
 Windows hosted prototype uses prebuilt inputs, without a Torch source build.
-Windows execution, native-source review, frozen packaging and exact-installer
-human approval remain open. See [the prototype record](windows-onnx-prototype.md).
+Windows hosted run `38047950684` passes in 4 minutes 6 seconds. Private packaging
+now selects the ONNX backend, repeats parity using final Python 3.11.17 and tests
+the exact installed runtime. Frozen execution, native-source review and fresh
+exact-installer human approval remain open. See [the prototype record](windows-onnx-prototype.md).
 The maintainer confirmed clearing all 58 historical Actions runs; deletion and
 removal of the temporary cleanup job are [recorded](windows-actions-history.md).
 

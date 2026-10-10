@@ -1,8 +1,8 @@
 # Windows ONNX feasibility experiment
 
 Implemented 2026-10-10 following the maintainer's choice to avoid long Torch
-source builds. This is an isolated backend experiment: the existing Windows
-installer, shared service and macOS runtime remain unchanged. No public release,
+source builds. Hosted feasibility now passes, and the private Windows installer
+selects this backend. Shared service and macOS runtime remain unchanged. No public release,
 native-source clearance or human installer approval is granted.
 
 ## What is implemented
@@ -97,10 +97,36 @@ at `5f7bdd8` completes both ONNX OCR fixtures, then reveals NumPy 1.x's
 Windows tokenizer integers are int32 while the Marian graph requires int64.
 Both encoder IDs and masks now explicitly use int64; a regression test supplies
 int32 tokenizer output and checks both encoder and decoder input contracts.
-A new hosted comparison is required.
+Hosted [run 38047950684](https://github.com/chonnakanch/yomimado/actions/runs/38047950684)
+at `4d49cb704c709fbf32c6b872b4a2575a47b364e1` passes in **4 minutes 6 seconds**.
+This establishes the bounded Windows prototype gate; the separate private
+candidate repeats parity under final Python 3.11.17 before freezing.
 The driver now reports the fixed synthetic probe's failure detail directly in
 an Actions annotation; failures remain failures and no expectation is weakened.
-Windows parity is not claimed from the successful preparatory steps.
+
+## Private installer integration
+
+`build-windows-prerelease.ps1 -Prepare -Onnx` prepares physically separate
+export-only and runtime environments with source-built CPython 3.11.17. It
+checks four derived recognition/translation graphs against original model
+pins, the exact exporter recipe and recorded output hashes. Only those four
+conversions can pass the model-exclusion guard; detector weights and arbitrary
+additional graphs remain prohibited. Original learning-model inputs are retained
+in this first private candidate for source/hash verification.
+
+The new Windows-only frozen entry assembles existing OCR and translation API
+factories lazily, preserving model-setup readiness, local dictionaries, storage
+and UI contracts. It selects CPUExecutionProvider and disables ONNX Runtime
+telemetry. Translation cache identity includes graph/policy hashes and survives
+install-path changes. The freezer excludes Torch, torchvision and Manga OCR;
+the existing desktop hidden-child-console and process cleanup remain in use.
+
+**Windows private candidate** now selects this path, reruns complete offline
+parity before freezing, and verifies the exact installed learning/UI/runtime
+including ONNX DLL loading and absence of Torch/CUDA/MKL modules. This is a
+private diagnostic candidate until those checks and native-source review pass.
+A new exact setup hash and maintainer test record are required; older setup
+approval cannot transfer. No main publisher or protected approval is changed.
 
 ## Exact dependency review scope
 

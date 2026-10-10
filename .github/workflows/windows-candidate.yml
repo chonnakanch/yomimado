@@ -13,6 +13,14 @@ name: Windows private candidate
       - scripts/tests/test_windows*.py
       - services/ocr/windows*.json
       - services/ocr/windows_packaged_main.py
+      - services/ocr/windows_onnx*.py
+      - services/ocr/tests/test_windows_onnx_backend.py
+      - scripts/onnx*.py
+      - scripts/onnx-probe-inputs.json
+      - scripts/prepare_onnx_probe.py
+      - scripts/export_onnx_probe.py
+      - scripts/check_onnx_probe.py
+      - THIRD_PARTY_LICENSES/windows-onnx-probe/**
       - services/ocr/requirements-windows-release.txt
       - apps/desktop/src-tauri/src/**
       - apps/desktop/src/**
@@ -81,7 +89,7 @@ jobs:
           if ($env:VCToolsVersion.TrimEnd('\') -ne '14.44.35207' -or $env:WindowsSDKVersion.TrimEnd('\') -ne '10.0.26100.0') { throw 'Native tools differ' }
           "Windows candidate: $env:ImageOS $env:ImageVersion; MSVC $env:VCToolsVersion; SDK $env:WindowsSDKVersion" | Add-Content $env:GITHUB_STEP_SUMMARY
       - name: Prepare, test, freeze, inventory and build NSIS
-        run: ./scripts/build-windows-prerelease.ps1 -Prepare
+        run: ./scripts/build-windows-prerelease.ps1 -Prepare -Onnx
       - name: Install exact setup and verify installed startup
         run: |
           $ErrorActionPreference = 'Stop'
@@ -181,8 +189,13 @@ jobs:
             services/ocr/build/windows/windows-desktop-sources.json
             services/ocr/build/windows/windows-installer-inputs.json
             services/ocr/build/windows/windows-generated-outputs.json
+            services/ocr/build/windows/onnx-comparison/*.json
+            services/ocr/build/windows/onnx-comparison/*.log
+            services/ocr/build/onnx-prototype/preparation.json
           if-no-files-found: ignore
           retention-days: 14
       - name: Remove smoke-only detector
         if: always()
-        run: Remove-Item (Join-Path $env:RUNNER_TEMP 'comictextdetector.pt.onnx') -ErrorAction SilentlyContinue
+        run: |
+          Remove-Item (Join-Path $env:RUNNER_TEMP 'comictextdetector.pt.onnx') -ErrorAction SilentlyContinue
+          Remove-Item 'services/ocr/build/onnx-prototype/smoke-detector.onnx' -ErrorAction SilentlyContinue

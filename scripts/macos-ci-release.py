@@ -159,7 +159,10 @@ def verify_reuse(root: Path = ROOT) -> None:
         "services/ocr/windows-inputs.json",
         "services/ocr/windows-assets.json",
         "services/ocr/windows_packaged_main.py",
+        "services/ocr/windows_onnx_backend.py",
+        "services/ocr/windows_onnx_packaged_main.py",
         "services/ocr/tests/test_windows_packaged_main.py",
+        "services/ocr/tests/test_windows_onnx_backend.py",
     }
     changed = git("diff", "--name-only", SEED_REVISION, "HEAD", root=root).splitlines()
     for path in changed:

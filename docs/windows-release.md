@@ -5,16 +5,19 @@ converts the existing recognition/translation models using prebuilt Torch and
 executes with CPU ONNX Runtime plus NumPy detector filtering. Local synthetic
 horizontal/vertical OCR responses and three uncached translations match exactly,
 with no Torch imports in the ONNX process. The new **Windows ONNX feasibility**
-workflow must establish Windows execution before packaging. Existing installer,
-macOS runtime, source clearance and protected human approval are unchanged.
+workflow passes [run 38047950684](https://github.com/chonnakanch/yomimado/actions/runs/38047950684)
+in 4 minutes 6 seconds. **Windows private candidate** now selects the ONNX
+backend, repeating parity under final Python 3.11.17 before freezing and checking
+the installed setup. Native-source clearance, fresh exact-installer testing and
+protected human approval remain open; macOS and the main publisher are unchanged.
 The maintainer requested and confirmed deletion of all 58 historical Actions
 runs; [the verified cleanup record](windows-actions-history.md) preserves their
 identities. Earlier Actions links below intentionally no longer resolve.
 
 Build policy update — 2026-10-10: the maintainer chooses to avoid long Torch
 source builds. **Windows Torch source audit** is now manual-only with a false-by-default
-explicit opt-in; no push starts it. The separate installer workflow already uses
-prebuilt Torch. The [package investigation](windows-prebuilt-runtime.md) checks
+explicit opt-in; no push starts it. Prebuilt Torch is now export-only in the new
+private candidate. The [package investigation](windows-prebuilt-runtime.md) checks
 official, Conda-forge, DirectML, JavaCPP and community alternatives without finding
 a cleared drop-in Windows Python CPU runtime. Compatible binary inputs or a
 different proven inference backend/additional permission remain a concrete blocker.

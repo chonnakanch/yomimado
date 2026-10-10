@@ -272,11 +272,32 @@ def main() -> None:
                     )
                     modules = loaded_modules(process.pid, resources / "runtime")
                     names = {m["name"].lower() for m in modules}
+                    onnx_backend = (resources / "assets/onnx/export.json").is_file()
+                    inference_loaded = (
+                        any(
+                            name.startswith("onnxruntime_pybind11_state")
+                            for name in names
+                        )
+                        if onnx_backend
+                        else "torch_cpu.dll" in names
+                    )
                     check(
-                        "torch_cpu.dll" in names and "cv2.pyd" in names,
+                        inference_loaded and "cv2.pyd" in names,
                         "Actual CPU/native inference modules were not observed",
                     )
+                    if onnx_backend:
+                        check(
+                            not any(
+                                any(
+                                    part in name
+                                    for part in ("torch", "cuda", "cudnn", "mkl")
+                                )
+                                for name in names
+                            ),
+                            "Unexpected Torch/CUDA/MKL module in the ONNX runtime",
+                        )
                     report = {
+                        "backend": "onnx" if onnx_backend else "torch",
                         "installedRuntime": str(resources / "runtime"),
                         "runtimeSha256": hashlib.sha256(
                             (resources / "runtime/yomimado-ocr.exe").read_bytes()

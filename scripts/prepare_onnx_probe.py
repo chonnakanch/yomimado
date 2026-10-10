@@ -28,7 +28,7 @@ def run(command, **kwargs):
     subprocess.run([str(item) for item in command], check=True, **kwargs)
 
 
-def prepare() -> None:
+def prepare(*, runtime: Path | None = None, baseline: Path | None = None) -> None:
     if sys.platform != "win32" or platform.machine().lower() not in {"amd64", "x86_64"}:
         raise RuntimeError("Hosted prototype preparation requires Windows x64")
     lock = read_json(ROOT / "services/ocr/windows-inputs.json")
@@ -40,7 +40,7 @@ def prepare() -> None:
         print("Verifying prototype input " + entry["filename"], flush=True)
         fetch(entry, BUILD / "inputs" / entry["filename"])
     for name in ("baseline", "runtime"):
-        venv = BUILD / name
+        venv = (runtime if name == "runtime" else baseline) or BUILD / name
         run([sys.executable, "-m", "venv", venv])
         python = venv / "Scripts/python.exe"
         tools = [e for e in packages if e["name"] in {"setuptools", "wheel"}]
@@ -189,5 +189,8 @@ def prepare() -> None:
 
 
 if __name__ == "__main__":
-    argparse.ArgumentParser(description=__doc__).parse_args()
-    prepare()
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--runtime", type=Path)
+    parser.add_argument("--baseline", type=Path)
+    args = parser.parse_args()
+    prepare(runtime=args.runtime, baseline=args.baseline)

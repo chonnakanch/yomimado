@@ -409,6 +409,59 @@ class WindowsReleaseTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "symlink"):
             release.assert_no_detector(self.root)
 
+    def inference_graphs(self):
+        exported = self.root / "assets/onnx"
+        exported.mkdir(parents=True)
+        names = (
+            "ocr-encoder.onnx",
+            "ocr-decoder.onnx",
+            "translation-encoder.onnx",
+            "translation-decoder.onnx",
+            "policies.json",
+        )
+        for name in names:
+            (exported / name).write_bytes(("synthetic conversion " + name).encode())
+        record = {
+            "sourceInputs": {
+                e["path"]: e["sha256"]
+                for e in release.read_json(release.SERVICE / "windows-assets.json")
+                if e["path"].startswith(("manga-ocr-base/", "opus-mt-ja-en/"))
+            },
+            "exporterSha256": release.digest(
+                release.ROOT / "scripts/export_onnx_probe.py"
+            ),
+            "outputs": {name: release.digest(exported / name) for name in names},
+        }
+        release.write_json(exported / "export.json", record)
+        return exported, record
+
+    def test_only_bound_learning_conversions_are_allowed(self):
+        exported, _ = self.inference_graphs()
+        release.assert_no_detector(self.root)
+        (exported / "extra.onnx").write_bytes(b"unapproved weights")
+        with self.assertRaisesRegex(ValueError, "weights"):
+            release.assert_no_detector(self.root)
+
+    def test_conversion_must_match_source_recipe_and_output_hashes(self):
+        exported, record = self.inference_graphs()
+        for field in ("sourceInputs", "exporterSha256", "outputs"):
+            changed = dict(record)
+            changed[field] = {} if field != "exporterSha256" else "0" * 64
+            release.write_json(exported / "export.json", changed)
+            with self.assertRaisesRegex(ValueError, "provenance"):
+                release.assert_no_detector(self.root)
+        release.write_json(exported / "export.json", record)
+        (exported / "ocr-encoder.onnx").write_bytes(b"changed")
+        with self.assertRaisesRegex(ValueError, "conversion"):
+            release.assert_no_detector(self.root)
+
+    def test_detector_hash_cannot_masquerade_as_a_learning_conversion(self):
+        exported, record = self.inference_graphs()
+        record["outputs"]["ocr-encoder.onnx"] = release.DETECTOR_SHA256
+        release.write_json(exported / "export.json", record)
+        with self.assertRaisesRegex(ValueError, "conversion"):
+            release.assert_no_detector(self.root)
+
     def test_changed_download_is_not_promoted_to_a_new_pin(self):
         source = self.root / "source"
         source.write_bytes(b"changed bytes")
