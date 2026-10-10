@@ -245,9 +245,21 @@ persistence. Its installed UI and private-draft staging steps fail; source/publi
 gates remain open. GitHub retains evidence artifact `11657230994` (111,299 bytes),
 declared SHA-256
 `74534086117b2628efafc2b676156638f48912640c8a5997990017b2f147f674`.
-That artifact still needs download, independent hash verification and inspection
-to bind the new setup and identify the exact failed UI case. Current manual
-results remain bound only to the unchanged setup hash recorded above.
+Downloaded on 2026-10-10: the artifact's bytes match that SHA-256. Provenance
+and installer-input records agree on exported setup SHA-256
+`0129393b970cc4b5c55628b9fc308b3733e25daabe1b0d4cc8e61cfd861f2fe2`.
+All 94 service PE records are AMD64; all 82 loaded installed-runtime modules
+match their inventory hashes, with 46 other/system modules recorded separately.
+The manifest hash matches the unchanged pinned input manifest. Seven Pillow
+PYDs remain present. Installed synthetic horizontal/vertical OCR, tokenization,
+dictionaries, kanji, uncached translation and saved/cache restart checks pass.
+The UI report completes three capture cases, then stops at **page-scan button**;
+its exception is missing. Failure diagnostics are now retained for future runs.
+Actual setup bytes, source/notices archives and successful private upload are
+not independently verified by this textual artifact. The UI failure and staging
+error remain unresolved. Current manual results remain bound only to the
+unchanged setup hash recorded above. Reports are retained privately under
+`services/ocr/build/windows-run-38016673211/`.
 
 The SudachiPy 0.6.10 tag resolves to
 `7e2f287bbfffc036421cf960802e41a696727747`. Its original

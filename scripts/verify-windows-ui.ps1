@@ -249,12 +249,30 @@ try {
     $Record.passed = $true
     $Record.phase = 'complete'
     Write-Host 'Installed Windows model setup, buttons, shortcuts and UI cancellation passed.'
+} catch {
+    # This driver has no release credentials and runs only on the disposable
+    # runner. Retain its actual failure without screenshots or model bytes.
+    $Record.passed = $false
+    $Record.failure = @{
+        message=$_.Exception.Message;
+        exceptionType=$_.Exception.GetType().FullName;
+        lineNumber=$_.InvocationInfo.ScriptLineNumber
+    }
+    $EncodedFailure = $_.Exception.Message.Replace('%', '%25').Replace("`r", '%0D').Replace("`n", '%0A')
+    Write-Host "::error title=Installed Windows UI failed::$EncodedFailure"
+    throw
 } finally {
     # Preserve completed cases if a later case fails. No screenshot or model bytes.
     if ($null -ne $Process -and -not $Process.HasExited) {
         try {
             $Record.visibleWindows = @([YomiMadoUiNative]::Windows($Process.Id) | ForEach-Object {
-                @{handle=$_.ToInt64(); title=[YomiMadoUiNative]::Text($_); controls=[YomiMadoUiNative]::Controls($_)}
+                @{
+                    handle=$_.ToInt64(); title=[YomiMadoUiNative]::Text($_);
+                    controls=[YomiMadoUiNative]::Controls($_);
+                    responding=[YomiMadoUiNative]::Responding($_);
+                    minimized=[YomiMadoUiNative]::IsIconic($_);
+                    foreground=($_ -eq [YomiMadoUiNative]::GetForegroundWindow())
+                }
             })
         } catch { $Record.windowSnapshotError = $_.Exception.Message }
     }

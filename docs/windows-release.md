@@ -81,9 +81,22 @@ Notice-supplement candidate run `38016673211` at
 `902bcf6d3446fbeab65128cfa62ac93f5549a051` builds and installs its NSIS setup,
 passes installed startup and frozen learning/persistence checks, and exports a
 diagnostic candidate. Its installed UI regression and owner-only draft staging
-steps fail. The retained evidence must be inspected before diagnosing the UI case
-or recording the new installer hash. This failed run does not replace the
-maintainer-tested setup or satisfy the installer gates.
+steps fail. The downloaded evidence ZIP matches GitHub SHA-256
+`74534086117b2628efafc2b676156638f48912640c8a5997990017b2f147f674`.
+Its UI report passes missing-model setup, model-dialog cancellation, occupied-port
+handling, manual selection, scan-area selection and the manual shortcut; it stops
+at **page-scan button** without retaining the exception. The driver now saves the
+failure message/type/line and visible-window responsiveness, minimization and
+focus, while continuing to fail the job. The actual error from this run is needed
+before changing application behavior or test expectations.
+Local verification passes all 148 release-script tests, workflow lint,
+documentation formatting, PowerShell 7.4.6 parsing and reviewed macOS seed reuse.
+Windows PowerShell 5.1 UI execution of this diagnostic still requires Actions.
+The exported provenance and installer-input record agree on setup SHA-256
+`0129393b970cc4b5c55628b9fc308b3733e25daabe1b0d4cc8e61cfd861f2fe2`;
+the setup bytes and source/notice archives have not been downloaded and private
+staging is unverified. This failed run does not replace the maintainer-tested
+setup or satisfy the installer gates. No human test is bound to this new hash.
 
 Earlier candidate `79065df7ba34a3aaa4ddb3a1ebb30e164405742a` passed runtime
 checks in run `37721943728`, but failed the human gate: a blank terminal,

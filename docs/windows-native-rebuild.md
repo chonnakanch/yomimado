@@ -310,11 +310,20 @@ draft access. No GEOS source rebuild, installer download or installed replacemen
 has executed in this run. All 148 release-script tests,
 Python lint/format, documentation formatting and workflow syntax pass locally;
 the reviewed macOS release-seed reuse check still passes.
+On 2026-10-10 the owner confirms the exact old draft opens while signed in and
+explicitly authorizes a replacement token with **Contents: read and write**,
+restricted to this repository, with **Workflows disabled**. This credential has
+repository/release write capability; the reviewed GEOS consumer still performs
+only GET requests. The owner must update the environment secret and rerun the
+unchanged audit. Token access and installed replacement remain unverified until
+that rerun passes. This permission approval does not approve source delivery,
+publication or the final installer.
+
 The workflow now prepares a dedicated protected input consumer. Its read-only
 plan validates the existing environment before a Windows deployment can be
 created; an absent, unprotected, bypassable or wrong-branch environment fails
 closed. The Windows job keeps `contents: read` and uses the environment's
-separate read-only owner token only for private draft GET requests. The exact
+separate owner token only for private draft GET requests. The exact
 setup/source/provenance checks above remain required. This is private input
 access approval, not publication, source clearance or the human installer gate.
 
@@ -324,10 +333,12 @@ Owner setup required in GitHub Settings (no credential in chat or git):
    required reviewer, disable administrator bypass and permit only the branch
    **`develop`** through selected branch rules. No tag rules or wildcard branches.
 2. Create a short-lived fine-grained owner token restricted to this repository
-   with **Contents: read**. Store it only as the environment secret
+   with the explicitly owner-authorized **Contents: read and write** scope;
+   leave **Workflows disabled**. Store it only as the environment secret
    **`WINDOWS_PRIVATE_INPUT_TOKEN`**. Its owner identity must have existing push
-   access for draft visibility. Keep the requested read permissions while checking
-   access. Verify the exact name under this environment's **Environment secrets**,
+   access for draft visibility. The initial Contents-read token did not expose
+   the draft; this broader scope was approved separately as recorded above.
+   Verify the exact name under this environment's **Environment secrets**,
    not its variables; an empty or missing value fails before any private API call.
 3. A focused push to the audit's `develop` paths starts the workflow. Review the
    resulting run's exact source revision and the private setup hash above, then
