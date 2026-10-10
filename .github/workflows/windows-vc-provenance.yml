@@ -1,0 +1,33 @@
+name: Windows VC runtime provenance
+
+"on":
+  push:
+    branches: [develop]
+    paths:
+      - .github/workflows/windows-vc-provenance.yml
+      - scripts/audit-vc-provenance.ps1
+      - docs/windows-vc-reference.json
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  inspect:
+    if: github.repository == 'chonnakanch/yomimado' && github.ref == 'refs/heads/develop'
+    runs-on: windows-2022
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+        with:
+          persist-credentials: false
+      - name: Inspect canonical runtime bytes without executing DLLs
+        shell: pwsh
+        run: ./scripts/audit-vc-provenance.ps1
+      - name: Retain original provenance record
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: windows-vc-provenance
+          path: services/ocr/build/windows-vc-provenance.json
+          if-no-files-found: error
+          retention-days: 14

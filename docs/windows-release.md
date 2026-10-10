@@ -1,5 +1,11 @@
 # First Windows pre-release plan
 
+Microsoft runtime review — 2026-10-11: a [component-specific record](windows-microsoft-runtime.md)
+now identifies the remaining canonical-file, redistribution and WebView2-loader
+checks. A short read-only Actions inspection compares the observed VC DLL hashes
+with the hosted image's canonical REDIST files. This uses no private credential,
+changes no installer and does not require a long source build.
+
 Comparison environment correction — 2026-10-11: run `38067916664` fails in the
 original detector's NumPy `bool8` alias before producing an installer. The
 export/comparison environment now retains its original NumPy 1.26.4 wheel,

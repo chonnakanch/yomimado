@@ -5,6 +5,14 @@ Windows binary, or attest to a test that has not run. A private candidate may
 be assembled to inspect actual inputs; public distribution is blocked until
 all entries below have concrete evidence.
 
+Microsoft runtime follow-up — 2026-10-11: [the component review](windows-microsoft-runtime.md)
+separates conditional VC redistribution rights from GPLv3's System Library
+definition and conflicting FSF explanatory guidance. A short read-only Windows
+provenance job compares the six observed VC DLL hashes with canonical REDIST
+inputs. It changes no installed runtime or licence and approves no candidate.
+Exact new files, distributor entitlement/end-user terms and the separate
+WebView2 loader assessment remain open.
+
 Sudachi preparation — 2026-10-11: [the small locked binding recipe](windows-sudachi-runtime.md)
 replaces the incomplete old wheel graph with deliberately resolved, retained
 inputs. All 62 original crates and 128 notice files verify locally, and the
