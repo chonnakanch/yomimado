@@ -1,5 +1,7 @@
 """Reject unsafe source extraction, Intel backends and incorrect PE evidence."""
 
+import contextlib
+import hashlib
 import importlib.util
 import io
 import sys
@@ -7,6 +9,7 @@ import tarfile
 import tempfile
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
 sys.path.insert(0, str(Path(__file__).parents[1]))
 
@@ -25,6 +28,71 @@ probe = load("torch_windows_probe", "torch-windows-probe.py")
 
 
 class TorchWindowsTests(unittest.TestCase):
+    def test_required_header_is_checked_before_compilation(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            header = root / "include/ActivityType.h"
+            header.parent.mkdir()
+            data = b"enum class ActivityType { CPU_OP };\n"
+            sha = hashlib.sha256(data).hexdigest()
+            repo = {"requiredFiles": {"include/ActivityType.h": sha}}
+            with self.assertRaisesRegex(ValueError, "missing or changed"):
+                audit.verify_required_files(root, repo)
+            header.write_bytes(data)
+            self.assertEqual(
+                audit.verify_required_files(root, repo), repo["requiredFiles"]
+            )
+            header.write_bytes(data + b"// changed\n")
+            with self.assertRaisesRegex(ValueError, "missing or changed"):
+                audit.verify_required_files(root, repo)
+
+    def test_long_command_reports_progress_and_keeps_complete_log(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            output = io.StringIO()
+            with (
+                patch.object(audit, "BUILD", Path(tmp)),
+                patch.object(audit, "PROGRESS_INTERVAL", 0.02),
+                contextlib.redirect_stdout(output),
+            ):
+                audit.run(
+                    [
+                        sys.executable,
+                        "-c",
+                        "import time; print('[1/3] compile', flush=True); time.sleep(0.15); print('done')",
+                    ],
+                    "compile-test",
+                )
+            text = output.getvalue()
+            self.assertIn("compile-test: running", text)
+            self.assertIn("last output: [1/3] compile", text)
+            self.assertIn("exited 0", text)
+            self.assertEqual(
+                (Path(tmp) / "compile-test.log").read_text(), "[1/3] compile\ndone\n"
+            )
+
+    def test_failed_command_preserves_error_and_raises(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            output = io.StringIO()
+            with (
+                patch.object(audit, "BUILD", Path(tmp)),
+                contextlib.redirect_stdout(output),
+                self.assertRaisesRegex(RuntimeError, "compile-test failed"),
+            ):
+                audit.run(
+                    [
+                        sys.executable,
+                        "-c",
+                        "import sys; print('fatal error: missing header', file=sys.stderr); sys.exit(7)",
+                    ],
+                    "compile-test",
+                )
+            self.assertIn("exited 7", output.getvalue())
+            self.assertIn("fatal error: missing header", output.getvalue())
+            self.assertIn(
+                "fatal error: missing header",
+                (Path(tmp) / "compile-test.log").read_text(),
+            )
+
     def test_windows_resources_are_distinct_from_cpp_guard_checks(self):
         cpp = {
             "file": "kernel.cpp",

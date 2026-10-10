@@ -125,7 +125,13 @@ fails at the autograd engine's Unix-only `pthread_atfork` call. The build recipe
 had replaced Windows default compiler flags and dropped `WIN32`. Extra flags
 now initialize through the environment while preserving defaults; command checks
 require Windows definitions and the early build includes the failing object.
-The corrected Torch build still requires hosted execution.
+The Windows flag correction passes real MSVC in run `38024770382`, but full
+compilation fails after about 84 minutes on missing Kineto `ActivityType.h`.
+Its downloaded evidence hash, preferred inputs, cache and compiler guards verify.
+The recipe now pins the required original header source and full notices, checks
+the failed object early, and emits progress every 30 seconds. The complete
+Torch/vision build and probes still require a successful hosted rerun; this audit
+does not build an installer or transfer approval to a new runtime.
 Independent OpenCV run `37938195277` now passes its IPP-free source build,
 DLL compiler-runtime linkage and native/frozen CPU detector probes, with its
 downloaded textual evidence independently hash-verified. Full installed

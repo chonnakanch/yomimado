@@ -34,8 +34,8 @@ Prepared on 2026-10-09: **Windows Torch source audit**
 (`.github/workflows/windows-torch-audit.yml`) performs an independent native
 CPU build with the pinned Windows CPython/MSVC/SDK and CMake/Ninja tools.
 [Its input record](windows-torch-build-inputs.json) binds the original PyTorch
-commit and fourteen selected CPU/header source repositories to the parent's exact gitlinks,
-with hashes for 31 original tracked licence/notice files. Source checkouts do not
+commit and fifteen selected CPU/header source repositories to the parent's exact gitlinks,
+with hashes for 33 original tracked licence/notice files. Source checkouts do not
 use floating branches or initialize unused GPU/mobile dependencies. The build
 checks the accepted Eigen/CPU CMake cache and generated compiler commands before
 compilation; Windows upstream mimalloc remains a recorded source dependency.
@@ -155,6 +155,33 @@ Downloaded artifact `11659617145` (326,818 bytes) matches GitHub SHA-256
 all pinned source revisions, 31 repository notices and eight Eigen notices verify.
 Completed Torch/vision wheels, inference and full installed replacement remain
 open. Reports stay private under `services/ocr/build/windows-torch-run-38020734345/`.
+
+Run `38024770382` at `0a7cbe84a40414d91b9d876cd101e3ddf02bba84`
+passes the real-MSVC early build-options/autograd checks, resolving execution of
+the Windows flag correction. After about 84 minutes the job fails at full-build
+command 791 of 1585 in `profiler_kineto.cpp`: `ActivityType.h` is missing.
+Torch's original `kineto_shim.h` includes this header unconditionally and its
+original CMake adds the Kineto include directory even with `USE_KINETO=OFF`.
+The selected source inputs had omitted that dependency. The recipe now checks out
+Kineto at the parent's exact gitlink `5e7501833f1021ce6f618572d3baf657b6319658`,
+retains its two full original licence files, verifies the required header's hash,
+and compiles the failed object in the early check. Profiling remains disabled;
+no upstream Torch patch is applied. An isolated Clang check reproduces the absent
+header failure and accepts the original pinned header; full Windows execution
+still requires a rerun.
+
+The downloaded artifact `11661466410` (325,285 bytes) matches GitHub SHA-256
+`5f24cec5157aadd50c0cf662865f2aabbc3580b9f00d8a2f81d591530a3d494c`.
+All fifteen prior source revisions, 31 notices, eight Eigen notices, accepted
+cache and 1,726 C/C++ plus four resource command guards verify independently.
+Reports remain private under `services/ocr/build/windows-torch-run-38024770382/`.
+The command runner now reports elapsed time, log byte growth and its latest
+output line every 30 seconds, retains the complete log and reports exit status.
+An unchanged byte count explicitly distinguishes a quiet command from advancing
+output; neither a heartbeat nor an exit from one phase is a completed build pass.
+The 180-minute job limit is a timeout, not an estimated build duration.
+Completed Torch/vision wheels, inference, installed replacement and final
+Windows approval remain open. This source audit does not rebuild an installer.
 
 Build OpenCV from the pinned `opencv-python-4.11.0.86.tar.gz` input
 (`03d60ccae62304860d232272e4a4fda93c39d595780cb40b161b310244b736a4`)

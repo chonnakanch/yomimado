@@ -11,6 +11,7 @@ import shutil
 import subprocess
 import sys
 import tarfile
+import time
 import venv
 import zipfile
 from pathlib import Path
@@ -19,6 +20,7 @@ from windows_release import ROOT, digest, fetch, read_json, write_json
 
 BUILD = ROOT / "services/ocr/build/windows-torch-audit"
 INPUTS = ROOT / "docs/windows-torch-build-inputs.json"
+PROGRESS_INTERVAL = 30
 OFF = (
     "USE_OPENMP",
     "USE_MKLDNN",
@@ -114,15 +116,58 @@ def extract_eigen(archive: Path, record: dict, destination: Path) -> None:
         tar.extractall(root)
 
 
+def verify_required_files(directory: Path, repo: dict) -> dict:
+    verified = {}
+    for name, sha in repo.get("requiredFiles", {}).items():
+        file = directory / name
+        if not file.is_file() or digest(file) != sha:
+            raise ValueError("Required source file missing or changed: " + name)
+        verified[name] = sha
+    return verified
+
+
+def log_tail(path: Path, limit: int = 12000) -> str:
+    with path.open("rb") as log:
+        log.seek(0, os.SEEK_END)
+        log.seek(max(0, log.tell() - limit))
+        return log.read().decode("utf-8", errors="replace")
+
+
 def run(command: list[str], name: str, *, cwd=None, env=None) -> None:
     write_json(BUILD / (name + ".command.json"), command)
     print("Torch source audit: " + name, flush=True)
-    with (BUILD / (name + ".log")).open("w", encoding="utf-8") as log:
-        result = subprocess.run(
-            command, cwd=cwd, env=env, stdout=log, stderr=subprocess.STDOUT, check=False
-        )
-    if result.returncode:
-        print((BUILD / (name + ".log")).read_text(errors="replace")[-12000:])
+    path = BUILD / (name + ".log")
+    started = time.monotonic()
+    previous_size = 0
+    with (
+        path.open("w", encoding="utf-8") as log,
+        subprocess.Popen(
+            command, cwd=cwd, env=env, stdout=log, stderr=subprocess.STDOUT
+        ) as process,
+    ):
+        while True:
+            try:
+                returncode = process.wait(timeout=PROGRESS_INTERVAL)
+                break
+            except subprocess.TimeoutExpired:
+                size = path.stat().st_size
+                lines = log_tail(path, 2048).splitlines()
+                last_line = lines[-1][:400] if lines else "No output yet"
+                print(
+                    f"Torch source audit: {name}: running "
+                    f"{time.monotonic() - started:.0f}s; "
+                    f"log {size} bytes (+{size - previous_size}); "
+                    f"last output: {last_line}",
+                    flush=True,
+                )
+                previous_size = size
+    elapsed = time.monotonic() - started
+    print(
+        f"Torch source audit: {name}: exited {returncode} after {elapsed:.0f}s",
+        flush=True,
+    )
+    if returncode:
+        print(log_tail(path), flush=True)
         raise RuntimeError(name + " failed")
 
 
@@ -204,7 +249,13 @@ def main() -> None:
             target = notices / (repo["path"] or "pytorch") / name
             target.parent.mkdir(parents=True, exist_ok=True)
             shutil.copy2(directory / name, target)
-        repositories.append({"path": repo["path"], "revision": actual})
+        repositories.append(
+            {
+                "path": repo["path"],
+                "revision": actual,
+                "requiredFiles": verify_required_files(directory, repo),
+            }
+        )
     inputs = BUILD / "inputs"
     inputs.mkdir(exist_ok=True)
     eigen = record["eigen"]
@@ -352,8 +403,8 @@ def main() -> None:
     shutil.copy2(build / "compile_commands.json", BUILD / "compile_commands.json")
     command_counts = verify_commands(commands)
     write_json(BUILD / "compiler-verification.json", command_counts)
-    # Compile the build-options consumer and Windows autograd fork guard before
-    # the long complete build, so both regressions fail promptly under real MSVC.
+    # Check the prior failing consumers before the long complete build, including
+    # profiler headers still required when USE_KINETO is OFF.
     run(
         [
             cmake,
@@ -362,6 +413,7 @@ def main() -> None:
             "--target",
             "caffe2/CMakeFiles/torch_cpu.dir/core/common.cc.obj",
             "caffe2/CMakeFiles/torch_cpu.dir/__/torch/csrc/autograd/engine.cpp.obj",
+            "caffe2/CMakeFiles/torch_cpu.dir/__/torch/csrc/autograd/profiler_kineto.cpp.obj",
             "--parallel",
             "2",
         ],

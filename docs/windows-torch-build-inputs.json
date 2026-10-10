@@ -137,6 +137,18 @@
         "dart/LICENSE": "edd9b3459bee4c79b549a5ef66d06d12bd144ddb8d08e0b448fb421267f43dd5",
         "swift/LICENSE": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30"
       }
+    },
+    {
+      "path": "third_party/kineto",
+      "url": "https://github.com/pytorch/kineto.git",
+      "revision": "5e7501833f1021ce6f618572d3baf657b6319658",
+      "noticeHashes": {
+        "LICENSE": "6f3d59b9103e72e5c977eecf61b261c2e1546a9be2995847e3ee2d31021fd39b",
+        "tb_plugin/LICENSE": "0d3721120332e7df4217faefb5b1da534dc051956c17ee44266a8c46bee08117"
+      },
+      "requiredFiles": {
+        "libkineto/include/ActivityType.h": "9176a1c51a029778963ac235cba277a431db76b20c7df6e8e57b01ec42505c9d"
+      }
     }
   ],
   "eigen": {

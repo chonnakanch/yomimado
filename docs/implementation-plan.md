@@ -120,6 +120,14 @@ The tested installer, macOS seed and publication gates remain unchanged.
 Windows source/native and installer gates remain open. Add joint release-on-main
 publication only after those gates pass, using one publisher for both platforms.
 
+Windows Torch audit update (2026-10-10): run `38024770382` passes the early
+Windows compiler corrections, then fails full compilation on an omitted Kineto
+header after about 84 minutes. Downloaded evidence, source/notice/cache and all
+compiler guards verify. The audit now pins Kineto's original required header and
+notices, compiles the failed consumer early, and reports progress every 30 seconds.
+The next Windows run must establish a completed CPU Torch/vision build and probes;
+no installer, macOS runtime or release approval is changed by this preparation.
+
 Independent native progress (2026-10-09): **Windows GEOS source audit** run
 `37877467511` at `a10db77ec91d5e1e0f96f444b0a98376c641774a` passes source/tool/notice
 hash checks, a pinned Windows GEOS build, upstream CTest and replacement of
