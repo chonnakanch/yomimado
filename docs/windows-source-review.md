@@ -5,6 +5,13 @@ Windows binary, or attest to a test that has not run. A private candidate may
 be assembled to inspect actual inputs; public distribution is blocked until
 all entries below have concrete evidence.
 
+Sudachi preparation — 2026-10-11: [the small locked binding recipe](windows-sudachi-runtime.md)
+replaces the incomplete old wheel graph with deliberately resolved, retained
+inputs. All 62 original crates and 128 notice files verify locally, and the
+Windows dependency graph resolves offline. Windows compilation and installed
+tokenization must pass before this closes the old wheel-source gap. This is
+independent of the rejected long Torch build.
+
 The new Windows-only [NumPy 2.4.6 input](windows-numpy-runtime.md) binds the
 actual BLAS DLL to its original tagged supplier wheel and preferred sources.
 That supplier's original Windows patch and linker-map gate explicitly exclude

@@ -1,5 +1,11 @@
 # First Windows pre-release plan
 
+Tokenizer source preparation — 2026-10-11: the private ONNX path now prepares
+[a small locked Sudachi binding](windows-sudachi-runtime.md), retaining its
+deliberately resolved graph, original crates and notices. Offline Windows graph
+resolution and source/notice hash checks pass locally. Native Windows execution,
+installed tokenization and fresh exact-installer confirmation remain required.
+
 Packaging verification — 2026-10-10: run `38066505590` reaches frozen resource
 verification, then rejects a substring match for Torch. Downloaded evidence
 `11675597657` matches SHA-256

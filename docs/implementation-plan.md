@@ -8,6 +8,13 @@ Build a small vertical slice first. Do not implement future features before the 
 
 ## Current status
 
+Windows tokenizer preparation (2026-10-11): the ONNX candidate now builds only
+the small Sudachi binding with a retained, deliberately resolved offline Cargo
+graph, replacing the old wheel's incomplete published dependency evidence.
+All 62 original crate checksums and 128 notices verify, and the Windows graph
+resolves offline locally. Windows compilation and exact installed tokenization
+remain pending. No Torch source build or macOS runtime change is introduced.
+
 Windows prebuilt BLAS preparation (2026-10-10): NumPy 2.4.6's official x64
 wheel replaces the old static-libquadmath input. Its actual BLAS DLL matches
 the tagged scipy-openblas64 0.3.31.188.0 supplier; the preferred code, patch,

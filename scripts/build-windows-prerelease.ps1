@@ -43,6 +43,8 @@ if ($Prepare) {
         # Prebuilt Torch remains export-only; no Torch source compilation occurs.
         Invoke-Checked $RuntimePython @('scripts/build-opencv-windows.py', (Join-Path $Service 'build/onnx-prototype/smoke-detector.onnx'))
         Invoke-Checked $Python @('scripts/windows_opencv_runtime.py', 'replace')
+        # Small binding only: retain its deliberately resolved offline Cargo graph.
+        Invoke-Checked $Python @('scripts/windows_sudachi_runtime.py', 'build')
     } else {
         Invoke-Checked $RuntimePython @('-m', 'venv', (Join-Path $Build 'venv'))
         # Installing local, hash-verified inputs must not consult an index or resolve.
@@ -101,6 +103,7 @@ Copy-Item (Join-Path $Build 'python-build.json') $Notices
 Copy-Item (Join-Path $Root 'docs/windows-source-review.md') $Notices
 Copy-Item (Join-Path $Root 'docs/windows-native-replacement.md') $Notices
 Copy-Item (Join-Path $Root 'docs/windows-numpy-runtime.md') $Notices
+Copy-Item (Join-Path $Root 'docs/windows-sudachi-runtime.md') $Notices
 if ($Onnx) {
     Copy-Item (Join-Path $Root 'scripts/onnx-probe-inputs.json') $Notices
     Copy-Item (Join-Path $Resources 'assets/onnx/export.json') (Join-Path $Notices 'windows-onnx-export.json')
@@ -108,6 +111,7 @@ if ($Onnx) {
     Invoke-Checked $Python @('scripts/windows_opencv_runtime.py', 'retain')
     Invoke-Checked $Python @('scripts/windows_onnx_sources.py')
     Invoke-Checked $Python @('scripts/windows_native_sources.py')
+    Invoke-Checked $Python @('scripts/windows_sudachi_runtime.py', 'retain')
 }
 [IO.File]::WriteAllText((Join-Path $Notices 'project-revision.txt'), "$Revision`n")
 @{mode='private-test'; authenticodeSigned=$false; publicDistributionApproved=$false; installedAppVerified=$false} | ConvertTo-Json | Set-Content (Join-Path $Notices 'distribution.json') -Encoding utf8NoBOM

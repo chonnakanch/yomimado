@@ -25,6 +25,8 @@ name: Windows private candidate
       - docs/windows-opencv-build-inputs.json
       - docs/windows-onnx-native-inputs.json
       - docs/windows-native-delivery-inputs.json
+      - docs/windows-sudachi-build-inputs.json
+      - docs/windows-sudachi-Cargo.lock
       - THIRD_PARTY_LICENSES/windows-onnx-probe/**
       - services/ocr/requirements-windows-release.txt
       - apps/desktop/src-tauri/src/**
@@ -198,6 +200,8 @@ jobs:
             services/ocr/build/windows/onnx-comparison/*.log
             services/ocr/build/onnx-prototype/preparation.json
             services/ocr/build/windows/windows-opencv-replacement.json
+            services/ocr/build/windows/sudachi/build-verification.json
+            services/ocr/build/windows/sudachi/compile.jsonl
             services/ocr/build/windows-opencv-audit/build-verification.json
             services/ocr/build/windows-opencv-audit/*.log
             apps/desktop/src-tauri/resources/ocr/notices/windows-native-sources/source-preparation.json
