@@ -1,5 +1,20 @@
 # First Windows pre-release plan
 
+Latest automated candidate — 2026-10-10: [run `38019354851`](https://github.com/chonnakanch/yomimado/actions/runs/38019354851)
+at `87731d65c50499a67ec7683e889402638ba557ca` passes the complete Windows
+build/install/UI/OCR/learning/persistence suite and owner-only draft upload checks.
+The downloaded evidence ZIP matches GitHub SHA-256
+`38f3c13e714d2f704118b4705484d9749da37a9b59de5e7254a24d88517d3593`.
+Provenance and installer-input records agree on setup SHA-256
+`5db98f6b460d71367ff88f4f17c976ac62239b97fde56d92fe8f67c9dee31443`.
+Find the private draft in [GitHub Releases](https://github.com/chonnakanch/yomimado/releases)
+by identity `windows-private-test-87731d65c50499a67ec7683e889402638ba557ca`.
+It includes the prepared notice supplement; native source clearance and both
+approval flags remain open. The actual setup/source/notice archives have not been
+downloaded for local inspection. No PC results are bound to this new setup, and
+another PC test can wait until the native replacements are ready. The existing
+maintainer results below remain bound to `51b0091103c1…`.
+
 Status — 2026-10-09: [Windows run `37802965979`](https://github.com/chonnakanch/yomimado/actions/runs/37802965979)
 passes all steps at `c69eff996f7e85ea88ecb4f0407e05cf5d8ec8b5`: pinned build,
 per-user NSIS installation, resource/native/startup checks, missing-model setup,
@@ -101,7 +116,11 @@ focus, while continuing to fail the job. The actual error from this run is neede
 before changing application behavior or test expectations.
 Local verification passes all 148 release-script tests, workflow lint,
 documentation formatting, PowerShell 7.4.6 parsing and reviewed macOS seed reuse.
-Windows PowerShell 5.1 UI execution of this diagnostic still requires Actions.
+Windows PowerShell 5.1 executes this diagnostic successfully in run `38019354851`:
+all five capture cases, cancellation, responsiveness, missing-model setup,
+model-dialog cancellation and occupied-port acknowledgement pass. No app behavior
+or test expectation was changed for this rerun; the earlier failure's cause is
+not established. The newer run also passes private staging and uploaded hashes.
 The exported provenance and installer-input record agree on setup SHA-256
 `0129393b970cc4b5c55628b9fc308b3733e25daabe1b0d4cc8e61cfd861f2fe2`;
 the setup bytes and source/notice archives have not been downloaded and private

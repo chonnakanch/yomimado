@@ -5,6 +5,29 @@ Windows binary, or attest to a test that has not run. A private candidate may
 be assembled to inspect actual inputs; public distribution is blocked until
 all entries below have concrete evidence.
 
+Latest automated candidate inspection — 2026-10-10: [run `38019354851`](https://github.com/chonnakanch/yomimado/actions/runs/38019354851)
+at `87731d65c50499a67ec7683e889402638ba557ca` passes every build, installed UI,
+OCR/learning/persistence and private-draft upload/hash step. Downloaded evidence
+artifact `11658311143` (111,186 bytes) matches GitHub SHA-256
+`38f3c13e714d2f704118b4705484d9749da37a9b59de5e7254a24d88517d3593`.
+The available raw checksum entries verify. Provenance and installer-input records
+agree on setup SHA-256
+`5db98f6b460d71367ff88f4f17c976ac62239b97fde56d92fe8f67c9dee31443`.
+All 94 service PE records are AMD64, and all 82 actually loaded installed-runtime
+hashes match the inventory; 46 other/system modules are recorded separately.
+The current pinned input manifest matches. Installed startup/quit cleanup,
+horizontal/vertical geometry, tokenization, dictionaries, kanji, uncached
+translation and saved/cache restart pass without developer Python or CUDA on PATH.
+The AMD64 GUI desktop hash is
+`b2be8dd1de4752d90e08eb72fb0b096401a735935ba91b51ea35640abc1a3b21`;
+the frozen service hash is
+`69c6b414b08a1bfdb6c23bf1566e41ba876c6da3ae97892d7c506d9635d4d84f`.
+The notice supplement is prepared and staged in this private candidate. The
+actual setup/source/notice archives have not been downloaded for local inspection.
+This remains a private preparation build with source/native and human approval
+false; maintainer results below apply only to the older `51b0091103c1…` setup.
+Reports are retained privately in `services/ocr/build/windows-run-38019354851/`.
+
 The Windows lock selects exact CPython 3.11.17 sources, Python wheels and CPU
 Torch/torchvision binaries. CPython 3.11.9 from setup-python is a build bootstrap
 only. `windows-inputs.json` records original download hashes, Python external
@@ -256,8 +279,10 @@ dictionaries, kanji, uncached translation and saved/cache restart checks pass.
 The UI report completes three capture cases, then stops at **page-scan button**;
 its exception is missing. Failure diagnostics are now retained for future runs.
 Actual setup bytes, source/notices archives and successful private upload are
-not independently verified by this textual artifact. The UI failure and staging
-error remain unresolved. Current manual results remain bound only to the
+not independently verified by this textual artifact. The newer `87731d65c504`
+run passes all five UI cases and staging without changing application behavior
+or test expectations; the older failure causes remain unestablished.
+Current manual results remain bound only to the
 unchanged setup hash recorded above. Reports are retained privately under
 `services/ocr/build/windows-run-38016673211/`.
 

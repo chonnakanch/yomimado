@@ -1,5 +1,13 @@
 # Windows candidate test record
 
+Newer private preparation candidate — 2026-10-10: [run `38019354851`](https://github.com/chonnakanch/yomimado/actions/runs/38019354851)
+at `87731d65c50499a67ec7683e889402638ba557ca` passes the complete automated
+suite and private uploaded-asset checks. Its setup SHA-256 is
+`5db98f6b460d71367ff88f4f17c976ac62239b97fde56d92fe8f67c9dee31443`.
+No manual result below applies to this rebuilt setup. Wait for the pending native
+replacements before requesting another PC test; then use the numbered checklist
+with the final candidate's exact hash. Source/native and human gates remain open.
+
 Status — 2026-10-09: the replacement's complete automated installed-app suite
 passes in [Windows run `37802965979`](https://github.com/chonnakanch/yomimado/actions/runs/37802965979)
 at `c69eff996f7e85ea88ecb4f0407e05cf5d8ec8b5`. The maintainer reports successful
@@ -9,7 +17,7 @@ saving and viewing saved entries on the confirmed Windows 11 x64 PC. On
 it matches the current draft's checksum file and GitHub asset digest exactly.
 The human installer gate remains **OPEN**, and source/native clearance is separate.
 
-Current [owner-only candidate draft](https://github.com/chonnakanch/yomimado/releases/edit/untagged-a171bf97df5f42e7448e):
+Maintainer-tested [owner-only candidate draft](https://github.com/chonnakanch/yomimado/releases/edit/untagged-a171bf97df5f42e7448e):
 `YomiMado_0.1.0_x64-setup.exe`, matching `SHA256SUMS.txt` and
 `windows-candidate.json`. All eight uploaded asset digests were verified by the
 successful workflow. Do not use the repeated setup filename to identify a build;
