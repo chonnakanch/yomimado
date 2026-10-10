@@ -1,0 +1,47 @@
+name: Windows source-only WebView loader probe
+"on":
+  push:
+    branches: [develop]
+    paths:
+      - .github/workflows/webview-loader-probe.yml
+      - scripts/probe_webview_loader.py
+      - scripts/probe-webview-loader.cpp
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  probe:
+    if: github.repository == 'chonnakanch/yomimado' && github.ref == 'refs/heads/develop'
+    runs-on: windows-2022
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
+        with:
+          python-version: "3.11.9"
+      - name: Select x64 MSVC
+        shell: pwsh
+        run: |
+          $vs = & "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe" -latest -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath
+          if (-not $vs) { throw 'MSVC is unavailable' }
+          cmd /c "`"$vs\VC\Auxiliary\Build\vcvars64.bat`" >nul && set" | ForEach-Object {
+            if ($_ -match '^([^=]+)=(.*)$') { "$($Matches[1])=$($Matches[2])" | Add-Content $env:GITHUB_ENV }
+          }
+      - name: Compile and verify source-only Evergreen loader
+        shell: pwsh
+        run: |
+          python scripts/probe_webview_loader.py
+          if ($LASTEXITCODE) { throw 'Source-only loader probe failed' }
+      - name: Retain isolated original sources, patches and logs
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: webview-loader-source-evidence
+          path: |
+            services/ocr/build/webview-loader-probe/verification.json
+            services/ocr/build/webview-loader-probe/compile.log
+            services/ocr/build/webview-loader-probe/probe.log
+            services/ocr/build/webview-loader-probe/loader.patch
+            services/ocr/build/webview-loader-probe/*.tar.gz
+            services/ocr/build/webview-loader-probe/*.nupkg
+          retention-days: 14
