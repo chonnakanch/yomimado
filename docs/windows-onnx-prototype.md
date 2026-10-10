@@ -106,6 +106,12 @@ an Actions annotation; failures remain failures and no expectation is weakened.
 
 ## Private installer integration
 
+Run `38049828336` stops before freezing because the original OpenCV wheel's
+Python wrapper expects G-API, excluded from the audited focused native build.
+The runtime replacement now imports the source-built extension directly, as in
+the successful isolated native/frozen audit. It retains original wheel notices
+byte-for-byte and records removed wrapper hashes. The installed gates remain open.
+
 `build-windows-prerelease.ps1 -Prepare -Onnx` prepares physically separate
 export-only and runtime environments with source-built CPython 3.11.17. It
 checks four derived recognition/translation graphs against original model

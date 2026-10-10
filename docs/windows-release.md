@@ -14,6 +14,11 @@ The first frozen attempt `38048563546` rejects an unneeded ORT example model
 before setup export. Packaging now collects only runtime Python/native inputs
 and metadata, selects the audited IPP-free OpenCV recipe and retains the pinned
 ONNX preferred-source/vendor/notice preparation. Its new installed gates must pass.
+Run `38049828336` passes the focused OpenCV build but stops at service tests:
+the original wheel's Python wrapper imports excluded G-API bindings. The adapter
+now installs the audited extension directly, preserving its ABI filename and
+original wheel notices while removing that incompatible wrapper. No installer
+or approval was produced by that failed run.
 The maintainer requested and confirmed deletion of all 58 historical Actions
 runs; [the verified cleanup record](windows-actions-history.md) preserves their
 identities. Earlier Actions links below intentionally no longer resolve.

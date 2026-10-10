@@ -45,6 +45,10 @@ class OpenCvRuntimeTests(unittest.TestCase):
         self.package.mkdir()
         self.old = self.package / "cv2.cp37-win_amd64.pyd"
         self.old.write_bytes(b"old wheel extension")
+        (self.package / "__init__.py").write_text("from . import gapi\n")
+        (self.package / "gapi").mkdir()
+        (self.package / "gapi/__init__.py").write_text("raise RuntimeError('G-API')\n")
+        (self.package / "LICENSE.txt").write_bytes(b"original notice\r\n")
         for patcher in (
             patch.object(runtime, "AUDIT", self.audit),
             patch.object(runtime, "BUILD", Path(self.temporary.name) / "build"),
@@ -90,10 +94,21 @@ class OpenCvRuntimeTests(unittest.TestCase):
             runtime.replace()
         self.assertFalse(self.old.exists())
         self.assertEqual(
-            runtime.digest(self.package / self.binary.name), runtime.digest(self.binary)
+            runtime.digest(self.package.parent / self.binary.name),
+            runtime.digest(self.binary),
+        )
+        self.assertFalse((self.package / "__init__.py").exists())
+        self.assertFalse((self.package / "gapi").exists())
+        self.assertEqual(
+            (self.package / "LICENSE.txt").read_bytes(), b"original notice\r\n"
         )
         record = runtime.read_json(runtime.BUILD / "windows-opencv-replacement.json")
         self.assertEqual(record["originalWheelExtensionSha256"], old_hash)
+        self.assertIn("gapi/__init__.py", record["removedWheelPythonSha256"])
+        self.assertEqual(
+            record["preservedWheelNoticesSha256"]["LICENSE.txt"],
+            runtime.digest(self.package / "LICENSE.txt"),
+        )
         self.assertFalse(record["publicDistributionApproved"])
 
     def test_notice_manifest_cannot_escape_delivery_directory(self):

@@ -60,18 +60,39 @@ def replace() -> None:
     original = list(package.glob("cv2*.pyd"))
     if len(original) != 1:
         raise ValueError("Expected exactly one original OpenCV wheel extension")
-    # Keep the exact wheel loader/metadata and original notices. Replace its
-    # native extension with the source-built cp311 extension, retaining its ABI name.
+    # Import the extension directly, as in the audited native/frozen probe.
+    # The wheel's wrapper imports G-API bindings excluded from this focused build.
+    # Preserve original notices at their metadata paths, but remove that wrapper
+    # and its unused native inputs; an empty namespace directory cannot shadow PYD.
     old_hash = digest(original[0])
-    original[0].unlink()
-    installed = package / binary.name
+    notices = {
+        path.relative_to(package): path.read_bytes()
+        for path in package.rglob("*")
+        if path.is_file()
+        and path.name.lower().startswith(
+            ("license", "licence", "copying", "notice", "copyright")
+        )
+    }
+    wrapper_hashes = {
+        str(path.relative_to(package)): digest(path) for path in package.rglob("*.py")
+    }
+    installed = package.parent / binary.name
     shutil.copy2(binary, installed)
     if digest(installed) != record["native"]["sha256"]:
         raise ValueError("OpenCV replacement copy differs")
+    shutil.rmtree(package)
+    for name, content in notices.items():
+        target = package / name
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_bytes(content)
     write_json(
         BUILD / "windows-opencv-replacement.json",
         {
             "originalWheelExtensionSha256": old_hash,
+            "removedWheelPythonSha256": wrapper_hashes,
+            "preservedWheelNoticesSha256": {
+                str(name): digest(package / name) for name in notices
+            },
             "sourceExtension": str(binary),
             "installedExtension": str(installed),
             "sha256": digest(installed),
