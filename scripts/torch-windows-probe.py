@@ -28,6 +28,7 @@ def verify_inventory(records: list[dict]) -> None:
 def main() -> None:
     import pefile
     import torch
+    import torch.distributed
 
     if (
         sys.platform != "win32"
@@ -42,8 +43,11 @@ def main() -> None:
         or torch.backends.mkl.is_available()
         or torch.backends.openmp.is_available()
         or torch.backends.mkldnn.is_available()
+        or torch.distributed.is_available()
     ):
-        raise ValueError("Unexpected Torch version or enabled Intel/GPU backend")
+        raise ValueError(
+            "Unexpected Torch version or enabled Intel/GPU/distributed backend"
+        )
     torch.set_num_threads(1)
     torch.manual_seed(17)
     a = torch.arange(12, dtype=torch.float32).reshape(3, 4)
@@ -113,6 +117,7 @@ def main() -> None:
         "torch": torch.__version__,
         "gitVersion": torch.version.git_version,
         "buildConfiguration": torch.__config__.show(),
+        "distributedAvailable": torch.distributed.is_available(),
         "tensorChecks": ["matrix multiplication", "CPU convolution", "CPU attention"],
         "nativeInventory": records,
         "loadedModules": loaded,

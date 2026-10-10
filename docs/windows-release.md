@@ -132,6 +132,13 @@ The recipe now pins the required original header source and full notices, checks
 the failed object early, and emits progress every 30 seconds. The complete
 Torch/vision build and probes still require a successful hosted rerun; this audit
 does not build an installer or transfer approval to a new runtime.
+Run `38031623655` passes that early header compilation and reaches the
+`torch_cpu.dll` link, then fails on one unavailable distributed Work constructor
+referenced by NativeRT. Its downloaded source/native evidence verifies. The
+recipe now preserves a hash-pinned original header and minimal conditional
+source patch, checks the affected object symbols before the long build, and
+requires distributed execution to remain unavailable in the native probe.
+Full Windows linking/inference and final source/installer gates remain open.
 Independent OpenCV run `37938195277` now passes its IPP-free source build,
 DLL compiler-runtime linkage and native/frozen CPU detector probes, with its
 downloaded textual evidence independently hash-verified. Full installed

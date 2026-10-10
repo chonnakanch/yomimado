@@ -127,6 +127,11 @@ compiler guards verify. The audit now pins Kineto's original required header and
 notices, compiles the failed consumer early, and reports progress every 30 seconds.
 The next Windows run must establish a completed CPU Torch/vision build and probes;
 no installer, macOS runtime or release approval is changed by this preparation.
+The next run `38031623655` clears the omitted header and reaches the
+`torch_cpu.dll` link, then fails on an unavailable distributed Work constructor.
+Its downloaded evidence verifies. A hash-pinned conditional patch to NativeRT's
+Work declarations, early object-symbol checks and a disabled-distributed probe
+are prepared; full Windows linking/inference still require a successful rerun.
 
 Independent native progress (2026-10-09): **Windows GEOS source audit** run
 `37877467511` at `a10db77ec91d5e1e0f96f444b0a98376c641774a` passes source/tool/notice

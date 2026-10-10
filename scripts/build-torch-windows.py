@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import difflib
 import hashlib
 import importlib.util
 import os
@@ -124,6 +125,64 @@ def verify_required_files(directory: Path, repo: dict) -> dict:
             raise ValueError("Required source file missing or changed: " + name)
         verified[name] = sha
     return verified
+
+
+def patch_nativert_header(text: str) -> str:
+    blocks = (
+        "#include <torch/csrc/distributed/c10d/Work.hpp>\n",
+        (
+            "  void setWork(int64_t workId, const c10::intrusive_ptr<c10d::Work>& work) {\n"
+            "    work_[workId] = work;\n"
+            "  }\n\n"
+            "  c10::intrusive_ptr<c10d::Work> getWork(int64_t workId) const {\n"
+            "    CHECK(work_.find(workId) != work_.end())\n"
+            '        << "Couldn\'t find work with Id: " << workId;\n'
+            "    return work_.at(workId);\n"
+            "  }\n"
+        ),
+        "  std::unordered_map<int64_t, c10::intrusive_ptr<c10d::Work>> work_;\n",
+    )
+    for block in blocks:
+        if text.count(block) != 1:
+            raise ValueError("Original NativeRT Work declaration differs")
+        text = text.replace(block, "#ifdef USE_DISTRIBUTED\n" + block + "#endif\n")
+    return text
+
+
+def apply_nativert_guard(source: Path, record: dict) -> dict:
+    filename = record["filename"]
+    header = source / filename
+    if digest(header) != record["originalSha256"]:
+        raise ValueError("Original NativeRT header checksum differs")
+    original = header.read_bytes().decode("utf-8")
+    patched = patch_nativert_header(original).encode("utf-8")
+    if hashlib.sha256(patched).hexdigest() != record["patchedSha256"]:
+        raise ValueError("Patched NativeRT header checksum differs")
+    saved = BUILD / "originals" / filename
+    saved.parent.mkdir(parents=True, exist_ok=True)
+    shutil.copy2(header, saved)
+    patch = BUILD / "nativert-no-distributed.patch"
+    patch.write_bytes(
+        "".join(
+            difflib.unified_diff(
+                original.splitlines(True),
+                patched.decode("utf-8").splitlines(True),
+                fromfile="a/" + filename,
+                tofile="b/" + filename,
+            )
+        ).encode("utf-8")
+    )
+    header.write_bytes(patched)
+    report = {**record, "patchSha256": digest(patch)}
+    write_json(BUILD / "nativert-source-patch.json", report)
+    return report
+
+
+def verify_no_distributed_work_symbols(text: str) -> None:
+    if not text.strip():
+        raise ValueError("NativeRT object symbol evidence missing")
+    if any("UNDEF" in line and "Work@c10d@@" in line for line in text.splitlines()):
+        raise ValueError("NativeRT object still references unavailable c10d::Work")
 
 
 def log_tail(path: Path, limit: int = 12000) -> str:
@@ -256,6 +315,7 @@ def main() -> None:
                 "requiredFiles": verify_required_files(directory, repo),
             }
         )
+    source_patch = apply_nativert_guard(source, record["nativertWorkGuard"])
     inputs = BUILD / "inputs"
     inputs.mkdir(exist_ok=True)
     eigen = record["eigen"]
@@ -414,12 +474,35 @@ def main() -> None:
             "caffe2/CMakeFiles/torch_cpu.dir/core/common.cc.obj",
             "caffe2/CMakeFiles/torch_cpu.dir/__/torch/csrc/autograd/engine.cpp.obj",
             "caffe2/CMakeFiles/torch_cpu.dir/__/torch/csrc/autograd/profiler_kineto.cpp.obj",
+            "caffe2/CMakeFiles/torch_cpu.dir/__/torch/nativert/executor/ExecutionFrame.cpp.obj",
+            "caffe2/CMakeFiles/torch_cpu.dir/__/torch/nativert/kernels/C10Kernel.cpp.obj",
             "--parallel",
             "2",
         ],
         "compile-build-options",
         env=env,
     )
+    symbol_checks = []
+    for name, relative in (
+        ("frame", "executor/ExecutionFrame.cpp.obj"),
+        ("kernel", "kernels/C10Kernel.cpp.obj"),
+    ):
+        object_file = (
+            build / "caffe2/CMakeFiles/torch_cpu.dir/__/torch/nativert" / relative
+        )
+        phase = "nativert-" + name + "-symbols"
+        run(["dumpbin", "/symbols", str(object_file)], phase, env=env)
+        log = BUILD / (phase + ".log")
+        verify_no_distributed_work_symbols(log.read_text(errors="replace"))
+        symbol_checks.append(
+            {
+                "object": str(object_file.relative_to(build)),
+                "objectSha256": digest(object_file),
+                "symbolLogSha256": digest(log),
+                "unavailableWorkReferences": False,
+            }
+        )
+    write_json(BUILD / "nativert-symbol-verification.json", symbol_checks)
     run(
         [cmake, "--build", str(build), "--target", "install", "--parallel", "2"],
         "compile-install",
@@ -462,6 +545,8 @@ def main() -> None:
             "wheelSha256": digest(wheel),
             "cmakeCacheSha256": digest(BUILD / "CMakeCache.txt"),
             "compilerCommands": command_counts,
+            "sourcePatch": source_patch,
+            "nativertSymbolChecks": symbol_checks,
             "nativeProbe": report,
             "torchvision": vision_report,
             "sourceCoverageApproved": False,

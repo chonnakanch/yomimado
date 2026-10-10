@@ -28,6 +28,67 @@ probe = load("torch_windows_probe", "torch-windows-probe.py")
 
 
 class TorchWindowsTests(unittest.TestCase):
+    def test_nativert_patch_preserves_original_and_rejects_wrong_inputs(self):
+        original = (
+            "#include <torch/csrc/distributed/c10d/Work.hpp>\n"
+            "struct Frame {\n"
+            "  void setWork(int64_t workId, const c10::intrusive_ptr<c10d::Work>& work) {\n"
+            "    work_[workId] = work;\n"
+            "  }\n\n"
+            "  c10::intrusive_ptr<c10d::Work> getWork(int64_t workId) const {\n"
+            "    CHECK(work_.find(workId) != work_.end())\n"
+            '        << "Couldn\'t find work with Id: " << workId;\n'
+            "    return work_.at(workId);\n"
+            "  }\n"
+            "  std::unordered_map<int64_t, c10::intrusive_ptr<c10d::Work>> work_;\n"
+            "  int unrelated = 17;\n"
+            "};\n"
+        )
+        patched = audit.patch_nativert_header(original)
+        self.assertEqual(patched.count("#ifdef USE_DISTRIBUTED"), 3)
+        self.assertIn("  int unrelated = 17;\n", patched)
+        with self.assertRaises(ValueError):
+            audit.patch_nativert_header(original.replace("work_;", "other_;"))
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            source = root / "source"
+            source.mkdir()
+            header = source / "Frame.h"
+            header.write_bytes(original.encode())
+            record = {
+                "filename": "Frame.h",
+                "originalSha256": hashlib.sha256(original.encode()).hexdigest(),
+                "patchedSha256": hashlib.sha256(patched.encode()).hexdigest(),
+            }
+            with patch.object(audit, "BUILD", root):
+                with self.assertRaisesRegex(ValueError, "Patched NativeRT"):
+                    audit.apply_nativert_guard(
+                        source, {**record, "patchedSha256": "0" * 64}
+                    )
+                self.assertEqual(header.read_bytes(), original.encode())
+                report = audit.apply_nativert_guard(source, record)
+                self.assertEqual(header.read_bytes(), patched.encode())
+                self.assertEqual(
+                    (root / "originals/Frame.h").read_bytes(), original.encode()
+                )
+                self.assertEqual(
+                    report["patchSha256"],
+                    audit.digest(root / "nativert-no-distributed.patch"),
+                )
+                with self.assertRaisesRegex(ValueError, "Original NativeRT"):
+                    audit.apply_nativert_guard(source, record)
+
+    def test_nativert_unavailable_work_reference_fails_before_full_link(self):
+        audit.verify_no_distributed_work_symbols(
+            "001 UNDEF notype External | other_symbol"
+        )
+        audit.verify_no_distributed_work_symbols(
+            "001 SECT1 notype External | ??0Work@c10d@@"
+        )
+        for bad in ("", "001 UNDEF notype () External | ??0Work@c10d@@QEAA@"):
+            with self.subTest(symbols=bad), self.assertRaises(ValueError):
+                audit.verify_no_distributed_work_symbols(bad)
+
     def test_required_header_is_checked_before_compilation(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)

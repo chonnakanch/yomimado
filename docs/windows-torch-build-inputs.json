@@ -245,5 +245,10 @@
         "six-1.17.0.dist-info/LICENSE": "4375ba20e2b9c6c4e7cad2940a628fd90e95cc3d50ee92aae755715d8ba1fbd0"
       }
     }
-  ]
+  ],
+  "nativertWorkGuard": {
+    "filename": "torch/nativert/executor/ExecutionFrame.h",
+    "originalSha256": "ea625fd0d10c718296971922e9f9baeab221386b487b6814cc1931e82bbe1591",
+    "patchedSha256": "a1c22d626c4fe17deff1737de6d141f0e95a5cb52f740d7ef3a5b40e40205252"
+  }
 }

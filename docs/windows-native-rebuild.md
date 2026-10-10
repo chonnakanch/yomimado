@@ -183,6 +183,39 @@ The 180-minute job limit is a timeout, not an estimated build duration.
 Completed Torch/vision wheels, inference, installed replacement and final
 Windows approval remain open. This source audit does not rebuild an installer.
 
+Run `38031623655` at `85d0766354eef528cd3317d1e487f17206836773`
+passes the early real-MSVC profiler compilation, resolving the omitted Kineto
+header. Its full build reaches command 1435 of 1584, linking `torch_cpu.dll`,
+then fails with `LNK2001`/`LNK1120` for one unavailable `c10d::Work::Work`
+constructor referenced from seven NativeRT objects. This is a link failure after
+about 140 minutes, not the 180-minute timeout. Original NativeRT
+`ExecutionFrame.h` unconditionally retains a `c10d::Work` map and accessors, while
+the original CMake excludes its implementation with `USE_DISTRIBUTED=OFF`.
+Inspection of the exact preferred revision finds NativeRT's Work references only
+in this header. Enabling distributed execution would add unnecessary runtime
+dependencies; the source recipe instead guards that include, map and accessors
+with the existing `USE_DISTRIBUTED` define.
+
+This is an explicit upstream-source modification. The input record pins both
+original and patched header hashes; original bytes, the complete diff and a
+hash-bound patch report are retained with the full upstream notices. The early
+MSVC build now includes `ExecutionFrame.cpp` and `C10Kernel.cpp`; their retained
+`dumpbin /symbols` output must have no undefined `c10d::Work` reference before
+the complete build proceeds. The native inference probe also requires
+`torch.distributed.is_available()` to be false. Local preprocessing of the exact
+original header reproduces the unconditional reference; the patch removes it
+when distributed execution is disabled and produces identical preprocessed
+content when enabled. This is not a completed MSVC link or inference pass.
+
+Downloaded artifact `11664838767` (338,572 bytes) matches GitHub SHA-256
+`f47752597ab5281292f5736eca1feaf08f42623d49ca00f8cd5e60f0b43208b6`.
+The manifest binding, all sixteen preferred source revisions, 33 repository
+notices, eight Eigen notices, required header pin, accepted cache and 1,726 C/C++
+plus four resource guards verify independently. Reports remain private under
+`services/ocr/build/windows-torch-run-38031623655/`. The corrected complete
+Windows build, matched vision/native probes and exact installed replacement
+remain required. No installer or macOS runtime is changed.
+
 Build OpenCV from the pinned `opencv-python-4.11.0.86.tar.gz` input
 (`03d60ccae62304860d232272e4a4fda93c39d595780cb40b161b310244b736a4`)
 with IPP/IPP IW and FFmpeg disabled. Limit modules to those required by the
