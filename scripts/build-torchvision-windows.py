@@ -25,6 +25,21 @@ def patch_setup(text: str) -> str:
     return text
 
 
+def copy_pillow_notices(archive_path: Path, hashes: dict, destination: Path) -> None:
+    if not hashes:
+        raise ValueError("Pinned Pillow notice hashes missing")
+    with zipfile.ZipFile(archive_path) as archive:
+        for name, sha in hashes.items():
+            data = archive.read(name)
+            if hashlib.sha256(data).hexdigest() != sha:
+                raise ValueError("Pinned Pillow notice differs")
+            target = destination / name
+            if not target.resolve().is_relative_to(destination.resolve()):
+                raise ValueError("Unsafe Pillow notice path")
+            target.parent.mkdir(parents=True, exist_ok=True)
+            target.write_bytes(data)
+
+
 def build(build: Path, python: str, env: dict, run) -> dict:
     record = read_json(ROOT / "docs/windows-torchvision-build-inputs.json")
     source = build / "torchvision"
@@ -91,15 +106,14 @@ def build(build: Path, python: str, env: dict, run) -> dict:
         for p in read_json(ROOT / "services/ocr/windows-inputs.json")["packages"]
         if p["name"].lower() == "pillow"
     )
+    if pillow["sha256"] != record["pillowWheelSha256"]:
+        raise ValueError("Pillow notice record covers a different Windows wheel")
     fetch(pillow, build / "inputs" / pillow["filename"])
-    with zipfile.ZipFile(build / "inputs" / pillow["filename"]) as archive:
-        for name, sha in pillow["licenseFiles"].items():
-            data = archive.read(name)
-            if hashlib.sha256(data).hexdigest() != sha:
-                raise ValueError("Pinned Pillow notice differs")
-            target = build / "notices/pillow" / name
-            target.parent.mkdir(parents=True, exist_ok=True)
-            target.write_bytes(data)
+    copy_pillow_notices(
+        build / "inputs" / pillow["filename"],
+        record["pillowNoticeHashes"],
+        build / "notices/pillow",
+    )
     run(
         [
             python,

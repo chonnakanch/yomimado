@@ -6,5 +6,9 @@
   "noticeHashes": {
     "LICENSE": "6502f676851cfe25f8af75531dfb32375b7325b73c37e7b43741fa422893e71d"
   },
+  "pillowWheelSha256": "1a992e86b0dd7aeb1f053cd506508c0999d710a8f07b4c791c63843fc6a807ac",
+  "pillowNoticeHashes": {
+    "pillow-11.3.0.dist-info/licenses/LICENSE": "19544bf53af689a3319a4fb5067370f0f0d68d2c5300a2157674f5ef8a4fd965"
+  },
   "publicDistributionApproved": false
 }

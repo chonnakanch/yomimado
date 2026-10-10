@@ -1,8 +1,11 @@
 """Keep minimal torchvision source edits and CPU ABI checks fail-closed."""
 
+import hashlib
 import importlib.util
 import sys
+import tempfile
 import unittest
+import zipfile
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -23,6 +26,23 @@ probe = load("vision_probe", "torchvision-windows-probe.py")
 
 
 class TorchvisionWindowsTests(unittest.TestCase):
+    def test_pillow_original_notice_is_required_and_verified(self):
+        data = b"original licence notice\n"
+        sha = hashlib.sha256(data).hexdigest()
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            archive = root / "pillow.whl"
+            with zipfile.ZipFile(archive, "w") as wheel:
+                wheel.writestr("licenses/LICENSE", data)
+                wheel.writestr("../outside", data)
+            destination = root / "notices"
+            build.copy_pillow_notices(archive, {"licenses/LICENSE": sha}, destination)
+            self.assertEqual((destination / "licenses/LICENSE").read_bytes(), data)
+            for hashes in ({}, {"licenses/LICENSE": "0" * 64}, {"../outside": sha}):
+                with self.subTest(hashes=hashes), self.assertRaises(ValueError):
+                    build.copy_pillow_notices(archive, hashes, destination)
+            self.assertFalse((root / "outside").exists())
+
     def test_patch_preserves_cpu_operator_extension(self):
         source = (
             "extensions = [\n        make_C_extension(),\n"

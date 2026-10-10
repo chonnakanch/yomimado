@@ -111,6 +111,11 @@ cache and commands passes for 1,726 C/C++ and four resource commands. No native
 compilation or Torch/vision inference pass is claimed. The downloaded textual
 evidence (ID `11622408001`, 309,825 bytes) matches GitHub SHA-256
 `bb87076217c46562b72b6acb766516b1a3ddf82757c5a41ebcab7598b4fdeaa5`.
+The matched torchvision recipe's Pillow notice pins are stored explicitly in
+its own input record: the general Windows package manifest does not have a
+`licenseFiles` field. Original Windows Pillow wheel and aggregate notice hashes
+are verified locally; changed or absent notice pins fail closed. This corrects
+the preparation recipe before its first successful torchvision execution.
 
 Build OpenCV from the pinned `opencv-python-4.11.0.86.tar.gz` input
 (`03d60ccae62304860d232272e4a4fda93c39d595780cb40b161b310244b736a4`)
