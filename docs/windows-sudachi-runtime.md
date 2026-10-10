@@ -37,6 +37,12 @@ Windows graph offline: 54 registry packages selected, 128 original notice files.
 The new native Windows build and installed tests remain required. This record
 does not approve the full source delivery or human installer gate.
 
+Run `38070613690` compiles the binding but fails its final Python import-library
+lookup. The recipe now adds source Python's `PCbuild/amd64` directory to the
+linker's local `LIB` environment and retains the actual `python311.lib` hash.
+No bootstrap Python import library is substituted; the next Windows run must
+complete linking and installed tests.
+
 Rebuild from the complete source checkout on Windows after preparing the pinned
 Python runtime and installing the original Sudachi wheel:
 

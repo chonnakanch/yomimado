@@ -130,12 +130,20 @@ def build() -> None:
     if f"release: {inputs['rustVersion']}\n" not in rust:
         raise ValueError("Sudachi Rust compiler differs")
     inputs, root, cargo_home = prepare()
+    # PyO3 discovers the venv's conventional libs directory. Our interpreter
+    # is built in-tree, so its actual import library lives under PCbuild.
+    python_lib = (
+        BUILD / ("Python-" + inputs["pythonVersion"]) / "PCbuild/amd64/python311.lib"
+    )
+    if not python_lib.is_file():
+        raise ValueError("Source-built Python import library is missing")
     target = AUDIT / "target"
     env = {
         **os.environ,
         "CARGO_HOME": str(cargo_home.resolve()),
         "CARGO_TARGET_DIR": str(target.resolve()),
         "PYO3_PYTHON": sys.executable,
+        "LIB": str(python_lib.parent.resolve()) + ";" + os.environ.get("LIB", ""),
     }
     command = [
         "cargo",
@@ -191,6 +199,10 @@ def build() -> None:
             "rustc": rust,
             "msvc": os.environ.get("VCToolsVersion"),
             "sdk": os.environ.get("WindowsSDKVersion"),
+            "pythonImportLibrary": {
+                "path": str(python_lib.resolve()),
+                "sha256": digest(python_lib),
+            },
             "command": command,
             "compileLogSha256": digest(log),
             "compiledPackages": compiled,
