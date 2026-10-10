@@ -24,6 +24,7 @@ name: Windows private candidate
       - scripts/opencv-windows-probe.py
       - docs/windows-opencv-build-inputs.json
       - docs/windows-onnx-native-inputs.json
+      - docs/windows-native-delivery-inputs.json
       - THIRD_PARTY_LICENSES/windows-onnx-probe/**
       - services/ocr/requirements-windows-release.txt
       - apps/desktop/src-tauri/src/**
@@ -199,6 +200,8 @@ jobs:
             services/ocr/build/windows/windows-opencv-replacement.json
             services/ocr/build/windows-opencv-audit/build-verification.json
             services/ocr/build/windows-opencv-audit/*.log
+            apps/desktop/src-tauri/resources/ocr/notices/windows-native-sources/source-preparation.json
+            apps/desktop/src-tauri/resources/ocr/notices/onnx-native/source-preparation.json
           if-no-files-found: ignore
           retention-days: 14
       - name: Remove smoke-only detector

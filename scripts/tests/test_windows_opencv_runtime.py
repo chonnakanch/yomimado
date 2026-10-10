@@ -117,6 +117,34 @@ class OpenCvRuntimeTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "Unsafe"):
             runtime.retain(Path(self.temporary.name) / "resources")
 
+    def test_nested_notice_and_preferred_source_are_retained_without_changes(self):
+        notice = self.audit / "notices/opencv/LICENSE"
+        notice.parent.mkdir(parents=True)
+        notice.write_bytes(b"original nested notice\r\n")
+        self.record["noticeHashes"] = {"opencv/LICENSE": runtime.digest(notice)}
+        archive = self.audit / "inputs/source.tar.gz"
+        archive.parent.mkdir()
+        archive.write_bytes(b"synthetic preferred source archive")
+        self.record["inputs"]["source"] = {
+            "filename": archive.name,
+            "sha256": runtime.digest(archive),
+        }
+        runtime.write_json(runtime.BUILD / "windows-opencv-replacement.json", {})
+        self.write_record()
+        resources = Path(self.temporary.name) / "resources"
+        with patch.object(
+            runtime, "verified_build", return_value=(self.record, self.binary)
+        ):
+            runtime.retain(resources)
+        self.assertEqual(
+            (resources / "notices/source-built-opencv/opencv/LICENSE").read_bytes(),
+            notice.read_bytes(),
+        )
+        self.assertEqual(
+            (runtime.BUILD / "sources/source-built-opencv/source.tar.gz").read_bytes(),
+            archive.read_bytes(),
+        )
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -49,6 +49,36 @@ rejecting changed bootloader code or application bytes. Preferred bootloader
 source/build recipes are supplied by the already pinned PyInstaller sdist;
 hosted execution of this new check remains required.
 
+Downloaded OpenCV preparation evidence from `38049828336` matches GitHub SHA-256
+`25b870fd2781df8f21ea85b7a64c46c03e090c55293c5e8d59dbeae80d8ae937`.
+Its isolated native/frozen CPU probes pass with IPP disabled. The original
+producer emitted nested notice keys with Windows backslashes, incompatible with
+the strict portable retention manifest. Those keys and source references now
+use forward slashes; escaping notice paths remain rejected.
+
+Run `38062747049` confirms that same retention failure after the frozen build;
+downloaded artifact `11674014358` matches GitHub SHA-256
+`b99bcc636962e1077d2e99c79709776c0558cfc04a517eb2d60ee35c2de7acdb`.
+Its final Python 3.11.17 comparison passes complete OCR and three fresh translation
+parity with no Torch imports, plus cache survival after a new service instance.
+The producer correction above addresses its actual exception. The next candidate
+also retains [48 pinned native source archives](windows-native-delivery-inputs.json):
+Pillow's 15 codec/vendor inputs, 27 observed Sudachi crate originals, OpenBLAS,
+GCC 10.3.0, MeCab, Sudachi, the historical OpenBLAS build recipe and GEOS 3.11.4.
+Local collection verifies every original archive, canonical preferred-source
+hash and notice hash, producing 340,089,987 bytes of compressed source delivery
+and 168 original notice files. Models, artwork and prebuilt binaries are omitted
+with explicit hash records. The installed notice copy and source archive receive
+the same preparation record, manifest and collector recipes.
+
+Compressed inputs are read in a single streaming pass before canonical sorting;
+all 27 existing ONNX native preferred-source hashes remain unchanged. This avoids
+repeated decompression of large compiler archives. Collection executes no vendor
+source or compiler. These source records close missing delivery inputs, while
+the exact Sudachi dependency graph, compiler-runtime scope, Microsoft runtime
+redistribution and installed binary bindings still require the review below.
+Source and public approval remain false.
+
 The [original-runtime GPL review](windows-gpl-compatibility.md) now records the
 actual detector-to-OpenCV/Torch calls, loaded binary hashes, exact Intel terms
 and exception checks. Public distribution of this combination conflicts with

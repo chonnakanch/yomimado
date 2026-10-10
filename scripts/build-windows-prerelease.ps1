@@ -105,6 +105,7 @@ if ($Onnx) {
     Copy-Item (Join-Path $Root 'THIRD_PARTY_LICENSES/windows-onnx-probe') (Join-Path $Notices 'windows-onnx-inputs') -Recurse -Force
     Invoke-Checked $Python @('scripts/windows_opencv_runtime.py', 'retain')
     Invoke-Checked $Python @('scripts/windows_onnx_sources.py')
+    Invoke-Checked $Python @('scripts/windows_native_sources.py')
 }
 [IO.File]::WriteAllText((Join-Path $Notices 'project-revision.txt'), "$Revision`n")
 @{mode='private-test'; authenticodeSigned=$false; publicDistributionApproved=$false; installedAppVerified=$false} | ConvertTo-Json | Set-Content (Join-Path $Notices 'distribution.json') -Encoding utf8NoBOM

@@ -27,6 +27,13 @@ The maintainer requested and confirmed deletion of all 58 historical Actions
 runs; [the verified cleanup record](windows-actions-history.md) preserves their
 identities. Earlier Actions links below intentionally no longer resolve.
 
+Run `38062747049` stops during source-built OpenCV notice retention because its
+producer used Windows path separators. The corrected producer now emits portable
+paths. The next candidate includes 48 checksum-pinned native preferred-source
+archives and unchanged original notices; local collection and all 190 release
+script tests pass. Source review, installed ONNX runtime checks and fresh human
+testing of the resulting exact setup remain open. No public release is enabled.
+
 Build policy update — 2026-10-10: the maintainer chooses to avoid long Torch
 source builds. **Windows Torch source audit** is now manual-only with a false-by-default
 explicit opt-in; no push starts it. Prebuilt Torch is now export-only in the new

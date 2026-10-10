@@ -444,7 +444,7 @@ def main(detector: Path) -> None:
                     r"copyright|license|redistribution", match[0], re.IGNORECASE
                 ):
                     blocks.setdefault(match[0].strip(), []).append(
-                        str(path.relative_to(source))
+                        path.relative_to(source).as_posix()
                     )
     (notices / "module-notices.txt").write_text(
         "\n\n".join(
@@ -484,7 +484,7 @@ def main(detector: Path) -> None:
             },
             "native": {"sha256": digest(binary), **pe_info_in_venv(python, binary)},
             "noticeHashes": {
-                str(p.relative_to(notices)): digest(p)
+                p.relative_to(notices).as_posix(): digest(p)
                 for p in notices.rglob("*")
                 if p.is_file()
             },

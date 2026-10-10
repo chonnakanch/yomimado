@@ -13,6 +13,7 @@ import json
 import posixpath
 import shutil
 import tarfile
+import tempfile
 from pathlib import Path, PurePosixPath
 from urllib.request import urlopen
 
@@ -52,11 +53,14 @@ EXCLUDED = {
 
 def source_tree(original: Path, target: Path) -> list[dict]:
     excluded = []
-    with tarfile.open(original) as source:
-        members = sorted(source.getmembers(), key=lambda item: item.name)
+    # Sorting and then seeking through compressed source archives repeatedly
+    # decompresses them. Stage regular files in one streaming pass instead.
+    with tempfile.TemporaryDirectory(dir=target.parent) as temporary:
+        staged = []
         seen = set()
-        with tarfile.open(target, "w", format=tarfile.PAX_FORMAT) as output:
-            for member in members:
+        total = 0
+        with tarfile.open(original, "r|*") as source:
+            for member in source:
                 path = PurePosixPath(member.name)
                 if (
                     path.is_absolute()
@@ -68,6 +72,9 @@ def source_tree(original: Path, target: Path) -> list[dict]:
                 ):
                     raise ValueError("Unsafe preferred-source member")
                 seen.add(member.name)
+                total += member.size
+                if total > 2 * 1024**3:
+                    raise ValueError("Preferred-source archive is unexpectedly large")
                 if member.issym():
                     linked = posixpath.normpath(
                         posixpath.join(posixpath.dirname(member.name), member.linkname)
@@ -90,14 +97,27 @@ def source_tree(original: Path, target: Path) -> list[dict]:
                         }
                     )
                     continue
+                file = None
+                if member.isfile():
+                    file = Path(temporary) / str(len(staged))
+                    with (
+                        source.extractfile(member) as stream,
+                        file.open("wb") as output,
+                    ):
+                        shutil.copyfileobj(stream, output)
+                staged.append((member, file))
+        with tarfile.open(target, "w", format=tarfile.PAX_FORMAT) as output:
+            for member, file in sorted(staged, key=lambda pair: pair[0].name):
                 normalized = tarfile.TarInfo(member.name)
                 normalized.type = member.type
                 normalized.mode = member.mode & 0o777
                 normalized.size = member.size if member.isfile() else 0
                 normalized.linkname = member.linkname if member.issym() else ""
-                output.addfile(
-                    normalized, source.extractfile(member) if member.isfile() else None
-                )
+                if file:
+                    with file.open("rb") as stream:
+                        output.addfile(normalized, stream)
+                else:
+                    output.addfile(normalized)
     return excluded
 
 
