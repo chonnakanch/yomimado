@@ -75,20 +75,19 @@ def worker(args) -> dict:
             )
         report["ocr"][orientation] = result
         report["timings"]["ocr-" + orientation] = time.monotonic() - start
-    with tempfile.TemporaryDirectory(prefix="yomimado-onnx-cache-") as temporary:
-        database = Path(temporary) / "translation.sqlite3"
-        service = TranslationService(provider, database)
-        for text in TEXTS:
-            start = time.monotonic()
-            translated = service.translate(text)
-            if translated.cached or not translated.translatedText:
-                raise RuntimeError("Uncached translation probe failed")
-            report["translation"][text] = translated.translatedText
-            report["timings"][text] = time.monotonic() - start
-        restarted = TranslationService(provider, database)
-        if not restarted.translate(TEXTS[0]).cached:
-            raise RuntimeError("Translation cache did not survive service recreation")
-        report["cacheSurvivedNewService"] = True
+    database = args.cache
+    service = TranslationService(provider, database)
+    for text in TEXTS:
+        start = time.monotonic()
+        translated = service.translate(text)
+        if translated.cached or not translated.translatedText:
+            raise RuntimeError("Uncached translation probe failed")
+        report["translation"][text] = translated.translatedText
+        report["timings"][text] = time.monotonic() - start
+    restarted = TranslationService(provider, database)
+    if not restarted.translate(TEXTS[0]).cached:
+        raise RuntimeError("Translation cache did not survive service recreation")
+    report["cacheSurvivedNewService"] = True
     report["torchImported"] = any(
         name.split(".")[0] in {"torch", "torchvision"} for name in sys.modules
     )
@@ -144,12 +143,16 @@ def main() -> None:
     ):
         parser.add_argument("--" + name, type=Path, required=True)
     parser.add_argument("--worker", choices=("baseline", "onnx"))
+    parser.add_argument("--cache", type=Path)
     parser.add_argument("--onnx-python", type=Path)
     parser.add_argument("--onnx-pythonpath")
     args = parser.parse_args()
     for name, value in vars(args).items():
         if isinstance(value, Path):
-            setattr(args, name, value.resolve())
+            # Resolving a venv interpreter symlink selects its base Python and
+            # loses the isolated environment on Unix hosts.
+            absolute = value.absolute() if name == "onnx_python" else value.resolve()
+            setattr(args, name, absolute)
     # Validate every graph/policy against conversion provenance before inference.
     record = json.loads((args.exported / "export.json").read_text())
     if set(record["outputs"]) != {
@@ -201,6 +204,8 @@ def main() -> None:
         }
     )
     if args.worker:
+        if args.cache is None:
+            parser.error("--cache is required for a worker")
         result = worker(args)
         args.output.write_text(json.dumps(result, indent=2, ensure_ascii=False) + "\n")
         return
@@ -227,26 +232,31 @@ def main() -> None:
         env = dict(os.environ)
         if backend == "onnx" and args.onnx_pythonpath:
             env["PYTHONPATH"] = args.onnx_pythonpath
-        with (args.output / (backend + ".log")).open("w") as log:
-            try:
-                subprocess.run(
-                    command,
-                    check=True,
-                    stdout=log,
-                    stderr=subprocess.STDOUT,
-                    timeout=900,
-                    env=env,
-                )
-            except (subprocess.CalledProcessError, subprocess.TimeoutExpired):
-                log.flush()
-                failure_annotation(
-                    backend
-                    + " worker failed:\n"
-                    + (args.output / (backend + ".log")).read_text(
-                        encoding="utf-8", errors="replace"
-                    )[-6000:]
-                )
-                raise
+        # The parent owns cleanup: SQLite connections can remain alive until
+        # interpreter shutdown. Windows cannot unlink that open cache file.
+        # Both service instances still use the same fresh cache inside the child.
+        with tempfile.TemporaryDirectory(prefix="yomimado-onnx-cache-") as temporary:
+            command.extend(["--cache", str(Path(temporary) / "translation.sqlite3")])
+            with (args.output / (backend + ".log")).open("w") as log:
+                try:
+                    subprocess.run(
+                        command,
+                        check=True,
+                        stdout=log,
+                        stderr=subprocess.STDOUT,
+                        timeout=900,
+                        env=env,
+                    )
+                except (subprocess.CalledProcessError, subprocess.TimeoutExpired):
+                    log.flush()
+                    failure_annotation(
+                        backend
+                        + " worker failed:\n"
+                        + (args.output / (backend + ".log")).read_text(
+                            encoding="utf-8", errors="replace"
+                        )[-6000:]
+                    )
+                    raise
         results[backend] = json.loads(output.read_text())
     report = {
         "exactOcrParity": results["baseline"]["ocr"] == results["onnx"]["ocr"],

@@ -57,10 +57,10 @@ the full-prefix ONNX prototype. These include first-use costs inconsistently
 between operations and are observations, not a controlled benchmark or Windows
 speed claim. Long sentences/page workloads and memory use still need testing.
 
-Eleven focused tests cover class-aware suppression, strict confidence/IoU
+Twelve focused tests cover class-aware suppression, strict confidence/IoU
 thresholds, the output cap, input preservation, repetition/banned tokens,
 forced EOS, completed-beam ranking, artifact exclusion and 20 randomized NMS
-comparisons with the actual torchvision CPU operator.
+comparisons with the actual torchvision CPU operator, plus annotation escaping.
 
 ## Windows execution
 
@@ -81,7 +81,11 @@ requiring changes to `main`.
 First hosted [run 38045851358](https://github.com/chonnakanch/yomimado/actions/runs/38045851358)
 at `cdb649e` finishes in about four minutes. Pinned preparation, all 11 unit tests
 and model conversion pass; the separate backend comparison fails. Its detailed
-child log/report is retained in the evidence artifact and must be inspected.
+downloaded child log identifies a Windows file-lock failure during temporary
+SQLite-cache cleanup, after baseline inference. The parent now owns the temporary
+cache and removes it after the child exits, when Windows releases its handles.
+This changes probe cleanup only; shared service files and parity expectations
+remain unchanged. A new hosted comparison is required.
 The driver now reports the fixed synthetic probe's failure detail directly in
 an Actions annotation; failures remain failures and no expectation is weakened.
 Windows parity is not claimed from the successful preparatory steps.
