@@ -1,20 +1,16 @@
 name: Windows Torch source audit
 
 # Independent source/CPU tensor experiment. Never builds or publishes an installer.
+# Long cold builds are suspended during the prebuilt-package investigation.
+# Keep this manual-only; an explicit opt-in is required even for dispatches.
 "on":
-  push:
-    branches: [develop]
-    paths:
-      - .github/workflows/windows-torch-audit.yml
-      - scripts/build-torch-windows.py
-      - scripts/torch-windows-probe.py
-      - scripts/build-torchvision-windows.py
-      - scripts/torchvision-windows-probe.py
-      - scripts/tests/test_torch_windows.py
-      - scripts/tests/test_torchvision_windows.py
-      - docs/windows-torch-build-inputs.json
-      - docs/windows-torchvision-build-inputs.json
   workflow_dispatch:
+    inputs:
+      allow_long_source_build:
+        description: "Explicitly allow the long Torch source experiment (not an installer build)"
+        required: true
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -24,7 +20,7 @@ concurrency:
 
 jobs:
   source-wheel:
-    if: github.repository == 'chonnakanch/yomimado' && github.ref == 'refs/heads/develop'
+    if: github.event_name == 'workflow_dispatch' && inputs.allow_long_source_build && github.repository == 'chonnakanch/yomimado' && github.ref == 'refs/heads/develop'
     runs-on: windows-2022
     timeout-minutes: 180
     defaults:

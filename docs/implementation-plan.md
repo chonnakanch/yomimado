@@ -124,8 +124,17 @@ Original Windows GPL compatibility review (2026-10-10): exact detector calls,
 loaded binary bindings, Intel terms and exception checks are recorded in the
 [review](windows-gpl-compatibility.md). The original combined service conflicts
 with the FSF's published GPL interpretation; sufficient additional permission
-or compatible libraries are required by the project's release review. The chosen
+or compatible libraries are required by the project's release review. The initial
 source rebuild is one resolution, not a universal Windows distribution requirement.
+
+Windows prebuilt investigation (2026-10-10): the maintainer chooses to avoid long
+source builds. The Torch source workflow is now manual-only with an explicit
+false-by-default opt-in. The separate installer workflow already uses prebuilt
+Torch. The [package review](windows-prebuilt-runtime.md) checks official wheels/
+recipes, Conda-forge, DirectML, JavaCPP and community alternatives; no compatible
+drop-in Windows Python CPU replacement is established. Exact compatible binary
+inputs, a proven alternative inference backend or sufficient additional permission
+remain needed before public distribution. No new runtime or installer is approved.
 
 Windows Torch audit update (2026-10-10): run `38024770382` passes the early
 Windows compiler corrections, then fails full compilation on an omitted Kineto

@@ -1,5 +1,14 @@
 # First Windows pre-release plan
 
+Build policy update — 2026-10-10: the maintainer chooses to avoid long Torch
+source builds. **Windows Torch source audit** is now manual-only with a false-by-default
+explicit opt-in; no push starts it. The separate installer workflow already uses
+prebuilt Torch. The [package investigation](windows-prebuilt-runtime.md) checks
+official, Conda-forge, DirectML, JavaCPP and community alternatives without finding
+a cleared drop-in Windows Python CPU runtime. Compatible binary inputs or a
+different proven inference backend/additional permission remain a concrete blocker.
+No public release, approval or installed runtime changes result from this review.
+
 Latest automated candidate — 2026-10-10: [run `38022182370`](https://github.com/chonnakanch/yomimado/actions/runs/38022182370)
 at `65ac794370fe2b0f60d7ed968ac0be2c04ca4d51` passes every build/install/UI/
 OCR/learning/persistence and owner-only draft upload/hash step. Downloaded evidence

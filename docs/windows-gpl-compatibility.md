@@ -109,8 +109,11 @@ detector. No such grant is present in the reviewed pinned detector material.
    the existing service as an aggregate, omitting weights, adding attribution or
    changing only YomiMado's own licence would not resolve the identified issue.
 
-Rebuilding is therefore the selected resolution, not a universal requirement for
-Windows software. A permitted prebuilt replacement could avoid compiling Torch.
+Rebuilding was the initial selected resolution, not a universal requirement for
+Windows software. On 2026-10-10 the maintainer chooses to avoid long source builds;
+the [prebuilt-package investigation](windows-prebuilt-runtime.md) records the
+checked alternatives and remaining blocker. A permitted prebuilt replacement
+could avoid compiling Torch; none is cleared by this review.
 Research downloads and full original notices remain in the ignored local directory
 `services/ocr/build/windows-licence-review-20261010/`; no installer, model weights,
 credentials or manga screenshots were added to the repository.
