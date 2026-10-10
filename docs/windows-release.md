@@ -1,5 +1,14 @@
 # First Windows pre-release plan
 
+Windows BLAS replacement — 2026-10-10: the Windows lock now selects the official
+NumPy 2.4.6 prebuilt wheel. Its BLAS DLL exactly matches the tagged supplier's
+Windows x64 input, whose recipe explicitly rejects static libquadmath linkage.
+Preferred code, patch, recipes and original notices are pinned and retained;
+the collector checks the binary/source binding. This removes the old unresolved
+quadmath input through a prebuilt alternative, pending full parity and installed
+verification. The OpenCV build selects the new NumPy headers. macOS is unchanged.
+See [the exact input review](windows-numpy-runtime.md).
+
 ONNX experiment — 2026-10-10: an [isolated prototype](windows-onnx-prototype.md)
 converts the existing recognition/translation models using prebuilt Torch and
 executes with CPU ONNX Runtime plus NumPy detector filtering. Local synthetic

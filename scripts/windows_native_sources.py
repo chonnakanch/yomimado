@@ -17,6 +17,52 @@ MANIFEST = ROOT / "docs/windows-native-delivery-inputs.json"
 PYTHON_MANIFEST = ROOT / "scripts/onnx-probe-inputs.json"
 
 
+def verify_numpy_vendor(
+    entry: dict, numpy_wheel: Path, supplier_wheel: Path, recipe: Path
+) -> dict:
+    """Bind the shipped BLAS bytes to the tagged supplier and unchanged recipe."""
+    native_hashes = []
+    notice_bytes = {}
+    for key, path in (("numpyWheel", numpy_wheel), ("supplierWheel", supplier_wheel)):
+        expected = entry[key]
+        if digest(path) != expected["sha256"]:
+            raise ValueError("NumPy vendor wheel differs")
+        with zipfile.ZipFile(path) as archive:
+            actual = hashlib.sha256(archive.read(expected["nativeMember"])).hexdigest()
+            if actual != expected["nativeSha256"]:
+                raise ValueError("NumPy vendor native member differs")
+            native_hashes.append(actual)
+            if key == "supplierWheel":
+                for name, sha in entry["supplierNoticeHashes"].items():
+                    relative = PurePosixPath(name)
+                    if relative.is_absolute() or ".." in relative.parts or "\\" in name:
+                        raise ValueError("Unsafe NumPy supplier notice path")
+                    content = archive.read(name)
+                    if hashlib.sha256(content).hexdigest() != sha:
+                        raise ValueError("NumPy supplier notice differs")
+                    notice_bytes[name] = content
+    if native_hashes[0] != native_hashes[1] or not notice_bytes:
+        raise ValueError("NumPy BLAS differs from its original supplier")
+    with tarfile.open(recipe) as archive:
+        for name, sha in entry["recipeFileHashes"].items():
+            member = archive.getmember(entry["recipePrefix"] + name)
+            if (
+                not member.isfile()
+                or hashlib.sha256(archive.extractfile(member).read()).hexdigest() != sha
+            ):
+                raise ValueError("NumPy supplier recipe differs")
+    return {
+        "nativeSha256": native_hashes[0],
+        "numpyWheelSha256": entry["numpyWheel"]["sha256"],
+        "supplierWheelSha256": entry["supplierWheel"]["sha256"],
+        "supplierRevision": entry["supplierRevision"],
+        "openblasRevision": entry["openblasRevision"],
+        "recipeFileHashes": entry["recipeFileHashes"],
+        "supplierNoticeHashes": entry["supplierNoticeHashes"],
+        "noticeBytes": notice_bytes,
+    }
+
+
 def retain_archive(
     entry: dict, original: Path, destination: Path, notices: Path
 ) -> dict:
@@ -98,9 +144,8 @@ def collect(resources: Path = RESOURCES) -> None:
         native_notice_source(package["source"], original)
         native_notice_source(package, wheel)
         python_records.append(verify_python_source(package, wheel, original))
-    entries = read_json(MANIFEST)["archives"] + [
-        package["source"] for package in packages
-    ]
+    manifest = read_json(MANIFEST)
+    entries = manifest["archives"] + [package["source"] for package in packages]
     if len({entry["name"] for entry in entries}) != len(entries):
         raise ValueError("Duplicate source delivery identity")
     for entry in entries:
@@ -108,12 +153,30 @@ def collect(resources: Path = RESOURCES) -> None:
         print("Retaining native preferred source: " + entry["name"], flush=True)
         native_notice_source(entry, original)
         records.append(retain_archive(entry, original, destination, notices))
+    vendor = manifest["numpyVendor"]
+    supplier = vendor["supplierWheel"]
+    supplier_wheel = BUILD / "native-source-inputs" / supplier["filename"]
+    native_notice_source(supplier, supplier_wheel)
+    recipe_entry = next(e for e in entries if e["name"] == vendor["recipeArchive"])
+    numpy_record = verify_numpy_vendor(
+        vendor,
+        ROOT
+        / "services/ocr/build/onnx-prototype/inputs"
+        / vendor["numpyWheel"]["filename"],
+        supplier_wheel,
+        BUILD / "native-source-inputs" / recipe_entry["filename"],
+    )
+    for name, content in numpy_record.pop("noticeBytes").items():
+        target = notices / "numpy-blas-supplier" / name
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_bytes(content)
     record = {
         "manifestSha256": digest(MANIFEST),
         "pythonManifestSha256": digest(PYTHON_MANIFEST),
         "recipeSha256": digest(Path(__file__)),
         "sources": records,
         "pythonWheelSources": python_records,
+        "numpyVendor": numpy_record,
         "sourceCoverageApproved": False,
         "publicDistributionApproved": False,
     }

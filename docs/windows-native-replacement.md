@@ -47,18 +47,25 @@ do not run it against a new setup without deliberately updating those bindings.
 
 ## NumPy's OpenBLAS and compiler libraries
 
-NumPy 1.26.4 uses the Windows ILP64 OpenBLAS source commit `c2f4bdbb…` and GCC
-10.3.0. Their sources, full compiler-runtime licence/exception texts and the
-historical `openblas-libs` build helper are included. That helper's pinned
-Windows recipe selects the same OpenBLAS commit and records the ILP64 symbol
-suffix and architecture options. Rebuild with that ABI, including any modified
-LGPL libquadmath implementation, and retain required runtime dependencies.
+The new Windows preparation selects NumPy 2.4.6 and its matched
+scipy-openblas64 0.3.31.188.0 supplier, with no static libquadmath according to
+the supplier's checked linker map. The old NumPy 1.26.4 input and its unresolved
+quadmath coverage are historical. See `windows-numpy-runtime.md` for exact
+wheel, DLL, source and recipe bindings.
+
+The delivered OpenBLAS preferred source commit is `4956446ca26d365f209bf729123349f19dd820b6`.
+The `openblas-libs-2387cb31` source archive contains its original Windows patch
+and recipe. Apply that patch, preserve the `scipy_` prefix and `64_` ILP64 suffix,
+and use the recipe's architecture/threading options when building a compatible
+replacement. GCC 10.3.0 source and full runtime licence/exception texts are
+provided. The BLAS/GCC runtime notices use BSD and the GCC exception; the GEOS
+LGPL replacement method above remains independently applicable.
 
 Replace the OpenBLAS DLL at the exact name imported by NumPy's native extension,
 under its installed `.libs` directory. Preserve all other DLLs and PYDs. The
-current review still lacks the original vendor ZIP and complete downstream
-compiler-patch evidence; source collection does not establish an exact rebuild.
-Do not interpret these instructions as closing that public-distribution gate.
+source preparation verifies the shipped BLAS bytes against the original
+supplier wheel. It does not claim a byte-for-byte rebuild. Test a modified
+replacement against the current installation before relying on it.
 
 ## Check and restore
 

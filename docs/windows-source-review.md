@@ -5,6 +5,14 @@ Windows binary, or attest to a test that has not run. A private candidate may
 be assembled to inspect actual inputs; public distribution is blocked until
 all entries below have concrete evidence.
 
+The new Windows-only [NumPy 2.4.6 input](windows-numpy-runtime.md) binds the
+actual BLAS DLL to its original tagged supplier wheel and preferred sources.
+That supplier's original Windows patch and linker-map gate explicitly exclude
+static libquadmath. Original software/vendor notices and full GCC exception
+texts are retained. This replaces the old NumPy 1.26.4 source/relinking concern
+described below; final installed DLL identity and numerical/OCR parity remain
+required. No macOS input or human approval changes.
+
 Current runtime preparation — 2026-10-10: the maintainer rejects long Torch
 source builds. **Windows ONNX feasibility** passes at `4d49cb7` in run
 `38047950684` (4 minutes 6 seconds). The new private candidate removes Torch/

@@ -1,6 +1,7 @@
 """Source delivery preserves original legal bytes and rejects changed source inputs."""
 
 import gzip
+import hashlib
 import io
 import sys
 import tarfile
@@ -133,6 +134,55 @@ class NativeSourceTests(unittest.TestCase):
             package["sha256"] = sources.digest(wheel)
             with self.subTest(code=code), self.assertRaisesRegex(ValueError, "differs"):
                 sources.verify_python_source(package, wheel, original)
+
+    def test_numpy_vendor_binding_rejects_changed_blas_and_recipe(self):
+        numpy = self.root / "numpy.whl"
+        supplier = self.root / "supplier.whl"
+        for path in (numpy, supplier):
+            with zipfile.ZipFile(path, "w") as archive:
+                archive.writestr("blas.dll", b"original BLAS")
+                archive.writestr("LICENSE", b"original notice\r\n")
+        entry = {
+            "numpyWheel": {
+                "sha256": sources.digest(numpy),
+                "nativeMember": "blas.dll",
+                "nativeSha256": hashlib.sha256(b"original BLAS").hexdigest(),
+            },
+            "supplierWheel": {
+                "sha256": sources.digest(supplier),
+                "nativeMember": "blas.dll",
+                "nativeSha256": hashlib.sha256(b"original BLAS").hexdigest(),
+            },
+            "supplierNoticeHashes": self.entry["noticeHashes"].copy(),
+            "recipeFileHashes": {
+                "source.cpp": hashlib.sha256(b"value = 1\n").hexdigest()
+            },
+            "recipePrefix": "root/",
+            "supplierRevision": "supplier revision",
+            "openblasRevision": "source revision",
+        }
+        entry["supplierNoticeHashes"] = {
+            "LICENSE": hashlib.sha256(b"original notice\r\n").hexdigest()
+        }
+        result = sources.verify_numpy_vendor(entry, numpy, supplier, self.original)
+        self.assertEqual(result["noticeBytes"], {"LICENSE": b"original notice\r\n"})
+        entry["recipeFileHashes"]["source.cpp"] = "0" * 64
+        with self.assertRaisesRegex(ValueError, "recipe differs"):
+            sources.verify_numpy_vendor(entry, numpy, supplier, self.original)
+        entry["recipeFileHashes"]["source.cpp"] = hashlib.sha256(
+            b"value = 1\n"
+        ).hexdigest()
+        with zipfile.ZipFile(supplier, "w") as archive:
+            archive.writestr("blas.dll", b"different BLAS")
+            archive.writestr("LICENSE", b"original notice\r\n")
+        with self.assertRaisesRegex(ValueError, "wheel differs"):
+            sources.verify_numpy_vendor(entry, numpy, supplier, self.original)
+        entry["supplierWheel"].update(
+            sha256=sources.digest(supplier),
+            nativeSha256=hashlib.sha256(b"different BLAS").hexdigest(),
+        )
+        with self.assertRaisesRegex(ValueError, "differs from its original supplier"):
+            sources.verify_numpy_vendor(entry, numpy, supplier, self.original)
 
 
 if __name__ == "__main__":

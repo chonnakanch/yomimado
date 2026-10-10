@@ -8,6 +8,14 @@ Build a small vertical slice first. Do not implement future features before the 
 
 ## Current status
 
+Windows prebuilt BLAS preparation (2026-10-10): NumPy 2.4.6's official x64
+wheel replaces the old static-libquadmath input. Its actual BLAS DLL matches
+the tagged scipy-openblas64 0.3.31.188.0 supplier; the preferred code, patch,
+linker-map exclusion gate, original notices and GCC runtime exception are
+retained. Full Windows parity and new exact-installer verification remain
+required. No NumPy/Torch source build or macOS runtime change is introduced.
+See [the input review](windows-numpy-runtime.md).
+
 Installer audit (2026-10-06): the approved hobby candidate passed browser
 download hash/quarantine and Finder installation, but first launch reported
 damaged because the linker-only signature lacks a bundle resource seal.

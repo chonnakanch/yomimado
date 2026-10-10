@@ -511,20 +511,20 @@
       "preferredSourceSha256": "4880fc0c043035c772ad3dc953495f6501f52b2cd2dd24d2bf6f9b3cabaeb657"
     },
     {
-      "filename": "openblas-c2f4bdbb.tar.gz",
-      "url": "https://codeload.github.com/OpenMathLib/OpenBLAS/tar.gz/c2f4bdbbb43a1d20a7342f40122e18e573ce436a",
-      "sha256": "9c0f2b8d1f6839f8b0d1309417e06d38eabfa76ba52d9fe80f79df496d5afddc",
-      "name": "openblas-c2f4bdbb",
+      "filename": "openblas-4956446ca26d365f209bf729123349f19dd820b6.tar.gz",
+      "url": "https://codeload.github.com/OpenMathLib/OpenBLAS/tar.gz/4956446ca26d365f209bf729123349f19dd820b6",
+      "sha256": "22bd18e25cf0acac85f8029dd06e8a2439b2c3fecfe97c75595f4f3bb93e3bfb",
+      "name": "openblas-4956446c",
       "noticeHashes": {
-        "OpenBLAS-c2f4bdbbb43a1d20a7342f40122e18e573ce436a/LICENSE": "190b5a9c8d9723fe958ad33916bd7346d96fab3c5ea90832bb02d854f620fcff",
-        "OpenBLAS-c2f4bdbbb43a1d20a7342f40122e18e573ce436a/ctest/LICENSE": "c1ceeff23f242ddac805ba9d332f58b559454ec00447e65540c0e818f7de69da",
-        "OpenBLAS-c2f4bdbbb43a1d20a7342f40122e18e573ce436a/lapack-netlib/LAPACKE/LICENSE": "871f415ebd2fd06c7ab8cc3c0016aa2d26b918622345116e2d0c740b688d4843",
-        "OpenBLAS-c2f4bdbbb43a1d20a7342f40122e18e573ce436a/lapack-netlib/LICENSE": "d56bd4441b999b80c88df04faf0d8b3d7d3b2bd781cf91242c4188e8a6d0f8be",
-        "OpenBLAS-c2f4bdbbb43a1d20a7342f40122e18e573ce436a/reference/LICENSE": "c1ceeff23f242ddac805ba9d332f58b559454ec00447e65540c0e818f7de69da",
-        "OpenBLAS-c2f4bdbbb43a1d20a7342f40122e18e573ce436a/relapack/LICENSE": "abd17b9664b38cfab093e7cca625ac08d3a686fc63142ea58c27bae15969dd3a",
-        "OpenBLAS-c2f4bdbbb43a1d20a7342f40122e18e573ce436a/test/LICENSE": "c1ceeff23f242ddac805ba9d332f58b559454ec00447e65540c0e818f7de69da"
+        "OpenBLAS-4956446ca26d365f209bf729123349f19dd820b6/LICENSE": "190b5a9c8d9723fe958ad33916bd7346d96fab3c5ea90832bb02d854f620fcff",
+        "OpenBLAS-4956446ca26d365f209bf729123349f19dd820b6/ctest/LICENSE": "c1ceeff23f242ddac805ba9d332f58b559454ec00447e65540c0e818f7de69da",
+        "OpenBLAS-4956446ca26d365f209bf729123349f19dd820b6/lapack-netlib/LAPACKE/LICENSE": "871f415ebd2fd06c7ab8cc3c0016aa2d26b918622345116e2d0c740b688d4843",
+        "OpenBLAS-4956446ca26d365f209bf729123349f19dd820b6/lapack-netlib/LICENSE": "978539245c405775bf347b1256c36df4daf8b69a64b099e94b1d53742201621e",
+        "OpenBLAS-4956446ca26d365f209bf729123349f19dd820b6/reference/LICENSE": "c1ceeff23f242ddac805ba9d332f58b559454ec00447e65540c0e818f7de69da",
+        "OpenBLAS-4956446ca26d365f209bf729123349f19dd820b6/relapack/LICENSE": "abd17b9664b38cfab093e7cca625ac08d3a686fc63142ea58c27bae15969dd3a",
+        "OpenBLAS-4956446ca26d365f209bf729123349f19dd820b6/test/LICENSE": "c1ceeff23f242ddac805ba9d332f58b559454ec00447e65540c0e818f7de69da"
       },
-      "preferredSourceSha256": "5ad2736b80d493de0976eb2a69c7cc130de392be5453b3d2e29f4d76b78fa3ef"
+      "preferredSourceSha256": "e2fc2cded1b91e3a7ff9badf63824bedd0f3e354e0afdf7dd99f0c4d4be5dcc9"
     },
     {
       "filename": "gcc-10.3.0.tar.xz",
@@ -586,18 +586,18 @@
       "preferredSourceSha256": "a677823337f70caed590f651a581ecbe7790d9f72787d4caa6cafb81ad59274c"
     },
     {
-      "filename": "openblas-libs-8e388757.tar.gz",
-      "url": "https://codeload.github.com/MacPython/openblas-libs/tar.gz/8e388757043ef2826dad7fd7834b823452a99aa0",
-      "sha256": "57165c1d26d2aedd436a5b0f7971357989de1af89bf53ce3dcd2d18aec6063eb",
-      "name": "openblas-libs-8e388757",
+      "filename": "openblas-libs-2387cb313f653b694d864f2d1d6888a26d7b2ba1.tar.gz",
+      "url": "https://codeload.github.com/MacPython/openblas-libs/tar.gz/2387cb313f653b694d864f2d1d6888a26d7b2ba1",
+      "sha256": "7e24aa8ada8ea1fddab78818e59063eaabd55ee4d7fdf9e2f2034e7719c8a80f",
+      "name": "openblas-libs-2387cb31",
       "noticeHashes": {
-        "openblas-libs-8e388757043ef2826dad7fd7834b823452a99aa0/LICENSE": "8bcce7698314809161cc3c9a1bcad21af2c754f4219f269bbd0056b3a6e1f4a8",
-        "openblas-libs-8e388757043ef2826dad7fd7834b823452a99aa0/objconv/LICENSE.txt": "5ae05de7f12a45d8df1234b954cc8923bc9befbd1ae4d2a48eecbc2e1f152011",
-        "openblas-libs-8e388757043ef2826dad7fd7834b823452a99aa0/tools/LICENSE_linux.txt": "e9ef797c75fd4bfdaa08f3cb097892442ca2de71654cfa7b0bad6d9ba11122d6",
-        "openblas-libs-8e388757043ef2826dad7fd7834b823452a99aa0/tools/LICENSE_osx.txt": "339e0cff8bba3c9ac604b597f3884d974d63f73c6914cb32722c7da156bc3128",
-        "openblas-libs-8e388757043ef2826dad7fd7834b823452a99aa0/tools/LICENSE_win32.txt": "69c1f82a79aca4461de95ec0e9ecfdbd154b7be99a954ceb471d4da5393041b5"
+        "openblas-libs-2387cb313f653b694d864f2d1d6888a26d7b2ba1/LICENSE.txt": "8bcce7698314809161cc3c9a1bcad21af2c754f4219f269bbd0056b3a6e1f4a8",
+        "openblas-libs-2387cb313f653b694d864f2d1d6888a26d7b2ba1/objconv/LICENSE.txt": "5ae05de7f12a45d8df1234b954cc8923bc9befbd1ae4d2a48eecbc2e1f152011",
+        "openblas-libs-2387cb313f653b694d864f2d1d6888a26d7b2ba1/tools/LICENSE_linux.txt": "d853154e6fe80fc7c8c6f50f25fa187935ca9498c3104c78db6fd0d3c1afd35a",
+        "openblas-libs-2387cb313f653b694d864f2d1d6888a26d7b2ba1/tools/LICENSE_osx.txt": "a902b8556094fde8b8c882c4bd11ce533c1ddb7ac925e98c7e4628a100eed877",
+        "openblas-libs-2387cb313f653b694d864f2d1d6888a26d7b2ba1/tools/LICENSE_win32.txt": "1ce4c83d89bc30a0a97d4bc18d72ccaa9d3cb7c90ba1408c6b3e29ebf0c5a71c"
       },
-      "preferredSourceSha256": "9547f7905161360bcc4884324197d75c8614efb0a45c5063b2f110cdac7e7e4b"
+      "preferredSourceSha256": "d1d8bc4cc2c299a3aea3a77cb928a058100b6ea29882de1c330ab9b696bd426d"
     },
     {
       "filename": "geos-3.11.4.tar.bz2",
@@ -612,5 +612,36 @@
       },
       "preferredSourceSha256": "2e039c28cae6a3981371abf77c71460937ab669008f681f80478e0ca8b46c966"
     }
-  ]
+  ],
+  "numpyVendor": {
+    "numpyVersion": "2.4.6",
+    "numpyWheel": {
+      "filename": "numpy-2.4.6-cp311-cp311-win_amd64.whl",
+      "url": "https://files.pythonhosted.org/packages/c5/31/7fc6239c12bce7e931463251cca4426c465e1876ba3cc785402ef4dd8f4e/numpy-2.4.6-cp311-cp311-win_amd64.whl",
+      "sha256": "1e254a00cdf42b1e4d5b3d68d33af63268d41340d8885df2ab6470f2e1500147",
+      "nativeMember": "numpy.libs/libscipy_openblas64_-63c857e738469261263c764a36be9436.dll",
+      "nativeSha256": "63c857e738469261263c764a36be9436ebdeaa272e340a828f42047a97131080"
+    },
+    "supplierVersion": "0.3.31.188.0",
+    "supplierWheel": {
+      "filename": "scipy_openblas64-0.3.31.188.0-py3-none-win_amd64.whl",
+      "url": "https://files.pythonhosted.org/packages/c8/f8/941f579965825f03cd554f8fc6f74b307079ebd34aa0f33bb569033bc941/scipy_openblas64-0.3.31.188.0-py3-none-win_amd64.whl",
+      "sha256": "4958b7fb8dcc5b8312652764acc762f42e7f1cc7269fe5a561b0635ffd1a8601",
+      "nativeMember": "scipy_openblas64/lib/libscipy_openblas64_.dll",
+      "nativeSha256": "63c857e738469261263c764a36be9436ebdeaa272e340a828f42047a97131080"
+    },
+    "supplierRevision": "2387cb313f653b694d864f2d1d6888a26d7b2ba1",
+    "openblasRevision": "4956446ca26d365f209bf729123349f19dd820b6",
+    "recipeArchive": "openblas-libs-2387cb31",
+    "recipePrefix": "openblas-libs-2387cb313f653b694d864f2d1d6888a26d7b2ba1/",
+    "recipeFileHashes": {
+      "tools/build_steps_windows.sh": "737850b7c14d65061b3b2b311ab52a0fdf74df6c766f2751d58695dc6eb9be86",
+      ".github/workflows/windows.yml": "e49c06092dadde7c394e00e76ba8dd88c850510aed25f3f546d9792aace9e691",
+      "patches-windows/openblas-make-libs.patch": "d77d006b8f58267c2b416738fbd31e1a9e4ff629e82cccf8ca8565de182ecc17",
+      "openblas_commit.txt": "ad08ec2248b1d4abd87b3acc2239b3b6bf77425f339e3aa8b784be2ad845e0be"
+    },
+    "supplierNoticeHashes": {
+      "scipy_openblas64-0.3.31.188.0.dist-info/licenses/LICENSE.txt": "7317b3a9eb806cc83a0cc6b1c7c2fbe6018eed556daa9996e6e3a727a2a5bfbe"
+    }
+  }
 }
