@@ -298,7 +298,14 @@ The existing protected environment check and maintainer approval passed in
 passing hosted run. Keep token permissions unchanged while testing this correction.
 The correction is commit `220bd0bf2d9e4fce616cb8f70b7059e107451a01`;
 [run `38017337839`](https://github.com/chonnakanch/yomimado/actions/runs/38017337839)
-awaits a fresh human private-input review. All 148 release-script tests,
+passed the protected environment check and received the maintainer's approval,
+then stopped before any API request: `WINDOWS_PRIVATE_INPUT_TOKEN` is missing
+or empty in `windows-native-input`. The safe error annotation confirms that
+no token reached the job; it does not prove the configured token lacks draft
+permissions. This is the current external setup blocker. The owner must add or
+update the exact environment **secret**, then re-run all jobs on this same run;
+no code change, new public tag or broader token permission is needed to test that
+correction. All 148 release-script tests,
 Python lint/format, documentation formatting and workflow syntax pass locally;
 the reviewed macOS release-seed reuse check still passes.
 The workflow now prepares a dedicated protected input consumer. Its read-only
@@ -317,7 +324,9 @@ Owner setup required in GitHub Settings (no credential in chat or git):
 2. Create a short-lived fine-grained owner token restricted to this repository
    with **Contents: read**. Store it only as the environment secret
    **`WINDOWS_PRIVATE_INPUT_TOKEN`**. Its owner identity must have existing push
-   access for draft visibility. No Contents/Workflows write permission is needed.
+   access for draft visibility. Keep the requested read permissions while checking
+   access. Verify the exact name under this environment's **Environment secrets**,
+   not its variables; an empty or missing value fails before any private API call.
 3. A focused push to the audit's `develop` paths starts the workflow. Review the
    resulting run's exact source revision and the private setup hash above, then
    manually approve **only this private-input deployment**.

@@ -62,7 +62,10 @@ private draft with its Actions token's read-only release listing. The protected
 owner-input environment and maintainer approval passed in run `38016752910`.
 Its subsequent draft lookup used the published-release tag endpoint incorrectly;
 the corrected lookup uses the authenticated listing and retains safe preflight
-diagnostics. Owner-token permissions remain unchanged pending that corrected run.
+diagnostics. Corrected run `38017337839` received approval but stops because
+`WINDOWS_PRIVATE_INPUT_TOKEN` is missing or empty in the protected environment.
+The owner must correct that environment secret and re-run the same source commit.
+Owner-token permissions remain unchanged until actual draft access can be tested.
 See the native worksheet for the protected-input requirement. Installed GEOS
 replacement remains unverified. Independent Torch source-build preparation is executable in
 **Windows Torch source audit**; it does not alter the tested setup.
