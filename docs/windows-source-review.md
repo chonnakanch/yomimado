@@ -202,6 +202,22 @@ sources were obtained from the recipe's official Chromium repository instead.
 Exact static binary binding, licence review, final source delivery and a
 source-only Windows rebuild remain open. No macOS codec clearance is reused.
 
+Notice follow-up on 2026-10-10: inspection of the exact Pillow Windows wheel's
+aggregate `LICENSE` finds twelve vendor sections, but no AOM licence/patent text.
+The AVIF recipe enables local AOM, dav1d, libyuv and libsharpyuv. The Windows input
+manifest now pins four already collected source archives (AOM, dav1d, libyuv and
+libwebp/libsharpyuv) and seventeen full original licence/patent texts. The notice
+collector verifies archive and member hashes, requires regular files and preserves
+their paths and bytes under `licenses/windows-python-vendors/`. Those original
+archives also enter the private source-preparation archive. All seventeen copies
+are verified locally; changed text, archive links and escaping paths are tested.
+The existing wheel notice remains intact. Additional AOM source-tree notices are
+retained without claiming every source-tree component is compiled into Pillow.
+This closes the concrete supplemental-text preparation gap; the tested installer
+does not yet contain the supplement. Exact static linkage, complete source review
+and verification of a newly packaged installer remain open. A Pillow rebuild is
+not required solely to add these notices.
+
 The SudachiPy 0.6.10 tag resolves to
 `7e2f287bbfffc036421cf960802e41a696727747`. Its original
 [preferred-source archive](https://codeload.github.com/WorksApplications/sudachi.rs/tar.gz/7e2f287bbfffc036421cf960802e41a696727747)

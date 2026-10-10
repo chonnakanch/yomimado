@@ -350,6 +350,10 @@ sources; the macOS GEOS replacement test is not Windows evidence.
 - Pillow's actual codec versions are recorded in the configuration report.
   Resolve its Windows build script's downloaded vendor sources and notices;
   do not use the different macOS codec inventory.
+  The Windows notice recipe now preserves seventeen original supplemental
+  licence/patent texts from pinned AOM, dav1d, libyuv and libwebp sources; all
+  copies verify locally. This resolves missing-text preparation, not exact
+  static linkage or installed notice delivery. See the source review.
 - Bind Fugashi's hashed MeCab DLL, SudachiPy/tokenizer Rust vendor graphs,
   PyInstaller's bootloader and modified frozen executable, and CPython's
   pinned OpenSSL/libffi binary externals to their exact sources/recipes.

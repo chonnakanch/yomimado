@@ -14,7 +14,7 @@ import subprocess
 import tarfile
 import tomllib
 import zipfile
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 from urllib.request import urlopen
 
 from windows_release import BUILD, RESOURCES, ROOT, digest, fetch, read_json, write_json
@@ -56,6 +56,41 @@ def notices(directory: Path, destination: Path, extra=None) -> list[str]:
         target = destination / original.relative_to(directory)
         target.parent.mkdir(parents=True, exist_ok=True)
         shutil.copy2(original, target)
+        copied.append(str(target))
+    return copied
+
+
+def tar_notices(entry: dict, archive: Path, destination: Path) -> list[str]:
+    """Preserve original vendor texts; reject changed, linked or escaping inputs."""
+    if digest(archive) != entry["sha256"]:
+        raise ValueError("Native source archive hash differs")
+    selected = entry["licenseFiles"]
+    if not selected:
+        raise ValueError("Native source has no pinned notices")
+    verified = {}
+    with tarfile.open(archive) as source:
+        for name, sha in selected.items():
+            relative = PurePosixPath(name)
+            if (
+                relative.is_absolute()
+                or ".." in relative.parts
+                or relative.as_posix() != name
+                or "\\" in name
+                or ":" in name
+            ):
+                raise ValueError("Unsafe native notice path")
+            member = source.getmember(name)
+            if not member.isfile():
+                raise ValueError("Native notice is not a regular source file")
+            content = source.extractfile(member).read()
+            if hashlib.sha256(content).hexdigest() != sha:
+                raise ValueError("Native source notice hash differs")
+            verified[name] = content
+    copied = []
+    for name, content in verified.items():
+        target = destination / name
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_bytes(content)
         copied.append(str(target))
     return copied
 
@@ -221,6 +256,15 @@ def collect() -> None:
         "torchsummary": "torchsummary",
     }.items():
         supplement(group, output / "licenses/python-supplement" / package)
+    native_inputs = read_json(ROOT / "services/ocr/windows-inputs.json")[
+        "nativeNoticeInputs"
+    ]
+    for entry in native_inputs:
+        tar_notices(
+            entry,
+            BUILD / "sources/native-notices" / entry["filename"],
+            output / "licenses/windows-python-vendors" / entry["name"],
+        )
     vendor_inputs = read_json(ROOT / "services/ocr/windows-inputs.json")[
         "desktopVendorInputs"
     ]
@@ -270,6 +314,7 @@ def collect() -> None:
         "publicDistributionApproved": False,
         "desktopVendorInputs": vendor_inputs,
         "installerSourceInputs": installer_sources,
+        "nativeNoticeInputs": native_inputs,
     }
     # Store portable relative notice paths, never assume Mac target membership.
     for component in record["components"]:

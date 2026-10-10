@@ -212,8 +212,11 @@ the macOS frozen runtime is not a Windows seed.
 
 ## 1. Establish the Windows runtime
 
-- [ ] Confirm Windows 11 x64 test hardware and record its OS build, CPU and
+- [x] Confirm Windows 11 x64 test hardware and record its OS build, CPU and
       display layout/scaling. A Windows ARM PC under emulation is a separate case.
+      Maintainer confirms a 64-bit OS/x64 processor, Windows 11 Home 25H2 build
+      26200.9457, i5-14500 and a 2560 × 1440 display tested at 100%/125%/150%.
+      This covers the reported single monitor; other hardware cases remain open.
 - [x] Select and pin Windows Python, Node, MSVC/SDK, Rust, PyInstaller and hooks;
       preserve npm/Cargo locks and record exact versions and download hashes.
 - [x] Create a Windows-specific Python lock, replacing macOS-only dependencies

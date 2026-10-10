@@ -195,6 +195,8 @@ def download_inputs() -> None:
         fetch(entry, BUILD / "sources/vendors" / entry["filename"])
     for entry in record.get("installerSourceInputs", []):
         fetch(entry, BUILD / "sources/installer" / entry["filename"])
+    for entry in record.get("nativeNoticeInputs", []):
+        fetch(entry, BUILD / "sources/native-notices" / entry["filename"])
     # Collecting sdists does not approve embedded BLAS/codec/compiler libraries.
     write_json(BUILD / "download-record.json", record)
 

@@ -2,7 +2,9 @@
 
 import base64
 import hashlib
+import io
 import sys
+import tarfile
 import tempfile
 import unittest
 from pathlib import Path
@@ -14,6 +16,51 @@ import windows_release as release
 
 
 class WindowsNoticeTests(unittest.TestCase):
+    def test_native_notices_preserve_bytes_and_reject_changed_source(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            archive = root / "original.tar.gz"
+            content = b"Original vendor notice\r\n"
+            with tarfile.open(archive, "w:gz") as source:
+                member = tarfile.TarInfo("vendor/licenses/PATENTS")
+                member.size = len(content)
+                source.addfile(member, io.BytesIO(content))
+            entry = {
+                "sha256": notices.digest(archive),
+                "licenseFiles": {
+                    member.name: hashlib.sha256(content).hexdigest(),
+                },
+            }
+            result = notices.tar_notices(entry, archive, root / "notices")
+            self.assertEqual(len(result), 1)
+            self.assertEqual(Path(result[0]).read_bytes(), content)
+            entry["licenseFiles"][member.name] = "changed"
+            with self.assertRaisesRegex(ValueError, "notice hash differs"):
+                notices.tar_notices(entry, archive, root / "wrong-notice")
+            self.assertFalse((root / "wrong-notice").exists())
+            entry["sha256"] = "changed"
+            with self.assertRaisesRegex(ValueError, "archive hash differs"):
+                notices.tar_notices(entry, archive, root / "wrong-source")
+
+    def test_native_notice_cannot_escape_or_follow_archive_link(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            archive = root / "original.tar.gz"
+            with tarfile.open(archive, "w:gz") as source:
+                link = tarfile.TarInfo("LICENSE")
+                link.type = tarfile.SYMTYPE
+                link.linkname = "elsewhere"
+                source.addfile(link)
+            entry = {"sha256": notices.digest(archive), "licenseFiles": {}}
+            for name in ("../LICENSE", "/LICENSE", "C:/LICENSE", "a\\LICENSE"):
+                entry["licenseFiles"] = {name: "unused"}
+                with self.assertRaisesRegex(ValueError, "Unsafe"):
+                    notices.tar_notices(entry, archive, root / "notices")
+            entry["licenseFiles"] = {"LICENSE": "unused"}
+            with self.assertRaisesRegex(ValueError, "regular source"):
+                notices.tar_notices(entry, archive, root / "notices")
+            self.assertFalse((root / "notices").exists())
+
     def test_desktop_cannot_use_developer_vc_runtime_from_system32(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)

@@ -1285,5 +1285,60 @@
       },
       "sourceReview": "pending: bind compiled stub/plugin and recursive build inputs"
     }
+  ],
+  "nativeNoticeInputs": [
+    {
+      "name": "Pillow-libwebp-1.5.0",
+      "filename": "libwebp-v1.5.0-preferred.tar.gz",
+      "url": "https://chromium.googlesource.com/webm/libwebp/+archive/refs/tags/v1.5.0.tar.gz",
+      "sha256": "797f7353e85879a74b63b6b8c6bf054dcc74f8c04f2e216495edf4b89cf850ac",
+      "licenseFiles": {
+        "COPYING": "5aec868f669e384a22372a4e8a1a6cd7d44c64cd451f960ca69cc170d1e13acf",
+        "PATENTS": "cc3273e0694ea5896145e0677699b53471b03ea43021ddc50e7923fbb9f5023c"
+      },
+      "sourceReview": "pending: source notice supplement; exact static binary binding and complete source delivery remain open"
+    },
+    {
+      "name": "Pillow-AOM-3.12.1",
+      "filename": "aom-v3.12.1.tar.gz",
+      "url": "https://aomedia.googlesource.com/aom/+archive/refs/tags/v3.12.1.tar.gz",
+      "sha256": "532c9f68296b277d283d24ed744ff57852d8858d69d3eed97efa9d4915f6f24c",
+      "licenseFiles": {
+        "LICENSE": "4764a286d8b2faeaf42f4418e7d7a28d58fc8fd4d00a3d0a7f44b0a4099de7f2",
+        "PATENTS": "661fb8e504744e95587b556b94a58343448300606a41bea8c7a9b97125696e61",
+        "third_party/SVT-AV1/LICENSE.md": "0acc2fcb27472bdc9aaf8b71f37055bbdac4f54671b7d922f241bd7fcd0dd3e6",
+        "third_party/SVT-AV1/PATENTS.md": "20678ab10402659106dc4c147c97b2a6e94b5c0695415e15a8f195ebc3547922",
+        "third_party/fastfeat/LICENSE": "043dcfd059386f9facd376351b2bd79325778744aa442177390cdfcca54babed",
+        "third_party/googletest/src/LICENSE": "9702de7e4117a8e2b20dafab11ffda58c198aede066406496bef670d40a22138",
+        "third_party/libwebm/LICENSE.TXT": "5aec868f669e384a22372a4e8a1a6cd7d44c64cd451f960ca69cc170d1e13acf",
+        "third_party/libwebm/PATENTS.TXT": "cc3273e0694ea5896145e0677699b53471b03ea43021ddc50e7923fbb9f5023c",
+        "third_party/libyuv/LICENSE": "2b2cc1180c7e6988328ad2033b04b80117419db9c4c584918bbb3cfec7e9364f",
+        "third_party/vector/LICENSE": "ff6c857ce2708e87701323078aef115c1872a1f80a9649f86dc899b48083bc60",
+        "third_party/x86inc/LICENSE": "719d8fa235f2068e0ae6d6a7dceb0a7720d7840f0f0ebed29957989e6ded3cd8"
+      },
+      "sourceReview": "pending: source notice supplement; exact static binary binding and complete source delivery remain open"
+    },
+    {
+      "name": "Pillow-dav1d-1.5.1",
+      "filename": "dav1d-1.5.1.tar.bz2",
+      "url": "https://code.videolan.org/videolan/dav1d/-/archive/1.5.1/dav1d-1.5.1.tar.bz2",
+      "sha256": "4eddffd108f098e307b93c9da57b6125224dc5877b1b3d157b31be6ae8f1f093",
+      "licenseFiles": {
+        "dav1d-1.5.1/COPYING": "b327887de263238deaa80c34cdd2ff3e0ba1d35db585ce14a37ce3e74ee389e9",
+        "dav1d-1.5.1/doc/PATENTS": "335eca574598bf4ca181b12f708d6669e5a5e78c8e1513e5b35fa1f03901484b"
+      },
+      "sourceReview": "pending: source notice supplement; exact static binary binding and complete source delivery remain open"
+    },
+    {
+      "name": "Pillow-libyuv-4db2af62",
+      "filename": "libyuv-4db2af62.tar.gz",
+      "url": "https://chromium.googlesource.com/libyuv/libyuv/+archive/4db2af62dab48895226be6b52737247e898ebe36.tar.gz",
+      "sha256": "90498812787bf60c00e36c7f265481d0f724fe0677fdd6832eced35104b085de",
+      "licenseFiles": {
+        "LICENSE": "2b2cc1180c7e6988328ad2033b04b80117419db9c4c584918bbb3cfec7e9364f",
+        "PATENTS": "4da84211f947c6f9f7dd8fbce513e1522e01833407ae732b8c9a2bbb75fed495"
+      },
+      "sourceReview": "pending: source notice supplement; exact static binary binding and complete source delivery remain open"
+    }
   ]
 }
