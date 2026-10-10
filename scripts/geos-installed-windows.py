@@ -207,11 +207,17 @@ def verify_candidate(release: dict, provenance: dict) -> None:
 
 
 def snapshot(directory: Path) -> dict[str, str]:
-    return {
-        p.relative_to(directory).as_posix(): digest(p)
-        for p in sorted(directory.rglob("*"))
-        if p.is_file()
-    }
+    # Windows resolves these names without case sensitivity. Shapely's actual
+    # frozen directory is Shapely.libs, while its replacement plan uses
+    # shapely.libs. Keep exact content hashes without inventing a missing file.
+    files = {}
+    for path in sorted(directory.rglob("*")):
+        if path.is_file():
+            key = path.relative_to(directory).as_posix().casefold()
+            if key in files:
+                raise ValueError("Ambiguous Windows installed path casing")
+            files[key] = digest(path)
+    return files
 
 
 def verify_smoke(report: dict, expected: dict[str, str]) -> None:
@@ -339,13 +345,13 @@ def main(progress: dict) -> None:
         for src, dst in plan["copy"]:
             shutil.copy2(src, dst)
         copies = {
-            dst.relative_to(installed).as_posix(): digest(src)
+            dst.relative_to(installed).as_posix().casefold(): digest(src)
             for src, dst in plan["copy"]
         }
         verify_changes(
             before,
             snapshot(installed),
-            [p.relative_to(installed).as_posix() for p in plan["remove"]],
+            [p.relative_to(installed).as_posix().casefold() for p in plan["remove"]],
             copies,
         )
         phase("replacement installed OCR")
@@ -362,8 +368,8 @@ def main(progress: dict) -> None:
             "recipeSha256": digest(Path(__file__)),
             "unchangedInstalledFiles": len(before) - len(plan["remove"]),
             "removedLibraries": {
-                p.relative_to(installed).as_posix(): before[
-                    p.relative_to(installed).as_posix()
+                p.relative_to(installed).as_posix().casefold(): before[
+                    p.relative_to(installed).as_posix().casefold()
                 ]
                 for p in plan["remove"]
             },

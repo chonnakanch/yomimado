@@ -89,6 +89,12 @@ the historical setup must use its pinned original manifests instead of today's
 changed source-input manifest. Phase diagnostics and tests preserve all exact
 file/asset/architecture gates. A reviewed rerun is required; installed GEOS
 replacement remains unverified. See the native worksheet for scope and hashes.
+Reviewed rerun `38020734338` passes the exact original installed-service smoke,
+then fails the audit's case-sensitive file-key comparison during DLL replacement.
+Its downloaded evidence verifies and confirms exact original-file restoration.
+Windows path keys are now normalized consistently with collision rejection;
+a regression reproduces the mismatch without weakening content checks. The
+corrected replacement still needs a new reviewed run; the tested setup is unchanged.
 **Windows Torch source audit** also reaches native compilation, then fails on a
 quoted include flag inside generated C++ build-option strings. The redundant flag
 is removed and that source object is compiled early on rerun. Its downloaded

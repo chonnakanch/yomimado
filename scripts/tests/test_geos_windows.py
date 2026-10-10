@@ -255,6 +255,54 @@ class GeosWindowsTests(unittest.TestCase):
         for name in ("geos-probe.exe", "geos-helper.pyd", "msvcp140.dll"):
             self.assertFalse(probe.is_geos_dll(Path(name)))
 
+    def test_installed_snapshot_matches_windows_shapely_directory_casing(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            libs = root / "ocr/runtime/_internal/Shapely.libs"
+            libs.mkdir(parents=True)
+            (root / "YomiMado.exe").write_bytes(b"unchanged application")
+            original = libs / "geos-old.dll"
+            original.write_bytes(b"original GEOS")
+            before = installed.snapshot(root)
+            original.unlink()
+            replacement = libs / "geos.dll"
+            replacement.write_bytes(b"rebuilt GEOS")
+            copies = {
+                "ocr/runtime/_internal/shapely.libs/geos.dll": installed.digest(
+                    replacement
+                )
+            }
+            installed.verify_changes(
+                before,
+                installed.snapshot(root),
+                ["ocr/runtime/_internal/shapely.libs/geos-old.dll"],
+                copies,
+            )
+            # Case normalization must not hide an unrelated application change.
+            (root / "YomiMado.exe").write_bytes(b"changed application")
+            with self.assertRaisesRegex(ValueError, "outside the exact GEOS plan"):
+                installed.verify_changes(
+                    before,
+                    installed.snapshot(root),
+                    ["ocr/runtime/_internal/shapely.libs/geos-old.dll"],
+                    copies,
+                )
+
+    def test_installed_snapshot_rejects_colliding_windows_path_names(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            path = root / "geos.dll"
+            path.write_bytes(b"GEOS")
+            # Simulate a case-sensitive directory containing two Windows aliases.
+            # This also runs on the case-insensitive development Mac filesystem.
+            alias = root / "GEOS.DLL"
+            with (
+                patch.object(Path, "rglob", return_value=[path, alias]),
+                patch.object(Path, "is_file", return_value=True),
+                self.assertRaisesRegex(ValueError, "Ambiguous Windows"),
+            ):
+                installed.snapshot(root)
+
     def report(self, paths):
         return {
             "passed": True,

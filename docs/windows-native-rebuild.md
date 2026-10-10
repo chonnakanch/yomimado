@@ -364,6 +364,23 @@ All 151 local release-script tests pass, including rejection of changed/partial
 historical manifests, asset tampering and mixed architecture. Reports stay private
 under `services/ocr/build/windows-geos-run-38017337839/`.
 
+Reviewed rerun `38020734338` at `d2b52dde989c91cbbbf548a198e7be3d03ec2102`
+passes private input access, all 431 CTest cases, isolated replacement and the
+exact original installed-service OCR/learning/persistence smoke. It then fails
+with `KeyError` during the replacement file comparison; original installation
+restoration verifies exactly. Downloaded artifact `11658466939` (69,883 bytes)
+matches GitHub SHA-256
+`df5bc169f2e520604e7985d6d260fe3ee7246ecdc3246a534540937b23103269`.
+Recipe/probe/cache and all five retained full-notice hashes verify locally.
+The failure is in the audit's path keys: the snapshot preserves `Shapely.libs`
+while the replacement plan addresses `shapely.libs`. Windows accepts both paths,
+but the Python dictionary rejects the differently cased removal key. The audit
+now normalizes all installed relative keys consistently, rejects case collisions
+and still compares every file hash. Regression tests reproduce the casing mismatch
+and retain rejection of unrelated application changes. Installed replacement
+remains unverified until the corrected reviewed rerun passes. Reports stay private
+under `services/ocr/build/windows-geos-run-38020734338/`.
+
 The workflow now prepares a dedicated protected input consumer. Its read-only
 plan validates the existing environment before a Windows deployment can be
 created; an absent, unprotected, bypassable or wrong-branch environment fails
