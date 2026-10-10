@@ -132,6 +132,9 @@ def worker(args) -> dict:
 
 
 def main() -> None:
+    # Windows locale defaults can be cp1252; probe reports contain Japanese.
+    sys.stdout.reconfigure(encoding="utf-8")
+    sys.stderr.reconfigure(encoding="utf-8")
     parser = argparse.ArgumentParser(description=__doc__)
     for name in (
         "ocr-model",
@@ -154,7 +157,7 @@ def main() -> None:
             absolute = value.absolute() if name == "onnx_python" else value.resolve()
             setattr(args, name, absolute)
     # Validate every graph/policy against conversion provenance before inference.
-    record = json.loads((args.exported / "export.json").read_text())
+    record = json.loads((args.exported / "export.json").read_text(encoding="utf-8"))
     if set(record["outputs"]) != {
         "ocr-encoder.onnx",
         "ocr-decoder.onnx",
@@ -163,7 +166,9 @@ def main() -> None:
         "policies.json",
     }:
         raise ValueError("Unexpected exported graph/policy set")
-    for asset in json.loads((ROOT / "services/ocr/windows-assets.json").read_text()):
+    for asset in json.loads(
+        (ROOT / "services/ocr/windows-assets.json").read_text(encoding="utf-8")
+    ):
         prefix, _, name = asset["path"].partition("/")
         directory = {
             "manga-ocr-base": args.ocr_model,
@@ -194,6 +199,7 @@ def main() -> None:
             raise ValueError("Export hash differs: " + name)
     os.environ.update(
         {
+            "PYTHONIOENCODING": "utf-8",
             "HF_HUB_OFFLINE": "1",
             "TRANSFORMERS_OFFLINE": "1",
             "CUDA_VISIBLE_DEVICES": "",
@@ -207,7 +213,9 @@ def main() -> None:
         if args.cache is None:
             parser.error("--cache is required for a worker")
         result = worker(args)
-        args.output.write_text(json.dumps(result, indent=2, ensure_ascii=False) + "\n")
+        args.output.write_text(
+            json.dumps(result, indent=2, ensure_ascii=False) + "\n", encoding="utf-8"
+        )
         return
     args.output.mkdir(parents=True, exist_ok=True)
     results = {}
@@ -237,7 +245,7 @@ def main() -> None:
         # Both service instances still use the same fresh cache inside the child.
         with tempfile.TemporaryDirectory(prefix="yomimado-onnx-cache-") as temporary:
             command.extend(["--cache", str(Path(temporary) / "translation.sqlite3")])
-            with (args.output / (backend + ".log")).open("w") as log:
+            with (args.output / (backend + ".log")).open("w", encoding="utf-8") as log:
                 try:
                     subprocess.run(
                         command,
@@ -257,7 +265,7 @@ def main() -> None:
                         )[-6000:]
                     )
                     raise
-        results[backend] = json.loads(output.read_text())
+        results[backend] = json.loads(output.read_text(encoding="utf-8"))
     report = {
         "exactOcrParity": results["baseline"]["ocr"] == results["onnx"]["ocr"],
         "exactTranslationParity": results["baseline"]["translation"]
@@ -268,7 +276,7 @@ def main() -> None:
         "installedAppVerified": False,
     }
     (args.output / "comparison.json").write_text(
-        json.dumps(report, indent=2, ensure_ascii=False) + "\n"
+        json.dumps(report, indent=2, ensure_ascii=False) + "\n", encoding="utf-8"
     )
     if not all(
         report[key]
