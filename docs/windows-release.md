@@ -19,9 +19,19 @@ tests, workflow/Python lint and macOS runtime-reuse scope checks. Its
 [owner-only empty draft](https://github.com/chonnakanch/yomimado/releases/tag/untagged-14ed2a435e51a23c7e93)
 is saved for that exact target, with pre-release selected; the public tag is
 verified absent. [Run `38132376703`, attempt 2](https://github.com/chonnakanch/yomimado/actions/runs/38132376703)
-passes the read-only preflight. Build/install/asset transfer and fresh visual
-checks remain pending for this retry. Attempt 1 stopped before the long build
-because the draft had not yet been saved.
+passes the read-only preflight, then fails after 7 minutes 45 seconds in the
+upstream NSIS plugin's `spawn_with_spaces` test, before OpenCV/app compilation.
+Artifact `11700181126` matches GitHub SHA-256
+`d513c05a4ad65bdfb526a665d7eb97cbac515665633192fe7a0a234792f9a2f7`.
+The exact retained upstream source shows both spawn tests temporarily changing
+the same process token privilege while the default Rust harness runs them
+concurrently. A privilege-restoration race is inferred; the log does not report
+a Windows error code. The recipe now runs **all** upstream tests with
+`--test-threads=1`, preserving source bytes, locked inputs and production build
+flags. All 206 release-tool tests, Python/workflow lint and macOS runtime-reuse
+scope checks pass locally. No test is skipped or failure retried automatically. Windows execution,
+build/install/asset transfer and fresh visual checks remain pending. Attempt 1
+stopped before the long build because the draft had not yet been saved.
 
 Before a candidate run, save an empty draft in GitHub Releases with tag field
 `windows-private-test-<full source SHA>`, exact target commit `<full source SHA>`,

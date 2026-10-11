@@ -137,7 +137,10 @@ def stage() -> None:
     }
     commands = []
     for operation, extra in (
-        ("test", ["--workspace", "--features", "test"]),
+        # Upstream spawn tests temporarily change the current process token's
+        # privilege and restore it on return. Run every test serially so one
+        # test cannot restore that shared privilege during another launch.
+        ("test", ["--workspace", "--features", "test", "--", "--test-threads=1"]),
         ("build", ["--package", "nsis-tauri-utils"]),
     ):
         command = [
