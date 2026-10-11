@@ -5,6 +5,31 @@ Windows binary, or attest to a test that has not run. A private candidate may
 be assembled to inspect actual inputs; public distribution is blocked until
 all entries below have concrete evidence.
 
+Native preparation — 2026-10-11: exact evidence from run `38072170793` now
+establishes final-Python horizontal/vertical OCR, three fresh translations,
+NumPy 2.4.6 CPU ONNX execution without Torch, source-built Sudachi and canonical
+VC replacement binding. The service inventory contains 84 AMD64 files. The app
+compiles, but NSIS fails near its 2 GB limit, so installed verification remains
+open. The recipe excludes the two hash-verified export-only weight files after
+parity and retains all four inference graphs. Native direct-class and Wry ABI
+probes pass for the [MIT WebView loader](windows-webview-loader.md); its full
+installed integration is under test. These are Windows findings, independent
+of macOS approval.
+
+Additional Python Rust source delivery now binds the original Cargo.lock files
+in the four exact `pydantic_core`, `safetensors`, `tokenizers` and `watchfiles`
+sdists to **284 original registry crates** and **540 notice files**. All original
+crate hashes and full notice copies verify locally, including optional and
+non-Windows lock entries. Two originals omit their full licence files;
+[checksum-pinned supplements](windows-python-rust-notice-inputs.json) come from
+the exact upstream commits named in each original `.cargo_vcs_info.json`:
+[wasi-rs](https://github.com/bytecodealliance/wasi-rs/tree/3da562c06214feafc14d37bf290671636caa6718)
+and [wit-bindgen](https://github.com/bytecodealliance/wit-bindgen/tree/f2393e6e98fa5f9236cac580db8a3fc9de6a4b70).
+Original archives, lock identities, supplements and preparation recipes are
+retained for offline source delivery. No long native build is introduced.
+This closes an omitted dependency-source preparation gap; final archive bytes,
+installed notices and full source-only rebuild remain separate checks.
+
 Microsoft runtime follow-up — 2026-10-11: [the component review](windows-microsoft-runtime.md)
 separates conditional VC redistribution rights from GPLv3's System Library
 definition and conflicting FSF explanatory guidance. A short read-only Windows
