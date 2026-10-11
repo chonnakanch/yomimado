@@ -8,6 +8,60 @@ Build a small vertical slice first. Do not implement future features before the 
 
 ## Current status
 
+Release automation update (2026-10-11): version-only titles such as
+`YomiMado v0.1.0`; private input transfer and both builds run without manual
+approval on protected `main`. Active ruleset `24885215` requires pull requests,
+resolved comments and current-base GitHub Actions `gates`; deletion and force
+pushes are blocked with no bypass actors. Effective rules are checked before
+private inputs and publication. Final owner review of both exact new installers
+remains required. The first combined main execution remains pending the intended
+merge; no merge, version tag or public release is performed here.
+
+Current Windows component-terms setup (2026-10-11): source `f8396cc`,
+[run `38142782743`, attempt 4](https://github.com/chonnakanch/yomimado/actions/runs/38142782743),
+passes all automated gates in 46 minutes 19 seconds. Setup SHA-256:
+`756b7dc6003af202e4df95e946edcbc7fe409c41cfd0d2fc3be4062f758b4a1b`.
+The owner Community 2022 confirmation, component-only checkbox/unattended assent,
+rejection/cancel and installed acceptance checks are complete. Downloaded
+evidence, exact project source, upstream originals/notices and new terms bytes
+verify. The maintainer confirms this exact setup hash and all six fresh Windows
+11 local checks pass. Protected publication review remains open. See [the six-check report](windows-installed-test.md).
+
+Windows hosted verification (2026-10-11): CPU ONNX candidate `8c46366`, run
+`38133593809` attempt 2, passes the complete build/install/UI/OCR/learning,
+persistence, native-input and private-upload suite in 45 minutes 42 seconds.
+The private setup SHA-256 is
+`7ff298c597de9c33d23bb598bf16d6f41761219e51fc0b61951ed6c54174c6d9`.
+Downloaded diagnostic evidence and exact setup/provenance/plugin bindings verify.
+The maintainer confirms the matching download hash, corrected OCR-box alignment
+at 100%/125%/150% and all listed local installer checks: browser/security,
+model/shortcuts/cleanup, offline OCR/lookup/new translation, saved data/model/cache
+after restart/reboot and upgrade/uninstall/reinstall. The visual offset and local
+installer checklist are closed for this exact setup. Untested hardware cases
+remain explicit in [the test record](windows-installed-test.md).
+
+Protected approval remains open. The maintainer now confirms downloading Visual
+Studio Community 2022 and accepting its terms; the owner licensed-copy attestation
+is recorded in [the terms manifest](windows-microsoft-terms.json). Windows setup
+now includes [Microsoft-only component terms](../THIRD_PARTY_LICENSES/windows-microsoft-components.txt),
+an initially unchecked acceptance checkbox and exact-hash unattended acceptance.
+Windows Actions verification and fresh exact-hash local review both pass for
+this changed package. The existing setup's passing results remain hash-bound.
+Full source-only rebuild is unverified. The early owner-prepared draft preflight
+and sequential upstream NSIS tests now pass without broader permissions or
+skipped tests. macOS runtime-seed scope verification passes; its release path
+is preserved. The shared main workflow is prepared on develop, using one
+publisher/tag and protected review of both new installers. First main execution
+remains pending; no merge, tag or publication is performed. Retired Windows trial
+histories remain recoverable in Git at `ee1b7f5`.
+
+The delivered Windows runtime uses CPU ONNX inference with NumPy 2.4.6 and a
+source-built Sudachi binding. Prebuilt Torch and NumPy 1.26.4 remain only in the
+separate export/parity reference environment. The abandoned long Torch source
+build workflow and its exclusive tooling are removed. Exact native inputs,
+source archives, notices and installed checks are retained in
+[the Windows source review](windows-source-review.md).
+
 Installer audit (2026-10-06): the approved hobby candidate passed browser
 download hash/quarantine and Finder installation, but first launch reported
 damaged because the linker-only signature lacks a bundle resource seal.
@@ -25,6 +79,44 @@ test-entry removal pass with maintainer confirmation. The installed-app gate is
 cleared for candidate `5120506`; fresh-Mac and other untested subcases stay
 explicit in the release record. A CI rebuild needs a new installer confirmation.
 Native licence/source review and maintainer approval remain complete.
+
+Release policy (2026-10-06): versioned feature merges into `main` trigger the
+macOS hobby release workflow. It builds the merged commit, preserves the
+reviewed runtime/source inputs, verifies artifact transfers, and creates
+`v<app version>` plus the public GitHub release after protected installer
+confirmation. On 2026-10-07, release classification follows the version:
+`0.x.x` and `alpha.N`/`beta.N`/`rc.N` suffixes are pre-releases; `1.0.0` and
+later without a suffix are stable. Artifact provenance and GitHub's draft flag
+must agree with that rule; both paths retain all release gates. Local
+workflow/rebuild checks pass. The protected GitHub release
+environment is configured and API-verified on 2026-10-07. The three reviewed
+seed assets are saved in a private draft with matching uploaded hashes. `main`
+is created at `cc8a95c` and set as GitHub's default branch; `develop` remains
+unmerged as requested. Hosted execution and its new installer confirmation
+are pending the first merge; no version tag or public release has been created.
+See [the release setup](macos-release.md#release-on-merge-to-main).
+
+Windows milestone: finish the first Windows 11 x64 per-user NSIS pre-release
+using [the release plan](windows-release.md) and
+[exact-installer test record](windows-installed-test.md). The maintainer's
+System/About report confirms Windows 11 Home 25H2 build 26200.9457, a 64-bit OS,
+x64 Core i5-14500 and 32 GB RAM; the display is 2560 × 1440. The newest tested
+setup hash is confirmed; the Windows-only shadow fix restores OCR-box alignment
+at 100%/125%/150%, and the maintainer reports all listed local checks pass. AMD,
+multiple monitors/mixed scaling and missing-WebView2 installation remain untested.
+
+The hosted ONNX candidate passes exact installed runtime and source/notices
+checks. The owner Community 2022 confirmation is recorded; component-terms
+installer verification and fresh local confirmation pass, while protected
+exact-installer publication approval remains open; full source-only rebuild is unverified.
+Keep the candidate private. Joint release-on-main integration is prepared after
+these checks, using one publisher/tag and a protected review of both installers
+from each new main commit. See [the shared rollout/checklist](desktop-release.md). macOS remains on
+its reviewed runtime path. The earlier package investigation is retained in
+[the prebuilt review](windows-prebuilt-runtime.md); the completed ONNX migration
+is recorded in [the prototype record](windows-onnx-prototype.md). The maintainer's
+previous deletion of 58 historical Actions runs is
+[recorded separately](windows-actions-history.md).
 
 Status audit (2026-10-05): the capture → local OCR → interactive overlay →
 learning-popup flow works with user-installed models on macOS and has been
@@ -130,15 +222,16 @@ image captured
 - [x] unit tests for negative monitor origins
 - [x] tests for 1x / 2x scale conversions
 - [x] manual test on one macOS Retina display
-- [ ] manual test on Windows with non-100% display scaling (planned with a packaged pre-release build)
+- [ ] manual test on Windows with non-100% display scaling (visual OCR alignment observed at 125%/150%; selection-drag accuracy pending)
 
 ## Done when
 
 A user can select the Japanese text shown in the supplied screenshots and save/capture an image that visually matches the selected screen region.
 
 Status: the flow is implemented and the user has exercised it on macOS Retina.
-The Windows non-100% scaling check is still open; Windows capture has not been
-manually signed off for this milestone.
+Windows screenshots show visual OCR alignment at 100%/125%/150% on the verified
+installer, but selection-drag accuracy and the remaining interaction checks have
+not been manually signed off for this milestone.
 
 ---
 
@@ -332,9 +425,9 @@ Do not put coordinate math directly into UI components. Create one transformatio
 
 - [x] macOS Retina (user-tested)
 - [ ] macOS non-Retina if available
-- [ ] Windows 100% (planned with a packaged pre-release build)
-- [ ] Windows 125% (planned with a packaged pre-release build)
-- [ ] Windows 150% (planned with a packaged pre-release build)
+- [ ] Windows 100% (visual alignment, tested region click and on-screen popup observed at 2560 × 1440; popup buttons respond; selection/hover/other targets/relaunch pending)
+- [ ] Windows 125% (visual alignment, tested region click and on-screen popup observed; popup buttons respond; selection/hover/other targets/relaunch pending)
+- [ ] Windows 150% (visual alignment, tested region click and on-screen popup observed; popup buttons respond; selection/hover/other targets/relaunch pending)
 - [x] two-monitor layout with different aspect ratios (user-tested on macOS)
 - [ ] monitor placed to the left of primary display
 
@@ -742,19 +835,37 @@ Before any public release:
       compiled Tomli, and retain all embedded notices
 - [x] build and verify the source-approved hobby candidate from clean revision
       042360e; exact mounted DMG/bundle and frozen-service smoke checks pass
-- [ ] finish installed-app testing on the existing Mac before publication;
-      source approval and candidate verification do not mark these tests passed
+- [x] finish installed-app testing for the sealed `5120506` candidate on the
+      existing Mac, including maintainer-confirmed page scan, fresh translation,
+      offline capture/lookup, reboot shortcut and saved-data persistence/removal
 - Fresh-macOS install testing was skipped at the maintainer's request on
   2026-10-05 because no clean Mac is available; disclose this unverified case.
   Exact-DMG verification, model import and Screen Recording tests remain required.
 - [ ] link the exact corresponding source revision and full notices alongside
       the public GitHub Release
-- [ ] add the GitHub Actions build after the hobby installer is releasable;
-      never upload the private test bundle or detector weights
+- [x] add the main-triggered versioned GitHub Actions build after the hobby
+      installer is releasable; never upload private outputs or detector weights
+- [x] support stable releases from `1.0.0` onward without suffixes; keep `0.x.x`
+      and alpha/beta/rc versions as pre-releases with verified classification
+- [x] configure/API-verify the protected release environment with a required
+      reviewer and main-only branch policy, without administrator bypass
+- [x] save the reviewed GitHub seed assets as a private draft and verify hashes;
+      create `main` at `cc8a95c`, set it as default and leave `develop` unmerged
+- [ ] merge the release change into `main`, verify the hosted build, and confirm
+      the exact new CI installer before approving public publication
 - [x] keep copyrighted manga fixtures out of git (current tracked test assets)
 - [x] document local model/data setup behavior
 - [x] document macOS permissions
-- [ ] document Windows installation/runtime requirements
+- [x] plan Windows runtime, source review, installer/scaling tests and joint
+      publication in `docs/windows-release.md`
+- [ ] implement and verify Windows installation/runtime requirements
+      Final private CPU ONNX setup passes hosted installation, UI, learning,
+      persistence, native-input and source/notices delivery checks. Exact-hash
+      PC retest confirms the shadow fix at all three scales and all listed local
+      installer checks pass. Untested hardware remains documented. Microsoft redistribution
+      entitlement/end-user terms and protected human approval remain open.
+      Full source-only rebuild is unverified. Existing macOS packaging/publisher
+      remains unchanged; joint release integration waits for these gates.
 
 # After the first release — UI redesign discussion
 

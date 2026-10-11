@@ -64,6 +64,25 @@ afterEach(async () => {
   vi.unstubAllGlobals();
   vi.mocked(invoke).mockReset();
   vi.mocked(requestOcr).mockReset();
+  vi.useRealTimers();
+});
+
+it("continues automatic capture when a hidden WebView suspends animation frames", async () => {
+  vi.useFakeTimers();
+  vi.stubGlobal("requestAnimationFrame", () => 1);
+  vi.mocked(invoke).mockResolvedValue(captured);
+  vi.mocked(requestOcr).mockResolvedValue({ engine: "manga", regions: [] });
+
+  await act(async () => root.render(<CaptureSelector />));
+  expect(invoke).not.toHaveBeenCalledWith("capture_auto_page");
+  await act(async () => {
+    await vi.advanceTimersByTimeAsync(100);
+  });
+
+  expect(invoke).toHaveBeenCalledExactlyOnceWith("capture_auto_page");
+  expect(requestOcr).toHaveBeenCalledTimes(1);
+  expect(container.textContent).toContain("No text was detected");
+  expect(document.documentElement.dataset.capturing).toBe("false");
 });
 
 it("uses the saved area when automatic page detection is uncertain", async () => {

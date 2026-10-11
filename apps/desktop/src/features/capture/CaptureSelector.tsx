@@ -121,9 +121,18 @@ export function CaptureSelector() {
     document.documentElement.dataset.capturing = "true";
     try {
       // Let the transparent selector repaint before xcap takes its screenshot.
-      await new Promise<void>((resolve) =>
-        requestAnimationFrame(() => requestAnimationFrame(() => resolve())),
-      );
+      // WebView2 may suspend animation frames while this newly created window
+      // is hidden or transparent. Native capture also waits for the compositor;
+      // a missed browser frame must not leave automatic scanning stuck forever.
+      await new Promise<void>((resolve) => {
+        const repaintDeadline = window.setTimeout(resolve, 100);
+        requestAnimationFrame(() =>
+          requestAnimationFrame(() => {
+            window.clearTimeout(repaintDeadline);
+            resolve();
+          }),
+        );
+      });
       const captured = await capture();
       if (!captured) {
         document.documentElement.dataset.capturing = "false";

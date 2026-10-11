@@ -1,0 +1,34 @@
+{
+  "inventory": {
+    "runId": 38066505590,
+    "artifactId": 11675597657,
+    "artifactSha256": "94c3e377c7882f1a12979b54fce1256e4572838259d656f8382b2eadc1f3b922",
+    "scope": "Historical frozen ONNX service; not approval of a new installer"
+  },
+  "files": [
+    {
+      "path": "runtime/_internal/CONCRT140.dll",
+      "sha256": "d76d662cd4f80c7ee8fcdf5c0aa54fb4b374d4d78242166446be52f5448e6a96"
+    },
+    {
+      "path": "runtime/_internal/msvcp140.dll",
+      "sha256": "0fa7eb792d3fbcf2233e4ea47e9144b9b1309ba8ed5d4731a72fffa8f4f556d6"
+    },
+    {
+      "path": "runtime/_internal/MSVCP140_1.dll",
+      "sha256": "9648d46b710235db9888732a8dbd9e247b8dcb37a9e0dd64fa7c9a9d6763d282"
+    },
+    {
+      "path": "runtime/_internal/Shapely.libs/msvcp140-4cdfd5d0df96900d509f170af6d4ba5f.dll",
+      "sha256": "dd9ba6585fb68d170e8c98c29af89054ddf9b80461befd435d1d1181bc2ac010"
+    },
+    {
+      "path": "runtime/_internal/vcruntime140.dll",
+      "sha256": "4d292623516f65c80482081e62d5dadb759dc16e851de5db24c3cbb57b87db83"
+    },
+    {
+      "path": "runtime/_internal/vcruntime140_1.dll",
+      "sha256": "a113f192195f245f17389e6ecbed8005990bcb2476ddad33f7c4c6c86327afe5"
+    }
+  ]
+}

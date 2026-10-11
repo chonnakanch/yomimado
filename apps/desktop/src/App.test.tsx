@@ -113,6 +113,7 @@ it("requires manual detector installation before packaged scans", async () => {
   });
   expect(invoke).toHaveBeenCalledWith("install_detector_model");
   expect(container.textContent).toContain("Manga scanning is ready");
+  expect(container.textContent).toContain("Installed on this computer");
   expect(
     Array.from(container.querySelectorAll("button")).find(
       (button) => button.textContent === "Scan manga page",

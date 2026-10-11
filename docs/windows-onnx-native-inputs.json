@@ -1,0 +1,497 @@
+{
+  "scope": "Exact upstream CPU packaging source/port preparation; not exact-wheel source approval",
+  "onnxruntimeRevision": "89746dc19a0a1ae59ebf4b16df9acab8f99f3925",
+  "vcpkgRevision": "ce613c41372b23b1f51333815feb3edd87ef8a8b",
+  "normalization": "canonical-source-without-test-assets-v1",
+  "publicDistributionApproved": false,
+  "archives": [
+    {
+      "name": "onnxruntime",
+      "version": "1.22.1",
+      "licenseMetadata": "MIT",
+      "filename": "onnxruntime-source.tar.gz",
+      "url": "https://codeload.github.com/microsoft/onnxruntime/tar.gz/89746dc19a0a1ae59ebf4b16df9acab8f99f3925",
+      "sha256": "38f8ffa28a5ea9040431816c6204e6fc36d1b8eab43b33dbee92fceeb181d151",
+      "archiveRoot": "onnxruntime-89746dc19a0a1ae59ebf4b16df9acab8f99f3925",
+      "licenseFiles": {
+        "LICENSE": "2f07c72751aed99790b8a4869cf2311df85a860b22ded05fa22803587a48922c"
+      },
+      "preferredSourceSha256": "28cf9024525436d5421fd2d7ab3d5ecf05fad12dd95216a9f89f8cf2917f5d64"
+    },
+    {
+      "name": "vcpkg",
+      "version": "ce613c41372b23b1f51333815feb3edd87ef8a8b",
+      "licenseMetadata": "MIT",
+      "filename": "vcpkg-source.tar.gz",
+      "url": "https://codeload.github.com/microsoft/vcpkg/tar.gz/ce613c41372b23b1f51333815feb3edd87ef8a8b",
+      "sha256": "b4fd78369d05036bc99c5890c90822d478c61f0ad7d75afd5cd70af29e4c0e84",
+      "archiveRoot": "vcpkg-ce613c41372b23b1f51333815feb3edd87ef8a8b",
+      "licenseFiles": {
+        "LICENSE.txt": "1ee376fc340e0aa6ad6a3581c94126e741468705096ac92263048a21daa86460",
+        "NOTICE.txt": "e46407f44d1f439e1f62fdfd1479418cf221d90e8d8fd27bfa4a362e23065c87",
+        "NOTICE_pt.txt": "f862632691a6b4dddda3e9fc69ae297103f573ab3e54ee575ecd9b9cad1b8e93"
+      },
+      "preferredSourceSha256": "e7788a0f1c46c3c264a0b578c3063e27a15e1a1e8341c6e7e26c7519e24caa14"
+    },
+    {
+      "name": "abseil",
+      "version": "20240722.0",
+      "portVersion": 0,
+      "licenseMetadata": "Apache-2.0",
+      "repository": "abseil/abseil-cpp",
+      "revision": "20240722.0",
+      "url": "https://codeload.github.com/abseil/abseil-cpp/tar.gz/20240722.0",
+      "recipeArchiveSha512": "bd2cca8f007f2eee66f51c95a979371622b850ceb2ce3608d00ba826f7c494a1da0fba3c1427728f2c173fe50d59b701da35c2c9fdad2752a5a49746b1c8ef31",
+      "filename": "abseil-20240722.0.tar.gz",
+      "sha256": "f50e5ac311a81382da7fa75b97310e4b9006474f9560ac46f54a9967f07d4ae3",
+      "licenseFiles": {
+        "LICENSE": "c79a7fea0e3cac04cd43f20e7b648e5a0ff8fa5344e644b0ee09ca1162b62747"
+      },
+      "archiveRoot": "abseil-cpp-20240722.0",
+      "preferredSourceSha256": "b3d1d2bd0d7594306bafee3afd41ff07a88b3e2c677ed9d2a490cf2377d0551d"
+    },
+    {
+      "name": "benchmark",
+      "version": "1.9.2",
+      "portVersion": 0,
+      "licenseMetadata": "Apache-2.0",
+      "repository": "google/benchmark",
+      "revision": "v1.9.2",
+      "url": "https://codeload.github.com/google/benchmark/tar.gz/v1.9.2",
+      "recipeArchiveSha512": "64e964f02c118935305ca3e7d3f732f2e093f927371bd1729467f6cb75dc0c42492f9f02c3191e3d8affdc9bab2e66becf10bd4250b768854074bf69efa7e4f2",
+      "filename": "benchmark-1.9.2.tar.gz",
+      "sha256": "409075176168dc46bbb81b74c1b4b6900385b5d16bfc181d678afb060d928bd3",
+      "licenseFiles": {
+        "LICENSE": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30"
+      },
+      "archiveRoot": "benchmark-1.9.2",
+      "preferredSourceSha256": "e900d03b046928efdf315b1a5bcd92a5ad3b6eb8256597c38908edd8b1b1015f"
+    },
+    {
+      "name": "boost-config",
+      "version": "1.87.0",
+      "portVersion": 0,
+      "licenseMetadata": "BSL-1.0",
+      "repository": "boostorg/config",
+      "revision": "boost-1.87.0",
+      "url": "https://codeload.github.com/boostorg/config/tar.gz/boost-1.87.0",
+      "recipeArchiveSha512": "8958ac0f764ab83481f38931a860c0b7cdad8ced4882d1fa57f570d6ebcb0ef000f33ca896faca392c85336406cbb791bf5114c38a15e0a5dcba5bb69ee5526f",
+      "filename": "boost-config-1.87.0.tar.gz",
+      "sha256": "e3e2639f5d8a6f6bac80f9883596d75a60038d4f0c9fc8c9507dcddf4d7427e4",
+      "licenseFiles": {},
+      "archiveRoot": "config-boost-1.87.0",
+      "preferredSourceSha256": "fd6f91af2665aa3b5ac30e885e72f2cd20bce6aa9ac23b555fecd11d4b3aaa25"
+    },
+    {
+      "name": "boost-mp11",
+      "version": "1.87.0",
+      "portVersion": 0,
+      "licenseMetadata": "BSL-1.0",
+      "repository": "boostorg/mp11",
+      "revision": "boost-1.87.0",
+      "url": "https://codeload.github.com/boostorg/mp11/tar.gz/boost-1.87.0",
+      "recipeArchiveSha512": "9cafdbb397aa71abb2f1d64d608bbb7963740dee3d965bc4110555df1ea4641857efc05c83951013676a871e8e0989b3f17f0d8ea6023020b1ececfcfadea5c2",
+      "filename": "boost-mp11-1.87.0.tar.gz",
+      "sha256": "f07a7282a4b440ff9f2917224badd4c112affede946ae25fba6b3e3538a858de",
+      "licenseFiles": {},
+      "archiveRoot": "mp11-boost-1.87.0",
+      "preferredSourceSha256": "eac3cfc40bdb781c8e8ea5bedae158e770f356904ab2a2e3523da94105b0f654"
+    },
+    {
+      "name": "cpuinfo",
+      "version": "2024-12-09",
+      "portVersion": 3,
+      "licenseMetadata": "BSD-2-Clause",
+      "repository": "pytorch/cpuinfo",
+      "revision": "8a1772a0c5c447df2d18edf33ec4603a8c9c04a6",
+      "url": "https://codeload.github.com/pytorch/cpuinfo/tar.gz/8a1772a0c5c447df2d18edf33ec4603a8c9c04a6",
+      "recipeArchiveSha512": "b94ccbfa886221d6bb16513d074675af0a72928a9dd9485dcacdc1124a8a60aacbbe91913a1579e766dfb024f0be1d52eeead40342004ff0238a8b94a095ed08",
+      "filename": "cpuinfo-2024-12-09.tar.gz",
+      "sha256": "37bb2fd2d1e87102baea8d131a0c550c4ceff5a12fba61faeb1bff63868155f1",
+      "licenseFiles": {
+        "LICENSE": "8e7e60636c3aa0cb03571a1a841ce5697f9551ff92b3c426c2561613d15ade70",
+        "deps/clog/LICENSE": "68a14c3e79add023eecd83d611e73f05b8bf1d16852efeb7eb4033a96736da9e"
+      },
+      "archiveRoot": "cpuinfo-8a1772a0c5c447df2d18edf33ec4603a8c9c04a6",
+      "preferredSourceSha256": "51da9a81eacae3988295704d7f7b0368b54e3fb118925296957f0b1e247ba59d"
+    },
+    {
+      "name": "cxxopts",
+      "version": "3.2.1",
+      "portVersion": 0,
+      "licenseMetadata": "MIT",
+      "repository": "jarro2783/cxxopts",
+      "revision": "v3.2.1",
+      "url": "https://codeload.github.com/jarro2783/cxxopts/tar.gz/v3.2.1",
+      "recipeArchiveSha512": "7841fb3e6c3c2a057917c962e29fc0090e6ed06f5515aaa5e2a868fef59071a9a99b74d81c32cf613ecf10a68a4d96d6ad07805f48c7c3951ded096a2317dc3d",
+      "filename": "cxxopts-3.2.1.tar.gz",
+      "sha256": "841f49f2e045b9c6365997c2a8fbf76e6f215042dda4511a5bb04bc5ebc7f88a",
+      "licenseFiles": {
+        "LICENSE": "aa324fbe633a96546bebca975fbbab65caa175894bd00cfa13d7335e7363400c"
+      },
+      "archiveRoot": "cxxopts-3.2.1",
+      "preferredSourceSha256": "588640cc14b9e3f911b468a50926a3544636a7571b1f027f7b25a962a950d6d7"
+    },
+    {
+      "name": "date",
+      "version": "3.0.3",
+      "portVersion": 0,
+      "licenseMetadata": "MIT",
+      "repository": "HowardHinnant/date",
+      "revision": "v3.0.3",
+      "url": "https://codeload.github.com/HowardHinnant/date/tar.gz/v3.0.3",
+      "recipeArchiveSha512": "e11d7f230ecc431d94c4b58fe7394dd57a9ec0baa9de52496578479b51bbf885566d6666882916d84d388060fa36065b3fa8dd3a8bc14f720b38d1c943f06700",
+      "filename": "date-3.0.3.tar.gz",
+      "sha256": "30de45a34a2605cca33a993a9ea54e8f140f23b1caf1acf3c2fd436c42c7d942",
+      "licenseFiles": {
+        "LICENSE.txt": "c90f6c00fb961170560299cbda28ca2d45804913aa8b2a9f36dbb8e0028d6930"
+      },
+      "archiveRoot": "date-3.0.3",
+      "preferredSourceSha256": "0803dc425d63e1ee0f323eb92aaaa3f11d30eaeb3b0f537489670ccadc3b2c14"
+    },
+    {
+      "name": "dlpack",
+      "version": "1.1",
+      "portVersion": 0,
+      "licenseMetadata": "Apache-2.0",
+      "repository": "dmlc/dlpack",
+      "revision": "v1.1",
+      "url": "https://codeload.github.com/dmlc/dlpack/tar.gz/v1.1",
+      "recipeArchiveSha512": "ff24ddf8a138f20aeede2708327d8239bd3cc4e2223a6fbce1589638dd2d844827ce6af1d3eb1a14165e608f424f5d4ff358c5f55600b150083c6c8b83e35afd",
+      "filename": "dlpack-1.1.tar.gz",
+      "sha256": "2e3b94b55825c240cc58e6721e15b449978cbae21a2a4caa23058b0157ee2fb3",
+      "licenseFiles": {
+        "LICENSE": "3e8f6bc39276a586d60c8c5aaece2ff989262181cf2b3d2a128db58f97a9300c"
+      },
+      "archiveRoot": "dlpack-1.1",
+      "preferredSourceSha256": "82a90aa23c4e28e1afe4eefaefc42ac75b16501c4a899bdcd5f915e40cfaec2f"
+    },
+    {
+      "name": "eigen3",
+      "version": "3.4.0",
+      "portVersion": 5,
+      "licenseMetadata": "MPL-2.0",
+      "repository": "libeigen/eigen",
+      "revision": "1d8b82b0740839c0de7f1242a3585e3390ff5f33",
+      "url": "https://gitlab.com/libeigen/eigen/-/archive/1d8b82b0740839c0de7f1242a3585e3390ff5f33/eigen-1d8b82b0740839c0de7f1242a3585e3390ff5f33.tar.gz",
+      "recipeArchiveSha512": "26a0d86ece9a28c93d64ee3e6ff96276b096a80e34fa2f3c474638824ffa2c56e582d9b2b9ffbb73b18a28b4828b827654b65a3471bc83505c48feab26fb836d",
+      "filename": "eigen3-3.4.0.tar.gz",
+      "sha256": "c8adb6532fbfacd2ec1418c66404159b00c34d855bdc19cefa1f0db0e5e0aa5f",
+      "licenseFiles": {
+        "COPYING.APACHE": "03379001a7b12a2ec997a25554247d985270b353c10d5bafee9ac8d6519820b7",
+        "COPYING.BSD": "51928dce36213c5333ba3172e847d735d4c6e9b7ff2722a326c49067155b82eb",
+        "COPYING.MINPACK": "c87b7f8ee88f6195e91743820c00354833583aef091b72e2d4a49c8e28e798a0",
+        "COPYING.MPL2": "66a3107d5ad6a058aab753eaac2047ccb2ed0e39465dd0fe5844da3e300d5172",
+        "COPYING.README": "db640ff2bd90c6abd6a4d3fbb351e0ee4d555417cf840492054d1cbb2ea85644",
+        "LICENSE": "1f256ecad192880510e84ad60474eab7589218784b9a50bc7ceee34c2b91f1d5",
+        "bench/btl/COPYING": "b8d0e2bcbf36f6af3cdbf94055ad2ea675d5a19fc623eb0ec82febb2b08e719b",
+        "unsupported/Eigen/src/LevenbergMarquardt/CopyrightMINPACK.txt": "8887036b1039e299ebcc8b95a73ea1538df548393fb8462361c80bea605a4fbe"
+      },
+      "archiveRoot": "eigen-1d8b82b0740839c0de7f1242a3585e3390ff5f33",
+      "preferredSourceSha256": "bd417c80d88e9e9dbd2d4635ef9abad41f87db2d3c0a987c21fd14398cbf947d"
+    },
+    {
+      "name": "flatbuffers",
+      "version": "23.5.26",
+      "portVersion": 0,
+      "licenseMetadata": "Apache-2.0",
+      "repository": "google/flatbuffers",
+      "revision": "v23.5.26",
+      "url": "https://codeload.github.com/google/flatbuffers/tar.gz/v23.5.26",
+      "recipeArchiveSha512": "cd0a5efad8016e1217d01a181d6b02e546f5693c6412361bfeaee820d5dfe5e2a424cee1963270e851c1a4f936ae8a0032a51c5bb16ee19313e0ecc77dc4ba31",
+      "filename": "flatbuffers-23.5.26.tar.gz",
+      "sha256": "1cce06b17cddd896b6d73cc047e36a254fb8df4d7ea18a46acf16c4c0cd3f3f3",
+      "licenseFiles": {
+        "LICENSE": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+        "dart/LICENSE": "edd9b3459bee4c79b549a5ef66d06d12bd144ddb8d08e0b448fb421267f43dd5",
+        "swift/LICENSE": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30"
+      },
+      "archiveRoot": "flatbuffers-23.5.26",
+      "preferredSourceSha256": "d27dc5c383d6c8ddad67a6cbd257e6e3f4598cda4a550755aa3593be7500dfcf"
+    },
+    {
+      "name": "mimalloc",
+      "version": "2.2.3",
+      "portVersion": 0,
+      "licenseMetadata": "MIT",
+      "repository": "microsoft/mimalloc",
+      "revision": "v2.2.3",
+      "url": "https://codeload.github.com/microsoft/mimalloc/tar.gz/v2.2.3",
+      "recipeArchiveSha512": "55262050f63868e3029cd929a74d312dc0f34b606534b1d0b3735eecc8eed68aae97523a50228b4ac4044e1e03192f2909440e3a27607e2d364607ac0bda828f",
+      "filename": "mimalloc-2.2.3.tar.gz",
+      "sha256": "ac5ba94172b60823215a22b87ae923c5b05ef0cdd9047df2a832c16da02a6447",
+      "licenseFiles": {
+        "LICENSE": "82ade5d7d9b029044b5fbbc326207fc47c2d44ee4dd71e8a559c36d728217de9"
+      },
+      "archiveRoot": "mimalloc-2.2.3",
+      "preferredSourceSha256": "1cbce4d9d2e50404629267012ef026a7ae0c133d23296923bfd71c58a49bef79"
+    },
+    {
+      "name": "ms-gsl",
+      "version": "4.2.0",
+      "portVersion": 0,
+      "licenseMetadata": "MIT",
+      "repository": "Microsoft/GSL",
+      "revision": "v4.2.0",
+      "url": "https://codeload.github.com/Microsoft/GSL/tar.gz/v4.2.0",
+      "recipeArchiveSha512": "f325c70fb02ead99c5be333baa0793573dd091fe111b20ff13b2d524b71f1357bbc365a66684a8c791796095284cc6a968fc3c7284a0b3c0646a38a61e46792c",
+      "filename": "ms-gsl-4.2.0.tar.gz",
+      "sha256": "2c717545a073649126cb99ebd493fa2ae23120077968795d2c69cbab821e4ac6",
+      "licenseFiles": {
+        "LICENSE": "4c21dc82a1c7186ea754fd59d504c00947953a3401fe8e24eaa44109ef8e2555"
+      },
+      "archiveRoot": "GSL-4.2.0",
+      "preferredSourceSha256": "a165fd31e6e7de378841b71f8e57239cc8e6cdb94e5f2a83c9330df8fd7b93d6"
+    },
+    {
+      "name": "nlohmann-json",
+      "version": "3.11.3",
+      "portVersion": 1,
+      "licenseMetadata": "MIT",
+      "repository": "nlohmann/json",
+      "revision": "v3.11.3",
+      "url": "https://codeload.github.com/nlohmann/json/tar.gz/v3.11.3",
+      "recipeArchiveSha512": "7df19b621de34f08d5d5c0a25e8225975980841ef2e48536abcf22526ed7fb99f88ad954a2cb823115db59ccc88d1dbe74fe6c281b5644b976b33fb78db9d717",
+      "filename": "nlohmann-json-3.11.3.tar.gz",
+      "sha256": "0d8ef5af7f9794e3263480193c491549b2ba6cc74bb018906202ada498a79406",
+      "licenseFiles": {
+        "LICENSE.MIT": "86b998c792894ccb911a1cb7994f7a9652894e7a094c0b5e45be2f553f45cf14",
+        "LICENSES/Apache-2.0.txt": "074e6e32c86a4c0ef8b3ed25b721ca23aca83df277cd88106ef7177c354615ff",
+        "LICENSES/BSD-3-Clause.txt": "5a93d5831e1297ab10fe643e1a631e83be392896da14ee2951285a79012df69d",
+        "LICENSES/GPL-3.0-only.txt": "b6a8bf63ae2c95b0aa256ee774680d7bd18f21f457da75466f7610b3b16acc4e",
+        "LICENSES/MIT.txt": "b85dcd3e453d05982552c52b5fc9e0bdd6d23c6f8e844b984a88af32570b0cc0",
+        "docs/mkdocs/docs/home/license.md": "08c345dca1019879171c2c465410f7bee984bbfbdb177afd2d95bf9ff6267602"
+      },
+      "archiveRoot": "json-3.11.3",
+      "preferredSourceSha256": "bd2c3b87621d7b561321f52fa884bc553a2340e94447752284166063728eca27"
+    },
+    {
+      "name": "onnx",
+      "version": "1.17.0",
+      "portVersion": 1,
+      "licenseMetadata": "Apache-2.0",
+      "repository": "onnx/onnx",
+      "revision": "v1.17.0",
+      "url": "https://codeload.github.com/onnx/onnx/tar.gz/v1.17.0",
+      "recipeArchiveSha512": "5a18e2b19ec9c18c8b115fb7e12ed98eddaa581c95f15c4dd420cd6c86e7caa04f9a393da589e76b89cf9b3544abd3749a8c77c2446782f37502eb74e9b1f661",
+      "filename": "onnx-1.17.0.tar.gz",
+      "sha256": "8d5e983c36037003615e5a02d36b18fc286541bf52de1a78f6cf9f32005a820e",
+      "licenseFiles": {
+        "LICENSE": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+        "LICENSES/Apache-2.0.txt": "074e6e32c86a4c0ef8b3ed25b721ca23aca83df277cd88106ef7177c354615ff",
+        "LICENSES/BSD-2-Clause.txt": "f32fb3b417a194167cfad068223fc975ba96c5960513a10f66a3c28720aec1df",
+        "LICENSES/CC0-1.0.txt": "a2010f343487d3f7618affe54f789f5487602331c0a8d03f49e9a7c547cf0499"
+      },
+      "archiveRoot": "onnx-1.17.0",
+      "preferredSourceSha256": "909a996a157eabacf92daba136653e55814db8275cd14a9ee5daf49e060259e0"
+    },
+    {
+      "name": "optional-lite",
+      "version": "3.6.0",
+      "portVersion": 0,
+      "licenseMetadata": null,
+      "repository": "martinmoene/optional-lite",
+      "revision": "v3.6.0",
+      "url": "https://codeload.github.com/martinmoene/optional-lite/tar.gz/v3.6.0",
+      "recipeArchiveSha512": "6ec7dbd11947376cc46502cdab866e171fca7123b317887889022d22b003e4fd96d26816046e8e24b1b83fb5190ae6232cbbacfcb20fcb78200878bd73d7adc4",
+      "filename": "optional-lite-3.6.0.tar.gz",
+      "sha256": "2be17fcfc764809612282c3e728cabc42afe703b9dc333cc87c48d882fcfc2c2",
+      "licenseFiles": {
+        "LICENSE.txt": "c9bff75738922193e67fa726fa225535870d2aa1059f91452c411736284ad566"
+      },
+      "archiveRoot": "optional-lite-3.6.0",
+      "preferredSourceSha256": "7a8a983cb09144b98563bf7048068a51d1b3f759831766cdebb2db798cd59471"
+    },
+    {
+      "name": "protobuf",
+      "version": "3.21.12",
+      "portVersion": 4,
+      "licenseMetadata": "BSD-3-Clause",
+      "repository": "protocolbuffers/protobuf",
+      "revision": "v3.21.12",
+      "url": "https://codeload.github.com/protocolbuffers/protobuf/tar.gz/v3.21.12",
+      "recipeArchiveSha512": "152f8441c325e808b942153c15e82fdb533d5273b50c25c28916ec568ada880f79242bb61ee332ac5fb0d20f21239ed6f8de02ef6256cc574b1fc354d002c6b0",
+      "filename": "protobuf-3.21.12.tar.gz",
+      "sha256": "930c2c3b5ecc6c9c12615cf5ad93f1cd6e12d0aba862b572e076259970ac3a53",
+      "licenseFiles": {
+        "LICENSE": "6e5e117324afd944dcf67f36cf329843bc1a92229a8cd9bb573d7a83130fea7d",
+        "third_party/utf8_range/LICENSE": "5a629d2b868081d8af08bbce5d038116f3a0e2e0d4ce9adf4d53f14e76b6b2e0"
+      },
+      "archiveRoot": "protobuf-3.21.12",
+      "preferredSourceSha256": "35c1c6e6f9acfaefbf087ecf259e4ecedf8d2e41bcc9aee4b8387706e7966c9d"
+    },
+    {
+      "name": "pybind11",
+      "version": "2.13.6",
+      "portVersion": 0,
+      "licenseMetadata": "BSD-3-Clause",
+      "repository": "pybind/pybind11",
+      "revision": "v2.13.6",
+      "url": "https://codeload.github.com/pybind/pybind11/tar.gz/v2.13.6",
+      "recipeArchiveSha512": "497c25b33b09a9c42f67131ab82e35d689e8ce089dd7639be997305ff9a6d502447b79c824508c455d559e61f0186335b54dd2771d903a7c1621833930622d1a",
+      "filename": "pybind11-2.13.6.tar.gz",
+      "sha256": "e08cb87f4773da97fa7b5f035de8763abc656d87d5773e62f6da0587d1f0ec20",
+      "licenseFiles": {
+        "LICENSE": "83965b843b98f670d3a85bd041ed4b372c8ec50d7b4a5995a83ac697ba675dcb"
+      },
+      "archiveRoot": "pybind11-2.13.6",
+      "preferredSourceSha256": "ebe522cd302fac15c0faa95654bc081a5c7037c731919530392c1ff547da0ed3"
+    },
+    {
+      "name": "re2",
+      "version": "2024-07-02",
+      "portVersion": 0,
+      "licenseMetadata": "BSD-3-Clause",
+      "repository": "google/re2",
+      "revision": "2024-07-02",
+      "url": "https://codeload.github.com/google/re2/tar.gz/2024-07-02",
+      "recipeArchiveSha512": "3776383355ccfdec85e0cdfb3ce980c6ecb3c336d603dd34c0a547c7c06a6243947a13cb352372335edac12d4f28cf1b7a51d034f5b34db3e46cbcac5e3f7479",
+      "filename": "re2-2024-07-02.tar.gz",
+      "sha256": "eb2df807c781601c14a260a507a5bb4509be1ee626024cb45acbd57cb9d4032b",
+      "licenseFiles": {
+        "LICENSE": "6040cda75d90b1738292a631d89934c411ef7ffd543c4d6a1b7edfc8edf29449"
+      },
+      "archiveRoot": "re2-2024-07-02",
+      "preferredSourceSha256": "660559a74aec55fd56fe550e57aa60c5057815a951aae5b1fc357868addbd1cb"
+    },
+    {
+      "name": "safeint",
+      "version": "3.0.28",
+      "portVersion": 0,
+      "licenseMetadata": null,
+      "repository": "dcleblanc/SafeInt",
+      "revision": "3.0.28",
+      "url": "https://codeload.github.com/dcleblanc/SafeInt/tar.gz/3.0.28",
+      "recipeArchiveSha512": "9f0be3f42b05ce3ea0b8208d5d5277167b129e77dc7e15174d0e3e038cb886b16a3cb63918b4f2e21ba79021f45ee6486ff9aa61d9f856828b291699c1355f61",
+      "filename": "safeint-3.0.28.tar.gz",
+      "sha256": "d6b164bcea92a746e4d44132e505c7ab1816d1089ba99ebc674ccd4b70262ed5",
+      "licenseFiles": {
+        "Archive/license/license.json": "16db14c945059d9ea2c7a951abdaba4360fd8844f11d50e2aa0dec3f236881a1",
+        "LICENSE": "a46919cc8f01eb73f6e4b84af0d41b46b2a33b87c74e864279ef585079f82da4"
+      },
+      "archiveRoot": "SafeInt-3.0.28",
+      "preferredSourceSha256": "88eae6d927268b63545702c022835f64e5c32e58cfeecb71191e83bda1bf17fa"
+    },
+    {
+      "name": "utf8-range",
+      "version": "5.29.3",
+      "portVersion": 0,
+      "licenseMetadata": "MIT",
+      "repository": "protocolbuffers/protobuf",
+      "revision": "v5.29.3",
+      "url": "https://codeload.github.com/protocolbuffers/protobuf/tar.gz/v5.29.3",
+      "recipeArchiveSha512": "32a9ae3de113b8c94e2aed21ad8f58e5ed4419a6d4078e51f614f0fabbf3bfe6c4affc62c2c1326e030a54df0fdcc47bb715b45022191a363f17680ec651b68e",
+      "filename": "utf8-range-5.29.3.tar.gz",
+      "sha256": "fe35f190d7a63533b06558915d6ee469cbee143de70891e1dd54d197b05f362a",
+      "licenseFiles": {
+        "LICENSE": "6e5e117324afd944dcf67f36cf329843bc1a92229a8cd9bb573d7a83130fea7d",
+        "third_party/lunit/LICENSE": "3fcfcd6010d73bc2b22505b6a91779022a82661809a3e4e0a0bdd7b3463def8f",
+        "third_party/utf8_range/LICENSE": "02de69b64fc36d9e938f418e52723e42f0b2b226d58a9cb3c8dcbdf7059f5074"
+      },
+      "archiveRoot": "protobuf-5.29.3",
+      "preferredSourceSha256": "75e306e57a1b3c688dca4b1adf4094b47bacc1ef283ad3ecab0de0d26b2fcce9"
+    },
+    {
+      "name": "wil",
+      "version": "1.0.250325.1",
+      "portVersion": 0,
+      "licenseMetadata": "MIT",
+      "repository": "Microsoft/wil",
+      "revision": "v1.0.250325.1",
+      "url": "https://codeload.github.com/Microsoft/wil/tar.gz/v1.0.250325.1",
+      "recipeArchiveSha512": "9691939bfa1229ad1890e72bea801df60ee46f307591aee816ed771d225ed62b4caaf5d2ecefcbf200a41ee68f53823ec43a97c3a2d1a632aa3fcf18b35e4996",
+      "filename": "wil-1.0.250325.1.tar.gz",
+      "sha256": "c9e667d5f86ded43d17b5669d243e95ca7b437e3a167c170805ffd4aa8a9a786",
+      "licenseFiles": {
+        "LICENSE": "27ebda9d51f0a56b7e281ccd8230a27236dcb51c05f64b07869ecf6e965d68b0"
+      },
+      "archiveRoot": "wil-1.0.250325.1",
+      "preferredSourceSha256": "a44f4a93de505cb36aedfd89991db42be7170fed7f15590a186ce17f8c758850"
+    },
+    {
+      "name": "zlib",
+      "version": "1.3.1",
+      "portVersion": 0,
+      "licenseMetadata": "Zlib",
+      "repository": "madler/zlib",
+      "revision": "v1.3.1",
+      "url": "https://codeload.github.com/madler/zlib/tar.gz/v1.3.1",
+      "recipeArchiveSha512": "8c9642495bafd6fad4ab9fb67f09b268c69ff9af0f4f20cf15dfc18852ff1f312bd8ca41de761b3f8d8e90e77d79f2ccacd3d4c5b19e475ecf09d021fdfe9088",
+      "filename": "zlib-1.3.1.tar.gz",
+      "sha256": "17e88863f3600672ab49182f217281b6fc4d3c762bde361935e436a95214d05c",
+      "licenseFiles": {
+        "LICENSE": "845efc77857d485d91fb3e0b884aaa929368c717ae8186b66fe1ed2495753243",
+        "contrib/dotzlib/LICENSE_1_0.txt": "36266a8fd073568394cb81cdb2b124f7fdae2c64c1a7ed09db34b4d22efa2951"
+      },
+      "archiveRoot": "zlib-1.3.1",
+      "preferredSourceSha256": "e989f5fad8562d0cd6bda6e83711105d7f48b1a9ccfdf7b65429001a87457604"
+    },
+    {
+      "name": "boost-super",
+      "version": "1.87.0",
+      "repository": "boostorg/boost",
+      "revision": "boost-1.87.0",
+      "url": "https://codeload.github.com/boostorg/boost/tar.gz/boost-1.87.0",
+      "recipeArchiveSha512": "7b97172692f8062ca33e830957013ddcd7201bb6584408c8a2af10b1112493c39e7388b8e842403c191ddd565a5f6093fe12312252e120e20094ded82a8710b7",
+      "licenseMetadata": "BSL-1.0",
+      "filename": "boost-super-1.87.0.tar.gz",
+      "sha256": "c3ee7c763212db96a65dd5392b7ac0f2970f8e5567b0dcc12d8dc53ff8dbb770",
+      "licenseFiles": {
+        "LICENSE_1_0.txt": "c9bff75738922193e67fa726fa225535870d2aa1059f91452c411736284ad566"
+      },
+      "archiveRoot": "boost-boost-1.87.0",
+      "preferredSourceSha256": "46828a882deeada4039b7a15e3c7e8ea53fe324ec7baf69fd71eef1e284519cb"
+    },
+    {
+      "name": "boost-cmake",
+      "version": "1.87.0",
+      "repository": "boostorg/cmake",
+      "revision": "boost-1.87.0",
+      "url": "https://codeload.github.com/boostorg/cmake/tar.gz/boost-1.87.0",
+      "recipeArchiveSha512": "d363ebed9b534da1bcf99c3b3ba584b7bf5346f459a9f749499bb47a398656cc181b07d405152d85228e1130e102b4feef8685a70777dc520cbf545bd11dc79b",
+      "licenseMetadata": "BSL-1.0",
+      "filename": "boost-cmake-1.87.0.tar.gz",
+      "sha256": "12d0b9145c0ee67d4448f8ed63288eb231188d16de1cacc740436b42d18ec1ca",
+      "licenseFiles": {},
+      "archiveRoot": "cmake-boost-1.87.0",
+      "preferredSourceSha256": "d0b7df22da54b5c961af19c7124de5363ef9addb57652db2197a945a45357ae1"
+    },
+    {
+      "name": "boost-headers",
+      "version": "1.87.0",
+      "repository": "boostorg/headers",
+      "revision": "boost-1.87.0",
+      "url": "https://codeload.github.com/boostorg/headers/tar.gz/boost-1.87.0",
+      "recipeArchiveSha512": "5e74c85ec121e09c4a2a684d882e1ffb606365e7ad7fccca2d9bdfde21bb0d76c466704394cba2643c09c88729705db971d82f80e4ef7a10c1a6085de939d232",
+      "licenseMetadata": "BSL-1.0",
+      "filename": "boost-headers-1.87.0.tar.gz",
+      "sha256": "85108f88de24109940f69ff130283aa568bcc9c99db3e85e9f6df8bb5d840fef",
+      "licenseFiles": {},
+      "archiveRoot": "headers-boost-1.87.0",
+      "preferredSourceSha256": "263e14025e76e6a16e00dc916bc767834ca5996930b852fc3b89900fe3dcbcf9"
+    }
+  ],
+  "portFiles": [
+    {
+      "filename": "fix-uwp-build.patch",
+      "url": "https://api.github.com/repos/microsoft/vcpkg/git/blobs/d1846547fe75c753bd87093163ead104b5e3ca92",
+      "sha256": "8a363f9e6052511d97a477795304bd14f0009f2ee9ba0423dedc4032d98351de"
+    },
+    {
+      "filename": "portfile.cmake",
+      "url": "https://api.github.com/repos/microsoft/vcpkg/git/blobs/4adaf46459806bba9cec4295a7ad6e2a07526a3e",
+      "sha256": "e62979f89d3d8bb0e85d9ca3c405e043cadfd6a0f4d808d970ac6e6680c905ba"
+    },
+    {
+      "filename": "vcpkg.json",
+      "url": "https://api.github.com/repos/microsoft/vcpkg/git/blobs/f52dbbb3c04148a6355a653f806833825b32af8c",
+      "sha256": "71eb624e166c3a202fcfeed1bd24282e0a232a33f2ccababefd44a2313e57c13"
+    }
+  ],
+  "transitiveBuildPorts": [
+    "boost-cmake",
+    "boost-headers",
+    "boost-uninstall",
+    "vcpkg-boost"
+  ]
+}

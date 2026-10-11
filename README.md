@@ -186,6 +186,23 @@ a bundled-model build can be reconsidered; manual installation is the default
 for the first public release. See the [macOS release gate](docs/macos-release.md)
 for the remaining checks and the subsequent GitHub Actions build.
 
+## Windows test candidate
+
+The Windows 11 x64 CPU candidate path is being verified on GitHub Actions from
+`develop`. It builds a per-user NSIS setup with its own frozen Python service;
+it does not use the macOS runtime or require developer Python/CUDA. Detector
+weights are installed separately. Public Windows downloads remain blocked by
+native/source review and the exact installed-app tests. See the
+[Windows release checklist](docs/windows-release.md) and
+[numbered PC test record](docs/windows-installed-test.md).
+
+The Windows package stores models, vocabulary, indexes and translation cache
+in `%APPDATA%\com.yomimado.desktop`, supplied by Tauri. This differs from the
+standalone development service's `%APPDATA%\YomiMado` fallback. Packaged notices
+are in `<install directory>\ocr\notices`. WebView2 setup needs internet if the
+runtime is missing; the initial unsigned installer may trigger SmartScreen.
+Do not disable security protections to claim a passing installation.
+
 ## Local OCR models (development mode)
 
 The service supports a user-local checkout of

@@ -1,0 +1,169 @@
+[
+  {
+    "package": "onnx",
+    "version": "1.18.0",
+    "filename": "onnx-1.18.0-cp311-cp311-win_amd64.whl",
+    "url": "https://files.pythonhosted.org/packages/44/b0/435fd764011911e8f599e3361f0f33425b1004662c1ea33a0ad22e43db2d/onnx-1.18.0-cp311-cp311-win_amd64.whl",
+    "sha256": "a5810194f0f6be2e58c8d6dedc6119510df7a14280dd07ed5f0f0a85bd74816a",
+    "nativeInputs": {
+      "onnx/onnx_cpp2py_export.cp311-win_amd64.pyd": "016e3e15876eedeb915a45d35fad3e8e3116dda06892bccbd7bc20e25d12d8d0"
+    },
+    "noticeInputs": {
+      "onnx-1.18.0.dist-info/licenses/LICENSE": "3ddf9be5c28fe27dad143a5dc76eea25222ad1dd68934a047064e56ed2fa40c5"
+    }
+  },
+  {
+    "package": "onnxruntime",
+    "version": "1.22.1",
+    "filename": "onnxruntime-1.22.1-cp311-cp311-win_amd64.whl",
+    "url": "https://files.pythonhosted.org/packages/a8/01/e536397b03e4462d3260aee5387e6f606c8fa9d2b20b1728f988c3c72891/onnxruntime-1.22.1-cp311-cp311-win_amd64.whl",
+    "sha256": "f28a42bb322b4ca6d255531bb334a2b3e21f172e37c1741bd5e66bc4b7b61f03",
+    "nativeInputs": {
+      "onnxruntime/capi/onnxruntime.dll": "b7d046825412fe3d6c582145f527a197817b2ed717a3a3f21c6e81896f5fce48",
+      "onnxruntime/capi/onnxruntime_providers_shared.dll": "121329b5f87d4c16ca422f1565322a529c8548683a56e338222bbc0c39f9a82c",
+      "onnxruntime/capi/onnxruntime_pybind11_state.pyd": "cf57f10c1d276f54ff2e70d2b74fe6ef5de9f0c39430ba6ec6941acff6915dbb"
+    },
+    "noticeInputs": {
+      "onnxruntime/LICENSE": "c250d6278f0b47a6439fb7592b08b58a55eb9f535aa49a1db63211c3f982b674",
+      "onnxruntime/ThirdPartyNotices.txt": "e00f828e0a33de591a355ae6606d2625f5758da7d2c844db7821c9dd3e3647b6"
+    }
+  },
+  {
+    "package": "ml_dtypes",
+    "version": "0.5.1",
+    "filename": "ml_dtypes-0.5.1-cp311-cp311-win_amd64.whl",
+    "url": "https://files.pythonhosted.org/packages/60/30/d3f0fc9499a22801219679a7f3f8d59f1429943c6261f445fb4bfce20718/ml_dtypes-0.5.1-cp311-cp311-win_amd64.whl",
+    "sha256": "15ad0f3b0323ce96c24637a88a6f44f6713c64032f27277b069f285c3cf66478",
+    "nativeInputs": {
+      "ml_dtypes/_ml_dtypes_ext.cp311-win_amd64.pyd": "890945d0024545f7c4dcdd26d06b8d7460db1ca069953c8a0ad57a2f2ecdc760"
+    },
+    "noticeInputs": {
+      "ml_dtypes-0.5.1.dist-info/LICENSE": "3ddf9be5c28fe27dad143a5dc76eea25222ad1dd68934a047064e56ed2fa40c5",
+      "ml_dtypes-0.5.1.dist-info/LICENSE.eigen": "9221c2f936159b8446d329249fb4c0f25be510f447383a0f13336ac7985668a3"
+    }
+  },
+  {
+    "package": "flatbuffers",
+    "version": "25.2.10",
+    "filename": "flatbuffers-25.2.10-py2.py3-none-any.whl",
+    "url": "https://files.pythonhosted.org/packages/b8/25/155f9f080d5e4bc0082edfda032ea2bc2b8fab3f4d25d46c1e9dd22a1a89/flatbuffers-25.2.10-py2.py3-none-any.whl",
+    "sha256": "ebba5f4d5ea615af3f7fd70fc310636fbb2bbd1f566ac0a23d98dd412de50051",
+    "nativeInputs": {},
+    "noticeInputs": {
+      "flatbuffers-25.2.10.dist-info/LICENSE": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30"
+    },
+    "source": {
+      "name": "python-flatbuffers-25.2.10",
+      "filename": "flatbuffers-1c514626e83c.tar.gz",
+      "url": "https://codeload.github.com/google/flatbuffers/tar.gz/1c514626e83c20fffa8557e75641848e1e15cd5e",
+      "sha256": "efac5e331f544cac1fa13a6a4cb18823e31c5709997971b8744e86573fe45dc9",
+      "noticeHashes": {
+        "flatbuffers-1c514626e83c20fffa8557e75641848e1e15cd5e/LICENSE": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30"
+      },
+      "preferredSourceSha256": "8440c7e727096094ef2d16787eb4fc1a5054a0487f8ce29e627c1cafdec5c422",
+      "wheelSourcePrefix": "flatbuffers-1c514626e83c20fffa8557e75641848e1e15cd5e/python/"
+    }
+  },
+  {
+    "package": "coloredlogs",
+    "version": "15.0.1",
+    "filename": "coloredlogs-15.0.1-py2.py3-none-any.whl",
+    "url": "https://files.pythonhosted.org/packages/a7/06/3d6badcf13db419e25b07041d9c7b4a2c331d3f4e7134445ec5df57714cd/coloredlogs-15.0.1-py2.py3-none-any.whl",
+    "sha256": "612ee75c546f53e92e70049c9dbfcc18c935a2b9a53b66085ce9ef6a6e5c0934",
+    "nativeInputs": {},
+    "noticeInputs": {
+      "coloredlogs-15.0.1.dist-info/LICENSE.txt": "0bef4ffb1855b65570304f2018c6d44e4bab97bd5df8716ecd7800014d717267"
+    },
+    "source": {
+      "name": "python-coloredlogs-15.0.1",
+      "filename": "coloredlogs-15.0.1.tar.gz",
+      "url": "https://files.pythonhosted.org/packages/cc/c7/eed8f27100517e8c0e6b923d5f0845d0cb99763da6fdee00478f91db7325/coloredlogs-15.0.1.tar.gz",
+      "sha256": "7c991aa71a4577af2f82600d8f8f3a89f936baeaf9b50a9c197da014e5bf16b0",
+      "noticeHashes": {
+        "coloredlogs-15.0.1/LICENSE.txt": "0bef4ffb1855b65570304f2018c6d44e4bab97bd5df8716ecd7800014d717267"
+      },
+      "preferredSourceSha256": "272623c6cc81c46dd6b92cdc13e7166137b7c895f088ed1f270564f017b8f9ab",
+      "wheelSourcePrefix": "coloredlogs-15.0.1/"
+    }
+  },
+  {
+    "package": "humanfriendly",
+    "version": "10.0",
+    "filename": "humanfriendly-10.0-py2.py3-none-any.whl",
+    "url": "https://files.pythonhosted.org/packages/f0/0f/310fb31e39e2d734ccaa2c0fb981ee41f7bd5056ce9bc29b2248bd569169/humanfriendly-10.0-py2.py3-none-any.whl",
+    "sha256": "1697e1a8a8f550fd43c2865cd84542fc175a61dcb779b6fee18cf6b6ccba1477",
+    "nativeInputs": {},
+    "noticeInputs": {
+      "humanfriendly-10.0.dist-info/LICENSE.txt": "4ac48f4117809f2734066150450f120b3bb110ac1d3b32170795e0560dbbc1f5"
+    },
+    "source": {
+      "name": "python-humanfriendly-10.0",
+      "filename": "humanfriendly-10.0.tar.gz",
+      "url": "https://files.pythonhosted.org/packages/cc/3f/2c29224acb2e2df4d2046e4c73ee2662023c58ff5b113c4c1adac0886c43/humanfriendly-10.0.tar.gz",
+      "sha256": "6b0b831ce8f15f7300721aa49829fc4e83921a9a301cc7f606be6686a2288ddc",
+      "noticeHashes": {
+        "humanfriendly-10.0/LICENSE.txt": "4ac48f4117809f2734066150450f120b3bb110ac1d3b32170795e0560dbbc1f5"
+      },
+      "preferredSourceSha256": "475158524ef2438bca85c6d6ac1a037ce1fe2498de3c414b43b45c6813ed6060",
+      "wheelSourcePrefix": "humanfriendly-10.0/"
+    }
+  },
+  {
+    "package": "pyreadline3",
+    "version": "3.5.4",
+    "filename": "pyreadline3-3.5.4-py3-none-any.whl",
+    "url": "https://files.pythonhosted.org/packages/5a/dc/491b7661614ab97483abf2056be1deee4dc2490ecbf7bff9ab5cdbac86e1/pyreadline3-3.5.4-py3-none-any.whl",
+    "sha256": "eaf8e6cc3c49bcccf145fc6067ba8643d1df34d604a1ec0eccbf7a18e6d3fae6",
+    "nativeInputs": {},
+    "noticeInputs": {
+      "pyreadline3-3.5.4.dist-info/LICENSE.md": "8fc4d8de61b40533023b16e64528d13371a2e9c68677df79ed5e93ba570471bd"
+    },
+    "source": {
+      "name": "python-pyreadline3-3.5.4",
+      "filename": "pyreadline3-3.5.4.tar.gz",
+      "url": "https://files.pythonhosted.org/packages/0f/49/4cea918a08f02817aabae639e3d0ac046fef9f9180518a3ad394e22da148/pyreadline3-3.5.4.tar.gz",
+      "sha256": "8d57d53039a1c75adba8e50dd3d992b28143480816187ea5efbd5c78e6c885b7",
+      "noticeHashes": {
+        "pyreadline3-3.5.4/LICENSE.md": "8fc4d8de61b40533023b16e64528d13371a2e9c68677df79ed5e93ba570471bd",
+        "pyreadline3-3.5.4/doc/COPYING": "6f6a9ae014dcf9f04752760ea3a3b7816014e417c16d7456ebcee5ecdf4a8532"
+      },
+      "preferredSourceSha256": "eeba787164fe720b18cae46ebfb0efec0299218c34265cc01cfea9f408c33a31",
+      "wheelSourcePrefix": "pyreadline3-3.5.4/src/"
+    }
+  },
+  {
+    "version": "1.26.4",
+    "filename": "numpy-1.26.4-cp311-cp311-win_amd64.whl",
+    "url": "https://files.pythonhosted.org/packages/3f/6b/5610004206cf7f8e7ad91c5a85a8c71b2f2f8051a0c0c4d5916b76d6cbb2/numpy-1.26.4-cp311-cp311-win_amd64.whl",
+    "sha256": "cd25bcecc4974d09257ffcd1f098ee778f7834c3ad767fe5db785be9a4aa9cb2",
+    "package": "numpy-baseline",
+    "nativeInputs": {
+      "numpy/core/_multiarray_tests.cp311-win_amd64.pyd": "c31d1abe635e9006caa9fedda260dd4e4fdba31fbdcc8ac0969ab0396a0c6c4e",
+      "numpy/core/_multiarray_umath.cp311-win_amd64.pyd": "c76d812fa5131fe21c8bf9ffbd910f27df80856f910fa61698f23f60cfd9d13e",
+      "numpy/core/_operand_flag_tests.cp311-win_amd64.pyd": "3c9344c097e9894c429f649356f7b5806346e1dc320a33f918b12c0e2dde9d44",
+      "numpy/core/_rational_tests.cp311-win_amd64.pyd": "e6a85ed6a07ac0875ec0c47a526901bef99b08ae8f523e620063ad1e73aa027e",
+      "numpy/core/_simd.cp311-win_amd64.pyd": "0eea703b53158021bdbf9feba1c712c58484abd545b5db37cf398cca5e3a0e58",
+      "numpy/core/_struct_ufunc_tests.cp311-win_amd64.pyd": "59b4b12116102ee06ca72023e51210f43116cc51a6909c2f1402f97cba5a451a",
+      "numpy/core/_umath_tests.cp311-win_amd64.pyd": "0f22ff6f1972c03fc83c1365202b577dee455be5d893a027179c767ab346a666",
+      "numpy/fft/_pocketfft_internal.cp311-win_amd64.pyd": "207c894d4a97d5eac328a87936b1c5a160cf1163d8b3f59b3c43792d9b5224a4",
+      "numpy/linalg/lapack_lite.cp311-win_amd64.pyd": "896b743ebc0f407320ca58877f21275739a74a3a15fc1568bfbe460ebcab08a4",
+      "numpy/linalg/_umath_linalg.cp311-win_amd64.pyd": "05922a2be823ec2e4d2378a73b05bb37f2816aeea86b613a9c80e25764ac8736",
+      "numpy/random/bit_generator.cp311-win_amd64.pyd": "9ad713f6a93c26bb733a90f877b50d51d7f22eef161aa58e40735a5cec149501",
+      "numpy/random/mtrand.cp311-win_amd64.pyd": "7dda3c60d25791c53c2eca99eab696347b6a8ee20f3f8307d7efbf086cbbc5bf",
+      "numpy/random/_bounded_integers.cp311-win_amd64.pyd": "05d5fe8a5a79b1d5836e58307afdd0c8570a7c4e1ed0b6a6294f3978db0dc6c4",
+      "numpy/random/_common.cp311-win_amd64.pyd": "f41809c03d13487fa8940cc30f5ff2125143ebf071bca10e081d026028c435fd",
+      "numpy/random/_generator.cp311-win_amd64.pyd": "003c7af2699a370efc1a90bf42ac3b449c27ff9c24b11136dd245bf50ed2240f",
+      "numpy/random/_mt19937.cp311-win_amd64.pyd": "36bbd3767a4efc1e5ddd4f96b7b705fc664e95a629abbe7e3b5e5951cdead3f0",
+      "numpy/random/_pcg64.cp311-win_amd64.pyd": "e09a53b33a1908aa4eb58a07166d5beaffe2072ceded2f80df59831adf7fb8df",
+      "numpy/random/_philox.cp311-win_amd64.pyd": "9a777f3f9a59f3d88de84dc3e499138335c3a6cf3bee1b875d9626d6cdf6e098",
+      "numpy/random/_sfc64.cp311-win_amd64.pyd": "180453afefeff645f9fdb2de54a3cb72d8becb87936ea82e2d7a56592aca3068",
+      "numpy.libs/libopenblas64__v0.3.23-293-gc2f4bdbb-gcc_10_3_0-2bde3a66a51006b2b53eb373ff767a3f.dll": "57b87772bf676b5c2d718c79dddc9f039d79ec3319fee1398cc305adff7b69e5"
+    },
+    "noticeInputs": {
+      "numpy/core/include/numpy/random/LICENSE.txt": "d544761558b510866c21f7e8a2d5716fca76e0b98117e3b6b86314db7244d150",
+      "numpy/ma/LICENSE": "d78dbb208b80d92b4d333e41a4baae50d12444f46e53199fa7726a91de6e2da7",
+      "numpy/random/LICENSE.md": "b4bc2f4fa1c95778f1ed3dd8f14706bece399475b978f9f34b5d3cd72521b48a",
+      "numpy-1.26.4.dist-info/LICENSE.txt": "e261222a74adff28f88160dac1c5cb302d93b67e9ca989eb83bf311e11a9970a"
+    }
+  }
+]

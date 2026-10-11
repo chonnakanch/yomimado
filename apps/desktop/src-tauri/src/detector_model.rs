@@ -27,7 +27,10 @@ pub fn installed_path(app: &AppHandle) -> Result<PathBuf, String> {
 
 fn status(app: &AppHandle) -> Result<DetectorModelStatus, String> {
     Ok(DetectorModelStatus {
-        required: cfg!(all(not(debug_assertions), target_os = "macos")),
+        required: cfg!(all(
+            not(debug_assertions),
+            any(target_os = "macos", target_os = "windows")
+        )),
         installed: installed_path(app)?.is_file(),
     })
 }

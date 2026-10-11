@@ -13,10 +13,10 @@ remain **user-installed**.
 
 The default build remains a **private test artifact**. `--release` is the
 explicit hobby candidate path, with source and exact-DMG checks. Neither path
-publishes anything automatically. Do not upload a private build or an
-incomplete candidate.
+publishes anything automatically from the local build script. Do not upload a
+private build or an incomplete candidate.
 
-## Status — 2026-10-06
+## Status — 2026-10-07
 
 - [x] Private DMG builds and passes mounted-bundle OCR, dictionary, kanji,
       tokenization, translation and persistence smoke tests on the development Mac.
@@ -78,7 +78,18 @@ incomplete candidate.
 - [ ] Finalize release notes with unnotarized status, install steps, fresh-Mac
       limitation, source commit, dictionary dates, download links and hashes.
 - [ ] Publish the verified DMG, matching source delivery and notices together.
-- [ ] Only after the installer gates pass, add the GitHub Actions release build.
+- [x] After candidate `5120506` passed the installed-app gate, add the versioned
+      `main` GitHub Actions build with protected publication and artifact checks.
+- [x] Select pre-release or stable publication from the app version; verify the
+      classification in transferred provenance and GitHub's uploaded draft.
+- [x] Configure the protected `macos-release` environment: required reviewer
+      `chonnakanch`, administrator bypass disabled, deployments from `main` only.
+- [x] Save the three reviewed seed assets in a private draft and verify GitHub's
+      uploaded SHA-256 values against the workflow's pinned inputs.
+- [x] Create `main` at `cc8a95c` and set it as GitHub's default branch;
+      leave the release workflow on `develop`, unmerged.
+- [ ] Merge the release change into `main`, run the hosted workflow, and
+      confirm its exact new installer before approving publication.
 
 ## Development-Mac verification — 2026-10-06
 
@@ -205,9 +216,10 @@ incomplete candidate.
   `042360e` and the approved manifest. Its exact mounted disk-image/bundle checks
   and frozen health, vertical OCR geometry, Sudachi, JMdict, KANJIDIC2,
   translation and saved-data/cache restart smoke pass. It is available privately
-  under `apps/desktop/src-tauri/target/release/bundle/releasable/` with its hash
-  sidecar. Installed-app authorization/testing is pending; no public upload or
-  release CI is activated. Developer ID/notarization remains optional.
+  under `apps/desktop/src-tauri/target/release/bundle/rejected-042360e/` as
+  historical evidence. Its browser-quarantined first launch failed; the sealed
+  replacement `5120506` now passes the installed-app gate recorded above.
+  Developer ID/notarization remains optional.
 - Previous private DMG SHA-256:
   `3750db3829ba9356778c9c6be8e634375494f840c0b2a9cc459268dd155871cf`.
   This artifact was built from the preparation working tree based on
@@ -215,8 +227,8 @@ incomplete candidate.
   not a public candidate. The embedded review document predates the final
   NumPy technical record; final release packaging must regenerate it. The release path requires a clean committed tree.
 
-The native review is complete. These private-build results do not clear final source-delivery or
-installed-app gates. Fresh-machine behavior remains unverified.
+The native review, source-delivery approval and installed-app gate for the
+replacement `5120506` are complete. Fresh-machine behavior remains unverified.
 
 ## Source-built release runtime
 
@@ -317,16 +329,145 @@ signatures, Apple acceptance, stapling and Gatekeeper assessments remain strict;
 it cannot fall back to a hobby build. Setup is optional for this release.
 Keep all private keys/passwords out of chat, source control and command history.
 
-## Future GitHub Actions gate
+## Release on merge to main
 
-Do not implement or activate a Release-artifact workflow until source clearance,
-exact-DMG verification and installed-app sign-off are complete. The hobby target
-needs no signing/notarization secrets. Use pinned actions, read-only default
-permissions and a protected release environment with approval for publishing.
-Grant `contents: write` only to the publish job. Build from an exact clean
-commit, reuse source/bundle/distribution verifiers and the frozen smoke, and
-verify artifact digests between jobs. Upload only the verified DMG, matching
-source delivery, notices and hashes after all required jobs succeed. Never
-publish private outputs or detector weights. Keep the fresh-Mac waiver in the
-release notes and require renewed installed-app checks when packaging or
-permissions change. Windows remains a separate milestone.
+The maintainer chose this release policy on 2026-10-06: merge a feature into
+`main`, build that exact merged commit, then create its version tag and GitHub
+release after verification and installer confirmation. As of 2026-10-11, the
+workflow is named **Desktop release from main** and includes Windows under the
+same publisher/tag, preserving the macOS runtime path. The workflow file is
+[macos-prerelease.yml](../.github/workflows/macos-prerelease.yml). It runs on
+pushes to `main`, including merge, squash and rebase merges. A manual rerun is
+available on `main`; `develop`, pull requests and tag pushes cannot publish.
+
+Use the app version for the tag: version `0.1.0` becomes `v0.1.0`. The first
+release retains version `0.1.0` and GitHub's **pre-release** flag. For the next
+release, bump the version in the feature branch before merging. Keep Tauri's
+`tauri.conf.json`, npm's `package.json` and both root version entries in
+`package-lock.json`, and the `yomimado` package in `Cargo.toml`/`Cargo.lock`
+consistent. Release classification (2026-10-07) is automatic:
+
+- Every `0.x.x` version is a **pre-release**, including versions without a suffix.
+- Versions with `-alpha.N`, `-beta.N` or `-rc.N` are **pre-releases**, such as
+  `1.0.0-beta.1`. Replace `N` with a number; literal `beta.x` is not a version.
+- Versions `1.0.0` and later without a suffix are **stable releases**.
+
+Release titles use the version alone, such as **YomiMado v0.1.0**. The GitHub flag
+and notes follow this classification. Candidate provenance
+records the boolean `prerelease`; artifact verification and uploaded-draft
+verification reject a mismatched flag. Both release types require the same
+installer approval and source/bundle verification. Stable publication does not
+change the unnotarized hobby distribution or its disclosed test limitations.
+A merge with an already published version skips release creation. Existing
+tags are never moved; a tag without a published release fails closed for
+maintainer investigation rather than silently overwriting a partial release.
+
+One-time GitHub setup, before the first merge:
+
+1. Create a **draft** seed release with the staging tag name
+   `macos-reviewed-seed-5120506` (do not publish it or use `v0.1.0`). Upload these
+   three existing approved assets without renaming or rebuilding them:
+   `YomiMado_0.1.0_aarch64.dmg` from the `bundle/releasable/` directory,
+   `YomiMado_0.1.0_sources_5120506.tar.gz` and
+   `YomiMado_0.1.0_notices_5120506.tar.gz` from `services/ocr/build/`.
+   Their SHA-256 values are pinned in the workflow; incorrect inputs fail.
+2. The automatic GET-only `seed-inputs` job on protected `main` locates the unique
+   unpublished draft by its fixed staging name and checks all three hashes.
+   It transfers pinned artifacts to read-only builders; no release-ID variable
+   or personal token is needed. See [the shared flow](desktop-release.md).
+3. Create the `macos-release` environment with **chonnakanch** as a required
+   reviewer. Allow deployments from `main`. Permit the owner to approve their
+   own run for this personal project. The workflow checks through GitHub's API
+   that a real required-reviewer rule exists; an unprotected or absent
+   environment cannot publish. Protect `main` with pull requests, required
+   `gates` checks against the current base, no force pushes/deletion and no bypass.
+4. Create `main` from the intended baseline, **set it as GitHub's default
+   branch**, then merge the release change and subsequent versioned features
+   into it. The workflow refuses publication while the default branch differs:
+   GitHub's job token cannot create releases targeting workflow changes
+   relative to a different default branch without broader workflow permissions.
+   See [GitHub’s release API requirements](https://docs.github.com/en/rest/releases/releases#create-a-release).
+   This setup avoids needing a personal token. The initial baseline is
+   `cc8a95cbe98d6c1fff5eeb042ec80ff86d51cfd3`, the tested commit before the
+   workflow. Leave `develop` unmerged until the intended first feature merge.
+
+Setup record — 2026-10-07: the environment and its exact `main` branch policy
+are saved and verified through GitHub's public API. `chonnakanch` is the required
+reviewer; administrator bypass is disabled and owner self-review is allowed.
+The [private seed draft](https://github.com/chonnakanch/yomimado/releases/edit/untagged-b6a7397915d12f62985b)
+is saved with all three approved assets. GitHub's displayed SHA-256 values match
+the pinned DMG, source and notice hashes recorded above. Its staging tag name
+is retained as `macos-reviewed-seed-5120506`; GitHub explicitly defers tag
+creation until publication. The seed must remain a draft and must never be
+published. `main` is pushed at `cc8a95c` and verified as GitHub's default branch
+through both the UI and public API. `develop` remains unmerged; remote tag
+inspection confirms no tags. Hosted workflow execution and the new candidate's
+installed-app confirmation remain pending the first merge.
+
+Historical 2026-10-09 bootstrap access risk: the Windows GEOS audit's `contents: read`
+token cannot see its existing owner-only draft in the release listing. The macOS
+build uses the fixed seed-tag endpoint instead and has not yet executed on
+GitHub; its ability to download draft assets with the read-only token is therefore
+unverified. The Windows direct-tag preflight also fails in run `37938465690`;
+verify private seed input access before the first main release execution.
+Preserve the private seed and protected publisher;
+do not publish the seed or widen build-job permissions to bypass this check.
+
+Prepared resolution — 2026-10-11: a separate automatic `seed-inputs` job on
+protected `main` uses a short-lived `contents: write` job token only for GET
+requests and hash checks, then transfers pinned inputs to read-only builders.
+Main's active ruleset is verified before input access; no build approval is required.
+The owner reviews both exact installers in the later **publish** review.
+No seed is published, builder permission widened, personal token added or human
+installer test inferred. Its first hosted execution remains pending the intended
+main merge; the earlier risk is not described as an executed success.
+
+The hobby target uses GitHub's job-scoped token and no Apple keys, passwords or
+signing/notarization secrets. Only the isolated input and protected publish
+jobs have `contents: write`; the input code is GET-only and only publish mutates
+release/tag state. Actions are pinned to commit hashes. The Apple Silicon job
+reuses the exact reviewed frozen runtime from the seed, rebuilds frontend/Rust
+from the merged commit with locked dependencies, and exports matching project
+sources. It preserves the 74 dependency archives and original maintainer
+approval scope. Changed OCR code, dependency locks/settings, native build
+recipes or licence inputs stop this bootstrap workflow: prepare and review a
+new runtime/source seed before releasing such a change. It must never rebuild
+new desktop code with stale changed OCR code or imply a new human licence review.
+
+Mounted verification covers the ad-hoc resource seal, native signatures,
+platform, notices, source coverage and frozen offline OCR/learning/persistence
+smoke. The detector is downloaded only for isolated smoke tests and is excluded
+from all uploaded artifacts. Transfer and publication recheck the exact seven
+allowed files and all digests, then verify GitHub's uploaded asset digests.
+
+For each new candidate, download `verified-desktop-candidate` from the run,
+check its hashes, and test the exact installed DMG using
+[the existing-Mac checklist](macos-clean-mac-test.md). Approving `macos-release`
+attests to those installed-app checks for this exact candidate, not the older
+seed. Test the Windows setup from the same combined artifact using its six-check
+report before this publish review; automatic builds approve no installer.
+The workflow then creates `v<version>` at the merged commit, uploads the
+DMG and Windows setup, both corresponding-source/notice deliveries, checksums
+and provenance records to one draft, and makes it public only after upload verification. The provenance
+record keeps `installedAppVerified: false` because the automated build did not
+perform the human test; the environment approval records that separate step.
+
+If draft creation/upload fails, the release stays unpublished. Inspect and
+remove only that failed draft/tag before an intentional rerun, or select a new
+version; the workflow does not clobber existing tags or assets. A run awaiting
+approval also refuses publication if `main` has advanced to another commit; this
+is checked again after both platforms' assets upload.
+
+Local verification: 88 release-tool tests pass, including stable/pre-release
+classification and tampered-provenance rejection. The actual publish step passes
+fake-API rehearsals for `0.1.0`, `1.0.0-beta.1` and `1.0.0`, and rejects the
+opposite uploaded release flag in both directions. The previous 55 desktop
+tests, 36 Rust tests and local native rebuild/smoke remain applicable because
+this change affects release automation only. Actionlint, YAML formatting,
+Python lint/format and shell/Python syntax pass. A fake GitHub API rehearsal of the actual publish step
+accepts the successful path and blocks a different default branch, unprotected
+environments, administrator bypass, broad branch rules, stale `main`,
+tag collisions, changed uploads and tampered artifacts. GitHub-hosted execution
+and its new installer confirmation remain pending. Full rebuilding solely from
+filtered sources remains unverified; keep this and the fresh-Mac waiver in the
+notes. Windows remains a separate milestone.

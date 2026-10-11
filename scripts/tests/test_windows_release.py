@@ -1,0 +1,810 @@
+"""Reject altered Windows inputs, leaked models, and changed installed binaries."""
+
+import importlib.util
+import json
+import shutil
+import subprocess
+import sys
+import tempfile
+import unittest
+import zipfile
+from pathlib import Path
+from unittest.mock import patch
+
+sys.path.insert(0, str(Path(__file__).parents[1]))
+spec = importlib.util.spec_from_file_location(
+    "windows_release", Path(__file__).parents[1] / "windows_release.py"
+)
+release = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(release)
+import windows_private_draft as draft
+
+smoke_spec = importlib.util.spec_from_file_location(
+    "windows_smoke", Path(__file__).parents[1] / "smoke-windows-install.py"
+)
+smoke = importlib.util.module_from_spec(smoke_spec)
+smoke_spec.loader.exec_module(smoke)
+
+
+class WindowsReleaseTests(unittest.TestCase):
+    def test_onnx_package_check_allows_transformers_optional_helpers(self):
+        release.verify_onnx_runtime_paths(
+            [
+                "_internal",
+                "_internal/onnxruntime/capi/onnxruntime.dll",
+                "_internal/transformers/pytorch_utils.py",
+                "_internal/transformers/utils/dummy_torchvision_objects.py",
+                "_internal/onnxruntime/tools/pytorch_export_contrib_ops.py",
+            ]
+        )
+
+    def test_onnx_package_check_rejects_actual_packages_metadata_and_binaries(self):
+        for path in (
+            "_internal/torch",
+            "torch.py",
+            "_internal/torchvision/_C.pyd",
+            "_internal/manga_ocr/__init__.py",
+            "_internal/manga-ocr-0.1.16.dist-info/METADATA",
+            "_internal/torch-2.6.0.dist-info/METADATA",
+            "_internal/lib/torch_cpu.dll",
+            "_internal/lib/mkl_core.dll",
+            "_internal/torchsummary",
+            "_internal\\torch\\__init__.py",
+        ):
+            with (
+                self.subTest(path=path),
+                self.assertRaisesRegex(ValueError, "Torch/MKL"),
+            ):
+                release.verify_onnx_runtime_paths(["onnxruntime.dll", path])
+        with self.assertRaisesRegex(ValueError, "native DLL is missing"):
+            release.verify_onnx_runtime_paths(["transformers/pytorch_utils.py"])
+
+    def test_installed_cpu_probe_accepts_selected_opencv_abi_and_backend(self):
+        for opencv in ("cv2.pyd", "cv2.cp311-win_amd64.pyd"):
+            with self.subTest(opencv=opencv):
+                self.assertTrue(
+                    smoke.observed_cpu_inference(
+                        {opencv, "onnxruntime_pybind11_state.pyd"}, True
+                    )
+                )
+                self.assertTrue(
+                    smoke.observed_cpu_inference({opencv, "torch_cpu.dll"}, False)
+                )
+        for modules in (
+            {"cv2.cp311-win_arm64.pyd", "onnxruntime_pybind11_state.pyd"},
+            {"cv2.pyd", "torch_cpu.dll"},
+            {"onnxruntime_pybind11_state.pyd"},
+            {"cv2.pyd"},
+        ):
+            with self.subTest(modules=modules):
+                self.assertFalse(smoke.observed_cpu_inference(modules, True))
+
+    def test_frozen_executable_binds_original_bootloader_and_appended_pkg(self):
+        bootloader = self.root / "run.exe"
+        bootloader.write_bytes(b"synthetic original bootloader")
+        payload = self.root / "application.pkg"
+        payload.write_bytes(b"compressed application")
+        frozen = self.root / "frozen.exe"
+        frozen.write_bytes(bootloader.read_bytes() + payload.read_bytes())
+        wheel = self.root / "inputs/pyinstaller.whl"
+        wheel.parent.mkdir()
+        with zipfile.ZipFile(wheel, "w") as archive:
+            archive.writestr(
+                "PyInstaller/bootloader/Windows-64bit-intel/run.exe",
+                bootloader.read_bytes(),
+            )
+        toc = self.root / "EXE-00.toc"
+        fields = ["exefiles", "pkgname", "append_pkg", "strip", "upx"]
+        toc.write_text(
+            repr(
+                (
+                    [("run.exe", str(bootloader), "EXECUTABLE")],
+                    str(payload),
+                    True,
+                    False,
+                    False,
+                )
+            )
+        )
+        manifest = {
+            "packages": [
+                {
+                    "name": "pyinstaller",
+                    "filename": wheel.name,
+                    "sha256": release.digest(wheel),
+                    "source": {"sha256": "preferred-source"},
+                }
+            ]
+        }
+        with (
+            patch.object(release, "BUILD", self.root),
+            patch.object(release, "read_json", return_value=manifest),
+            patch.object(release, "pe_info", return_value={"machine": "0x8664"}),
+            patch.object(
+                release, "executable_code_sha256", return_value="unchanged-code"
+            ) as code,
+        ):
+            record = release.frozen_executable_input(toc, fields, frozen)
+            self.assertEqual(record["bootloaderSha256"], release.digest(bootloader))
+            self.assertEqual(record["applicationPkgSha256"], release.digest(payload))
+            self.assertEqual(record["applicationPkgOffset"], bootloader.stat().st_size)
+            self.assertEqual(record["frozenExecutableSha256"], release.digest(frozen))
+            self.assertFalse(record["sourceCoverageApproved"])
+            frozen.write_bytes(bootloader.read_bytes() + b"altered application")
+            with self.assertRaisesRegex(ValueError, "exact application"):
+                release.frozen_executable_input(toc, fields, frozen)
+            frozen.write_bytes(bootloader.read_bytes() + payload.read_bytes())
+            code.side_effect = ["original-code", "changed-code"]
+            with self.assertRaisesRegex(ValueError, "changed original bootloader code"):
+                release.frozen_executable_input(toc, fields, frozen)
+            bootloader.write_bytes(b"changed bootloader")
+            with self.assertRaisesRegex(ValueError, "original AMD64 wheel"):
+                release.frozen_executable_input(toc, fields, frozen)
+            toc.write_text("__import__('os').system('never execute')")
+            with self.assertRaises(ValueError):
+                release.frozen_executable_input(toc, fields, frozen)
+
+    def test_freezer_analysis_binds_dll_origins_missing_from_wheel_inventory(self):
+        source = self.root / "System32/vcruntime140.dll"
+        source.parent.mkdir()
+        source.write_bytes(b"original runtime input")
+        toc = self.root / "Analysis-00.toc"
+        toc.write_text(repr(([], [("vcruntime140.dll", str(source), "BINARY")])))
+        with patch.object(release, "pe_info", return_value={"machine": "0x8664"}):
+            records = release.analysis_native_inputs(toc, ["scripts", "binaries"])
+        self.assertEqual(records[0]["path"], str(source))
+        self.assertEqual(records[0]["sha256"], release.digest(source))
+        self.assertEqual(records[0]["destination"], "vcruntime140.dll")
+        self.assertEqual(records[0]["machine"], "0x8664")
+
+    def test_freezer_analysis_rejects_executable_or_malformed_records(self):
+        source = self.root / "input.dll"
+        source.write_bytes(b"native input")
+        toc = self.root / "Analysis-00.toc"
+        for text in (
+            "__import__('os').system('must never execute')",
+            repr(([],)),
+            repr(({},)),
+            repr(([],)),
+            repr(([("x.dll", str(source), "SYMLINK")],)),
+            repr(([("../x.dll", str(source), "BINARY")],)),
+            repr(([("C:\\x.dll", str(source), "BINARY")],)),
+            repr(([("x.dll", "relative.dll", "BINARY")],)),
+            repr(([("x.dll", str(self.root / "missing.dll"), "BINARY")],)),
+            repr(
+                (
+                    [
+                        ("x.dll", str(source), "BINARY"),
+                        ("X.DLL", str(source), "BINARY"),
+                    ],
+                )
+            ),
+        ):
+            with (
+                self.subTest(text=text),
+                patch.object(release, "pe_info", return_value={"machine": "0x8664"}),
+                self.assertRaises((ValueError, SyntaxError, TypeError)),
+            ):
+                toc.write_text(text)
+                release.analysis_native_inputs(toc, ["binaries"])
+
+    def test_desktop_rejects_console_subsystem_and_accepts_x64_gui(self):
+        path = Path("yomimado.exe")
+        with (
+            patch.object(
+                release, "pe_info", return_value={"machine": "0x8664", "subsystem": 3}
+            ),
+            self.assertRaisesRegex(ValueError, "opens a console"),
+        ):
+            release.verify_desktop_gui(path)
+        with patch.object(
+            release, "pe_info", return_value={"machine": "0x8664", "subsystem": 2}
+        ):
+            release.verify_desktop_gui(path)
+        with (
+            patch.object(
+                release, "pe_info", return_value={"machine": "0x14c", "subsystem": 2}
+            ),
+            self.assertRaisesRegex(ValueError, "not x64"),
+        ):
+            release.verify_desktop_gui(path)
+
+    def test_windows_powershell_diagnostics_do_not_inherit_ps7_modules(self):
+        with (
+            patch.dict(
+                "os.environ",
+                {"SystemRoot": str(self.root), "PSModulePath": "incompatible-PS7"},
+            ),
+            patch.object(smoke.subprocess, "check_output", return_value="[]") as query,
+        ):
+            self.assertEqual(smoke.loaded_modules(42, self.root / "runtime"), [])
+            environment = {
+                k.upper(): v for k, v in query.call_args.kwargs["env"].items()
+            }
+            self.assertNotIn("PSMODULEPATH", environment)
+            self.assertEqual(environment["SYSTEMROOT"], str(self.root))
+
+    def setUp(self):
+        self.temp = tempfile.TemporaryDirectory()
+        self.addCleanup(self.temp.cleanup)
+        self.root = Path(self.temp.name)
+
+    def private_candidate(self):
+        setup = self.root / "test-setup.exe"
+        setup.write_bytes(b"private installer")
+        record = {
+            "mode": "private-test",
+            "sourceRevision": "a" * 40,
+            "installedAppVerified": False,
+            "publicDistributionApproved": False,
+            "assets": {setup.name: release.digest(setup)},
+        }
+        release.write_json(self.root / "windows-candidate.json", record)
+        sums = {
+            **record["assets"],
+            "windows-candidate.json": release.digest(
+                self.root / "windows-candidate.json"
+            ),
+        }
+        (self.root / "SHA256SUMS.txt").write_text(
+            "".join(f"{sha}  {name}\n" for name, sha in sums.items())
+        )
+
+    def generated_repository(self):
+        generated = self.root / "services/ocr/yomimado_ocr.egg-info/SOURCES.txt"
+        generated.parent.mkdir(parents=True)
+        generated.write_text("original\n")
+        (self.root / "app.py").write_text("source\n")
+        (self.root / ".gitignore").write_text("evidence/\n")
+        for args in (
+            ["init", "-q"],
+            ["add", "."],
+            [
+                "-c",
+                "user.name=Release tests",
+                "-c",
+                "user.email=tests@example.invalid",
+                "commit",
+                "-qm",
+                "initial",
+            ],
+        ):
+            subprocess.run(
+                ["git", *args], cwd=self.root, check=True, capture_output=True
+            )
+        revision = subprocess.check_output(
+            ["git", "rev-parse", "HEAD"], cwd=self.root, encoding="utf-8"
+        ).strip()
+        return generated, revision
+
+    def test_restores_only_known_generated_outputs(self):
+        generated, revision = self.generated_repository()
+        generated.write_text("regenerated\n")
+        schema = self.root / "apps/desktop/src-tauri/gen/schemas/windows-schema.json"
+        schema.parent.mkdir(parents=True)
+        schema.write_text("{}")
+        with (
+            patch.object(release, "ROOT", self.root),
+            patch.object(release, "BUILD", self.root / "evidence"),
+        ):
+            release.restore_generated_outputs(revision)
+        self.assertEqual(generated.read_text(), "original\n")
+        self.assertFalse(schema.exists())
+        self.assertEqual(
+            subprocess.check_output(["git", "status", "--porcelain"], cwd=self.root),
+            b"",
+        )
+
+    def test_unexpected_source_change_prevents_any_restoration(self):
+        generated, revision = self.generated_repository()
+        generated.write_text("regenerated\n")
+        (self.root / "app.py").write_text("changed source\n")
+        with (
+            patch.object(release, "ROOT", self.root),
+            patch.object(release, "BUILD", self.root / "evidence"),
+            self.assertRaisesRegex(ValueError, "Unexpected source changes"),
+        ):
+            release.restore_generated_outputs(revision)
+        self.assertEqual(generated.read_text(), "regenerated\n")
+        self.assertEqual((self.root / "app.py").read_text(), "changed source\n")
+
+    def test_private_draft_rejects_changed_candidate_and_gate_claim(self):
+        self.private_candidate()
+        self.assertEqual(len(draft.candidate_files(self.root, "a" * 40)), 3)
+        (self.root / "test-setup.exe").write_bytes(b"changed")
+        with self.assertRaisesRegex(ValueError, "changed"):
+            draft.candidate_files(self.root, "a" * 40)
+        self.private_candidate()
+        record = release.read_json(self.root / "windows-candidate.json")
+        record["installedAppVerified"] = True
+        release.write_json(self.root / "windows-candidate.json", record)
+        with self.assertRaisesRegex(ValueError, "gates differ"):
+            draft.candidate_files(self.root, "a" * 40)
+
+    def test_private_staging_never_publishes_or_creates_a_tag(self):
+        self.private_candidate()
+        calls = []
+
+        def api(url, method="GET", data=None, content_type=None):
+            calls.append((url, method, data))
+            if url.endswith("/releases?per_page=100"):
+                return [
+                    {
+                        "id": 1,
+                        "draft": True,
+                        "prerelease": True,
+                        "target_commitish": "a" * 40,
+                        "tag_name": "windows-private-test-" + "a" * 40,
+                        "assets": [],
+                        "upload_url": "https://uploads.github.com/private{?name}",
+                    }
+                ]
+            if url.endswith("/releases/1"):
+                return {
+                    "draft": True,
+                    "prerelease": True,
+                    "target_commitish": "a" * 40,
+                    "tag_name": "windows-private-test-" + "a" * 40,
+                    "html_url": "https://github.com/private-draft",
+                    "assets": [
+                        {
+                            "name": p.name,
+                            "digest": "sha256:" + release.digest(p),
+                            "state": "uploaded",
+                        }
+                        for p in self.root.iterdir()
+                        if p.name != "summary"
+                    ],
+                }
+            return {}
+
+        env = {
+            "GITHUB_ACTIONS": "true",
+            "GITHUB_REPOSITORY": draft.REPOSITORY,
+            "GITHUB_REF": "refs/heads/develop",
+            "GITHUB_SHA": "a" * 40,
+            "GITHUB_STEP_SUMMARY": str(self.root / "summary"),
+        }
+        with (
+            patch.dict("os.environ", env),
+            patch.object(draft, "request", side_effect=api),
+            patch.object(draft, "tag_absent") as tags,
+        ):
+            draft.stage(self.root)
+        self.assertEqual(tags.call_count, 2)
+        self.assertEqual(sum(method == "POST" for _, method, _ in calls), 3)
+        self.assertFalse(
+            any(
+                method in ("PATCH", "PUT")
+                or "/git/refs" in url
+                or (method == "POST" and url.endswith("/releases"))
+                for url, method, _ in calls
+            )
+        )
+
+    def test_private_preflight_requires_owner_draft_without_creating_release(self):
+        with (
+            patch.object(draft, "workflow_revision", return_value="a" * 40),
+            patch.object(draft, "tag_absent"),
+            patch.object(draft, "request", return_value=[]) as api,
+            self.assertRaisesRegex(ValueError, "Prepare an empty owner-only draft"),
+        ):
+            draft.preflight()
+        api.assert_called_once_with(draft.API + "/releases?per_page=100")
+
+    def test_private_preflight_rejects_nonempty_published_or_wrong_target(self):
+        original = {
+            "draft": True,
+            "prerelease": True,
+            "assets": [],
+            "target_commitish": "a" * 40,
+            "tag_name": "windows-private-test-" + "a" * 40,
+        }
+        for field, value in (
+            ("draft", False),
+            ("prerelease", False),
+            ("assets", [{"name": "old-setup.exe"}]),
+            ("target_commitish", "develop"),
+        ):
+            with (
+                self.subTest(field=field),
+                patch.object(draft, "workflow_revision", return_value="a" * 40),
+                patch.object(draft, "tag_absent"),
+                patch.object(
+                    draft, "request", return_value=[{**original, field: value}]
+                ),
+                self.assertRaisesRegex(ValueError, "empty exact-commit"),
+            ):
+                draft.preflight()
+        with (
+            patch.object(draft, "workflow_revision", return_value="a" * 40),
+            patch.object(draft, "tag_absent"),
+            patch.object(draft, "request", return_value=[original, original]),
+            self.assertRaisesRegex(ValueError, "Ambiguous"),
+        ):
+            draft.preflight()
+
+    def test_private_preflight_rejects_untrusted_workflow_context_before_api(self):
+        for field, value in (
+            ("GITHUB_ACTIONS", "false"),
+            ("GITHUB_REPOSITORY", "other/repo"),
+            ("GITHUB_REF", "refs/heads/main"),
+            ("GITHUB_SHA", "develop"),
+        ):
+            env = {
+                "GITHUB_ACTIONS": "true",
+                "GITHUB_REPOSITORY": draft.REPOSITORY,
+                "GITHUB_REF": "refs/heads/develop",
+                "GITHUB_SHA": "a" * 40,
+                field: value,
+            }
+            with (
+                self.subTest(field=field),
+                patch.dict("os.environ", env),
+                patch.object(draft, "request") as api,
+                self.assertRaisesRegex(ValueError, "restricted"),
+            ):
+                draft.preflight()
+            api.assert_not_called()
+
+    def test_actual_lock_matches_and_only_cpu_torch_is_selected(self):
+        manifest = release.read_json(release.SERVICE / "windows-inputs.json")
+        release.validate_lock(manifest)
+        manifest["packages"][0]["version"] = "unreviewed"
+        with self.assertRaisesRegex(ValueError, "manifest differ"):
+            release.validate_lock(manifest)
+
+    def test_loaded_inference_modules_reject_developer_and_system_vc_runtime(self):
+        runtime = self.root / "runtime"
+        system = self.root / "Windows"
+        for path, error in (
+            (self.root / "developer/torch_cpu.dll", "external"),
+            (system / "System32/msvcp140.dll", "app-local"),
+            (system / "Temp/msvcp_win.dll", "app-local"),
+            (runtime / "cudart64.dll", "CUDA"),
+        ):
+            modules = json.dumps(
+                [{"name": path.name, "path": str(path), "sha256": "test"}]
+            )
+            with (
+                patch.dict("os.environ", {"SystemRoot": str(system)}),
+                patch.object(smoke.subprocess, "check_output", return_value=modules),
+                self.assertRaisesRegex(RuntimeError, error),
+            ):
+                smoke.loaded_modules(42, runtime)
+
+    def test_loaded_inference_modules_allow_bundled_and_os_libraries(self):
+        runtime = self.root / "runtime"
+        system = self.root / "Windows"
+        modules = [
+            {"name": p.name, "path": str(p), "sha256": "test"}
+            for p in (
+                runtime / "torch_cpu.dll",
+                runtime / "msvcp140.dll",
+                system / "System32/kernel32.dll",
+                system / "System32/msvcp_win.dll",
+            )
+        ]
+        with (
+            patch.dict("os.environ", {"SystemRoot": str(system)}),
+            patch.object(
+                smoke.subprocess, "check_output", return_value=json.dumps(modules)
+            ),
+        ):
+            self.assertEqual(smoke.loaded_modules(42, runtime), modules)
+
+    def test_codec_exclusion_preserves_transitive_native_dependencies(self):
+        runtime = self.root / "runtime"
+        vision = runtime / "torchvision"
+        vision.mkdir(parents=True)
+        imports = {
+            "_C.pyd": [],
+            "image.pyd": ["jpeg8.dll"],
+            "pillow.pyd": ["libpng16.dll"],
+            "libpng16.dll": ["zlib.dll"],
+            "zlib.dll": [],
+            "jpeg8.dll": [],
+        }
+        for name in imports:
+            path = (vision if name in ("_C.pyd", "image.pyd") else runtime) / name
+            path.write_bytes(b"MZsynthetic-" + name.encode())
+        with (
+            patch.object(release, "RESOURCES", self.root),
+            patch.object(
+                release, "pe_info", side_effect=lambda p: {"imports": imports[p.name]}
+            ),
+        ):
+            release.prune_unused_native()
+        self.assertTrue((vision / "_C.pyd").exists())
+        self.assertTrue((runtime / "libpng16.dll").exists())
+        self.assertTrue((runtime / "zlib.dll").exists())
+        self.assertFalse((vision / "image.pyd").exists())
+        self.assertFalse((runtime / "jpeg8.dll").exists())
+        self.assertEqual(
+            len(release.read_json(self.root / "notices/windows-excluded-native.json")),
+            2,
+        )
+
+    def test_os_exclusion_retains_app_local_vc_and_requires_system_dependencies(self):
+        runtime = self.root / "runtime"
+        system_root = self.root / "Windows"
+        system = system_root / "System32"
+        runtime.mkdir()
+        system.mkdir(parents=True)
+        for name in (
+            "dbghelp.dll",
+            "wintrust.dll",
+            "ucrtbase.dll",
+            "api-ms-win-crt-runtime-l1-1-0.dll",
+            "vcruntime140.dll",
+            "msvcp140.dll",
+        ):
+            (runtime / name).write_bytes(b"MZsynthetic")
+        with (
+            patch.object(release, "RESOURCES", self.root),
+            patch.dict("os.environ", {"SystemRoot": str(system_root)}),
+            patch.object(
+                release, "pe_info", return_value={"machine": "0x8664", "imports": []}
+            ),
+        ):
+            with self.assertRaisesRegex(ValueError, "OS dependency"):
+                release.prune_unused_native()
+            self.assertTrue((runtime / "dbghelp.dll").exists())
+            for name in ("dbghelp.dll", "wintrust.dll", "ucrtbase.dll"):
+                (system / name).write_bytes(b"MZsynthetic")
+            release.prune_unused_native()
+        self.assertEqual(
+            {p.name for p in runtime.iterdir()}, {"vcruntime140.dll", "msvcp140.dll"}
+        )
+        removed = release.read_json(self.root / "notices/windows-excluded-native.json")
+        self.assertEqual(len(removed), 4)
+        self.assertTrue(all("OS component" in p["reason"] for p in removed))
+
+    def test_changed_cpu_wheel_url_is_rejected(self):
+        manifest = release.read_json(release.SERVICE / "windows-inputs.json")
+        next(e for e in manifest["packages"] if e["name"] == "torch")["url"] = (
+            "https://pypi.org/torch.whl"
+        )
+        with self.assertRaisesRegex(ValueError, "CPU Torch"):
+            release.validate_lock(manifest)
+
+    def test_incompatible_python_abi_and_arm_wheels_are_rejected(self):
+        for filename in (
+            "hf_xet-1.6.0-cp314-cp314t-win_amd64.whl",
+            "hf_xet-1.6.0-cp38-abi3-win_arm64.whl",
+        ):
+            manifest = release.read_json(release.SERVICE / "windows-inputs.json")
+            next(e for e in manifest["packages"] if e["name"] == "hf-xet")[
+                "filename"
+            ] = filename
+            with self.assertRaisesRegex(ValueError, "not compatible"):
+                release.validate_lock(manifest)
+
+    def test_detector_and_unapproved_weights_are_rejected_at_any_depth(self):
+        for suffix in release.FORBIDDEN:
+            path = self.root / ("model" + suffix)
+            path.write_bytes(b"weights")
+            with self.assertRaisesRegex(ValueError, "weights"):
+                release.assert_no_detector(self.root)
+            path.unlink()
+        alias = self.root / "comictextdetector.pt.renamed"
+        alias.write_bytes(b"weights")
+        with self.assertRaisesRegex(ValueError, "weights"):
+            release.assert_no_detector(self.root)
+
+    def test_source_symlinks_are_rejected(self):
+        (self.root / "alias").symlink_to(self.root / "missing")
+        with self.assertRaisesRegex(ValueError, "symlink"):
+            release.assert_no_detector(self.root)
+
+    def inference_graphs(self):
+        exported = self.root / "assets/onnx"
+        exported.mkdir(parents=True)
+        names = (
+            "ocr-encoder.onnx",
+            "ocr-decoder.onnx",
+            "translation-encoder.onnx",
+            "translation-decoder.onnx",
+            "policies.json",
+        )
+        for name in names:
+            (exported / name).write_bytes(("synthetic conversion " + name).encode())
+        record = {
+            "sourceInputs": {
+                e["path"]: e["sha256"]
+                for e in release.read_json(release.SERVICE / "windows-assets.json")
+                if e["path"].startswith(("manga-ocr-base/", "opus-mt-ja-en/"))
+            },
+            "exporterSha256": release.digest(
+                release.ROOT / "scripts/export_onnx_probe.py"
+            ),
+            "outputs": {name: release.digest(exported / name) for name in names},
+        }
+        release.write_json(exported / "export.json", record)
+        return exported, record
+
+    def test_only_bound_learning_conversions_are_allowed(self):
+        exported, _ = self.inference_graphs()
+        release.assert_no_detector(self.root)
+        (exported / "extra.onnx").write_bytes(b"unapproved weights")
+        with self.assertRaisesRegex(ValueError, "weights"):
+            release.assert_no_detector(self.root)
+
+    def test_conversion_must_match_source_recipe_and_output_hashes(self):
+        exported, record = self.inference_graphs()
+        for field in ("sourceInputs", "exporterSha256", "outputs"):
+            changed = dict(record)
+            changed[field] = {} if field != "exporterSha256" else "0" * 64
+            release.write_json(exported / "export.json", changed)
+            with self.assertRaisesRegex(ValueError, "provenance"):
+                release.assert_no_detector(self.root)
+        release.write_json(exported / "export.json", record)
+        (exported / "ocr-encoder.onnx").write_bytes(b"changed")
+        with self.assertRaisesRegex(ValueError, "conversion"):
+            release.assert_no_detector(self.root)
+
+    def test_detector_hash_cannot_masquerade_as_a_learning_conversion(self):
+        exported, record = self.inference_graphs()
+        record["outputs"]["ocr-encoder.onnx"] = release.DETECTOR_SHA256
+        release.write_json(exported / "export.json", record)
+        with self.assertRaisesRegex(ValueError, "conversion"):
+            release.assert_no_detector(self.root)
+
+    def test_changed_download_is_not_promoted_to_a_new_pin(self):
+        source = self.root / "source"
+        source.write_bytes(b"changed bytes")
+        target = self.root / "target"
+        with self.assertRaisesRegex(ValueError, "checksum changed"):
+            release.fetch({"url": source.as_uri(), "sha256": "0" * 64}, target)
+        self.assertFalse(target.exists())
+        self.assertFalse(target.with_name("target.download").exists())
+
+    def resources(self):
+        notices = self.root / "notices"
+        notices.mkdir()
+        for name in [
+            "LICENSE",
+            "MODEL_CREDITS.md",
+            "ASSET_NOTICES.md",
+            "project-revision.txt",
+            "windows-inputs.json",
+            "windows-assets.json",
+            "distribution.json",
+        ]:
+            (notices / name).write_text("test")
+        runtime = self.root / "runtime"
+        runtime.mkdir()
+        exe = runtime / "yomimado-ocr.exe"
+        exe.write_bytes(b"MZsynthetic")
+        release.write_json(
+            notices / "windows-inventory.json",
+            {
+                "binaries": [
+                    {
+                        "path": "runtime/yomimado-ocr.exe",
+                        "sha256": release.digest(exe),
+                        "imports": [],
+                    }
+                ]
+            },
+        )
+        for name in ("windows-inputs.json", "windows-assets.json"):
+            shutil.copy2(release.SERVICE / name, notices / name)
+        release.seal_resources(self.root)
+        return exe
+
+    def verify(self, machine="0x8664", **kwargs):
+        with (
+            patch.object(
+                release,
+                "read_json",
+                side_effect=lambda p: (
+                    [] if p.name == "windows-assets.json" else json.loads(p.read_text())
+                ),
+            ),
+            patch.object(
+                release, "pe_info", return_value={"machine": machine, "imports": []}
+            ),
+        ):
+            return release.verify_resources(self.root, **kwargs)
+
+    def test_historical_installer_requires_explicit_exact_manifest_hashes(self):
+        self.resources()
+        notices = self.root / "notices"
+        (notices / "windows-inputs.json").write_text('{"packages": []}\n')
+        pins = {
+            name: release.digest(notices / name)
+            for name in ("windows-inputs.json", "windows-assets.json")
+        }
+        release.seal_resources(self.root)
+        with self.assertRaisesRegex(ValueError, "Installed input manifest differs"):
+            self.verify()
+        self.verify(manifest_hashes=pins)
+        with self.assertRaisesRegex(ValueError, "architecture"):
+            self.verify("0x14c", manifest_hashes=pins)
+        (notices / "windows-inputs.json").write_text('{"packages": ["changed"]}\n')
+        release.seal_resources(self.root)
+        with self.assertRaisesRegex(ValueError, "Installed input manifest differs"):
+            self.verify(manifest_hashes=pins)
+
+    def test_historical_manifest_does_not_skip_exact_asset_verification(self):
+        self.resources()
+        assets = self.root / "assets"
+        assets.mkdir()
+        asset = assets / "synthetic.txt"
+        asset.write_text("synthetic asset")
+        release.write_json(
+            self.root / "notices/windows-assets.json",
+            [{"path": asset.name, "sha256": release.digest(asset)}],
+        )
+        pins = {
+            name: release.digest(self.root / "notices" / name)
+            for name in ("windows-inputs.json", "windows-assets.json")
+        }
+        release.seal_resources(self.root)
+        with patch.object(
+            release, "pe_info", return_value={"machine": "0x8664", "imports": []}
+        ):
+            release.verify_resources(self.root, manifest_hashes=pins)
+            asset.write_text("changed synthetic asset")
+            release.seal_resources(self.root)
+            with self.assertRaisesRegex(ValueError, "Installed asset changed"):
+                release.verify_resources(self.root, manifest_hashes=pins)
+
+    def test_historical_manifest_hashes_cannot_be_partial_or_malformed(self):
+        self.resources()
+        pins = {
+            name: release.digest(self.root / "notices" / name)
+            for name in ("windows-inputs.json", "windows-assets.json")
+        }
+        for wrong in (
+            {},
+            {"windows-inputs.json": pins["windows-inputs.json"]},
+            {**pins, "windows-assets.json": "not a hash"},
+            {**pins, "windows-assets.json": None},
+            {**pins, "unexpected.json": "a" * 64},
+        ):
+            with (
+                self.subTest(pins=wrong),
+                self.assertRaisesRegex(
+                    ValueError, "Exact Windows manifest hashes required"
+                ),
+            ):
+                self.verify(manifest_hashes=wrong)
+
+    def test_installed_native_hash_is_bound_to_inventory(self):
+        exe = self.resources()
+        self.verify()
+        exe.write_bytes(b"MZchanged")
+        with self.assertRaisesRegex(ValueError, "resource hashes differ"):
+            self.verify()
+
+    def test_frozen_python_archive_tampering_is_rejected(self):
+        self.resources()
+        archive = self.root / "runtime/PYZ.pyz"
+        archive.write_bytes(b"original frozen Python")
+        release.seal_resources(self.root)
+        self.verify()
+        archive.write_bytes(b"changed Python")
+        with self.assertRaisesRegex(ValueError, "resource hashes differ"):
+            self.verify()
+
+    def test_mixed_pe_architecture_is_rejected(self):
+        self.resources()
+        with self.assertRaisesRegex(ValueError, "architecture"):
+            self.verify("0x14c")
+
+    def test_extra_dll_is_rejected_even_if_x64(self):
+        self.resources()
+        (self.root / "runtime/extra.dll").write_bytes(b"MZextra")
+        with self.assertRaisesRegex(ValueError, "resource hashes differ"):
+            self.verify()
+
+    def test_native_names_with_non_pe_content_are_rejected(self):
+        (self.root / "invalid.pyd").write_bytes(b"not a PE")
+        with self.assertRaisesRegex(ValueError, "not a PE"):
+            list(release.native_files(self.root))
+
+
+if __name__ == "__main__":
+    unittest.main()
