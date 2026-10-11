@@ -907,6 +907,15 @@ def verify_desktop_gui(path: Path) -> None:
         raise ValueError("Desktop executable opens a console; expected Windows GUI")
 
 
+def onnx_source_delivery_filter(member: tarfile.TarInfo) -> tarfile.TarInfo | None:
+    # The reference-only Manga OCR sdist contains uncleared manga artwork.
+    # Its unchanged code/recipes/notices are delivered through the verified
+    # canonical source collection; never reintroduce the raw sdist alongside it.
+    if member.name == "sources/manga_ocr-0.1.16.tar.gz":
+        return None
+    return member
+
+
 def package(installer: Path, output: Path, installed: Path) -> None:
     verify_resources(installed / "ocr")
     verify_desktop_gui(installed / "yomimado.exe")
@@ -940,7 +949,36 @@ def package(installer: Path, output: Path, installed: Path) -> None:
     # This is a private worksheet/source collection, not an approved GPL delivery.
     source = output / "windows-source-preparation.tar.gz"
     with tarfile.open(source, "w:gz") as archive:
-        archive.add(BUILD / "sources", arcname="sources")
+        onnx = bool(derived_onnx_graphs(installed / "ocr"))
+        if onnx:
+            from windows_native_sources import MANIFEST as native_manifest
+
+            preferred = next(
+                entry
+                for entry in read_json(native_manifest)["archives"]
+                if entry["name"] == "manga-ocr-0.1.16"
+            )
+            retained = read_json(
+                installed / "ocr/notices/windows-native-sources/source-preparation.json"
+            )
+            entry = next(
+                record
+                for record in retained["sources"]
+                if record["name"] == preferred["name"]
+            )
+            if (
+                entry["originalSha256"] != preferred["sha256"]
+                or entry["preferredSourceSha256"] != preferred["preferredSourceSha256"]
+                or not entry["excluded"]
+                or digest(BUILD / "sources/windows-native" / entry["deliveryFilename"])
+                != entry["deliverySha256"]
+            ):
+                raise ValueError("Manga OCR preferred source/exclusion record differs")
+        archive.add(
+            BUILD / "sources",
+            arcname="sources",
+            filter=onnx_source_delivery_filter if onnx else None,
+        )
         for path in (
             ROOT / "scripts/build-windows-prerelease.ps1",
             ROOT / "scripts/windows_release.py",

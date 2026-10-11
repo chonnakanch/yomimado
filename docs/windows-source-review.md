@@ -5,6 +5,18 @@ Windows binary, or attest to a test that has not run. A private candidate may
 be assembled to inspect actual inputs; public distribution is blocked until
 all entries below have concrete evidence.
 
+Source artwork exclusion — 2026-10-11: Manga OCR 0.1.16's original reference
+sdist contains 27 example/test manga JPEGs. The ONNX path excludes Manga OCR
+from the frozen runtime. Its source delivery now retains all unchanged code,
+recipes and the original Apache-2.0 licence in a canonical archive with preferred
+source SHA-256 `24879e3a7fca28d3181378309f66cfe2008e988b66b02b5a7300955cedcdede6`.
+Every excluded image has a recorded original path/hash; the raw sdist is omitted
+from the final source bundle so those images cannot reappear through that copy.
+No licence for the original manga artwork is inferred from the software licence.
+For reference-only source rebuilding, `scripts/create-manga-ocr-warmup.py`
+provides a synthetic replacement warmup image. Final archive inspection remains
+required before public distribution.
+
 Installer plugin preparation — 2026-10-11: the original NSIS Tauri 0.5.3 source
 archive omits its dependency lock. The [short Windows recipe](windows-nsis-runtime.md)
 now builds that unchanged source with a deliberately resolved seven-crate graph,

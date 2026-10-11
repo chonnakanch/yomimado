@@ -8,6 +8,9 @@ registry inputs and 15 notices, tests the original plugin and checks the exact
 embedded DLL. Offline source preparation passes locally; hosted execution is
 required. See [the installer source record](windows-nsis-runtime.md). The next
 candidate includes this correction; older setup hashes do not approve it.
+The final source bundle also replaces Manga OCR's reference-only raw sdist with
+its unchanged preferred code/recipes/licence and a hash record excluding all 27
+example/test manga images. These images remain absent from distributed assets.
 
 Installed ONNX candidate — 2026-10-11: run `38104876515` at `c919d6a`
 successfully builds NSIS after excluding the verified export-only weights.
