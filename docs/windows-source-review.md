@@ -5,6 +5,18 @@ Windows binary, or attest to a test that has not run. A private candidate may
 be assembled to inspect actual inputs; public distribution is blocked until
 all entries below have concrete evidence.
 
+Additional exact-input checks — 2026-10-11: NumPy 2.4.6's own preferred source
+and 25 original notices are now retained; the export-only 1.26.4 source does not
+cover this runtime. PyYAML 6.0.3's [exact Windows release recipe](https://github.com/yaml/pyyaml/blob/49790e73684bebad1df05ef8d828fa12f685bffb/.github/workflows/ci.yaml)
+selects static LibYAML 0.2.5. Its preferred source, original MIT licence and
+Windows CMake recipe are retained with exact hashes; native configuration must
+report that same version. Protobuf 6.33.6's embedded `utf8_range.c` is bound by
+hash to its full Google MIT-style copyright/permission/disclaimer supplement.
+The official pure-Python Tomli 2.4.1 wheel replaces its four unneeded compiled
+modules; all four Python files match the original sdist. Local source/notice
+checks and 210 release-tool tests pass. Final installed binary and archive
+verification remain open; no macOS approval is inherited.
+
 Native preparation — 2026-10-11: exact evidence from run `38072170793` now
 establishes final-Python horizontal/vertical OCR, three fresh translations,
 NumPy 2.4.6 CPU ONNX execution without Torch, source-built Sudachi and canonical

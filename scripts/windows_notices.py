@@ -316,6 +316,29 @@ def javascript_components(output: Path) -> list[dict]:
     return result
 
 
+def python_native_supplement(
+    entry: dict, package: dict, original: Path, notice: Path, destination: Path
+) -> None:
+    """Bind a full supplemental notice to the exact embedded source bytes."""
+    if (
+        package["name"] != entry["package"]
+        or package["version"] != entry["version"]
+        or digest(original) != package["source"]["sha256"]
+        or digest(notice) != entry["noticeSha256"]
+    ):
+        raise ValueError("Native supplemental notice/input identity differs")
+    with tarfile.open(original) as source:
+        member = source.getmember(entry["sourceMember"])
+        if (
+            not member.isfile()
+            or hashlib.sha256(source.extractfile(member).read()).hexdigest()
+            != entry["sourceMemberSha256"]
+        ):
+            raise ValueError("Native supplemental source member differs")
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    shutil.copy2(notice, destination)
+
+
 def collect() -> None:
     output = RESOURCES / "notices"
     output.mkdir(parents=True, exist_ok=True)
@@ -329,6 +352,16 @@ def collect() -> None:
         "torchsummary": "torchsummary",
     }.items():
         supplement(group, output / "licenses/python-supplement" / package)
+    pins = read_json(ROOT / "services/ocr/windows-inputs.json")
+    for entry in pins.get("nativeNoticeSupplements", []):
+        package = next(p for p in pins["packages"] if p["name"] == entry["package"])
+        python_native_supplement(
+            entry,
+            package,
+            BUILD / "sources" / package["source"]["filename"],
+            ROOT / entry["notice"],
+            output / "licenses/windows-python-supplement" / Path(entry["notice"]).name,
+        )
     native_inputs = read_json(ROOT / "services/ocr/windows-inputs.json")[
         "nativeNoticeInputs"
     ]
@@ -388,6 +421,7 @@ def collect() -> None:
         "desktopVendorInputs": vendor_inputs,
         "installerSourceInputs": installer_sources,
         "nativeNoticeInputs": native_inputs,
+        "nativeNoticeSupplements": pins.get("nativeNoticeSupplements", []),
     }
     loader = output / "source-webview-loader/windows-webview-loader.json"
     if loader.is_file():

@@ -844,9 +844,9 @@
     {
       "name": "tomli",
       "version": "2.4.1",
-      "filename": "tomli-2.4.1-cp311-cp311-win_amd64.whl",
-      "url": "https://files.pythonhosted.org/packages/42/59/71461df1a885647e10b6bb7802d0b8e66480c61f3f43079e0dcd315b3954/tomli-2.4.1-cp311-cp311-win_amd64.whl",
-      "sha256": "5ee18d9ebdb417e384b58fe414e8d6af9f4e7a0ae761519fb50f721de398dd4e",
+      "filename": "tomli-2.4.1-py3-none-any.whl",
+      "url": "https://files.pythonhosted.org/packages/7b/61/cceae43728b7de99d9b847560c262873a1f6c98202171fd5ed62640b494b/tomli-2.4.1-py3-none-any.whl",
+      "sha256": "0d85819802132122da43cb86656f8d1f8c6587d54ae7dcaf30e90533028b49fe",
       "source": {
         "filename": "tomli-2.4.1.tar.gz",
         "url": "https://files.pythonhosted.org/packages/22/de/48c59722572767841493b26183a0d1cc411d54fd759c5607c4590b6563a6/tomli-2.4.1.tar.gz",
@@ -1348,6 +1348,16 @@
       "originalCollectedSha256": "90498812787bf60c00e36c7f265481d0f724fe0677fdd6832eced35104b085de",
       "archiveNormalization": "gitiles-tar-v1",
       "revision": "4db2af62dab48895226be6b52737247e898ebe36"
+    }
+  ],
+  "nativeNoticeSupplements": [
+    {
+      "package": "protobuf",
+      "version": "6.33.6",
+      "sourceMember": "protobuf-6.33.6/utf8_range/utf8_range.c",
+      "sourceMemberSha256": "0cc04cb7013c833cc0304b27b02bfcef0d8a8b31dbf92322f4bcbce7238385c2",
+      "notice": "THIRD_PARTY_LICENSES/native/protobuf-6.33.6-utf8-NOTICE.txt",
+      "noticeSha256": "2fea0506ea6f65a7c242610b3debcaab29b791214abb19bd7bb57a95a1fab59c"
     }
   ]
 }

@@ -645,6 +645,26 @@
         "numpy-2.4.6/vendored-meson/meson/packaging/License.rtf": "e3e8d7b15b2021c994047314ad0ac5e367561f64771a60a85a9c0952d8cd4c3a",
         "numpy-2.4.6/vendored-meson/meson/packaging/macpages/English.lproj/license.html": "bca11d525505d21cdfb021e634b0f1d48ece827f9bedcf8cd41356c48a09be24"
       }
+    },
+    {
+      "name": "libyaml-0.2.5",
+      "filename": "libyaml-2c891fc7a770e8ba2fec34fc6b545c672beb37e6.tar.gz",
+      "url": "https://codeload.github.com/yaml/libyaml/tar.gz/2c891fc7a770e8ba2fec34fc6b545c672beb37e6",
+      "sha256": "77987051b6f5bee8ba472f1efbe0053663a58d8d3e7a2f0f4a27d178adbf8844",
+      "preferredSourceSha256": "76c68f6d36d2a4517a3cd909555d66e98d58dc6375513427d030464b377b2878",
+      "noticeHashes": {
+        "libyaml-2c891fc7a770e8ba2fec34fc6b545c672beb37e6/License": "c40112449f254b9753045925248313e9270efa36d226b22d82d4cc6c43c57f29"
+      }
+    },
+    {
+      "name": "pyyaml-windows-recipe",
+      "filename": "pyyaml-49790e73684bebad1df05ef8d828fa12f685bffb.tar.gz",
+      "url": "https://codeload.github.com/yaml/pyyaml/tar.gz/49790e73684bebad1df05ef8d828fa12f685bffb",
+      "sha256": "9a1805b064ab6973ed8903ef46ee9a67e59a982c637f410c6561d81a4387bd8a",
+      "preferredSourceSha256": "a27f3132fffa5e7204bdb0019710bb6e9683739d70095d71457862c28fd7d846",
+      "noticeHashes": {
+        "pyyaml-49790e73684bebad1df05ef8d828fa12f685bffb/LICENSE": "8d3928f9dc4490fd635707cb88eb26bd764102a7282954307d3e5167a577e8a4"
+      }
     }
   ],
   "numpyVendor": {
@@ -678,5 +698,12 @@
       "scipy_openblas64-0.3.31.188.0.dist-info/licenses/LICENSE.txt": "7317b3a9eb806cc83a0cc6b1c7c2fbe6018eed556daa9996e6e3a727a2a5bfbe"
     },
     "sourceArchive": "numpy-2.4.6"
+  },
+  "pyyamlVendor": {
+    "sourceArchive": "libyaml-0.2.5",
+    "version": "0.2.5",
+    "recipeArchive": "pyyaml-windows-recipe",
+    "recipeMember": "pyyaml-49790e73684bebad1df05ef8d828fa12f685bffb/.github/workflows/ci.yaml",
+    "recipeSha256": "5004399ff14a6683eb02e45882fc3ffc5e4d6b8bb78f5496a26269fe67dd6ea8"
   }
 }

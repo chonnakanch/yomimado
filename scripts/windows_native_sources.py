@@ -201,6 +201,18 @@ def collect(resources: Path = RESOURCES) -> None:
         / vendor["numpyWheel"]["filename"],
         vendor["numpyVersion"],
     )
+    yaml_vendor = manifest["pyyamlVendor"]
+    yaml_recipe = next(e for e in entries if e["name"] == yaml_vendor["recipeArchive"])
+    with tarfile.open(
+        BUILD / "native-source-inputs" / yaml_recipe["filename"]
+    ) as archive:
+        member = archive.getmember(yaml_vendor["recipeMember"])
+        if (
+            not member.isfile()
+            or hashlib.sha256(archive.extractfile(member).read()).hexdigest()
+            != yaml_vendor["recipeSha256"]
+        ):
+            raise ValueError("PyYAML Windows recipe differs")
     for name, content in numpy_record.pop("noticeBytes").items():
         target = notices / "numpy-blas-supplier" / name
         target.parent.mkdir(parents=True, exist_ok=True)
@@ -212,6 +224,7 @@ def collect(resources: Path = RESOURCES) -> None:
         "sources": records,
         "pythonWheelSources": python_records,
         "numpyVendor": numpy_record,
+        "pyyamlVendor": yaml_vendor,
         "sourceCoverageApproved": False,
         "publicDistributionApproved": False,
     }

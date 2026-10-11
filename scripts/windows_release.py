@@ -194,6 +194,25 @@ def download_inputs() -> None:
         fetch(entry, BUILD / "inputs" / entry["filename"])
         if source := entry.get("source"):
             fetch(source, BUILD / "sources" / source["filename"])
+        if entry["name"] == "tomli":
+            from windows_native_sources import verify_python_source
+
+            wheel = BUILD / "inputs" / entry["filename"]
+            with zipfile.ZipFile(wheel) as archive:
+                if any(
+                    name.endswith((".pyd", ".dll", ".exe"))
+                    for name in archive.namelist()
+                ):
+                    raise ValueError("Tomli must use its official pure-Python wheel")
+            verify_python_source(
+                {
+                    **entry,
+                    "package": entry["name"],
+                    "source": {**source, "wheelSourcePrefix": "tomli-2.4.1/src/"},
+                },
+                wheel,
+                BUILD / "sources" / source["filename"],
+            )
     for entry in record.get("desktopVendorInputs", []):
         fetch(entry, BUILD / "sources/vendors" / entry["filename"])
     for entry in record.get("installerSourceInputs", []):
@@ -610,6 +629,7 @@ def native_configuration(*, backend: str = "torch") -> None:
     import cv2
     import numpy
     import shapely
+    import yaml
     from PIL import features
 
     if sys.platform != "win32":
@@ -620,10 +640,13 @@ def native_configuration(*, backend: str = "torch") -> None:
         "numpyBuild": numpy.show_config(mode="dicts"),
         "opencvBuild": cv2.getBuildInformation(),
         "geos": shapely.geos_version_string,
+        "libyaml": yaml._yaml.get_version_string(),
         "pillow": {name: features.version(name) for name in features.get_supported()},
         "inputManifestSha256": digest(SERVICE / "windows-inputs.json"),
         "publicDistributionApproved": False,
     }
+    if record["libyaml"] != "0.2.5":
+        raise ValueError("PyYAML native LibYAML version differs from retained source")
     if backend == "torch":
         import torch
 

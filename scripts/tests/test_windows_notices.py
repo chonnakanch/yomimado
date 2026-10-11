@@ -16,6 +16,43 @@ import windows_release as release
 
 
 class WindowsNoticeTests(unittest.TestCase):
+    def test_native_supplement_requires_original_source_and_notice(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            original = root / "original.tar"
+            raw = b"Copyright original embedded component\n"
+            with tarfile.open(original, "w") as archive:
+                member = tarfile.TarInfo("package/component.c")
+                member.size = len(raw)
+                archive.addfile(member, io.BytesIO(raw))
+            text = root / "NOTICE"
+            text.write_bytes(b"Original full terms\r\n")
+            package = {
+                "name": "package",
+                "version": "1",
+                "source": {"sha256": notices.digest(original)},
+            }
+            entry = {
+                "package": "package",
+                "version": "1",
+                "sourceMember": member.name,
+                "sourceMemberSha256": hashlib.sha256(raw).hexdigest(),
+                "noticeSha256": notices.digest(text),
+            }
+            target = root / "delivered/NOTICE"
+            notices.python_native_supplement(entry, package, original, text, target)
+            self.assertEqual(target.read_bytes(), text.read_bytes())
+            for field in ("version", "sourceMemberSha256", "noticeSha256"):
+                with self.subTest(field=field), self.assertRaises(ValueError):
+                    notices.python_native_supplement(
+                        dict(entry, **{field: "changed"}),
+                        package,
+                        original,
+                        text,
+                        root / "rejected/NOTICE",
+                    )
+            self.assertFalse((root / "rejected").exists())
+
     def test_gitiles_metadata_can_vary_but_source_bytes_cannot(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
