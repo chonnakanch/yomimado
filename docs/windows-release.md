@@ -78,8 +78,8 @@ disables the overlay shadow: pinned Tao adds hidden client-area insets for
 undecorated shadowed windows, whereas OCR positioning assumes an inset-free
 origin. The replacement's exact-hash visual retest above closes that defect.
 Keep candidates private while distribution review and protected approval are open.
-The maintainer also reports **no/unsure Visual Studio licence**;
-Microsoft redistribution entitlement and component-specific end-user terms
+The maintainer now accepts the linked Community 2022 terms but confirms
+they have **not obtained a copy** yet. The licensed-copy requirement and component-specific end-user terms
 remain unresolved. A [notice draft](windows-microsoft-distribution-notice.draft.md)
 is prepared for review, not activated in the installer. Full source-only rebuild
 is not claimed. Public approval flags remain false; protected human approval
@@ -316,8 +316,10 @@ Only after the Windows candidate clears its runtime/source and installer gates:
 ## Next action and current limitations
 
 Next action: keep setup `7ff298c597de…` private, establish the
-maintainer's Microsoft redistribution entitlement and review the component-only
-terms/acceptance requirement using [the prepared review](windows-microsoft-distribution-notice.draft.md).
+maintainer's Microsoft redistribution entitlement by obtaining the licensed
+Community 2022 copy after their reported terms acceptance, and review the
+[component-only text draft](windows-microsoft-component-terms.draft.txt) and
+acceptance requirement using [the prepared review](windows-microsoft-distribution-notice.draft.md).
 The corrected overlay and listed local checks already pass on the confirmed
 Windows 11 x64 PC with its downloaded hash recorded. Protected human approval
 and joint release integration wait for distribution clearance. Actual installed input/source

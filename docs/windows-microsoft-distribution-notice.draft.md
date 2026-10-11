@@ -1,7 +1,8 @@
 # Microsoft runtime component notice — review draft
 
 Prepared 2026-10-11. **Not an accepted agreement, redistribution grant or active
-installer licence page.** The maintainer reports no/unsure Visual Studio licence.
+installer licence page.** The maintainer accepted the linked Community 2022
+terms, but confirms they have not yet obtained a copy of that edition.
 This document identifies the components and prepares the remaining review; a
 notice alone does not satisfy Microsoft's end-user agreement requirement.
 
@@ -43,8 +44,11 @@ Before public distribution:
    applicable terms; do not publish account details or licence keys.
 2. Review the complete distribution conditions, including the compiler runtime
    role and Microsoft-only end-user/distributor terms. Prepare an appropriate
-   acceptance mechanism and retain evidence. This draft supplies neither that
-   agreement nor a legal conclusion that the conditions have been met.
+   acceptance mechanism and retain evidence. The
+   [component-only text draft](windows-microsoft-component-terms.draft.txt) is
+   prepared for review; its unresolved items are explicit and it is not enabled
+   as installer terms. No conclusion that the protective standard has been
+   satisfied is claimed.
 3. Include the reviewed component notice and any required accepted terms in
    the Windows package. Rebuild if installer content changes, verify the exact
    files, source/notices and hashes, and obtain the new exact-installer PC result.

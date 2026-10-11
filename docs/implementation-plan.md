@@ -21,8 +21,10 @@ after restart/reboot and upgrade/uninstall/reinstall. The visual offset and loca
 installer checklist are closed for this exact setup. Untested hardware cases
 remain explicit in [the test record](windows-installed-test.md).
 
-Protected approval remains open. The maintainer's Visual Studio redistribution
-grant is no/unsure; Microsoft component end-user terms remain unresolved.
+Protected approval remains open. The maintainer accepts the linked Community
+2022 terms but confirms they have not yet obtained a copy; the licensed-copy
+requirement remains open. Microsoft component end-user terms are prepared in
+[a review draft](windows-microsoft-component-terms.draft.txt) and remain unresolved.
 Full source-only rebuild is unverified. The early owner-prepared draft preflight
 and sequential upstream NSIS tests now pass without broader permissions or
 skipped tests. macOS runtime-seed scope verification passes; its release path

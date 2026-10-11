@@ -19,8 +19,11 @@ Downloaded diagnostic artifact `11701215883` matches GitHub's SHA-256
 These results resolve technical identity/integration gates, independently of
 contractual permission.
 
-Owner response — 2026-10-11: **No, or unsure**, regarding an applicable Visual
-Studio licence. Public redistribution remains blocked. The
+Owner response — 2026-10-11: the maintainer first answered **No, or unsure**,
+then confirmed acceptance of the linked Community 2022 terms. On clarification
+they report **Only accepted the linked terms so far**; no obtained copy or
+installed edition/version is claimed. The applicable licensed-copy requirement
+therefore remains open. Public redistribution remains blocked. The
 [component notice draft](windows-microsoft-distribution-notice.draft.md) identifies
 the exact files and owner completion steps; it is not an agreement and is not
 enabled as an installer licence page. The maintainer must establish their grant
@@ -36,8 +39,8 @@ still lists the Community bootstrapper on Current 17.14. The maintainer can
 obtain this edition and review/accept its terms on their Windows PC. The
 [Community terms](https://visualstudio.microsoft.com/license-terms/vs2022-ga-community/)
 allow individual developers to develop their own applications; the edition is
-free. An accepted applicable licence, not a payment or a Windows OS licence,
-is the unresolved fact. Do not substitute the newer default download without
+free. Obtaining a validly licensed copy, not paying for a licence or holding a
+Windows OS licence, is the remaining owner step. Do not substitute the newer default download without
 reviewing its applicable terms. Record only edition, version and acceptance
 date/confirmation; no account information or key is needed.
 
@@ -113,12 +116,14 @@ this does not make application libraries such as Intel MKL/IPP System Libraries.
 
 ## Remaining public gates
 
-1. Establish the maintainer's applicable redistribution grant and satisfy its
+1. Obtain the applicable licensed copy and satisfy its
    distribution/end-user requirements specifically for Microsoft components.
    Do not impose proprietary restrictions on YomiMado's GPL code. An alternative
    is a separately installed official Microsoft prerequisite, with proper clean-PC
    detection and installed tests; that packaging path is not implemented here.
-2. Include reviewed component-specific terms/acceptance and notices if required;
+2. Review [the concrete component terms draft](windows-microsoft-component-terms.draft.txt),
+   resolve its explicit review items, then include approved component-specific
+   terms/acceptance and notices;
    any changed installer must repeat the passing canonical VC, source-only
    WebView loader, embedded plugin and source/notices delivery checks.
 3. Obtain fresh maintainer installed-app confirmation if terms or packaging
