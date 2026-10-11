@@ -1,8 +1,24 @@
 # First Windows pre-release plan
 
+Latest hosted verification — 2026-10-11: [run `38106334554`](https://github.com/chonnakanch/yomimado/actions/runs/38106334554)
+at `2bf94bd` passes every build/install/UI/runtime and private-upload check.
+Downloaded evidence `11690562200` matches GitHub SHA-256
+`8b7ee11dc97bdf7f13ec46a36b8c0b136b12b8f39dab8a75a1f15004e833ed26`.
+Its installed service passes horizontal/vertical geometry, tokenization,
+dictionaries, kanji, fresh translation and saved-data/cache restart checks.
+All five button/shortcut selector cases and cancellation pass; the desktop
+starts without developer Python/CUDA and leaves no service after quitting.
+This is hosted Windows Server evidence, not a new Windows 11 PC approval.
+The setup SHA-256 is
+`bb5713bb6ccb2abd2ccab650854ca707ca185accd761d13fba138c3ec0126126`.
+It predates the final source/notice/plugin corrections below; do not use it
+as the final PC test candidate.
+
 Final installer preparation — 2026-10-11: corrected UI/source candidate
-`2802db6` is queued in run `38107367762`, with an exact empty owner-only draft
-saved and no public tag. Independent review finds the stock NSIS Tauri plugin's
+`ca0fed3` is running in [run `38108583125`](https://github.com/chonnakanch/yomimado/actions/runs/38108583125),
+with an exact empty [owner-only draft](https://github.com/chonnakanch/yomimado/releases/edit/untagged-a60c37d3e98452ad3180)
+saved and no public tag. Earlier queued runs `38107367762` and `38108266704`
+were superseded. Independent review finds the stock NSIS Tauri plugin's
 source archive has no dependency lock. A short source build now pins its seven
 registry inputs and 15 notices, tests the original plugin and checks the exact
 embedded DLL. Offline source preparation passes locally; hosted execution is

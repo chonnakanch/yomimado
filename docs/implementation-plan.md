@@ -8,6 +8,15 @@ Build a small vertical slice first. Do not implement future features before the 
 
 ## Current status
 
+Windows hosted verification (2026-10-11): ONNX candidate `2bf94bd`, run
+`38106334554`, passes the complete installed UI, frozen OCR/learning/persistence
+and private-upload suite. Its downloaded evidence digest verifies independently.
+Final candidate `ca0fed3`, run `38108583125`, adds the remaining source/notice
+corrections and the short locked NSIS plugin build; its exact installed gates
+are pending. Windows 11 PC testing and protected approval must identify that
+new setup hash. macOS runtime-seed scope verification passes after an explicit
+Windows-only plugin-script exception; its release path is preserved.
+
 Windows comparison correction (2026-10-11): the export-only reference retains
 NumPy 1.26.4 for the original detector's legacy aliases, while the delivered
 ONNX environment selects NumPy 2.4.6. Exact wheel/native/notice hashes and tests
