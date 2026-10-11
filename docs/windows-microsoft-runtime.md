@@ -4,6 +4,18 @@ Reviewed 2026-10-11. Status: conditional redistribution evidence remains open.
 This records actual inputs and the remaining decisions; it does not accept a
 Microsoft agreement for the maintainer or approve an installer.
 
+Component-terms verification — 2026-10-11: [run `38142782743`, attempt 4](https://github.com/chonnakanch/yomimado/actions/runs/38142782743)
+at `f8396cc` passes all hosted gates. Setup SHA-256:
+`756b7dc6003af202e4df95e946edcbc7fe409c41cfd0d2fc3be4062f758b4a1b`.
+All four missing/wrong silent/passive acceptance cases exit with code 2 without
+installation; interactive decline starts unchecked with Next disabled and writes
+no app files. Successful exact installation records the pinned terms hash.
+Canonical VC originals, static installer runtime, embedded plugin and WebView
+loader bindings pass. Downloaded evidence and delivered terms/source/notices
+digests verify in [the source review](windows-source-review.md).
+The remaining owner step is fresh local confirmation of this changed installer
+and protected publication review, rather than another licensed-copy request.
+
 Final technical verification — 2026-10-11: [run `38133593809`, attempt 2](https://github.com/chonnakanch/yomimado/actions/runs/38133593809)
 at `8c46366d04e96d5356c250605e7ea936db209eb3` passes all installed startup, UI,
 learning and persistence gates. The exact setup SHA-256 is
@@ -24,7 +36,7 @@ the maintainer directly confirms downloading Visual Studio Community 2022 and
 accepting its terms. [The manifest](windows-microsoft-terms.json) records this
 owner attestation without an independently verified installed version or account
 details. The licensed-copy confirmation is complete. Public redistribution still
-requires the component-terms installation checks and protected human review.
+requires fresh exact-installer confirmation and protected human review.
 [The Microsoft-only terms](../THIRD_PARTY_LICENSES/windows-microsoft-components.txt)
 are now selected by the Windows-only configuration, retained in source/notices
 and hash-bound in the NSIS build record. Interactive setup requires affirmative
@@ -32,8 +44,8 @@ checkbox acceptance; silent/passive setup requires the exact terms hash in
 `/ACCEPTMSRUNTIME=` and otherwise exits with code 2. Successful installation
 records the hash in its per-user uninstall key; uninstall removes that key.
 Windows Actions checks rejection/cancel and the exact installed acceptance hash.
-The changed package awaits hosted execution and new exact-installer review.
-The maintainer confirms this exact setup hash and all listed local tests,
+The changed package passes hosted execution and awaits new exact-installer review.
+The maintainer confirms the previous `7ff298c5…` setup hash and all listed local tests,
 including corrected alignment at 100%/125%/150%. The local test checklist is
 complete; [untested hardware cases](windows-installed-test.md) remain explicit.
 Protected publication approval remains open.

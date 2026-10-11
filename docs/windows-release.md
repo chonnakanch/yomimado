@@ -1,6 +1,22 @@
 # First Windows pre-release plan
 
-Current private candidate — 2026-10-11: [run `38133593809`, attempt 2](https://github.com/chonnakanch/yomimado/actions/runs/38133593809)
+Current private candidate — 2026-10-11: [run `38142782743`, attempt 4](https://github.com/chonnakanch/yomimado/actions/runs/38142782743)
+at `f8396ccd5e7352a62e526c68438cc7f3c9cedc60` passes every automated gate in
+**46 minutes 19 seconds**. The [private draft](https://github.com/chonnakanch/yomimado/releases/tag/untagged-89216258550c52525eb3)
+contains eight verified assets. Setup SHA-256:
+`756b7dc6003af202e4df95e946edcbc7fe409c41cfd0d2fc3be4062f758b4a1b`.
+The new component-terms rejection/cancel and exact installed acceptance checks
+pass, alongside startup/cleanup, native input/source bindings, model/buttons/
+shortcuts, OCR, dictionary/kanji, uncached translation and persistence.
+Downloaded evidence `11707076117` matches SHA-256
+`56c7ee2b03767960651ab54196df5f21365d99f88eff1bc9cc8c563d5e45e31a`.
+Delivered project sources exactly match all 309 regular files at this commit;
+the source/notices inspection is recorded in [the source review](windows-source-review.md).
+The owner's licensed-copy confirmation is complete. **Fresh local tests for
+this changed setup and protected publication approval remain open.** Use the
+[six-check installer report](windows-installed-test.md); no joint publisher is enabled.
+
+Last locally verified private candidate — 2026-10-11: [run `38133593809`, attempt 2](https://github.com/chonnakanch/yomimado/actions/runs/38133593809)
 at `8c46366d04e96d5356c250605e7ea936db209eb3` passes the complete
 build/install/UI/OCR/learning/persistence and uploaded-asset suite in **45 minutes
 42 seconds**. The [owner-only draft](https://github.com/chonnakanch/yomimado/releases/tag/untagged-369bebe25308d4e82cc2)
@@ -63,8 +79,8 @@ Community 2022 obtained-copy/acceptance confirmation, includes the Microsoft-onl
 terms page and requires exact-hash silent/passive assent. All 208 release-tool
 tests, lint/format, PowerShell syntax, actionlint and the macOS runtime-reuse scope
 check pass. [Run `38142782743`, attempt 4](https://github.com/chonnakanch/yomimado/actions/runs/38142782743)
-passes the empty exact-commit draft preflight and is building the new private
-setup. Its installed verification, hashes and fresh local checklist are pending;
+passes the empty exact-commit draft preflight and the complete new private
+installer suite. Its fresh local checklist is pending;
 no protected human or public approval is granted.
 
 Previous private candidate — 2026-10-11: [run `38108583125`](https://github.com/chonnakanch/yomimado/actions/runs/38108583125)
@@ -102,7 +118,7 @@ with an initially unchecked acceptance checkbox. Silent/passive setup requires
 `/ACCEPTMSRUNTIME=<terms SHA-256>`; `/S` or `/P` alone exits with code 2 before
 installation. Windows Actions tests missing/wrong assent and interactive decline,
 then verifies the installed acceptance hash alongside existing runtime checks.
-This changed package awaits hosted verification and fresh exact-installer review. Full source-only rebuild
+This changed package passes hosted verification and awaits fresh exact-installer review. Full source-only rebuild
 is not claimed. Public approval flags remain false; protected human approval
 and joint release-on-main integration remain blocked. No public tag is created.
 
@@ -115,14 +131,14 @@ full notices, replacement instructions and active build/verification recipes sta
 The table below describes the current ONNX replacement. Historical installed
 and PC results above remain bound to their original setup hashes.
 
-| Requested gate                | Current evidence                                                                                                  | Remaining work                                                                                            |
-| ----------------------------- | ----------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
-| 1 — Pinned environment/freeze | Final CPython 3.11.17/NumPy 2.4.6/CPU ONNX freeze, parity and exact installed checks pass                         | Complete                                                                                                  |
-| 2 — Native licences/sources   | 80 frozen AMD64 PE files; exact input/source bindings and downloaded source/notices hashes verify                 | Component-terms installer verification and final distribution review; full source-only rebuild unverified |
-| 3 — Private installed app     | Exact NSIS install/startup/cleanup, UI/model/shortcut, embedded plugin, WebView/CRT and private asset checks pass | Local checklist complete; protected publication approval remains open                                     |
-| 4 — Installed runtime         | Final installed geometry, tokenization, dictionary/kanji, fresh translation and restart persistence pass          | Hosted and listed PC checks complete                                                                      |
-| 5 — Separate PC               | Windows 11 x64/hash confirmed; listed local checks and corrected alignment pass at 100%/125%/150%                 | AMD/mixed-monitor/left-of-primary/missing-WebView2 cases remain untested                                  |
-| 6 — Joint release-on-main     | Existing macOS path preserved; no Windows publisher enabled                                                       | Integrate only after distribution and protected exact-installer human gates pass                          |
+| Requested gate                | Current evidence                                                                                                  | Remaining work                                                                                           |
+| ----------------------------- | ----------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------- |
+| 1 — Pinned environment/freeze | Final CPython 3.11.17/NumPy 2.4.6/CPU ONNX freeze, parity and exact installed checks pass                         | Complete                                                                                                 |
+| 2 — Native licences/sources   | 80 frozen AMD64 PE files; exact input/source bindings, delivered sources/notices and component-terms checks pass  | Fresh installer acceptance/report and protected distribution review; full source-only rebuild unverified |
+| 3 — Private installed app     | Exact NSIS install/startup/cleanup, UI/model/shortcut, embedded plugin, WebView/CRT and private asset checks pass | Fresh local checklist and protected publication approval remain open                                     |
+| 4 — Installed runtime         | Final installed geometry, tokenization, dictionary/kanji, fresh translation and restart persistence pass          | Hosted checks complete; fresh current-setup PC report pending                                            |
+| 5 — Separate PC               | Prior setup's Windows 11 x64/hash and all listed checks pass, including alignment at 100%/125%/150%               | Retest current setup; AMD/mixed-monitor/left-of-primary/missing-WebView2 cases remain untested           |
+| 6 — Joint release-on-main     | Existing macOS path preserved; no Windows publisher enabled                                                       | Integrate only after distribution and protected exact-installer human gates pass                         |
 
 The active candidate builds the minimal OpenCV runtime from pinned sources with
 IPP, video and GPU backends disabled. Generated `/MD` compiler commands, native

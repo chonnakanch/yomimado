@@ -1,12 +1,21 @@
 # Windows candidate test record
 
 Component-terms candidate — 2026-10-11: [run `38142782743`, attempt 4](https://github.com/chonnakanch/yomimado/actions/runs/38142782743)
-is building source `f8396ccd5e7352a62e526c68438cc7f3c9cedc60` for this
-[private draft](https://github.com/chonnakanch/yomimado/releases/tag/untagged-e959857f82b89c87c77b).
-Hosted installer verification, a new setup hash and its local report are pending.
+passes all automated gates in **46 minutes 19 seconds** at source
+`f8396ccd5e7352a62e526c68438cc7f3c9cedc60`. The
+[private draft](https://github.com/chonnakanch/yomimado/releases/tag/untagged-89216258550c52525eb3)
+contains eight hash-verified assets. `YomiMado_0.1.0_x64-setup.exe` SHA-256:
+`756b7dc6003af202e4df95e946edcbc7fe409c41cfd0d2fc3be4062f758b4a1b`.
+Missing/wrong silent and passive assent exit with code 2 without installing;
+interactive terms start unchecked with Next disabled, and cancelling writes no
+app files. Exact installed acceptance, startup/cleanup, native inputs, model/UI,
+OCR/learning and persistence pass. Downloaded evidence `11707076117` matches
+GitHub SHA-256 `56c7ee2b03767960651ab54196df5f21365d99f88eff1bc9cc8c563d5e45e31a`.
+These are hosted Windows Server results. **Fresh Windows 11 local confirmation
+and protected publication approval are pending.**
 The old setup's passing results below do not cover this changed installer.
 
-Once the new candidate passes automation, check its published private SHA-256
+Check this candidate's downloaded SHA-256
 and report pass/fail/untested for these six local checks:
 
 1. Browser download with Defender/SmartScreen enabled; terms initially unchecked;
@@ -52,8 +61,8 @@ The broad scale check does not add detailed hover/edge-target coverage.
 **The local installer checklist is complete for this exact setup.** Protected
 publication approval remains open. The owner now confirms downloading Community
 2022 and accepting its terms. The component-terms acceptance implementation
-changes the setup and therefore needs new hosted verification and a new
-hash-bound installer report. Immutable private candidate metadata still has
+changes the setup; hosted verification now passes, and a new hash-bound local
+installer report remains required. Immutable private candidate metadata still has
 `installedAppVerified=false` and `publicDistributionApproved=false`; this human
 report does not rewrite archived bytes or approve the protected publisher.
 

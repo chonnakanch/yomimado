@@ -5,6 +5,28 @@ Windows binary, or attest to a test that has not run. A private candidate may
 be assembled to inspect actual inputs; public distribution is blocked until
 all entries below have concrete evidence.
 
+Component-terms candidate inspection — 2026-10-11: [run `38142782743`, attempt 4](https://github.com/chonnakanch/yomimado/actions/runs/38142782743)
+at `f8396ccd5e7352a62e526c68438cc7f3c9cedc60` passes all hosted installer,
+runtime, terms-rejection and uploaded-hash gates. Setup SHA-256:
+`756b7dc6003af202e4df95e946edcbc7fe409c41cfd0d2fc3be4062f758b4a1b`.
+The downloaded diagnostic ZIP matches GitHub digest
+`56c7ee2b03767960651ab54196df5f21365d99f88eff1bc9cc8c563d5e45e31a`.
+The downloaded source and notices archives match
+`528aa9316e1266681575959eaf3ba3d6e960459e36b0522575789f1bbe5a48b6` and
+`141d86eb72d5ba2a20b5953cab7d52a63bd7e30b896aa08811a512a0157144fe`.
+Inspection verifies 941 unchanged original archive members against the previously
+inspected delivery, 1,807 byte-identical upstream notice members, and equivalent
+notice text for all 1,175 OpenCV source paths despite reordered generated sections.
+The 1,037 source-delivery and 1,882 notice members are hashed locally; added terms
+and manifest bytes match the pinned project record. The separate project source
+archive matches all 309 regular files in `git archive` at the exact source commit.
+No detector-model payload filename occurs in the outer source delivery.
+The source-built installer plugin, exact terms manifest/recipe/lock and embedded
+copy verify; the service remains 80 AMD64 PE files without Torch/CUDA.
+The owner's Community 2022 obtained-copy/acceptance attestation is recorded.
+Fresh local confirmation of this changed installer and protected publication
+review remain open; prior PC results below retain their original setup hash.
+
 Final downloaded delivery inspection — 2026-10-11: successful Windows run
 `38133593809` attempt 2 at `8c46366d04e96d5356c250605e7ea936db209eb3` verifies the exact
 installed CPU ONNX runtime, native inputs, NSIS plugin, WebView loader and
@@ -35,8 +57,8 @@ This is actual delivered-source/notices verification, not inherited macOS approv
 Independent full source-only rebuilding is **unverified**; no byte-identical
 rebuild or blanket legal approval is claimed. The maintainer now confirms obtaining
 Community 2022 and accepting its terms. [Microsoft-only component terms and installer acceptance](windows-microsoft-runtime.md)
-are implemented for private verification; the changed setup still needs hosted
-checks and exact-installer review. The maintainer confirms the corrected setup's SHA-256,
+pass private hosted verification; the changed setup still needs exact-installer
+local review. The maintainer confirms the previous corrected setup's SHA-256,
 alignment at 100%, 125% and 150% and all listed local installer checks pass in
 [the installed test record](windows-installed-test.md). That closes the local
 test checklist without granting Microsoft redistribution entitlement or

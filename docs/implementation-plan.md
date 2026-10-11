@@ -8,6 +8,16 @@ Build a small vertical slice first. Do not implement future features before the 
 
 ## Current status
 
+Current Windows component-terms setup (2026-10-11): source `f8396cc`,
+[run `38142782743`, attempt 4](https://github.com/chonnakanch/yomimado/actions/runs/38142782743),
+passes all automated gates in 46 minutes 19 seconds. Setup SHA-256:
+`756b7dc6003af202e4df95e946edcbc7fe409c41cfd0d2fc3be4062f758b4a1b`.
+The owner Community 2022 confirmation, component-only checkbox/unattended assent,
+rejection/cancel and installed acceptance checks are complete. Downloaded
+evidence, exact project source, upstream originals/notices and new terms bytes
+verify. Fresh Windows 11 local tests of this changed setup and protected
+publication review remain open. See [the six-check report](windows-installed-test.md).
+
 Windows hosted verification (2026-10-11): CPU ONNX candidate `8c46366`, run
 `38133593809` attempt 2, passes the complete build/install/UI/OCR/learning,
 persistence, native-input and private-upload suite in 45 minutes 42 seconds.
@@ -26,7 +36,7 @@ Studio Community 2022 and accepting its terms; the owner licensed-copy attestati
 is recorded in [the terms manifest](windows-microsoft-terms.json). Windows setup
 now includes [Microsoft-only component terms](../THIRD_PARTY_LICENSES/windows-microsoft-components.txt),
 an initially unchecked acceptance checkbox and exact-hash unattended acceptance.
-Windows Actions verification and fresh exact-installer review remain pending for
+Windows Actions verification passes; fresh exact-installer local review remains pending for
 this changed package. The existing setup's passing results remain hash-bound.
 Full source-only rebuild is unverified. The early owner-prepared draft preflight
 and sequential upstream NSIS tests now pass without broader permissions or
@@ -86,7 +96,8 @@ multiple monitors/mixed scaling and missing-WebView2 installation remain unteste
 
 The hosted ONNX candidate passes exact installed runtime and source/notices
 checks. The owner Community 2022 confirmation is recorded; component-terms
-installer verification and protected exact-installer approval remain open; full source-only rebuild is unverified.
+installer verification passes, while fresh local confirmation and protected
+exact-installer approval remain open; full source-only rebuild is unverified.
 Keep the candidate private and add joint release-on-main publication only after
 those gates pass, using one publisher/tag for both platforms. macOS remains on
 its reviewed runtime path. The earlier package investigation is retained in

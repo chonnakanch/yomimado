@@ -1,5 +1,16 @@
 # Windows installer source record
 
+Current component-terms setup — 2026-10-11: [run `38142782743`, attempt 4](https://github.com/chonnakanch/yomimado/actions/runs/38142782743)
+at `f8396cc` passes the complete hosted installer suite. Setup SHA-256:
+`756b7dc6003af202e4df95e946edcbc7fe409c41cfd0d2fc3be4062f758b4a1b`.
+Its one extracted plugin copy matches the source-built i686 DLL SHA-256
+`310896e3d00baf083744388d8fcaaad41b513f25c4b445fbdcca2eef19b03a62`;
+recipe, lock, original/rendered template and terms manifest bindings pass.
+The five unattended rejection/interactive cancellation cases and the installed
+terms hash pass. Downloaded source/notices retain the exact new terms bytes,
+unchanged original plugin/archive dependencies and their notices.
+Fresh Windows 11 installer confirmation and protected publication review remain open.
+
 Verified 2026-10-11 in [run `38133593809`, attempt 2](https://github.com/chonnakanch/yomimado/actions/runs/38133593809),
 source `8c46366d04e96d5356c250605e7ea936db209eb3`. Native workspace tests and
 production compilation pass; the production build takes **4.05 seconds**.
@@ -40,8 +51,15 @@ unexpected dynamic VC imports; the compiler-runtime redistribution assessment
 remains in the [Microsoft component review](windows-microsoft-runtime.md).
 
 The exact official Tauri CLI 2.11.5 installer template is checksum-pinned.
-Only its `ADDITIONALPLUGINSPATH` definition changes to select the newly built
-DLL. Every other upstream installation line is preserved. Tauri may still
+The private component-terms replacement at `f8396cc` changes its
+`ADDITIONALPLUGINSPATH` definition to select the newly built DLL, requires the
+Microsoft-only terms page with an initially unchecked checkbox, rejects missing
+or mismatched silent/passive assent, and records the accepted terms hash in the
+per-user uninstall entry. The transformation requires the exact upstream anchors;
+unexpected template changes fail preparation. The owner confirms obtaining
+Community 2022 and accepting its terms; hosted verification now passes and fresh
+local review of this changed setup remains pending. See [the terms record](windows-microsoft-terms.json).
+Tauri may still
 download its stock plugin into the tool cache; that file is outside the selected
 additional-plugin directory and is not treated as the embedded input.
 
