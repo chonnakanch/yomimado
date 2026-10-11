@@ -94,3 +94,9 @@ document formatting pass. The macOS seed comparison is preserved. The separate
 **Desktop release gate checks** workflow runs these lightweight publisher and
 version tests on `develop` with read-only permission and local fake APIs; it
 neither builds an installer nor accesses private seeds.
+
+Hosted gate-check record — [run `38155209350`](https://github.com/chonnakanch/yomimado/actions/runs/38155209350)
+passes on `develop` at `cbeddb5e3e0a66d02e786eaf2251b3b9f3012574` in **15 seconds**.
+It executes the publisher/transfer rejection tests and macOS version/source/artifact
+tests using local fake APIs. It does not claim the protected main input transfer,
+macOS/Windows combined builds or final human publication gate have executed.

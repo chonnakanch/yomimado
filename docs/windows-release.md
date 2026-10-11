@@ -2,7 +2,7 @@
 
 Current private candidate — 2026-10-11: [run `38142782743`, attempt 4](https://github.com/chonnakanch/yomimado/actions/runs/38142782743)
 at `f8396ccd5e7352a62e526c68438cc7f3c9cedc60` passes every automated gate in
-**46 minutes 19 seconds**. The [private draft](https://github.com/chonnakanch/yomimado/releases/tag/untagged-89216258550c52525eb3)
+**46 minutes 19 seconds**. The [private draft](https://github.com/chonnakanch/yomimado/releases/tag/untagged-5d4b6531f87bae7fb27f)
 contains eight verified assets. Setup SHA-256:
 `756b7dc6003af202e4df95e946edcbc7fe409c41cfd0d2fc3be4062f758b4a1b`.
 The new component-terms rejection/cancel and exact installed acceptance checks
