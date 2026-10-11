@@ -55,3 +55,14 @@ into installed notices. The recipes and source inputs are available from
 [tagged supplier](https://github.com/MacPython/openblas-libs/tree/2387cb313f653b694d864f2d1d6888a26d7b2ba1).
 This review does not approve unrelated Microsoft runtime inputs, the complete
 Windows source gate, or the human installer gate.
+
+The delivery manifest now also retains the actual NumPy 2.4.6 sdist, rather
+than treating the export-only NumPy 1.26.4 source as runtime coverage. The original
+archive has SHA-256 `f3a3570c4a2a16746ac2c31a7c7c7b0c186b95ce902e33db6f28094ed7387dda`;
+the canonical preferred tree is
+`3b5105c1dcec720e6ccd5ee2a5ac938cfa1d214aee1f30b3c57e92034580e4a1`.
+All 25 original notice files are pinned and preserved. Metadata from the exact
+wheel and original sdist must agree on NumPy 2.4.6. The 116 omitted inputs are
+test/media/prebuilt files, retained by path/hash in the preparation record;
+preferred code and recipes are unchanged. These bytes and checks pass locally;
+final installed notice/source-archive verification remains required.

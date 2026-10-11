@@ -1,5 +1,30 @@
 # Windows candidate test record
 
+Replacement test preparation — 2026-10-11: the Windows runtime now selects
+CPU ONNX inference, NumPy 2.4.6, a source-built Sudachi binding, unchanged
+canonical VC runtime copies and a source-only WebView loader. Final packaging
+also omits original export-only PyTorch weights. These changes require a fresh
+exact-installer test; earlier reports do not approve the replacement. Its setup
+hash and private draft will be recorded after automated installed checks pass.
+Use the confirmed x64 PC specification below unless it has changed.
+
+The short final-candidate report should contain the verified setup hash and
+**pass / fail / untested** for these six checks:
+
+1. Browser download, hash match, SmartScreen/Defender observations and per-user
+   installation. Keep security protections enabled.
+2. Launch/relaunch, no terminal, model import/cancel/wrong-file handling, both
+   shortcuts and a page scan; quit leaves no app/service process.
+3. OCR geometry, matching region click, word/readings/dictionary and kanji;
+   translate a new sentence explicitly with the internet disconnected.
+4. Save words/sentences, restart and reboot; confirm saved entries, imported
+   model and translation cache persist.
+5. At 100%, 125% and 150%, relaunch then check selection drag, OCR alignment,
+   region clicks and fully on-screen popup controls on the 2560 × 1440 display.
+6. Upgrade over the older private setup, then uninstall/reinstall; report shortcut
+   removal and whether study/model data is retained. Mark additional monitors,
+   AMD hardware and missing-WebView2 clean-machine cases untested if unavailable.
+
 Newer private preparation candidate — 2026-10-10: [run `38022182370`](https://github.com/chonnakanch/yomimado/actions/runs/38022182370)
 at `65ac794370fe2b0f60d7ed968ac0be2c04ca4d51` passes the complete automated
 suite and private uploaded-asset checks. Its setup SHA-256 is

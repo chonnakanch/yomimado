@@ -135,6 +135,36 @@ class NativeSourceTests(unittest.TestCase):
             with self.subTest(code=code), self.assertRaisesRegex(ValueError, "differs"):
                 sources.verify_python_source(package, wheel, original)
 
+    def test_numpy_source_version_must_match_delivered_wheel(self):
+        original = self.root / "numpy.tar.gz"
+        metadata = b"Name: numpy\nVersion: 2.4.6\n"
+        with tarfile.open(original, "w:gz") as archive:
+            member = tarfile.TarInfo("numpy-2.4.6/PKG-INFO")
+            member.size = len(metadata)
+            archive.addfile(member, io.BytesIO(metadata))
+        entry = {
+            "name": "numpy-2.4.6",
+            "sha256": sources.digest(original),
+            "preferredSourceSha256": "a" * 64,
+        }
+        wheel = self.root / "numpy.whl"
+        for version in ("2.4.6", "1.26.4"):
+            with zipfile.ZipFile(wheel, "w") as archive:
+                archive.writestr(
+                    "numpy-2.4.6.dist-info/METADATA",
+                    f"Name: numpy\nVersion: {version}\n",
+                )
+            if version == "2.4.6":
+                result = sources.verify_numpy_source(entry, original, wheel, "2.4.6")
+                self.assertEqual(result["originalSha256"], sources.digest(original))
+                self.assertEqual(result["version"], "2.4.6")
+            else:
+                with self.assertRaisesRegex(ValueError, "versions differ"):
+                    sources.verify_numpy_source(entry, original, wheel, "2.4.6")
+        entry["sha256"] = "0" * 64
+        with self.assertRaisesRegex(ValueError, "original differs"):
+            sources.verify_numpy_source(entry, original, wheel, "2.4.6")
+
     def test_numpy_vendor_binding_rejects_changed_blas_and_recipe(self):
         numpy = self.root / "numpy.whl"
         supplier = self.root / "supplier.whl"

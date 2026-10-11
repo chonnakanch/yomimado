@@ -7,6 +7,7 @@ import hashlib
 import shutil
 import tarfile
 import zipfile
+from email.parser import BytesParser
 from pathlib import Path, PurePosixPath
 
 from windows_notices import native_notice_source
@@ -15,6 +16,31 @@ from windows_release import BUILD, RESOURCES, ROOT, digest, read_json, write_jso
 
 MANIFEST = ROOT / "docs/windows-native-delivery-inputs.json"
 PYTHON_MANIFEST = ROOT / "scripts/onnx-probe-inputs.json"
+
+
+def verify_numpy_source(entry: dict, original: Path, wheel: Path, version: str) -> dict:
+    """Bind the delivered NumPy version to its original preferred sources."""
+    if digest(original) != entry["sha256"]:
+        raise ValueError("NumPy preferred source original differs")
+    with tarfile.open(original) as archive:
+        member = archive.getmember(entry["name"] + "/PKG-INFO")
+        if not member.isfile():
+            raise ValueError("NumPy preferred source metadata is not regular")
+        source_metadata = BytesParser().parsebytes(archive.extractfile(member).read())
+    with zipfile.ZipFile(wheel) as archive:
+        wheel_metadata = BytesParser().parsebytes(
+            archive.read(f"numpy-{version}.dist-info/METADATA")
+        )
+    if any(
+        record.get("Name", "").lower() != "numpy" or record.get("Version") != version
+        for record in (source_metadata, wheel_metadata)
+    ):
+        raise ValueError("NumPy runtime and preferred-source versions differ")
+    return {
+        "version": version,
+        "originalSha256": digest(original),
+        "preferredSourceSha256": entry["preferredSourceSha256"],
+    }
 
 
 def verify_numpy_vendor(
@@ -165,6 +191,15 @@ def collect(resources: Path = RESOURCES) -> None:
         / vendor["numpyWheel"]["filename"],
         supplier_wheel,
         BUILD / "native-source-inputs" / recipe_entry["filename"],
+    )
+    source_entry = next(e for e in entries if e["name"] == vendor["sourceArchive"])
+    numpy_record["preferredSource"] = verify_numpy_source(
+        source_entry,
+        BUILD / "native-source-inputs" / source_entry["filename"],
+        ROOT
+        / "services/ocr/build/onnx-prototype/inputs"
+        / vendor["numpyWheel"]["filename"],
+        vendor["numpyVersion"],
     )
     for name, content in numpy_record.pop("noticeBytes").items():
         target = notices / "numpy-blas-supplier" / name

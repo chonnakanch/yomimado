@@ -938,6 +938,11 @@ Before any public release:
 - [x] plan Windows runtime, source review, installer/scaling tests and joint
       publication in `docs/windows-release.md`
 - [ ] implement and verify Windows installation/runtime requirements
+      Windows-only CPU ONNX replacement and source/notice preparation are in
+      progress. Pre-freeze OCR/translation parity, the small Sudachi binding,
+      canonical VC identity and source-only WebView ABI probes pass. Final
+      installed setup/source verification and fresh exact-hash PC approval
+      remain open; existing macOS packaging/publisher remains unchanged.
 
 # After the first release — UI redesign discussion
 
