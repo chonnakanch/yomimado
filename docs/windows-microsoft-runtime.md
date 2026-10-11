@@ -13,8 +13,9 @@ no app files. Successful exact installation records the pinned terms hash.
 Canonical VC originals, static installer runtime, embedded plugin and WebView
 loader bindings pass. Downloaded evidence and delivered terms/source/notices
 digests verify in [the source review](windows-source-review.md).
-The remaining owner step is fresh local confirmation of this changed installer
-and protected publication review, rather than another licensed-copy request.
+The maintainer confirms this exact setup hash and all six local checks pass.
+The remaining owner step is protected publication review; another licensed-copy
+or same-installer test request is not required.
 
 Final technical verification — 2026-10-11: [run `38133593809`, attempt 2](https://github.com/chonnakanch/yomimado/actions/runs/38133593809)
 at `8c46366d04e96d5356c250605e7ea936db209eb3` passes all installed startup, UI,
@@ -36,7 +37,8 @@ the maintainer directly confirms downloading Visual Studio Community 2022 and
 accepting its terms. [The manifest](windows-microsoft-terms.json) records this
 owner attestation without an independently verified installed version or account
 details. The licensed-copy confirmation is complete. Public redistribution still
-requires fresh exact-installer confirmation and protected human review.
+requires protected human publication review; fresh exact-hash local
+confirmation is recorded in the installed test report.
 [The Microsoft-only terms](../THIRD_PARTY_LICENSES/windows-microsoft-components.txt)
 are now selected by the Windows-only configuration, retained in source/notices
 and hash-bound in the NSIS build record. Interactive setup requires affirmative
@@ -44,7 +46,7 @@ checkbox acceptance; silent/passive setup requires the exact terms hash in
 `/ACCEPTMSRUNTIME=` and otherwise exits with code 2. Successful installation
 records the hash in its per-user uninstall key; uninstall removes that key.
 Windows Actions checks rejection/cancel and the exact installed acceptance hash.
-The changed package passes hosted execution and awaits new exact-installer review.
+The changed package passes hosted execution and the fresh exact-hash local report.
 The maintainer confirms the previous `7ff298c5…` setup hash and all listed local tests,
 including corrected alignment at 100%/125%/150%. The local test checklist is
 complete; [untested hardware cases](windows-installed-test.md) remain explicit.

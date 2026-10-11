@@ -110,7 +110,9 @@ def verify_reuse(root: Path = ROOT) -> None:
     allowed_files = {
         "README.md",
         ".github/workflows/macos-prerelease.yml",
+        ".github/workflows/desktop-release-checks.yml",
         "scripts/macos-ci-release.py",
+        "scripts/desktop_release.py",
         # These inputs are used only by the independent Windows candidate path.
         # Shared OCR code, existing locks and macOS recipes still fail closed.
         ".github/workflows/windows-candidate.yml",

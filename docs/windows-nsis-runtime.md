@@ -9,7 +9,8 @@ recipe, lock, original/rendered template and terms manifest bindings pass.
 The five unattended rejection/interactive cancellation cases and the installed
 terms hash pass. Downloaded source/notices retain the exact new terms bytes,
 unchanged original plugin/archive dependencies and their notices.
-Fresh Windows 11 installer confirmation and protected publication review remain open.
+The maintainer confirms this exact setup hash and all six Windows 11 local
+checks pass. Protected publication review remains open.
 
 Verified 2026-10-11 in [run `38133593809`, attempt 2](https://github.com/chonnakanch/yomimado/actions/runs/38133593809),
 source `8c46366d04e96d5356c250605e7ea936db209eb3`. Native workspace tests and
@@ -58,7 +59,7 @@ or mismatched silent/passive assent, and records the accepted terms hash in the
 per-user uninstall entry. The transformation requires the exact upstream anchors;
 unexpected template changes fail preparation. The owner confirms obtaining
 Community 2022 and accepting its terms; hosted verification now passes and fresh
-local review of this changed setup remains pending. See [the terms record](windows-microsoft-terms.json).
+local review of this changed setup now passes with its exact hash confirmed. See [the terms record](windows-microsoft-terms.json).
 Tauri may still
 download its stock plugin into the tool cache; that file is outside the selected
 additional-plugin directory and is not treated as the embedded input.

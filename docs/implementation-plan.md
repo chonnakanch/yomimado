@@ -15,8 +15,8 @@ passes all automated gates in 46 minutes 19 seconds. Setup SHA-256:
 The owner Community 2022 confirmation, component-only checkbox/unattended assent,
 rejection/cancel and installed acceptance checks are complete. Downloaded
 evidence, exact project source, upstream originals/notices and new terms bytes
-verify. Fresh Windows 11 local tests of this changed setup and protected
-publication review remain open. See [the six-check report](windows-installed-test.md).
+verify. The maintainer confirms this exact setup hash and all six fresh Windows
+11 local checks pass. Protected publication review remains open. See [the six-check report](windows-installed-test.md).
 
 Windows hosted verification (2026-10-11): CPU ONNX candidate `8c46366`, run
 `38133593809` attempt 2, passes the complete build/install/UI/OCR/learning,
@@ -36,12 +36,14 @@ Studio Community 2022 and accepting its terms; the owner licensed-copy attestati
 is recorded in [the terms manifest](windows-microsoft-terms.json). Windows setup
 now includes [Microsoft-only component terms](../THIRD_PARTY_LICENSES/windows-microsoft-components.txt),
 an initially unchecked acceptance checkbox and exact-hash unattended acceptance.
-Windows Actions verification passes; fresh exact-installer local review remains pending for
+Windows Actions verification and fresh exact-hash local review both pass for
 this changed package. The existing setup's passing results remain hash-bound.
 Full source-only rebuild is unverified. The early owner-prepared draft preflight
 and sequential upstream NSIS tests now pass without broader permissions or
 skipped tests. macOS runtime-seed scope verification passes; its release path
-is preserved and joint publication is not enabled. Retired Windows trial
+is preserved. The shared main workflow is prepared on develop, using one
+publisher/tag and protected review of both new installers. First main execution
+remains pending; no merge, tag or publication is performed. Retired Windows trial
 histories remain recoverable in Git at `ee1b7f5`.
 
 The delivered Windows runtime uses CPU ONNX inference with NumPy 2.4.6 and a
@@ -96,10 +98,11 @@ multiple monitors/mixed scaling and missing-WebView2 installation remain unteste
 
 The hosted ONNX candidate passes exact installed runtime and source/notices
 checks. The owner Community 2022 confirmation is recorded; component-terms
-installer verification passes, while fresh local confirmation and protected
-exact-installer approval remain open; full source-only rebuild is unverified.
-Keep the candidate private and add joint release-on-main publication only after
-those gates pass, using one publisher/tag for both platforms. macOS remains on
+installer verification and fresh local confirmation pass, while protected
+exact-installer publication approval remains open; full source-only rebuild is unverified.
+Keep the candidate private. Joint release-on-main integration is prepared after
+these checks, using one publisher/tag and a protected review of both installers
+from each new main commit. See [the shared rollout/checklist](desktop-release.md). macOS remains on
 its reviewed runtime path. The earlier package investigation is retained in
 [the prebuilt review](windows-prebuilt-runtime.md); the completed ONNX migration
 is recorded in [the prototype record](windows-onnx-prototype.md). The maintainer's

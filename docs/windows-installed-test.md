@@ -11,12 +11,29 @@ interactive terms start unchecked with Next disabled, and cancelling writes no
 app files. Exact installed acceptance, startup/cleanup, native inputs, model/UI,
 OCR/learning and persistence pass. Downloaded evidence `11707076117` matches
 GitHub SHA-256 `56c7ee2b03767960651ab54196df5f21365d99f88eff1bc9cc8c563d5e45e31a`.
-These are hosted Windows Server results. **Fresh Windows 11 local confirmation
-and protected publication approval are pending.**
-The old setup's passing results below do not cover this changed installer.
+These are hosted Windows Server results, separate from the maintainer's PC report.
 
-Check this candidate's downloaded SHA-256
-and report pass/fail/untested for these six local checks:
+Latest local report — 2026-10-11: the maintainer confirms **“everything work”**
+in response to this candidate's six-check handoff, then explicitly confirms
+**“Yes, hash matches”** for `756b7dc6…`. Record all six checks below as
+**maintainer-reported pass** for this exact setup, including the new terms page,
+rejection/cancel, both shortcuts, offline learning, restart/reboot persistence,
+100%/125%/150% alignment/clicking, and upgrade/uninstall/reinstall. This closes
+its local checklist; it is not an independent live-PC test or protected
+publication approval. No more detailed uninstall data-retention outcome is
+inferred from the broad pass.
+
+The previously confirmed hardware is Windows 11 Home 25H2 build 26200.9457,
+x64 OS/x64 Core i5-14500, 32 GB RAM and one 2560 × 1440 monitor. AMD,
+additional/mixed-scale monitors, left-of-primary layout and a clean machine
+without WebView2 remain untested. Detailed hover/edge-target subcases are not
+added by this broad pass. **Protected publication review remains open.**
+
+A later `main` build creates different installer bytes and requires both its
+macOS and Windows exact-installer tests before approving the publish job in
+`macos-release`. Seed-input access approval is separate and approves no installer.
+
+Reusable six-check checklist — all six reported passed for this candidate:
 
 1. Browser download with Defender/SmartScreen enabled; terms initially unchecked;
    cancel before installation, then review/accept and install or upgrade normally.
@@ -29,7 +46,7 @@ and report pass/fail/untested for these six local checks:
 6. Upgrade, uninstall and reinstall behave correctly; report retained or removed
    learning data explicitly. Keep previously untested hardware cases untested.
 
-Last verified exact candidate — 2026-10-11: [private draft](https://github.com/chonnakanch/yomimado/releases/tag/untagged-369bebe25308d4e82cc2),
+Previous verified exact candidate — 2026-10-11: [private draft](https://github.com/chonnakanch/yomimado/releases/tag/untagged-369bebe25308d4e82cc2),
 from successful [run `38133593809`, attempt 2](https://github.com/chonnakanch/yomimado/actions/runs/38133593809)
 at `8c46366d04e96d5356c250605e7ea936db209eb3`.
 `YomiMado_0.1.0_x64-setup.exe` SHA-256:
@@ -61,8 +78,8 @@ The broad scale check does not add detailed hover/edge-target coverage.
 **The local installer checklist is complete for this exact setup.** Protected
 publication approval remains open. The owner now confirms downloading Community
 2022 and accepting its terms. The component-terms acceptance implementation
-changes the setup; hosted verification now passes, and a new hash-bound local
-installer report remains required. Immutable private candidate metadata still has
+changes the setup; hosted verification and the latest hash-bound local
+installer report above now pass. Immutable private candidate metadata still has
 `installedAppVerified=false` and `publicDistributionApproved=false`; this human
 report does not rewrite archived bytes or approve the protected publisher.
 

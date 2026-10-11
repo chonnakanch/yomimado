@@ -1,7 +1,7 @@
-name: macOS release from main
+name: Desktop release from main
 
 # Merge a versioned change into main. Build the merged commit, then wait for
-# installer confirmation before creating its tag and public hobby release.
+# both exact installer confirmations before one tag and public hobby release.
 "on":
   push:
     branches: [main]
@@ -11,15 +11,11 @@ permissions:
   contents: read
 
 concurrency:
-  group: macos-main-release
+  group: desktop-main-release
   cancel-in-progress: false
 
 env:
-  SEED_RELEASE_TAG: macos-reviewed-seed-5120506
   SOURCE_REVISION: ${{ github.sha }}
-  SOURCE_SHA256: 0ca10a4cc5084d4778aa636e07c504db56dcf9baec87af2d37b00859803a2744
-  NOTICES_SHA256: f0d2a380e2639a525bf93c61d0aa0c45de5952cb283a9a0afb65810c46b22f71
-  SEED_DMG_SHA256: fbe1d788d2f80b442b2abf9c53c5439af81ea78c2bc73c584907b4791f3c1cff
 
 jobs:
   plan:
@@ -68,8 +64,46 @@ jobs:
           python scripts/macos-ci-release.py verify-environment --directory "$RUNNER_TEMP/release-environment.json" --policies "$RUNNER_TEMP/release-policies.json"
           echo "release=true" >> "$GITHUB_OUTPUT"
 
-  build:
+  # Push access is required to read unpublished seeds. Keep it out of builders,
+  # review this GET-only job separately, and use no long-lived personal token.
+  seed-inputs:
     needs: plan
+    if: needs.plan.outputs.release == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    environment: macos-release
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
+        with:
+          python-version: "3.11.17"
+      - name: Read and hash private seeds without publishing or approving installers
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python scripts/desktop_release.py download-inputs --directory inputs
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: reviewed-macos-inputs
+          path: inputs/macos/
+          if-no-files-found: error
+          retention-days: 1
+          compression-level: 0
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: reviewed-windows-inputs
+          path: inputs/windows/
+          if-no-files-found: error
+          retention-days: 1
+          compression-level: 0
+
+  build:
+    name: Build macOS Apple Silicon
+    needs: [plan, seed-inputs]
     if: needs.plan.outputs.release == 'true'
     runs-on: macos-14
     timeout-minutes: 90
@@ -98,43 +132,22 @@ jobs:
           rustup toolchain install 1.98.1 --profile minimal
           rustup default 1.98.1
           python -m pip install --disable-pip-version-check --only-binary=:all: --no-deps pillow==11.3.0 tomli==2.4.1 importlib-metadata==8.7.1 zipp==3.23.0
-          python -m unittest discover -s scripts/tests
+          python -m unittest discover -s scripts/tests -p 'test_macos*.py'
+          python -m unittest discover -s scripts/tests -p test_opencv_release.py
+          python -m unittest discover -s scripts/tests -p test_desktop_release.py
           npm ci --prefix apps/desktop
           npm test --prefix apps/desktop
           cargo test --manifest-path apps/desktop/src-tauri/Cargo.toml --locked
           mkdir -p "$RUNNER_TEMP/yomimado-input" "$RUNNER_TEMP/yomimado-output"
-      - name: Download and hash the reviewed seed assets
-        env:
-          GH_TOKEN: ${{ github.token }}
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: reviewed-macos-inputs
+          path: ${{ runner.temp }}/yomimado-input
+      - name: Verify transferred reviewed macOS inputs
         shell: bash
         run: |
           set -euo pipefail
-          gh api "repos/$GITHUB_REPOSITORY/releases/tags/$SEED_RELEASE_TAG" > "$RUNNER_TEMP/yomimado-input/release.json"
-          python - <<'PY'
-          import hashlib, json, os, subprocess
-          from pathlib import Path
-          directory = Path(os.environ["RUNNER_TEMP"]) / "yomimado-input"
-          expected = {
-              "YomiMado_0.1.0_aarch64.dmg": os.environ["SEED_DMG_SHA256"],
-              "YomiMado_0.1.0_sources_5120506.tar.gz": os.environ["SOURCE_SHA256"],
-              "YomiMado_0.1.0_notices_5120506.tar.gz": os.environ["NOTICES_SHA256"],
-          }
-          release = json.loads((directory / "release.json").read_text())
-          if release["tag_name"] != os.environ["SEED_RELEASE_TAG"] or release["draft"] is not True:
-              raise ValueError("Reviewed seed must remain an unpublished draft")
-          for name, digest in expected.items():
-              assets = [a for a in release["assets"] if a["name"] == name]
-              if len(assets) != 1 or not isinstance(assets[0]["id"], int):
-                  raise ValueError("Missing or ambiguous reviewed asset: " + name)
-              endpoint = f'repos/{os.environ["GITHUB_REPOSITORY"]}/releases/assets/{assets[0]["id"]}'
-              path = directory / name
-              with path.open("wb") as output:
-                  subprocess.run(["gh", "api", endpoint, "-H", "Accept: application/octet-stream"], stdout=output, check=True)
-              with path.open("rb") as stream:
-                  actual = hashlib.file_digest(stream, "sha256").hexdigest()
-              if actual != digest:
-                  raise ValueError("Reviewed input hash mismatch: " + name)
-          PY
+          python scripts/desktop_release.py verify-inputs --platform macos --directory "$RUNNER_TEMP/yomimado-input"
           tar -xzf "$RUNNER_TEMP/yomimado-input/YomiMado_0.1.0_sources_5120506.tar.gz" -C "$RUNNER_TEMP/yomimado-input"
           echo "YOMIMADO_SOURCE_DIR=$RUNNER_TEMP/yomimado-input/source-delivery-5120506" >> "$GITHUB_ENV"
       - name: Install smoke-only detector from the original publisher
@@ -208,12 +221,12 @@ jobs:
             echo "### Installer confirmation required"
             echo "Merged commit: $SOURCE_REVISION"
             echo "$record" | jq -r '.assets | to_entries[] | "- \(.key): \(.value)"'
-            echo "Download verified-macos-hobby-candidate and test its exact DMG before approving macos-release."
+            echo "Download verified-desktop-candidate and test its exact DMG and the Windows setup before approving the publish job in macos-release."
             echo "Fresh-Mac testing is waived; never describe it as passed."
           } >> "$GITHUB_STEP_SUMMARY"
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
-          name: candidate-for-transfer
+          name: macos-candidate-for-transfer
           path: ${{ runner.temp }}/yomimado-output/
           if-no-files-found: error
           retention-days: 1
@@ -223,10 +236,212 @@ jobs:
         shell: bash
         run: rm -f "$RUNNER_TEMP/comictextdetector.pt.onnx"
 
+  windows-build:
+    name: Build Windows 11 x64 CPU installer
+    needs: [plan, seed-inputs]
+    outputs:
+      record: ${{ steps.package.outputs.record }}
+    if: needs.plan.outputs.release == 'true'
+    runs-on: windows-2022
+    timeout-minutes: 120
+    defaults:
+      run:
+        shell: pwsh
+    steps:
+      - name: Preserve hash-pinned source and notice bytes
+        run: git config --global core.autocrlf false
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Check Windows PowerShell script syntax
+        run: |
+          foreach ($path in Get-ChildItem scripts/*windows*.ps1) {
+            $tokens = $null
+            $errors = $null
+            [System.Management.Automation.Language.Parser]::ParseFile($path.FullName, [ref]$tokens, [ref]$errors) | Out-Null
+            if ($errors.Count) { throw ($errors | Out-String) }
+          }
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: "22.23.2"
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
+        with:
+          python-version: "3.11.9" # Bootstrap only; frozen runtime is source-built 3.11.17.
+          architecture: x64
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: reviewed-windows-inputs
+          path: ${{ runner.temp }}/windows-input
+      - name: Restore transferred hash-pinned original dictionaries
+        run: python scripts/desktop_release.py restore-dictionaries --directory "$env:RUNNER_TEMP/windows-input"
+      - name: Select pinned native toolchain and record runner
+        run: |
+          $ErrorActionPreference = 'Stop'
+          rustup toolchain install 1.98.1 --profile minimal
+          if ($LASTEXITCODE) { throw 'Rust preparation failed' }
+          rustup default 1.98.1
+          $vswhere = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe"
+          $vs = & $vswhere -latest -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath
+          $bat = Join-Path $vs 'VC/Auxiliary/Build/vcvarsall.bat'
+          $vars = cmd /c "`"$bat`" x64 10.0.26100.0 -vcvars_ver=14.44.35207 >nul && set"
+          if ($LASTEXITCODE) { throw 'Pinned MSVC/SDK are unavailable' }
+          foreach ($line in $vars) {
+            if ($line -match '^(PATH|INCLUDE|LIB|LIBPATH|VCToolsVersion|VCToolsInstallDir|WindowsSDKVersion|WindowsSdkDir|VSINSTALLDIR)=(.*)$') {
+              [Environment]::SetEnvironmentVariable($Matches[1], $Matches[2])
+              "$($Matches[1])=$($Matches[2])" | Add-Content $env:GITHUB_ENV
+            }
+          }
+          if ($env:VCToolsVersion.TrimEnd('\') -ne '14.44.35207' -or $env:WindowsSDKVersion.TrimEnd('\') -ne '10.0.26100.0') { throw 'Native tools differ' }
+          "Windows candidate: $env:ImageOS $env:ImageVersion; MSVC $env:VCToolsVersion; SDK $env:WindowsSDKVersion" | Add-Content $env:GITHUB_STEP_SUMMARY
+      - name: Prepare, test, freeze, inventory and build NSIS
+        run: ./scripts/build-windows-prerelease.ps1 -Prepare -Onnx
+      - name: Verify installer component terms and rejection
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $setup = @(Get-ChildItem apps/desktop/src-tauri/target/x86_64-pc-windows-msvc/release/bundle/nsis/*-setup.exe)
+          if ($setup.Count -ne 1) { throw 'Expected one NSIS setup' }
+          $modules = $env:PSModulePath
+          Remove-Item Env:PSModulePath -ErrorAction SilentlyContinue
+          try {
+            & "$env:SystemRoot/System32/WindowsPowerShell/v1.0/powershell.exe" -NoProfile -File scripts/verify-windows-installer-terms.ps1 -Installer $setup[0].FullName
+            if ($LASTEXITCODE) { throw 'Installer component terms verification failed' }
+          } finally { $env:PSModulePath = $modules }
+      - name: Install exact setup and verify installed startup
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $setup = @(Get-ChildItem apps/desktop/src-tauri/target/x86_64-pc-windows-msvc/release/bundle/nsis/*-setup.exe)
+          if ($setup.Count -ne 1) { throw 'Expected one NSIS setup' }
+          $installed = Join-Path $env:LOCALAPPDATA 'YomiMado'
+          $terms = Get-Content docs/windows-microsoft-terms.json -Raw | ConvertFrom-Json
+          $p = Start-Process $setup[0].FullName -ArgumentList '/S', "/ACCEPTMSRUNTIME=$($terms.termsSha256)", "/D=$installed" -Wait -PassThru
+          if ($p.ExitCode) { throw 'NSIS setup failed' }
+          $registry = Get-ItemProperty 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Uninstall\YomiMado'
+          if ($registry.MicrosoftRuntimeTermsSHA256 -ne $terms.termsSha256) { throw 'Installed terms acceptance hash differs' }
+          $python = 'services/ocr/build/windows/venv/Scripts/python.exe'
+          & $python scripts/windows_release.py verify --resources "$installed/ocr"
+          if ($LASTEXITCODE) { throw 'Installed resource verification failed' }
+          ./scripts/verify-windows-install.ps1 -Installed $installed
+          & $python scripts/windows_release.py installer-inventory --installer $setup[0].FullName --installed $installed
+          if ($LASTEXITCODE) { throw 'Desktop/installer native input verification failed' }
+          "YOMIMADO_INSTALLED=$installed" | Add-Content $env:GITHUB_ENV
+          "YOMIMADO_INSTALLER=$($setup[0].FullName)" | Add-Content $env:GITHUB_ENV
+      - name: Obtain smoke-only detector
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $model = Join-Path $env:RUNNER_TEMP 'comictextdetector.pt.onnx'
+          Invoke-WebRequest 'https://github.com/zyddnys/manga-image-translator/releases/download/beta-0.2.1/comictextdetector.pt.onnx' -OutFile $model
+          if ((Get-FileHash $model -Algorithm SHA256).Hash.ToLower() -ne '1a86ace74961413cbd650002e7bb4dcec4980ffa21b2f19b86933372071d718f') { throw 'Smoke-only model hash differs' }
+          "YOMIMADO_SMOKE_DETECTOR=$model" | Add-Content $env:GITHUB_ENV
+      - name: Verify installed model setup, buttons and shortcuts
+        id: installed_ui
+        timeout-minutes: 8
+        run: |
+          $ErrorActionPreference = 'Stop'
+          # The Framework UI Automation assemblies run under Windows PowerShell.
+          # Do not inherit PowerShell 7's incompatible module discovery paths.
+          $modules = $env:PSModulePath
+          Remove-Item Env:PSModulePath -ErrorAction SilentlyContinue
+          try {
+            & "$env:SystemRoot/System32/WindowsPowerShell/v1.0/powershell.exe" -NoProfile -File scripts/verify-windows-ui.ps1 -Installed $env:YOMIMADO_INSTALLED -DetectorModel $env:YOMIMADO_SMOKE_DETECTOR
+            if ($LASTEXITCODE) { throw 'Installed Windows UI regression failed' }
+          } finally { $env:PSModulePath = $modules }
+      - name: Verify frozen installed learning and persistence
+        id: installed_learning
+        # Runtime learning is independent of the UI driver. Complete it even
+        # after a UI failure, while retaining the failed overall job status.
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $model = $env:YOMIMADO_SMOKE_DETECTOR
+          $log = 'services/ocr/build/windows/installed-smoke.log'
+          & services/ocr/build/windows/venv/Scripts/python.exe scripts/smoke-windows-install.py $env:YOMIMADO_INSTALLED --detector-model $model 2>&1 | Tee-Object -FilePath $log
+          if ($LASTEXITCODE) {
+            # Only synthetic test text; preserve the actual failure for diagnosis.
+            $tail = (Get-Content $log -Tail 25) -join "`n"
+            $encoded = $tail.Replace('%', '%25').Replace("`r", '%0D').Replace("`n", '%0A')
+            Write-Host "::error title=Installed Windows runtime failed::$encoded"
+            throw 'Installed frozen smoke failed'
+          }
+      - name: Export verified Windows candidate for shared release review
+        id: package
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $output = Join-Path $env:RUNNER_TEMP 'windows-candidate'
+          $python = 'services/ocr/build/windows/venv/Scripts/python.exe'
+          & $python scripts/windows_release.py package --installer $env:YOMIMADO_INSTALLER --installed $env:YOMIMADO_INSTALLED --output $output
+          if ($LASTEXITCODE) { throw 'Windows candidate export failed' }
+          $record = & $python scripts/desktop_release.py windows-record --directory $output
+          if ($LASTEXITCODE) { throw 'Windows candidate binding failed' }
+          "record=$record" | Add-Content $env:GITHUB_OUTPUT
+          Get-Content "$output/SHA256SUMS.txt" | Add-Content $env:GITHUB_STEP_SUMMARY
+          'Download verified-desktop-candidate and confirm BOTH exact installers before approving the protected publish job. Hosted checks do not prove Windows 11 hardware coverage.' | Add-Content $env:GITHUB_STEP_SUMMARY
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: windows-candidate-for-transfer
+          path: ${{ runner.temp }}/windows-candidate/
+          if-no-files-found: error
+          retention-days: 1
+          compression-level: 0
+      - name: Retain diagnostic evidence without detector weights
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: windows-main-evidence
+          path: |
+            services/ocr/build/windows/python-build.log
+            services/ocr/build/windows/build-last-command.log
+            services/ocr/build/windows/python-build.json
+            services/ocr/build/windows/dictionary-seed.json
+            services/ocr/build/windows/windows-inventory.json
+            services/ocr/build/windows/windows-native-configuration.json
+            services/ocr/build/windows/pyinstaller/warn-yomimado-ocr.txt
+            services/ocr/build/windows/installed-verification.json
+            services/ocr/build/windows/installed-smoke.json
+            services/ocr/build/windows/installed-smoke.log
+            services/ocr/build/windows/installed-ui.json
+            services/ocr/build/windows/installer-terms-verification.json
+            services/ocr/build/windows/SHA256SUMS.txt
+            services/ocr/build/windows/windows-candidate.json
+            services/ocr/build/windows/windows-desktop-sources.json
+            services/ocr/build/windows/windows-installer-inputs.json
+            services/ocr/build/windows/windows-generated-outputs.json
+            services/ocr/build/windows/onnx-comparison/*.json
+            services/ocr/build/windows/onnx-comparison/*.log
+            services/ocr/build/onnx-prototype/preparation.json
+            services/ocr/build/windows/windows-opencv-replacement.json
+            services/ocr/build/windows/sudachi/build-verification.json
+            services/ocr/build/windows/sudachi/compile.jsonl
+            services/ocr/build/windows/windows-vc-replacement.json
+            services/ocr/build/windows/windows-webview-loader.json
+            services/ocr/build/windows/nsis-plugin/build-verification.json
+            services/ocr/build/windows/nsis-plugin/build.log
+            services/ocr/build/windows/nsis-plugin/test.log
+            apps/desktop/src-tauri/resources/ocr/notices/windows-export-only-inputs.json
+            apps/desktop/src-tauri/resources/ocr/notices/windows-export-comparison.json
+            apps/desktop/src-tauri/resources/ocr/notices/python-rust/source-preparation.json
+            services/ocr/build/webview-loader-probe/verification.json
+            services/ocr/build/webview-loader-probe/compile.log
+            services/ocr/build/webview-loader-probe/library-compile.log
+            services/ocr/build/webview-loader-probe/probe.log
+            services/ocr/build/windows-opencv-audit/build-verification.json
+            services/ocr/build/windows-opencv-audit/*.log
+            apps/desktop/src-tauri/resources/ocr/notices/windows-native-sources/source-preparation.json
+            apps/desktop/src-tauri/resources/ocr/notices/onnx-native/source-preparation.json
+          if-no-files-found: ignore
+          retention-days: 14
+      - name: Remove smoke-only detector
+        if: always()
+        run: |
+          Remove-Item (Join-Path $env:RUNNER_TEMP 'comictextdetector.pt.onnx') -ErrorAction SilentlyContinue
+          Remove-Item 'services/ocr/build/onnx-prototype/smoke-detector.onnx' -ErrorAction SilentlyContinue
+
   verify-transfer:
-    needs: build
+    needs: [build, windows-build]
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 30
+    outputs:
+      record: ${{ steps.combine.outputs.record }}
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
         with:
@@ -234,23 +449,39 @@ jobs:
           persist-credentials: false
       - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
         with:
-          name: candidate-for-transfer
-          path: candidate
-      - name: Reject altered or additional artifact files
+          name: macos-candidate-for-transfer
+          path: macos-candidate
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: windows-candidate-for-transfer
+          path: windows-candidate
+      - name: Verify both platforms and bind one combined release
+        id: combine
         env:
-          EXPECTED_RECORD: ${{ needs.build.outputs.record }}
+          MACOS_RECORD: ${{ needs.build.outputs.record }}
+          WINDOWS_RECORD: ${{ needs.windows-build.outputs.record }}
         shell: bash
-        run: python3 scripts/macos-ci-release.py verify-artifact --directory candidate --expected "$EXPECTED_RECORD"
+        run: |
+          set -euo pipefail
+          record="$(python3 scripts/desktop_release.py combine --macos macos-candidate --windows windows-candidate --directory candidate --macos-record "$MACOS_RECORD" --windows-record "$WINDOWS_RECORD")"
+          echo "record=$record" >> "$GITHUB_OUTPUT"
+          {
+            echo '### Review BOTH exact installers before approving publish'
+            echo "Source commit: $GITHUB_SHA"
+            cat candidate/desktop-SHA256SUMS.txt
+            echo 'Download verified-desktop-candidate. Run the macOS and Windows local checklists; retain the fresh-Mac waiver and explicitly untested Windows hardware cases.'
+            echo 'Seed-inputs review permitted private GET access only; it did not approve these installers.'
+          } >> "$GITHUB_STEP_SUMMARY"
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
-          name: verified-macos-hobby-candidate
+          name: verified-desktop-candidate
           path: candidate/
           if-no-files-found: error
           retention-days: 14
           compression-level: 0
 
   publish:
-    needs: [plan, build, verify-transfer]
+    needs: [plan, verify-transfer]
     runs-on: ubuntu-latest
     timeout-minutes: 20
     environment: macos-release
@@ -265,18 +496,18 @@ jobs:
           persist-credentials: false
       - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
         with:
-          name: verified-macos-hobby-candidate
+          name: verified-desktop-candidate
           path: candidate
       - name: Recheck files, protection, main and tag before publishing
         env:
           GH_TOKEN: ${{ github.token }}
-          EXPECTED_RECORD: ${{ needs.build.outputs.record }}
+          EXPECTED_RECORD: ${{ needs.verify-transfer.outputs.record }}
           RELEASE_TAG: ${{ needs.plan.outputs.tag }}
           RELEASE_PRERELEASE: ${{ needs.plan.outputs.prerelease }}
         shell: bash
         run: |
           set -euo pipefail
-          python3 scripts/macos-ci-release.py verify-artifact --directory candidate --expected "$EXPECTED_RECORD"
+          python3 scripts/desktop_release.py verify-combined --directory candidate --expected "$EXPECTED_RECORD"
           test "$(jq -r .tag <<< "$EXPECTED_RECORD")" = "$RELEASE_TAG"
           test "$(jq -r .prerelease <<< "$EXPECTED_RECORD")" = "$RELEASE_PRERELEASE"
           test "$(gh api "repos/$GITHUB_REPOSITORY" --jq .default_branch)" = main
@@ -290,15 +521,11 @@ jobs:
           import json, os
           from pathlib import Path
           record = json.loads(os.environ["EXPECTED_RECORD"])
-          template = Path("docs/macos-prerelease-notes.md").read_text()
-          notes = template.split("Verified candidate source commit:", 1)[0]
+          notes = Path("docs/desktop-release-notes.md").read_text()
           label = "pre-release" if record["prerelease"] else "release"
-          notes = notes.replace("# First macOS pre-release notes — draft", "# YomiMado " + record["version"] + " — macOS " + label)
-          start = notes.index("Native source/licence clearance")
-          end = notes.index("YomiMado (読み窓)", start)
-          notes = notes[:start] + "" + notes[end:]
+          notes = notes.replace("VERSION", record["version"]).replace("CLASSIFICATION", label)
           notes += "Source commit: `" + record["sourceRevision"] + "`.\n\n"
-          notes += "This exact CI installer was confirmed by the maintainer through the protected release environment. Fresh-macOS testing remains waived.\n\n"
+          notes += "Both exact CI installers were confirmed by the maintainer through the protected release environment. Fresh-macOS testing remains waived. Windows AMD, mixed-monitor/left-of-primary layouts and missing-WebView2 hardware cases remain untested.\n\n"
           for name, digest in record["assets"].items():
               url = f'https://github.com/{os.environ["GITHUB_REPOSITORY"]}/releases/download/{record["tag"]}/{name}'
               notes += f"- [{name}]({url}) — SHA-256 `{digest}`\n"
@@ -316,22 +543,12 @@ jobs:
             release_label=release
           fi
           gh release create "$RELEASE_TAG" candidate/* --repo "$GITHUB_REPOSITORY" --verify-tag \
-            --target "$GITHUB_SHA" --title "YomiMado $RELEASE_TAG — macOS $release_label" \
+            --target "$GITHUB_SHA" --title "YomiMado $RELEASE_TAG — $release_label" \
             --notes-file "$RUNNER_TEMP/release-notes.md" "${release_options[@]}"
           gh api "repos/$GITHUB_REPOSITORY/releases/tags/$RELEASE_TAG" > "$RUNNER_TEMP/uploaded-release.json"
           test "$(gh api "repos/$GITHUB_REPOSITORY/git/ref/tags/$RELEASE_TAG" --jq .object.sha)" = "$GITHUB_SHA"
-          python3 - <<'PYUPLOAD'
-          import json, os
-          from pathlib import Path
-          report = json.loads(Path(os.environ["RUNNER_TEMP"], "uploaded-release.json").read_text())
-          record = json.loads(os.environ["EXPECTED_RECORD"])
-          expected = dict(record["assets"])
-          import hashlib
-          for path in Path("candidate").iterdir():
-              with path.open("rb") as stream:
-                  expected[path.name] = hashlib.file_digest(stream, "sha256").hexdigest()
-          actual = {a["name"]: a["digest"] for a in report["assets"]}
-          if not report["draft"] or report["prerelease"] is not record["prerelease"] or len(report["assets"]) != len(expected) or actual != {n: "sha256:" + d for n, d in expected.items()}:
-              raise ValueError("Uploaded release classification or assets differ; leave the draft unpublished")
-          PYUPLOAD
+          python3 scripts/desktop_release.py verify-uploaded --directory candidate --expected "$EXPECTED_RECORD" --report "$RUNNER_TEMP/uploaded-release.json"
+          # main may advance while large assets upload. Recheck immediately
+          # before making the verified draft public; never move its tag.
+          test "$(gh api "repos/$GITHUB_REPOSITORY/git/ref/heads/main" --jq .object.sha)" = "$GITHUB_SHA"
           gh release edit "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY" --draft=false

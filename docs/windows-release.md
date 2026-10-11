@@ -12,11 +12,14 @@ Downloaded evidence `11707076117` matches SHA-256
 `56c7ee2b03767960651ab54196df5f21365d99f88eff1bc9cc8c563d5e45e31a`.
 Delivered project sources exactly match all 309 regular files at this commit;
 the source/notices inspection is recorded in [the source review](windows-source-review.md).
-The owner's licensed-copy confirmation is complete. **Fresh local tests for
-this changed setup and protected publication approval remain open.** Use the
-[six-check installer report](windows-installed-test.md); no joint publisher is enabled.
+The owner's licensed-copy confirmation is complete. The maintainer confirms
+this exact hash and **all six local checks pass**, including the component terms,
+100%/125%/150% alignment/clicking and upgrade/uninstall/reinstall. See
+[the installed report](windows-installed-test.md). Protected publication approval
+remains open. The shared main workflow is prepared on `develop`, with one
+publisher/tag for both platforms; it is not yet deployed/executed on `main`.
 
-Last locally verified private candidate — 2026-10-11: [run `38133593809`, attempt 2](https://github.com/chonnakanch/yomimado/actions/runs/38133593809)
+Previous locally verified private candidate — 2026-10-11: [run `38133593809`, attempt 2](https://github.com/chonnakanch/yomimado/actions/runs/38133593809)
 at `8c46366d04e96d5356c250605e7ea936db209eb3` passes the complete
 build/install/UI/OCR/learning/persistence and uploaded-asset suite in **45 minutes
 42 seconds**. The [owner-only draft](https://github.com/chonnakanch/yomimado/releases/tag/untagged-369bebe25308d4e82cc2)
@@ -80,7 +83,7 @@ terms page and requires exact-hash silent/passive assent. All 208 release-tool
 tests, lint/format, PowerShell syntax, actionlint and the macOS runtime-reuse scope
 check pass. [Run `38142782743`, attempt 4](https://github.com/chonnakanch/yomimado/actions/runs/38142782743)
 passes the empty exact-commit draft preflight and the complete new private
-installer suite. Its fresh local checklist is pending;
+installer suite. Its fresh hash-bound local checklist now passes;
 no protected human or public approval is granted.
 
 Previous private candidate — 2026-10-11: [run `38108583125`](https://github.com/chonnakanch/yomimado/actions/runs/38108583125)
@@ -134,11 +137,11 @@ and PC results above remain bound to their original setup hashes.
 | Requested gate                | Current evidence                                                                                                  | Remaining work                                                                                           |
 | ----------------------------- | ----------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------- |
 | 1 — Pinned environment/freeze | Final CPython 3.11.17/NumPy 2.4.6/CPU ONNX freeze, parity and exact installed checks pass                         | Complete                                                                                                 |
-| 2 — Native licences/sources   | 80 frozen AMD64 PE files; exact input/source bindings, delivered sources/notices and component-terms checks pass  | Fresh installer acceptance/report and protected distribution review; full source-only rebuild unverified |
-| 3 — Private installed app     | Exact NSIS install/startup/cleanup, UI/model/shortcut, embedded plugin, WebView/CRT and private asset checks pass | Fresh local checklist and protected publication approval remain open                                     |
-| 4 — Installed runtime         | Final installed geometry, tokenization, dictionary/kanji, fresh translation and restart persistence pass          | Hosted checks complete; fresh current-setup PC report pending                                            |
-| 5 — Separate PC               | Prior setup's Windows 11 x64/hash and all listed checks pass, including alignment at 100%/125%/150%               | Retest current setup; AMD/mixed-monitor/left-of-primary/missing-WebView2 cases remain untested           |
-| 6 — Joint release-on-main     | Existing macOS path preserved; no Windows publisher enabled                                                       | Integrate only after distribution and protected exact-installer human gates pass                         |
+| 2 — Native licences/sources   | 80 frozen AMD64 PE files; exact input/source bindings, delivered sources/notices and component-terms checks pass  | Local acceptance/report complete; protected publication review open; full source-only rebuild unverified |
+| 3 — Private installed app     | Exact NSIS install/startup/cleanup, UI/model/shortcut, embedded plugin, WebView/CRT and private asset checks pass | Local checklist complete; protected publication approval remains open                                    |
+| 4 — Installed runtime         | Final installed geometry, tokenization, dictionary/kanji, fresh translation and restart persistence pass          | Hosted checks and current-setup maintainer PC report complete                                            |
+| 5 — Separate PC               | Current setup hash and all six checks pass on confirmed Windows 11 x64, including 100%/125%/150%                  | AMD/mixed-monitor/left-of-primary/missing-WebView2 cases remain untested                                 |
+| 6 — Joint release-on-main     | Shared main workflow prepared; macOS seed path preserved; one protected publisher/tag                             | First intended main merge, hosted execution and both new exact-installer protected reviews pending       |
 
 The active candidate builds the minimal OpenCV runtime from pinned sources with
 IPP, video and GPU backends disabled. Generated `/MD` compiler commands, native
@@ -326,21 +329,25 @@ explicit. macOS's fresh-Mac waiver does not imply Windows testing passed.
 
 ## 4. Add Windows to release-on-main automation
 
-Only after the Windows candidate clears its runtime/source and installer gates:
+Prepared 2026-10-11 after the current Windows candidate's automated gates and
+hash-confirmed local six-check report pass. See [the shared flow](desktop-release.md).
+The workflow remains on `develop`; no merge, public tag or publication is performed.
+The first main run and protected reviews of its new installers remain required:
 
-- [ ] Add a Windows build/verification job with pinned actions/tools and private
-      candidate artifacts. Keep publication permission in the protected publisher.
-- [ ] Use the same app version rules: `0.x.x` and `alpha.N`/`beta.N`/`rc.N`
+- [x] Add a Windows build/verification job with pinned actions/tools and private
+      candidate artifacts. Builders stay read-only; private seed access has a separately
+      protected GET-only input job, and only the protected publisher mutates releases.
+- [x] Use the same app version rules: `0.x.x` and `alpha.N`/`beta.N`/`rc.N`
       versions are pre-releases; `1.0.0` and later without a suffix are stable.
-- [ ] Extend source-input comparison deliberately for Windows-only recipes and
-      assets. The current macOS seed allowlist rejects new packaging paths;
-      do not broadly allow changed shared OCR code, locks or unreviewed inputs.
+- [x] Extend source-input comparison deliberately for Windows-only recipes and
+      assets. Only the shared release helper is added to the macOS seed allowlist;
+      changed shared OCR code, locks and unreviewed inputs still fail closed.
       Shared runtime changes still require the affected platform's seed review.
-- [ ] Coordinate both platform builds under **one version tag and publisher**.
+- [x] Coordinate both platform builds under **one version tag and publisher**.
       Independent tag creators would collide, and the current macOS workflow
       skips already published versions. Introduce Windows with a new versioned
       merge, not by silently replacing assets on an older release.
-- [ ] Verify both platform candidates, source/notices, hashes and provenance
+- [x] Verify both platform candidates, source/notices, hashes and provenance
       after artifact transfer. Gate publication on exact installed-app approval
       for both platforms; no partial release when a required platform fails.
 - [ ] Upload setup EXE, Windows source/notices, checksums and provenance beside

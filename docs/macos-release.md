@@ -333,7 +333,9 @@ Keep all private keys/passwords out of chat, source control and command history.
 
 The maintainer chose this release policy on 2026-10-06: merge a feature into
 `main`, build that exact merged commit, then create its version tag and GitHub
-release after verification and installer confirmation. The workflow is
+release after verification and installer confirmation. As of 2026-10-11, the
+workflow is named **Desktop release from main** and includes Windows under the
+same publisher/tag, preserving the macOS runtime path. The workflow file is
 [macos-prerelease.yml](../.github/workflows/macos-prerelease.yml). It runs on
 pushes to `main`, including merge, squash and rebase merges. A manual rerun is
 available on `main`; `develop`, pull requests and tag pushes cannot publish.
@@ -368,8 +370,10 @@ One-time GitHub setup, before the first merge:
    `YomiMado_0.1.0_sources_5120506.tar.gz` and
    `YomiMado_0.1.0_notices_5120506.tar.gz` from `services/ocr/build/`.
    Their SHA-256 values are pinned in the workflow; incorrect inputs fail.
-2. The workflow reads the draft by its fixed tag name and checks all three
-   hashes. No release-ID variable or personal token is needed.
+2. The separately protected GET-only `seed-inputs` job locates the unique
+   unpublished draft by its fixed staging name and checks all three hashes.
+   It transfers pinned artifacts to read-only builders; no release-ID variable
+   or personal token is needed. See [the shared flow](desktop-release.md).
 3. Create the `macos-release` environment with **chonnakanch** as a required
    reviewer. Allow deployments from `main`. Permit the owner to approve their
    own run for this personal project. The workflow checks through GitHub's API
@@ -399,7 +403,7 @@ through both the UI and public API. `develop` remains unmerged; remote tag
 inspection confirms no tags. Hosted workflow execution and the new candidate's
 installed-app confirmation remain pending the first merge.
 
-2026-10-09 bootstrap access risk: the Windows GEOS audit's `contents: read`
+Historical 2026-10-09 bootstrap access risk: the Windows GEOS audit's `contents: read`
 token cannot see its existing owner-only draft in the release listing. The macOS
 build uses the fixed seed-tag endpoint instead and has not yet executed on
 GitHub; its ability to download draft assets with the read-only token is therefore
@@ -408,9 +412,18 @@ review protected seed input access before the first main release execution.
 Preserve the private seed and protected publisher;
 do not publish the seed or widen build-job permissions to bypass this check.
 
+Prepared resolution — 2026-10-11: a separate `seed-inputs` job, protected by
+`macos-release`, uses a short-lived `contents: write` job token only for GET
+requests and hash checks, then transfers pinned inputs to read-only builders.
+The owner reviews private access independently of the later **publish** review.
+No seed is published, builder permission widened, personal token added or human
+installer test inferred. Its first hosted execution remains pending the intended
+main merge; the earlier risk is not described as an executed success.
+
 The hobby target uses GitHub's job-scoped token and no Apple keys, passwords or
-signing/notarization secrets. Only the protected publish job has
-`contents: write`; actions are pinned to commit hashes. The Apple Silicon job
+signing/notarization secrets. Only the separately protected input and publish
+jobs have `contents: write`; the input code is GET-only and only publish mutates
+release/tag state. Actions are pinned to commit hashes. The Apple Silicon job
 reuses the exact reviewed frozen runtime from the seed, rebuilds frontend/Rust
 from the merged commit with locked dependencies, and exports matching project
 sources. It preserves the 74 dependency archives and original maintainer
@@ -425,20 +438,23 @@ smoke. The detector is downloaded only for isolated smoke tests and is excluded
 from all uploaded artifacts. Transfer and publication recheck the exact seven
 allowed files and all digests, then verify GitHub's uploaded asset digests.
 
-For each new candidate, download `verified-macos-hobby-candidate` from the run,
+For each new candidate, download `verified-desktop-candidate` from the run,
 check its hashes, and test the exact installed DMG using
 [the existing-Mac checklist](macos-clean-mac-test.md). Approving `macos-release`
 attests to those installed-app checks for this exact candidate, not the older
-seed. The workflow then creates `v<version>` at the merged commit, uploads the
-DMG, corresponding sources, notices, checksum sidecars and provenance record
-to a draft, and makes it public only after upload verification. The provenance
+seed. Test the Windows setup from the same combined artifact using its six-check
+report before this publish review; seed-input access review approves no installer.
+The workflow then creates `v<version>` at the merged commit, uploads the
+DMG and Windows setup, both corresponding-source/notice deliveries, checksums
+and provenance records to one draft, and makes it public only after upload verification. The provenance
 record keeps `installedAppVerified: false` because the automated build did not
 perform the human test; the environment approval records that separate step.
 
 If draft creation/upload fails, the release stays unpublished. Inspect and
 remove only that failed draft/tag before an intentional rerun, or select a new
 version; the workflow does not clobber existing tags or assets. A run awaiting
-approval also refuses publication if `main` has advanced to another commit.
+approval also refuses publication if `main` has advanced to another commit; this
+is checked again after both platforms' assets upload.
 
 Local verification: 88 release-tool tests pass, including stable/pre-release
 classification and tampered-provenance rejection. The actual publish step passes
