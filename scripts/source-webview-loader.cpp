@@ -3,12 +3,18 @@
 #include <webview/detail/platform/windows/webview2/loader.hh>
 #include <new>
 
+static volatile const char source_loader_marker[] =
+    "YomiMado source WebView loader cbbdee44 ABI1";
+
 STDAPI GetAvailableCoreWebView2BrowserVersionString(PCWSTR browser_directory,
                                                    LPWSTR *version) {
   if (!version) {
     return E_POINTER;
   }
   *version = nullptr;
+  if (source_loader_marker[0] != 'Y') {
+    return E_FAIL;
+  }
   try {
     webview::detail::mswebview2::loader loader;
     return loader.get_available_browser_version_string(browser_directory, version);

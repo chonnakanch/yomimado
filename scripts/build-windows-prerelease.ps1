@@ -61,6 +61,7 @@ Invoke-Checked $Python @('-m', 'pytest', 'services/ocr/tests')
 Invoke-Checked $Python @('-m', 'unittest', 'discover', '-s', 'scripts/tests', '-p', 'test_windows*.py')
 Invoke-Checked npm @('ci', '--prefix', 'apps/desktop')
 Invoke-Checked npm @('test', '--prefix', 'apps/desktop')
+Invoke-Checked $Python @('scripts/windows_webview_runtime.py', 'stage')
 Invoke-Checked cargo @('test', '--locked', '--manifest-path', 'apps/desktop/src-tauri/Cargo.toml')
 Invoke-Checked $Python @('scripts/windows_release.py', 'assets')
 $Detector = Join-Path $Resources 'assets/comic-text-detector'
@@ -71,6 +72,7 @@ if ($Onnx) {
     $Graphs = Join-Path $Assets 'onnx'
     Invoke-Checked $Baseline @('scripts/export_onnx_probe.py', '--ocr-model', (Join-Path $Assets 'manga-ocr-base'), '--translation-model', (Join-Path $Assets 'opus-mt-ja-en'), '--output', $Graphs)
     Invoke-Checked $Baseline @('scripts/check_onnx_probe.py', '--ocr-model', (Join-Path $Assets 'manga-ocr-base'), '--translation-model', (Join-Path $Assets 'opus-mt-ja-en'), '--detector-repo', $Detector, '--detector-model', (Join-Path $Service 'build/onnx-prototype/smoke-detector.onnx'), '--exported', $Graphs, '--output', (Join-Path $Build 'onnx-comparison'), '--onnx-python', $Python, '--onnx-pythonpath', $Service)
+    Invoke-Checked $Python @('scripts/windows_export_inputs.py')
     # collect-all also copies vendor example ONNX models. Collect Python/native
     # runtime inputs and metadata without those unneeded datasets.
     $Freeze += @('--paths', $PSScriptRoot, '--collect-binaries', 'onnxruntime', '--collect-submodules', 'onnxruntime', '--copy-metadata', 'onnxruntime', '--hidden-import', 'pyclipper', '--hidden-import', 'shapely.geometry')

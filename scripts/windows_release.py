@@ -816,7 +816,12 @@ def verify_resources(
     for name, sha in manifest_hashes.items():
         if digest(resources / "notices" / name) != sha:
             raise ValueError("Installed input manifest differs: " + name)
+    from windows_export_inputs import verify as verify_export_exclusions
+
+    excluded = verify_export_exclusions(resources)
     for entry in read_json(resources / "notices/windows-assets.json"):
+        if entry["path"] in excluded:
+            continue
         if digest(resources / "assets" / entry["path"]) != entry["sha256"]:
             raise ValueError("Installed asset changed: " + entry["path"])
     inventory = read_json(resources / "notices/windows-inventory.json")

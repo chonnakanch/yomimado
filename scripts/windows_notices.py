@@ -12,12 +12,12 @@ import os
 import shutil
 import subprocess
 import tarfile
-import tomllib
 import zipfile
 from pathlib import Path, PurePosixPath
 from urllib.parse import urlsplit
 from urllib.request import urlopen
 
+import tomllib
 from windows_release import BUILD, RESOURCES, ROOT, digest, fetch, read_json, write_json
 
 DESKTOP = ROOT / "apps/desktop"
@@ -389,6 +389,16 @@ def collect() -> None:
         "installerSourceInputs": installer_sources,
         "nativeNoticeInputs": native_inputs,
     }
+    loader = output / "source-webview-loader/windows-webview-loader.json"
+    if loader.is_file():
+        record["sourceWebViewLoader"] = read_json(loader)
+        record["desktopVendorInputs"] = [dict(entry) for entry in vendor_inputs]
+        for entry in record["desktopVendorInputs"]:
+            if entry["name"] == "Microsoft.Web.WebView2":
+                entry["selectedForLinking"] = False
+                entry["usedAs"] = (
+                    "Public headers and notices; SDK loader archive replaced by retained source-built library"
+                )
     # Store portable relative notice paths, never assume Mac target membership.
     for component in record["components"]:
         component["noticeFiles"] = [
@@ -443,6 +453,12 @@ def installer_inputs(installed: Path, installer: Path) -> dict:
         "sourceReview": "pending",
         "publicDistributionApproved": False,
     }
+    if (
+        installed / "ocr/notices/source-webview-loader/windows-webview-loader.json"
+    ).is_file():
+        from windows_webview_runtime import verify
+
+        record["sourceWebViewLoader"] = verify(installed / "yomimado.exe")
     write_json(BUILD / "windows-installer-inputs.json", record)
     verify_desktop_gui(installed / "yomimado.exe")
     # Prove desktop loading separately from the frozen Python search path.

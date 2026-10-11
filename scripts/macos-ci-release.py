@@ -126,6 +126,8 @@ def verify_reuse(root: Path = ROOT) -> None:
         "scripts/windows_native_sources.py",
         "scripts/windows_sudachi_runtime.py",
         "scripts/windows_vc_runtime.py",
+        "scripts/windows_webview_runtime.py",
+        "scripts/windows_export_inputs.py",
         ".github/workflows/windows-vc-provenance.yml",
         "scripts/audit-vc-provenance.ps1",
         ".github/workflows/webview-loader-probe.yml",

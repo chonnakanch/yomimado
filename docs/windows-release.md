@@ -1,5 +1,21 @@
 # First Windows pre-release plan
 
+Private packaging correction — 2026-10-11: run `38072170793` passes final
+horizontal/vertical OCR and three fresh translations with NumPy 2.4.6/CPU ONNX
+Runtime, source-built Sudachi and canonical VC input binding. Its 84 frozen
+native files are inventoried, but NSIS fails near its 2 GB limit; no installer
+is produced. The revised recipe excludes only the two verified export-only
+PyTorch weight files (747,429,664 bytes) after parity passes. It retains their
+original hashes, the comparison and all four bound runtime graphs; all other
+installed asset hashes remain mandatory. Downloaded evidence `11677503315`
+matches SHA-256 `96163a25eca92b62991bb8503154d54bee0215f4de4dfef9cd90fd19ae89976c`.
+
+The [source-only WebView loader](windows-webview-loader.md) passes both native
+discovery/controller and exact Wry ABI probes. The private candidate now stages
+that short source build and unchanged canonical desktop CRT copies. Full
+installed runtime/UI checks, fresh exact-installer PC results and human/source
+approval remain open. macOS and the publisher are unchanged.
+
 Microsoft runtime review — 2026-10-11: a [component-specific record](windows-microsoft-runtime.md)
 now identifies the remaining canonical-file, redistribution and WebView2-loader
 checks. A short read-only Actions inspection compares the observed VC DLL hashes

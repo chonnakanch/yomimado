@@ -7,6 +7,9 @@ name: Windows private candidate
     paths:
       - .github/workflows/windows-candidate.yml
       - scripts/windows_*.py
+      - scripts/probe_webview_loader.py
+      - scripts/probe-webview-loader.cpp
+      - scripts/source-webview-loader.cpp
       - scripts/*windows*.ps1
       - scripts/smoke-windows-install.py
       - scripts/fixtures/windows-ocr-*.png
@@ -204,6 +207,13 @@ jobs:
             services/ocr/build/windows/sudachi/build-verification.json
             services/ocr/build/windows/sudachi/compile.jsonl
             services/ocr/build/windows/windows-vc-replacement.json
+            services/ocr/build/windows/windows-webview-loader.json
+            apps/desktop/src-tauri/resources/ocr/notices/windows-export-only-inputs.json
+            apps/desktop/src-tauri/resources/ocr/notices/windows-export-comparison.json
+            services/ocr/build/webview-loader-probe/verification.json
+            services/ocr/build/webview-loader-probe/compile.log
+            services/ocr/build/webview-loader-probe/library-compile.log
+            services/ocr/build/webview-loader-probe/probe.log
             services/ocr/build/windows-opencv-audit/build-verification.json
             services/ocr/build/windows-opencv-audit/*.log
             apps/desktop/src-tauri/resources/ocr/notices/windows-native-sources/source-preparation.json
