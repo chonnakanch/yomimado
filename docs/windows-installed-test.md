@@ -30,8 +30,10 @@ left-of-primary layout and a clean machine without WebView2 remain untested.
 The broad scale check does not add detailed hover/edge-target coverage.
 
 **The local installer checklist is complete for this exact setup.** Protected
-publication approval and Microsoft redistribution entitlement/component terms
-remain open. Immutable private candidate metadata still has
+publication approval remains open. The owner now confirms downloading Community
+2022 and accepting its terms. The component-terms acceptance implementation
+changes the setup and therefore needs new hosted verification and a new
+hash-bound installer report. Immutable private candidate metadata still has
 `installedAppVerified=false` and `publicDistributionApproved=false`; this human
 report does not rewrite archived bytes or approve the protected publisher.
 

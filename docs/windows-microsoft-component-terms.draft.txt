@@ -1,5 +1,7 @@
 YomiMado — Microsoft runtime component terms
-REVIEW DRAFT — not enabled in an installer and not an accepted agreement.
+HISTORICAL REVIEW DRAFT — not selected by the installer.
+The current private candidate selects THIRD_PARTY_LICENSES/windows-microsoft-components.txt
+and binds its hash in docs/windows-microsoft-terms.json.
 Prepared 2026-10-11. Owner review is required before use.
 
 1. Limited scope

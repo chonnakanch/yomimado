@@ -7,6 +7,7 @@
   "bundle": {
     "active": true,
     "targets": ["nsis"],
+    "licenseFile": "../../../THIRD_PARTY_LICENSES/windows-microsoft-components.txt",
     "resources": {
       "resources/ocr": "ocr",
       "../../../services/ocr/build/windows/desktop-native": "."

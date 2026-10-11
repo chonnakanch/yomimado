@@ -33,9 +33,10 @@ resource/model-exclusion checks pass.
 This is actual delivered-source/notices verification, not inherited macOS approval.
 
 Independent full source-only rebuilding is **unverified**; no byte-identical
-rebuild or blanket legal approval is claimed. The maintainer accepts the linked
-Community 2022 terms but has not yet obtained a copy; [Microsoft-only distribution conditions](windows-microsoft-runtime.md)
-remain unresolved. The maintainer confirms the corrected setup's SHA-256,
+rebuild or blanket legal approval is claimed. The maintainer now confirms obtaining
+Community 2022 and accepting its terms. [Microsoft-only component terms and installer acceptance](windows-microsoft-runtime.md)
+are implemented for private verification; the changed setup still needs hosted
+checks and exact-installer review. The maintainer confirms the corrected setup's SHA-256,
 alignment at 100%, 125% and 150% and all listed local installer checks pass in
 [the installed test record](windows-installed-test.md). That closes the local
 test checklist without granting Microsoft redistribution entitlement or
@@ -132,12 +133,12 @@ component does not approve another component's terms.
 
 ## Remaining public gates and retained history
 
-1. Resolve the maintainer's Microsoft redistribution grant and component-only
-   end-user/distributor requirements. The [notice draft](windows-microsoft-distribution-notice.draft.md)
-   is not an accepted agreement or active installer licence page.
-2. Verify the Windows-only overlay shadow correction in the new hosted/private
-   setup and obtain the exact-hash visual/scoped PC results. Retain the verified
-   prior functional pass and the explicitly untested hardware cases.
+1. Verify the Windows-only component-terms acceptance implementation and delivered
+   terms/manifest hashes in Actions. The owner confirms obtaining Community 2022
+   and accepting its terms; downstream distributor obligations remain explicit.
+2. Review the new exact installer and obtain its hash-bound PC result. The shadow
+   correction and all listed checks already pass for setup `7ff298c5…`; preserve
+   that evidence and the explicitly untested hardware cases.
 3. Complete final distribution review and protected exact-installer human
    approval before enabling the single publisher for both platforms.
 

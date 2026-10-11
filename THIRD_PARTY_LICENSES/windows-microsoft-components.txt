@@ -1,0 +1,59 @@
+YomiMado - Microsoft runtime component terms
+
+These terms concern only Microsoft's Visual C++ runtime components supplied
+with this Windows application. YomiMado remains licensed under GPL-3.0-only.
+The rights granted for YomiMado and its other open-source components, including
+copying, modification and source access, are unaffected by these terms.
+
+1. Components and use
+The Microsoft components are the unchanged VC143 14.44.35211.0 runtime files,
+including identical renamed copies, and Microsoft compiler runtime code
+statically linked into installer components. The installed notices contain
+their exact file identities. Microsoft and its suppliers retain their rights.
+Use these components with YomiMado for its application functionality within
+the applicable Microsoft distribution grant. This notice does not grant a
+Visual Studio licence or imply Microsoft's endorsement of YomiMado.
+
+2. Component protection
+Preserve Microsoft's and its suppliers' notices. Do not bypass the components'
+technical limits or safeguards.
+Do not derive runtime source through reverse engineering, decompilation or
+disassembly, except as permitted by applicable law or governing open-source
+terms. Do not use the Microsoft components unlawfully, rent or lease them,
+offer them alone, or suggest Microsoft endorses your application.
+
+3. Redistribution
+Redistribute these Microsoft components only unchanged within an application
+and as permitted by the applicable Microsoft grant. Do not subject Microsoft's
+runtime source to terms requiring its disclosure or granting modification
+rights. Downstream distributors must preserve these component protections and
+obtain agreement from their distributors and external end users. These limits
+do not restrict distributing or modifying YomiMado or other open-source code
+under its own licence.
+
+4. Microsoft warranty and liability
+Microsoft promises no warranty or support for these components. Where local
+law permits, implied warranties of merchantability, fitness and non-infringement
+are excluded. Claims against Microsoft and its suppliers are limited to direct
+loss up to US $5, excluding indirect, consequential, incidental or special loss
+and lost profit. Mandatory consumer rights and the applicable Microsoft
+agreement's regional exceptions prevail over these limitations.
+
+5. Law and regional rights
+Comply with applicable export and other laws. For the Microsoft components,
+acquisition in the United States makes Washington law govern interpretation
+and contract-breach claims, with the law of your home state governing other
+claims; elsewhere, the acquisition country's law applies. Mandatory local
+rights remain effective, including Australian consumer guarantees and the
+Microsoft agreement's Canadian, German and Austrian provisions. Nothing here
+removes rights that applicable law or the applicable regional provisions protect.
+
+Microsoft's original Community 2022 terms and regional provisions:
+https://visualstudio.microsoft.com/license-terms/vs2022-ga-community/
+Microsoft's corresponding runtime redistribution list:
+https://learn.microsoft.com/en-us/visualstudio/releases/2022/redistribution
+
+Choosing acceptance in this installer agrees to these Microsoft-component
+terms. An unattended install must explicitly identify the exact terms hash
+using /ACCEPTMSRUNTIME=<SHA-256>; /S or /P alone is not acceptance. No agreement
+is required to exercise the separate GPL and other open-source licence rights.

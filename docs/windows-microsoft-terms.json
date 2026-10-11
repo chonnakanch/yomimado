@@ -1,0 +1,13 @@
+{
+  "termsFile": "THIRD_PARTY_LICENSES/windows-microsoft-components.txt",
+  "termsSha256": "9e896f3342b4721a1df0ab3b705030a5da8708c0e26b0c7efd877df126ce7292",
+  "ownerLicense": {
+    "edition": "Visual Studio Community 2022",
+    "obtainedCopyAndAcceptedTerms": true,
+    "confirmationDate": "2026-10-11",
+    "evidence": "Maintainer directly confirms downloading the application and accepting its terms; no installed version or account details claimed."
+  },
+  "originalAgreementUrl": "https://visualstudio.microsoft.com/license-terms/vs2022-ga-community/",
+  "originalAgreementSha256": "41a207b10c8ab91d0d2f10a854715f73dca54509581692d2fe179aa3ffcb8540",
+  "publicDistributionApproved": false
+}

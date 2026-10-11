@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -26,6 +27,64 @@ MANIFEST = ROOT / "docs/windows-nsis-plugin-inputs.json"
 LOCK = ROOT / "docs/windows-nsis-plugin-Cargo.lock"
 AUDIT = BUILD / "nsis-plugin"
 TEMPLATE_LINE = '!define ADDITIONALPLUGINSPATH "{{additional_plugins_path}}"'
+TERMS_MANIFEST = ROOT / "docs/windows-microsoft-terms.json"
+TERMS_FILE = ROOT / "THIRD_PARTY_LICENSES/windows-microsoft-components.txt"
+LICENSE_PAGE = """; 2. License Page (if defined)
+!if "${LICENSE}" != ""
+  !define MUI_PAGE_CUSTOMFUNCTION_PRE SkipIfPassive
+  !insertmacro MUI_PAGE_LICENSE "${LICENSE}"
+!endif"""
+PASSIVE_INIT = """Function .onInit
+  ${GetOptions} $CMDLINE "/P" $PassiveMode
+  ${IfNot} ${Errors}
+    StrCpy $PassiveMode 1
+  ${EndIf}"""
+TERMS_GATE = """
+  ; Unattended modes require explicit acceptance of these exact component terms.
+  ; This is installer assent, not a Visual Studio grant or release approval.
+  Push $R0
+  Push $R1
+  ClearErrors
+  ${GetOptions} $CMDLINE "/ACCEPTMSRUNTIME=" $R1
+  ${IfNot} ${Errors}
+    ${If} $R1 != "${YOMIMADO_MICROSOFT_TERMS_SHA256}"
+      SetErrorLevel 2
+      Quit
+    ${EndIf}
+  ${Else}
+    ${If} ${Silent}
+    ${OrIf} $PassiveMode = 1
+      SetErrorLevel 2
+      Quit
+    ${EndIf}
+  ${EndIf}
+  ClearErrors
+  Pop $R1
+  Pop $R0
+"""
+
+
+def component_terms() -> dict:
+    record = read_json(TERMS_MANIFEST)
+    configuration = read_json(
+        ROOT / "apps/desktop/src-tauri/tauri.windows-release.conf.json"
+    )
+    if (
+        record["termsFile"] != "THIRD_PARTY_LICENSES/windows-microsoft-components.txt"
+        or not re.fullmatch(r"[0-9a-f]{64}", record["termsSha256"])
+        or digest(TERMS_FILE) != record["termsSha256"]
+        or record["ownerLicense"]["edition"] != "Visual Studio Community 2022"
+        or record["ownerLicense"]["obtainedCopyAndAcceptedTerms"] is not True
+        or record["originalAgreementSha256"]
+        != "41a207b10c8ab91d0d2f10a854715f73dca54509581692d2fe179aa3ffcb8540"
+        or record["publicDistributionApproved"] is not False
+        or configuration["bundle"].get("licenseFile")
+        != "../../../" + record["termsFile"]
+    ):
+        raise ValueError(
+            "Microsoft component terms or owner/configuration binding differs"
+        )
+    return {**record, "manifestSha256": digest(TERMS_MANIFEST)}
 
 
 def validate(inputs: dict) -> None:
@@ -50,12 +109,36 @@ def validate(inputs: dict) -> None:
         raise ValueError("NSIS plugin must match its 32-bit installer host")
 
 
-def template(original: str, plugin: Path) -> str:
-    # Preserve the upstream installation flow; change only plugin lookup.
+def template(original: str, plugin: Path, terms_sha256: str | None = None) -> str:
+    # Preserve the upstream installation flow outside the deliberate changes.
     path = plugin.resolve().as_posix()
     if any(c in path for c in '$"\r\n') or original.count(TEMPLATE_LINE) != 1:
         raise ValueError("Unsafe or changed NSIS plugin template input")
-    return original.replace(TEMPLATE_LINE, f'!define ADDITIONALPLUGINSPATH "{path}"')
+    result = original.replace(TEMPLATE_LINE, f'!define ADDITIONALPLUGINSPATH "{path}"')
+    if terms_sha256 is None:
+        return result
+    if (
+        not re.fullmatch(r"[0-9a-f]{64}", terms_sha256)
+        or original.count(LICENSE_PAGE) != 1
+        or original.count(PASSIVE_INIT) != 1
+        or original.count("Function .onInstSuccess\n") != 1
+    ):
+        raise ValueError("Changed NSIS component-terms template input")
+    page = f'''!define YOMIMADO_MICROSOFT_TERMS_SHA256 "{terms_sha256}"
+!if "${{LICENSE}}" == ""
+  !error "Microsoft component terms file is required"
+!endif
+!define MUI_LICENSEPAGE_CHECKBOX
+!define MUI_LICENSEPAGE_TEXT_TOP "These terms concern Microsoft runtime components only. YomiMado remains GPL-3.0-only."
+!define MUI_PAGE_CUSTOMFUNCTION_PRE SkipIfPassive
+!insertmacro MUI_PAGE_LICENSE "${{LICENSE}}"'''
+    result = result.replace(LICENSE_PAGE, page)
+    result = result.replace(PASSIVE_INIT, PASSIVE_INIT + TERMS_GATE)
+    return result.replace(
+        "Function .onInstSuccess\n",
+        'Function .onInstSuccess\n  WriteRegStr SHCTX "${UNINSTKEY}" '
+        '"MicrosoftRuntimeTermsSHA256" "${YOMIMADO_MICROSOFT_TERMS_SHA256}"\n',
+    )
 
 
 def prepare() -> tuple[dict, Path, Path]:
@@ -100,6 +183,7 @@ def stage() -> None:
     if sys.platform != "win32":
         raise ValueError("NSIS plugin build requires Windows")
     inputs, root, home = prepare()
+    terms = component_terms()
     rust = subprocess.check_output(["rustc", "--version", "--verbose"], text=True)
     if f"release: {inputs['rustVersion']}\n" not in rust:
         raise ValueError("NSIS plugin compiler differs")
@@ -175,7 +259,9 @@ def stage() -> None:
         raise ValueError("NSIS plugin architecture or static CRT mode differs")
     generated = AUDIT / "installer.nsi"
     original = AUDIT / "originals" / inputs["template"]["filename"]
-    generated.write_bytes(template(original.read_text(), built.parent).encode())
+    generated.write_bytes(
+        template(original.read_text(), built.parent, terms["termsSha256"]).encode()
+    )
     record = {
         "passed": True,
         "nativeSha256": digest(built),
@@ -188,6 +274,7 @@ def stage() -> None:
         "msvc": os.environ["VCToolsVersion"],
         "sdk": sdk_version,
         "commands": commands,
+        "componentTerms": terms,
         **info,
         "publicDistributionApproved": False,
     }
@@ -205,6 +292,8 @@ def stage() -> None:
         AUDIT / "test.log",
         link_script,
         generated,
+        TERMS_FILE,
+        TERMS_MANIFEST,
     ):
         for directory in (destination, notices):
             directory.mkdir(parents=True, exist_ok=True)
@@ -221,6 +310,8 @@ def verify(installed: Path, installer: Path) -> dict:
     )
     built = AUDIT / "target/i686-pc-windows-msvc/release/nsis_tauri_utils.dll"
     generated = AUDIT / "installer.nsi"
+    terms = component_terms()
+    installed_terms = installed / "ocr/notices/source-built-nsis-plugin"
     if (
         not record["passed"]
         or record["manifestSha256"] != digest(MANIFEST)
@@ -228,6 +319,9 @@ def verify(installed: Path, installer: Path) -> dict:
         or record["recipeSha256"] != digest(Path(__file__))
         or record["nativeSha256"] != digest(built)
         or record["templateSha256"] != digest(generated)
+        or record.get("componentTerms") != terms
+        or digest(installed_terms / TERMS_FILE.name) != terms["termsSha256"]
+        or digest(installed_terms / TERMS_MANIFEST.name) != terms["manifestSha256"]
     ):
         raise ValueError("Unbound NSIS plugin build inputs")
     # The exact template is used by this Windows-only configuration. The stock
@@ -241,7 +335,9 @@ def verify(installed: Path, installer: Path) -> dict:
     original = AUDIT / "originals" / read_json(MANIFEST)["template"]["filename"]
     if digest(original) != record[
         "originalTemplateSha256"
-    ] or generated.read_text() != template(original.read_text(), built.parent):
+    ] or generated.read_text() != template(
+        original.read_text(), built.parent, terms["termsSha256"]
+    ):
         raise ValueError("Installer plugin lookup changed")
     rendered = (
         ROOT
@@ -252,6 +348,19 @@ def verify(installed: Path, installer: Path) -> dict:
     )
     if rendered.read_text(encoding="utf-8-sig").count(expected_line) != 1:
         raise ValueError("Rendered installer does not select the source-built plugin")
+    license_lines = re.findall(
+        r'^!define LICENSE "(.+)"$',
+        rendered.read_text(encoding="utf-8-sig"),
+        re.MULTILINE,
+    )
+    terms_definition = (
+        f'!define YOMIMADO_MICROSOFT_TERMS_SHA256 "{terms["termsSha256"]}"'
+    )
+    if (
+        len(license_lines) != 1
+        or rendered.read_text(encoding="utf-8-sig").count(terms_definition) != 1
+    ):
+        raise ValueError("Rendered installer has missing or changed component terms")
     extracted = AUDIT / "embedded"
     if extracted.exists():
         shutil.rmtree(extracted)

@@ -21,10 +21,13 @@ after restart/reboot and upgrade/uninstall/reinstall. The visual offset and loca
 installer checklist are closed for this exact setup. Untested hardware cases
 remain explicit in [the test record](windows-installed-test.md).
 
-Protected approval remains open. The maintainer accepts the linked Community
-2022 terms but confirms they have not yet obtained a copy; the licensed-copy
-requirement remains open. Microsoft component end-user terms are prepared in
-[a review draft](windows-microsoft-component-terms.draft.txt) and remain unresolved.
+Protected approval remains open. The maintainer now confirms downloading Visual
+Studio Community 2022 and accepting its terms; the owner licensed-copy attestation
+is recorded in [the terms manifest](windows-microsoft-terms.json). Windows setup
+now includes [Microsoft-only component terms](../THIRD_PARTY_LICENSES/windows-microsoft-components.txt),
+an initially unchecked acceptance checkbox and exact-hash unattended acceptance.
+Windows Actions verification and fresh exact-installer review remain pending for
+this changed package. The existing setup's passing results remain hash-bound.
 Full source-only rebuild is unverified. The early owner-prepared draft preflight
 and sequential upstream NSIS tests now pass without broader permissions or
 skipped tests. macOS runtime-seed scope verification passes; its release path
@@ -82,8 +85,8 @@ at 100%/125%/150%, and the maintainer reports all listed local checks pass. AMD,
 multiple monitors/mixed scaling and missing-WebView2 installation remain untested.
 
 The hosted ONNX candidate passes exact installed runtime and source/notices
-checks. Microsoft redistribution entitlement/end-user terms and protected
-exact-installer approval remain open; full source-only rebuild is unverified.
+checks. The owner Community 2022 confirmation is recorded; component-terms
+installer verification and protected exact-installer approval remain open; full source-only rebuild is unverified.
 Keep the candidate private and add joint release-on-main publication only after
 those gates pass, using one publisher/tag for both platforms. macOS remains on
 its reviewed runtime path. The earlier package investigation is retained in

@@ -19,15 +19,20 @@ Downloaded diagnostic artifact `11701215883` matches GitHub's SHA-256
 These results resolve technical identity/integration gates, independently of
 contractual permission.
 
-Owner response — 2026-10-11: the maintainer first answered **No, or unsure**,
-then confirmed acceptance of the linked Community 2022 terms. On clarification
-they report **Only accepted the linked terms so far**; no obtained copy or
-installed edition/version is claimed. The applicable licensed-copy requirement
-therefore remains open. Public redistribution remains blocked. The
-[component notice draft](windows-microsoft-distribution-notice.draft.md) identifies
-the exact files and owner completion steps; it is not an agreement and is not
-enabled as an installer licence page. The maintainer must establish their grant
-and review/satisfy the Microsoft-specific end-user/distributor requirements.
+Owner response — 2026-10-11: after initially only accepting linked terms,
+the maintainer directly confirms downloading Visual Studio Community 2022 and
+accepting its terms. [The manifest](windows-microsoft-terms.json) records this
+owner attestation without an independently verified installed version or account
+details. The licensed-copy confirmation is complete. Public redistribution still
+requires the component-terms installation checks and protected human review.
+[The Microsoft-only terms](../THIRD_PARTY_LICENSES/windows-microsoft-components.txt)
+are now selected by the Windows-only configuration, retained in source/notices
+and hash-bound in the NSIS build record. Interactive setup requires affirmative
+checkbox acceptance; silent/passive setup requires the exact terms hash in
+`/ACCEPTMSRUNTIME=` and otherwise exits with code 2. Successful installation
+records the hash in its per-user uninstall key; uninstall removes that key.
+Windows Actions checks rejection/cancel and the exact installed acceptance hash.
+The changed package awaits hosted execution and new exact-installer review.
 The maintainer confirms this exact setup hash and all listed local tests,
 including corrected alignment at 100%/125%/150%. The local test checklist is
 complete; [untested hardware cases](windows-installed-test.md) remain explicit.
@@ -39,8 +44,8 @@ still lists the Community bootstrapper on Current 17.14. The maintainer can
 obtain this edition and review/accept its terms on their Windows PC. The
 [Community terms](https://visualstudio.microsoft.com/license-terms/vs2022-ga-community/)
 allow individual developers to develop their own applications; the edition is
-free. Obtaining a validly licensed copy, not paying for a licence or holding a
-Windows OS licence, is the remaining owner step. Do not substitute the newer default download without
+free. The owner's obtained-copy/acceptance confirmation above completes that
+step; no paid licence or Windows OS licence proof is requested. Do not substitute the newer default download without
 reviewing its applicable terms. Record only edition, version and acceptance
 date/confirmation; no account information or key is needed.
 
@@ -116,20 +121,16 @@ this does not make application libraries such as Intel MKL/IPP System Libraries.
 
 ## Remaining public gates
 
-1. Obtain the applicable licensed copy and satisfy its
-   distribution/end-user requirements specifically for Microsoft components.
-   Do not impose proprietary restrictions on YomiMado's GPL code. An alternative
-   is a separately installed official Microsoft prerequisite, with proper clean-PC
-   detection and installed tests; that packaging path is not implemented here.
-2. Review [the concrete component terms draft](windows-microsoft-component-terms.draft.txt),
-   resolve its explicit review items, then include approved component-specific
-   terms/acceptance and notices;
-   any changed installer must repeat the passing canonical VC, source-only
-   WebView loader, embedded plugin and source/notices delivery checks.
-3. Obtain fresh maintainer installed-app confirmation if terms or packaging
-   change the setup, then protected release approval. The current exact setup's
-   automated and listed local checks pass. Keep it private while the owner
-   entitlement and component terms are unresolved.
+1. Verify the changed installer in Windows Actions: unchecked interactive
+   acceptance, cancellation before writes, missing/wrong silent/passive assent,
+   installed acceptance hash, canonical VC inputs, source-only WebView loader,
+   embedded plugin, source/notices and existing installed runtime checks.
+2. Review the exact component terms and new installer, retaining the distributor
+   obligations and separate GPL rights. No blanket legal approval or upstream
+   agreement acceptance on anyone's behalf is claimed.
+3. Obtain fresh hash-bound maintainer installed-app confirmation and protected
+   release approval before joint publication. Setup `7ff298c5…` retains its passing
+   report; it does not cover the new component-terms installer.
 
-These gates are concrete distribution checks. No long Torch build, paid code
-signing requirement or self-approved installer gate is introduced.
+No long Torch build, paid code signing requirement or self-approved installer
+approval is introduced.

@@ -8,6 +8,7 @@ import re
 import shutil
 from pathlib import Path
 
+from windows_nsis_plugin import component_terms
 from windows_release import (
     BUILD,
     RESOURCES,
@@ -35,6 +36,7 @@ def vc_name(filename: str, allowed: dict) -> str | None:
 
 def stage(resources: Path = RESOURCES) -> None:
     manifest = read_json(MANIFEST)
+    terms = component_terms()
     vs = os.environ.get("VSINSTALLDIR")
     if not vs:
         raise ValueError("Selected Visual Studio directory is unavailable")
@@ -95,7 +97,8 @@ def stage(resources: Path = RESOURCES) -> None:
         "manifestSha256": digest(MANIFEST),
         "recipeSha256": digest(Path(__file__)),
         "files": records,
-        "licensedDistributorConfirmed": False,
+        "licensedDistributorConfirmed": True,
+        "ownerLicense": terms["ownerLicense"],
         "publicDistributionApproved": False,
     }
     notices = resources / "notices"

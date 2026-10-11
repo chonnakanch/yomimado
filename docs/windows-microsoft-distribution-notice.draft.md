@@ -1,8 +1,11 @@
 # Microsoft runtime component notice — review draft
 
 Prepared 2026-10-11. **Not an accepted agreement, redistribution grant or active
-installer licence page.** The maintainer accepted the linked Community 2022
-terms, but confirms they have not yet obtained a copy of that edition.
+installer licence page.** The maintainer now confirms obtaining Community 2022
+and accepting its terms. This notice worksheet is supplemented by the
+[actual Windows installer terms](../THIRD_PARTY_LICENSES/windows-microsoft-components.txt)
+and [hash-bound owner record](windows-microsoft-terms.json); hosted verification
+and protected exact-installer review remain pending.
 This document identifies the components and prepares the remaining review; a
 notice alone does not satisfy Microsoft's end-user agreement requirement.
 
@@ -39,15 +42,14 @@ and distributors. An attribution page or link is not evidence of their assent.
 
 Before public distribution:
 
-1. The maintainer must establish an applicable Visual Studio licence, reviewing
-   and accepting its agreement themselves if necessary. Record the edition and
-   applicable terms; do not publish account details or licence keys.
+1. The maintainer confirms obtaining Community 2022 and accepting its terms on
+   2026-10-11. No key or account details are recorded.
 2. Review the complete distribution conditions, including the compiler runtime
    role and Microsoft-only end-user/distributor terms. Prepare an appropriate
    acceptance mechanism and retain evidence. The
-   [component-only text draft](windows-microsoft-component-terms.draft.txt) is
-   prepared for review; its unresolved items are explicit and it is not enabled
-   as installer terms. No conclusion that the protective standard has been
+   [component-only text](../THIRD_PARTY_LICENSES/windows-microsoft-components.txt)
+   is now included in private Windows setup with affirmative interactive and
+   explicit exact-hash unattended acceptance. No conclusion that the protective standard has been
    satisfied is claimed.
 3. Include the reviewed component notice and any required accepted terms in
    the Windows package. Rebuild if installer content changes, verify the exact
@@ -98,9 +100,9 @@ After the owner grant and component-only agreement have been reviewed:
 5. Distributors need the reviewed obligations and their own agreement evidence;
    an installer page for end users alone does not establish downstream compliance.
 
-This is a concrete engineering review plan, not active installer logic or a
-claim that a drafted agreement meets the protective standard. The owner must
-review the complete applicable Microsoft conditions before approving the text.
+The acceptance mechanics above are now implemented for a new private candidate;
+Windows Actions verification is pending. This worksheet does not claim blanket
+legal approval. The protected human review includes the exact terms and installer.
 Current setup `7ff298c5…` has a passing technical/local test record but includes
 no accepted component-specific terms page. A changed package requires a new
 hash and exact-installer confirmation before protected publication approval.

@@ -130,6 +130,8 @@ def verify_reuse(root: Path = ROOT) -> None:
         "scripts/windows_export_inputs.py",
         "scripts/windows_python_rust_sources.py",
         "scripts/windows_nsis_plugin.py",
+        "scripts/verify-windows-installer-terms.ps1",
+        "THIRD_PARTY_LICENSES/windows-microsoft-components.txt",
         ".github/workflows/windows-vc-provenance.yml",
         "scripts/audit-vc-provenance.ps1",
         ".github/workflows/webview-loader-probe.yml",

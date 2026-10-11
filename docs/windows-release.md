@@ -78,10 +78,14 @@ disables the overlay shadow: pinned Tao adds hidden client-area insets for
 undecorated shadowed windows, whereas OCR positioning assumes an inset-free
 origin. The replacement's exact-hash visual retest above closes that defect.
 Keep candidates private while distribution review and protected approval are open.
-The maintainer now accepts the linked Community 2022 terms but confirms
-they have **not obtained a copy** yet. The licensed-copy requirement and component-specific end-user terms
-remain unresolved. A [notice draft](windows-microsoft-distribution-notice.draft.md)
-is prepared for review, not activated in the installer. Full source-only rebuild
+The maintainer now confirms downloading Community 2022 and accepting its terms.
+[The owner attestation and terms hash](windows-microsoft-terms.json) are recorded.
+The Windows-only installer includes [component-specific terms](../THIRD_PARTY_LICENSES/windows-microsoft-components.txt)
+with an initially unchecked acceptance checkbox. Silent/passive setup requires
+`/ACCEPTMSRUNTIME=<terms SHA-256>`; `/S` or `/P` alone exits with code 2 before
+installation. Windows Actions tests missing/wrong assent and interactive decline,
+then verifies the installed acceptance hash alongside existing runtime checks.
+This changed package awaits hosted verification and fresh exact-installer review. Full source-only rebuild
 is not claimed. Public approval flags remain false; protected human approval
 and joint release-on-main integration remain blocked. No public tag is created.
 
@@ -94,14 +98,14 @@ full notices, replacement instructions and active build/verification recipes sta
 The table below describes the current ONNX replacement. Historical installed
 and PC results above remain bound to their original setup hashes.
 
-| Requested gate                | Current evidence                                                                                                  | Remaining work                                                                                                      |
-| ----------------------------- | ----------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
-| 1 — Pinned environment/freeze | Final CPython 3.11.17/NumPy 2.4.6/CPU ONNX freeze, parity and exact installed checks pass                         | Complete                                                                                                            |
-| 2 — Native licences/sources   | 80 frozen AMD64 PE files; exact input/source bindings and downloaded source/notices hashes verify                 | Microsoft redistribution entitlement/end-user terms; final distribution review; full source-only rebuild unverified |
-| 3 — Private installed app     | Exact NSIS install/startup/cleanup, UI/model/shortcut, embedded plugin, WebView/CRT and private asset checks pass | Local checklist complete; protected publication approval remains open                                               |
-| 4 — Installed runtime         | Final installed geometry, tokenization, dictionary/kanji, fresh translation and restart persistence pass          | Hosted and listed PC checks complete                                                                                |
-| 5 — Separate PC               | Windows 11 x64/hash confirmed; listed local checks and corrected alignment pass at 100%/125%/150%                 | AMD/mixed-monitor/left-of-primary/missing-WebView2 cases remain untested                                            |
-| 6 — Joint release-on-main     | Existing macOS path preserved; no Windows publisher enabled                                                       | Integrate only after distribution and protected exact-installer human gates pass                                    |
+| Requested gate                | Current evidence                                                                                                  | Remaining work                                                                                            |
+| ----------------------------- | ----------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
+| 1 — Pinned environment/freeze | Final CPython 3.11.17/NumPy 2.4.6/CPU ONNX freeze, parity and exact installed checks pass                         | Complete                                                                                                  |
+| 2 — Native licences/sources   | 80 frozen AMD64 PE files; exact input/source bindings and downloaded source/notices hashes verify                 | Component-terms installer verification and final distribution review; full source-only rebuild unverified |
+| 3 — Private installed app     | Exact NSIS install/startup/cleanup, UI/model/shortcut, embedded plugin, WebView/CRT and private asset checks pass | Local checklist complete; protected publication approval remains open                                     |
+| 4 — Installed runtime         | Final installed geometry, tokenization, dictionary/kanji, fresh translation and restart persistence pass          | Hosted and listed PC checks complete                                                                      |
+| 5 — Separate PC               | Windows 11 x64/hash confirmed; listed local checks and corrected alignment pass at 100%/125%/150%                 | AMD/mixed-monitor/left-of-primary/missing-WebView2 cases remain untested                                  |
+| 6 — Joint release-on-main     | Existing macOS path preserved; no Windows publisher enabled                                                       | Integrate only after distribution and protected exact-installer human gates pass                          |
 
 The active candidate builds the minimal OpenCV runtime from pinned sources with
 IPP, video and GPU backends disabled. Generated `/MD` compiler commands, native

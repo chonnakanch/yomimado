@@ -13,6 +13,7 @@ import windows_nsis_plugin as plugin
 class NsisPluginTests(unittest.TestCase):
     def test_spawn_tests_are_serial_without_changing_production_build(self):
         inputs = plugin.read_json(plugin.MANIFEST)
+        terms = plugin.component_terms()
         commands = []
 
         def run(command, **_kwargs):
@@ -34,6 +35,7 @@ class NsisPluginTests(unittest.TestCase):
                 patch.object(plugin.sys, "platform", "win32"),
                 patch.object(plugin, "AUDIT", root),
                 patch.object(plugin, "prepare", return_value=(inputs, root, root)),
+                patch.object(plugin, "component_terms", return_value=terms),
                 patch.object(
                     plugin, "read_json", return_value={"version": inputs["cliVersion"]}
                 ),
@@ -131,6 +133,54 @@ class NsisPluginTests(unittest.TestCase):
         for unsafe in ("/private/tmp/$PLUGIN", '/private/tmp/"quoted'):
             with self.assertRaises(ValueError):
                 plugin.template(original, Path(unsafe))
+
+    def test_component_terms_page_and_unattended_gate_are_both_required(self):
+        original = (
+            f"{plugin.TEMPLATE_LINE}\n{plugin.LICENSE_PAGE}\n{plugin.PASSIVE_INIT}\n"
+            "FunctionEnd\nFunction .onInstSuccess\nFunctionEnd\n"
+        )
+        sha = "a" * 64
+        result = plugin.template(original, Path("/private/tmp/source-plugin"), sha)
+        self.assertIn("!define MUI_LICENSEPAGE_CHECKBOX", result)
+        self.assertIn(f'!define YOMIMADO_MICROSOFT_TERMS_SHA256 "{sha}"', result)
+        self.assertIn('!error "Microsoft component terms file is required"', result)
+        self.assertIn(plugin.TERMS_GATE, result)
+        self.assertIn('"MicrosoftRuntimeTermsSHA256"', result)
+        for changed in (
+            original.replace(plugin.LICENSE_PAGE, ""),
+            original.replace(plugin.PASSIVE_INIT, "Function .onInit"),
+            original + "Function .onInstSuccess\n",
+        ):
+            with self.assertRaisesRegex(ValueError, "component-terms template"):
+                plugin.template(changed, Path("/private/tmp/source-plugin"), sha)
+        with self.assertRaises(ValueError):
+            plugin.template(original, Path("/private/tmp/source-plugin"), '"unsafe')
+
+    def test_changed_terms_owner_attestation_and_configuration_fail_closed(self):
+        original = plugin.read_json(plugin.TERMS_MANIFEST)
+        configuration = plugin.read_json(
+            plugin.ROOT / "apps/desktop/src-tauri/tauri.windows-release.conf.json"
+        )
+        plugin.component_terms()
+        for field in ("sha", "path", "owner", "approval", "configuration"):
+            record = copy.deepcopy(original)
+            config = copy.deepcopy(configuration)
+            if field == "sha":
+                record["termsSha256"] = "0" * 64
+            elif field == "path":
+                record["termsFile"] = "../other.txt"
+            elif field == "owner":
+                record["ownerLicense"]["obtainedCopyAndAcceptedTerms"] = False
+            elif field == "approval":
+                record["publicDistributionApproved"] = True
+            else:
+                config["bundle"].pop("licenseFile")
+            with (
+                self.subTest(field=field),
+                patch.object(plugin, "read_json", side_effect=[record, config]),
+                self.assertRaisesRegex(ValueError, "component terms"),
+            ):
+                plugin.component_terms()
 
 
 if __name__ == "__main__":
