@@ -14,6 +14,15 @@ checks for an empty owner-prepared exact-commit draft **before** the long build,
 and only uploads assets to that draft afterward. It sends no release-create,
 release-update or tag-create API request. Credentials and permissions stay unchanged.
 
+Recovery: fix `3ca497d9b32ed3abfb29cbb5e594c3bd486a7a66` passes 205 release-tool
+tests, workflow/Python lint and macOS runtime-reuse scope checks. Its
+[owner-only empty draft](https://github.com/chonnakanch/yomimado/releases/tag/untagged-14ed2a435e51a23c7e93)
+is saved for that exact target, with pre-release selected; the public tag is
+verified absent. [Run `38132376703`, attempt 2](https://github.com/chonnakanch/yomimado/actions/runs/38132376703)
+passes the read-only preflight. Build/install/asset transfer and fresh visual
+checks remain pending for this retry. Attempt 1 stopped before the long build
+because the draft had not yet been saved.
+
 Before a candidate run, save an empty draft in GitHub Releases with tag field
 `windows-private-test-<full source SHA>`, exact target commit `<full source SHA>`,
 pre-release selected, and a title/body clearly marking private testing and open
