@@ -1,5 +1,21 @@
 # First Windows pre-release plan
 
+Installed ONNX candidate — 2026-10-11: run `38104876515` at `c919d6a`
+successfully builds NSIS after excluding the verified export-only weights.
+Exact installation, bundled startup without developer Python/CUDA, quit cleanup,
+integrated source WebView library/canonical desktop CRT checks and frozen
+OCR/tokenization/dictionary/kanji/fresh translation/restart persistence pass.
+Evidence `11689928315` independently matches SHA-256
+`cd0698778aff9f54d252ce85fbc339616fa8b8ae0279b4404b472a806fcf4626`.
+Its UI driver passes model setup/cancellation, occupied-port acknowledgement and
+three selection/button/shortcut cases, then fails page-scan cancellation while
+the selector remains responsive. Source/public approval remains open, and private
+staging also fails; this diagnostic candidate is not approved for testing/release.
+The selector now bounds its repaint wait when WebView2 suspends animation frames;
+a regression reproduces missing frames. The UI driver waits for the final scan
+prompt and foreground focus. All 56 frontend tests, typecheck/build and PowerShell
+syntax pass locally; corrected installed execution is still required.
+
 Private packaging correction — 2026-10-11: run `38072170793` passes final
 horizontal/vertical OCR and three fresh translations with NumPy 2.4.6/CPU ONNX
 Runtime, source-built Sudachi and canonical VC input binding. Its 84 frozen
@@ -354,8 +370,8 @@ and PC results above remain bound to their original setup hashes.
 | ----------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------- |
 | 1 — Pinned environment/freeze | CPython 3.11.17, separated export/runtime environments, NumPy 2.4.6 and CPU ONNX parity pass in Windows Actions                                | Verify the final frozen and installed replacement                                                              |
 | 2 — Native licences/sources   | 84 service native files inventoried; preferred sources, exact bindings and missing notices prepared; Intel Torch/IPP excluded from replacement | Verify final source/notices archive and installed bindings; resolve conditional Microsoft redistribution terms |
-| 3 — Private installed app     | Prior setups pass installed checks; replacement compiled but NSIS hit its size limit                                                           | Complete packaging with verified export-only weights omitted and source-only WebView loader integrated         |
-| 4 — Installed runtime         | Replacement pre-freeze OCR geometry, three fresh translations and source-built Sudachi pass                                                    | Repeat all installed learning, native-loading, persistence and model-exclusion checks on the final setup       |
+| 3 — Private installed app     | Replacement NSIS, installation/startup/cleanup and integrated source WebView/CRT checks pass                                                   | Corrected hosted page-scan cancellation and private staging, followed by final exact-hash PC tests             |
+| 4 — Installed runtime         | Installed ONNX geometry, tokenization, dictionaries, kanji, fresh translation and restart persistence pass                                     | Verify the final setup after source/notice and repaint corrections; source archive remains unapproved          |
 | 5 — Separate PC               | Windows 11 x64 architecture confirmed; older exact setup has reported functional/scaling passes                                                | Fresh final-hash checklist and protected human approval; AMD and mixed-monitor hardware remain untested        |
 | 6 — Joint release-on-main     | Existing macOS path preserved; no Windows publisher enabled                                                                                    | Integrate only after Windows runtime/source and exact-installer human gates pass                               |
 

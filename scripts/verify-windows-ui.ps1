@@ -225,7 +225,10 @@ try {
                 if ($Handle -eq $MainWindow) { continue }
                 $Element = [System.Windows.Automation.AutomationElement]::FromHandle($Handle)
                 $Names = ($Element.FindAll([System.Windows.Automation.TreeScope]::Descendants, [System.Windows.Automation.Condition]::TrueCondition) | ForEach-Object { $_.Current.Name }) -join ' '
-                if ($Names -match 'Press Escape to (cancel|close)') {
+                # Page-scan's initial finding-page message precedes the
+                # transparent capture/repaint. Cancel the final selection UI,
+                # rather than sending a key while its WebView is still loading.
+                if ($Names -match 'Press Escape to (cancel|close)' -and $Names -notmatch 'Finding the manga page') {
                     $script:Selector = $Handle
                     return $true
                 }
@@ -233,8 +236,7 @@ try {
             return $false
         } "Selector UI did not load for $($Case.name)."
         if (-not [YomiMadoUiNative]::SetForegroundWindow($Selector)) { throw 'Cannot focus capture selector.' }
-        # Wait for rendered content rather than guessing WebView2 startup time.
-        Start-Sleep -Milliseconds 200
+        Wait-Check { [YomiMadoUiNative]::GetForegroundWindow() -eq $Selector } 'Capture selector did not receive foreground focus.'
         [System.Windows.Forms.SendKeys]::SendWait('{ESC}')
         Wait-Check {
             -not [YomiMadoUiNative]::IsIconic($MainWindow) -and
