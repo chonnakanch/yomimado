@@ -4,6 +4,31 @@ Reviewed 2026-10-11. Status: conditional redistribution evidence remains open.
 This records actual inputs and the remaining decisions; it does not accept a
 Microsoft agreement for the maintainer or approve an installer.
 
+Final technical verification — 2026-10-11: [run `38108583125`](https://github.com/chonnakanch/yomimado/actions/runs/38108583125)
+at `ca0fed317976dcbf3267101324859e497f2b0487` passes all installed startup, UI,
+learning and persistence gates. The exact setup SHA-256 is
+`2a5ef545208214efabb9dc37bf88e15089c7a5ee69ca84ac58fb449afe063ce6`.
+Its ten desktop VC DLLs and standard/renamed frozen-service copies match the
+canonical unchanged VC143 **14.44.35211.0** originals. The source-only MIT
+WebView loader's recipe/static-library binding passes for all Cargo outputs
+and the installed desktop EXE. Its BSD SDK headers/notices remain retained.
+The short source-built NSIS plugin passes upstream tests and exact embedded
+DLL verification, with static compiler runtime linkage and no dynamic VC imports.
+Downloaded diagnostic artifact `11692047068` matches GitHub's SHA-256
+`dfcfa3ba25054f555681b466357f25ba57a0a4fa59cce23992409542681fb3f7`.
+These results resolve technical identity/integration gates, independently of
+contractual permission.
+
+Owner response — 2026-10-11: **No, or unsure**, regarding an applicable Visual
+Studio licence. Public redistribution remains blocked. The
+[component notice draft](windows-microsoft-distribution-notice.draft.md) identifies
+the exact files and owner completion steps; it is not an agreement and is not
+enabled as an installer licence page. The maintainer must establish their grant
+and review/satisfy the Microsoft-specific end-user/distributor requirements.
+The Windows PC is unavailable, so fresh exact-installer testing also remains open.
+
+The dated input history below does not supersede these current results.
+
 The successful provenance run `38071435853` at `4badc93` is independently
 verified: artifact `11676279560` has SHA-256
 `d2aec89a9b6c75e0249cac835c257a9055131faccde93eecddab93f9a127b7df`.
@@ -40,9 +65,9 @@ input identity, not the maintainer's contractual entitlement. Missing matches
 must be resolved from an exact original distribution or a tested replacement;
 a matching product/version string is insufficient.
 
-The same run supplies its own NumPy 2.4.6/Sudachi installed inventory. The
-corrected final candidate still needs exact installed and archive verification;
-the historical comparison does not silently approve new files.
+The final run above supplies its own NumPy 2.4.6/Sudachi installed inventory
+and exact archive verification. Historical comparison alone does not approve
+new files or confer redistribution rights.
 
 ## Separate redistribution and GPL questions
 
@@ -74,24 +99,17 @@ this does not make application libraries such as Intel MKL/IPP System Libraries.
 
 ## Remaining public gates
 
-1. Verify the new candidate's actual VC DLLs against unchanged canonical
-   distributable inputs, with exact versions and notices. The prepared recipe
-   replaces the old Shapely copy and tool-directory inputs; its installed
-   execution passes in the diagnostic run above; repeat the exact checks for
-   the corrected final setup.
-2. Establish the maintainer's applicable redistribution grant and satisfy its
+1. Establish the maintainer's applicable redistribution grant and satisfy its
    distribution/end-user requirements specifically for Microsoft components.
    Do not impose proprietary restrictions on YomiMado's GPL code. An alternative
    is a separately installed official Microsoft prerequisite, with proper clean-PC
    detection and installed tests; that packaging path is not implemented here.
-3. Verify the source-only WebView loader in the corrected setup. The diagnostic
-   run binds its MIT implementation, adapter marker and exact static-library
-   hash to all Cargo outputs and the installed desktop EXE. Public SDK headers
-   and original BSD licence/NOTICE remain retained; the SDK loader object is
-   replaced. This resolves the loader source preparation gap independently of
-   VC-runtime provenance. Final full UI verification remains open.
-4. Verify the exact resulting setup and its source/notices delivery, then obtain
-   fresh maintainer installed-app confirmation and protected release approval.
+2. Include reviewed component-specific terms/acceptance and notices if required;
+   any changed installer must repeat the passing canonical VC, source-only
+   WebView loader, embedded plugin and source/notices delivery checks.
+3. Obtain fresh maintainer installed-app confirmation for the resulting exact
+   setup and protected release approval. The current setup's automated checks
+   pass, but the maintainer requests that it stay private while the PC is unavailable.
 
 These gates are concrete distribution checks. No long Torch build, paid code
 signing requirement or self-approved installer gate is introduced.

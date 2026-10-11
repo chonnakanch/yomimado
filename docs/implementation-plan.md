@@ -8,14 +8,19 @@ Build a small vertical slice first. Do not implement future features before the 
 
 ## Current status
 
-Windows hosted verification (2026-10-11): ONNX candidate `2bf94bd`, run
-`38106334554`, passes the complete installed UI, frozen OCR/learning/persistence
-and private-upload suite. Its downloaded evidence digest verifies independently.
-Final candidate `ca0fed3`, run `38108583125`, adds the remaining source/notice
-corrections and the short locked NSIS plugin build; its exact installed gates
-are pending. Windows 11 PC testing and protected approval must identify that
-new setup hash. macOS runtime-seed scope verification passes after an explicit
-Windows-only plugin-script exception; its release path is preserved.
+Windows hosted verification (2026-10-11): final ONNX candidate `ca0fed3`, run
+`38108583125`, passes the complete build/install/UI/OCR/learning/persistence and
+private-upload suite in 46 minutes 8 seconds. Exact source-built NSIS plugin,
+WebView loader and canonical VC identities pass; downloaded diagnostic,
+source and notices digests verify independently. The private setup SHA-256 is
+`2a5ef545208214efabb9dc37bf88e15089c7a5ee69ca84ac58fb449afe063ce6`.
+The maintainer reports PC unavailable and requests that it remain private.
+Fresh Windows 11 checks and protected approval remain open. The maintainer's
+Visual Studio redistribution grant is also no/unsure; Microsoft component
+end-user terms remain unresolved. Full source-only rebuild is unverified.
+macOS runtime-seed scope verification passes after an explicit Windows-only
+plugin-script exception; its release path is preserved. Joint publication is
+not enabled. Earlier dated entries below record historical preparation states.
 
 Windows comparison correction (2026-10-11): the export-only reference retains
 NumPy 1.26.4 for the original detector's legacy aliases, while the delivered
@@ -947,11 +952,12 @@ Before any public release:
 - [x] plan Windows runtime, source review, installer/scaling tests and joint
       publication in `docs/windows-release.md`
 - [ ] implement and verify Windows installation/runtime requirements
-      Windows-only CPU ONNX replacement and source/notice preparation are in
-      progress. Pre-freeze OCR/translation parity, the small Sudachi binding,
-      canonical VC identity and source-only WebView ABI probes pass. Final
-      installed setup/source verification and fresh exact-hash PC approval
-      remain open; existing macOS packaging/publisher remains unchanged.
+      Final private CPU ONNX setup passes hosted installation, UI, learning,
+      persistence, native-input and source/notices delivery checks. Fresh
+      exact-hash PC tests are blocked by PC availability; Microsoft redistribution
+      entitlement/end-user terms and protected human approval remain open.
+      Full source-only rebuild is unverified. Existing macOS packaging/publisher
+      remains unchanged; joint release integration waits for these gates.
 
 # After the first release — UI redesign discussion
 

@@ -1,8 +1,20 @@
 # Windows installer source record
 
-Prepared 2026-10-11. Native execution and embedded-plugin verification remain
-pending. This changes the Windows private recipe only; macOS and the public
-publisher are unchanged.
+Verified 2026-10-11 in [run `38108583125`](https://github.com/chonnakanch/yomimado/actions/runs/38108583125),
+source `ca0fed317976dcbf3267101324859e497f2b0487`. Native workspace tests and
+production compilation pass; the production build takes **4.19 seconds**.
+The exact setup with SHA-256
+`2a5ef545208214efabb9dc37bf88e15089c7a5ee69ca84ac58fb449afe063ce6`
+contains one extracted plugin copy, matching the source-built DLL SHA-256
+`f192bce0ae8edb326bbbe3c522ecf62c22733ea20a44c0950e99e06e593c3ab7`.
+Its machine is i686 (`0x14c`); imports are only advapi32, kernel32, shell32 and
+user32, with no dynamic VC runtime dependency. The installed desktop/service
+remain AMD64. Rendered template, dependency lock, recipe and original input
+hashes also verify. The downloaded source/notices bundles preserve the original
+plugin archive, all seven registry archives and their 15 notices, plus the two
+upstream plugin licence texts. This changes the Windows private recipe only;
+macOS and the public publisher are unchanged. Human upgrade/uninstall and
+Microsoft redistribution requirements remain separate gates.
 
 The observed installer input `nsis_tauri_utils.dll` is version 0.5.3 from
 [upstream commit `13d9edd27b69310e108d6fbd49f90992f8a05390`](https://github.com/tauri-apps/nsis-tauri-utils/tree/13d9edd27b69310e108d6fbd49f90992f8a05390).
@@ -54,5 +66,6 @@ recipe, then `cargo test --offline --locked --release --target
 i686-pc-windows-msvc --workspace --features test` and the analogous
 `cargo build --package nsis-tauri-utils` without the test feature under the
 task-owned Cargo environment.
-The producer records the complete commands and logs. No byte-identical rebuild,
-Windows 11 manual result or public approval is claimed before execution.
+The producer records the complete commands and logs. The verified execution
+does not claim a byte-identical independent rebuild, a Windows 11 manual result
+or public approval.

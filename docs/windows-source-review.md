@@ -5,6 +5,39 @@ Windows binary, or attest to a test that has not run. A private candidate may
 be assembled to inspect actual inputs; public distribution is blocked until
 all entries below have concrete evidence.
 
+Final downloaded delivery inspection — 2026-10-11: successful Windows run
+`38108583125` at `ca0fed317976dcbf3267101324859e497f2b0487` verifies the exact
+installed CPU ONNX runtime, native inputs, NSIS plugin, WebView loader and
+canonical VC copies. The frozen service's 80 PE files are AMD64; its bootloader,
+service code and application package have separate binding records. CPU ONNX
+execution, geometry, learning and restart persistence pass without developer
+Python/CUDA or a bundled detector model.
+
+The downloaded `windows-source-preparation.tar.gz` has SHA-256
+`9dcd33c393830d84f9bd547f4080c463c262af8313b8c210bd6083f2d8d1622b`;
+`windows-notices.tar.gz` has
+`bf5db559a02d6c652a7b37c60bdfd988d9ef1f8592f983e20c7cd866a7d701d4`.
+Inspection of their actual bytes verifies all **56 native preferred-source
+archives**, **284 Python Rust registry archives and 540 notices**, and the
+original NSIS plugin archive plus its **seven registry inputs and 15 notices**
+(with the plugin's two own licence texts retained separately). The archive
+contains **27 ONNX preferred-source inputs, three port files and 48 original
+notices**, all verified against their pinned hashes. These checks are recorded
+with the downloaded delivery evidence.
+The 64-member preferred Manga OCR source archive contains no image assets;
+the raw image-containing sdist is absent. No detector-model filename occurs in
+the outer source archive, and packaged resource/model-exclusion checks pass.
+This is actual delivered-source/notices verification, not inherited macOS approval.
+
+Independent full source-only rebuilding is **unverified**; no byte-identical
+rebuild or blanket legal approval is claimed. The maintainer reports no/unsure
+Visual Studio entitlement; [Microsoft-only distribution conditions](windows-microsoft-runtime.md)
+remain unresolved. Fresh Windows 11 testing is blocked by PC availability and
+the maintainer requests that the candidate remain private. Source/public
+approval flags remain false pending final distribution review and protected
+human approval. The historical preparation entries below are superseded where
+the successful final run provides the required execution/archive evidence.
+
 Source artwork exclusion — 2026-10-11: Manga OCR 0.1.16's original reference
 sdist contains 27 example/test manga JPEGs. The ONNX path excludes Manga OCR
 from the frozen runtime. Its source delivery now retains all unchanged code,
@@ -14,8 +47,8 @@ Every excluded image has a recorded original path/hash; the raw sdist is omitted
 from the final source bundle so those images cannot reappear through that copy.
 No licence for the original manga artwork is inferred from the software licence.
 For reference-only source rebuilding, `scripts/create-manga-ocr-warmup.py`
-provides a synthetic replacement warmup image. Final archive inspection remains
-required before public distribution.
+provides a synthetic replacement warmup image. Final downloaded archive
+inspection above verifies this exclusion.
 
 Installer plugin preparation — 2026-10-11: the original NSIS Tauri 0.5.3 source
 archive omits its dependency lock. The [short Windows recipe](windows-nsis-runtime.md)

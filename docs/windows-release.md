@@ -1,5 +1,39 @@
 # First Windows pre-release plan
 
+Current private candidate — 2026-10-11: [run `38108583125`](https://github.com/chonnakanch/yomimado/actions/runs/38108583125)
+at `ca0fed317976dcbf3267101324859e497f2b0487` succeeds in **46 minutes 8 seconds**.
+Exact installation, hidden bundled-service startup without developer Python/CUDA,
+quit cleanup, model setup/cancellation, buttons/shortcuts, horizontal/vertical OCR,
+tokenization, dictionaries, kanji, uncached translation and restart persistence
+all pass. The installed source-built NSIS plugin, source-only WebView loader and
+unchanged canonical VC runtime copies pass their exact-input checks. The frozen
+service contains 80 AMD64 PE inputs and uses CPU ONNX inference, without Torch,
+CUDA or bundled detector weights. Hosted Windows Server execution does not
+establish Windows 11 hardware coverage.
+
+The [owner-only draft](https://github.com/chonnakanch/yomimado/releases/tag/untagged-a60c37d3e98452ad3180)
+contains all eight verified assets. `YomiMado_0.1.0_x64-setup.exe` has SHA-256
+`2a5ef545208214efabb9dc37bf88e15089c7a5ee69ca84ac58fb449afe063ce6`.
+Downloaded diagnostic artifact `11692047068` matches GitHub SHA-256
+`dfcfa3ba25054f555681b466357f25ba57a0a4fa59cce23992409542681fb3f7`.
+The downloaded source archive matches SHA-256
+`9dcd33c393830d84f9bd547f4080c463c262af8313b8c210bd6083f2d8d1622b`;
+the notices archive matches
+`bf5db559a02d6c652a7b37c60bdfd988d9ef1f8592f983e20c7cd866a7d701d4`.
+Their detailed inspection is recorded in [the source review](windows-source-review.md).
+
+The maintainer reports **PC unavailable; keep candidate private**. All six
+[fresh exact-installer checks](windows-installed-test.md) remain untested for
+this hash. The maintainer also reports **no/unsure Visual Studio licence**;
+Microsoft redistribution entitlement and component-specific end-user terms
+remain unresolved. A [notice draft](windows-microsoft-distribution-notice.draft.md)
+is prepared for review, not activated in the installer. Full source-only rebuild
+is not claimed. Public approval flags remain false; protected human approval
+and joint release-on-main integration remain blocked. No public tag is created.
+
+The dated entries below are historical preparation evidence; the candidate
+and remaining gates above supersede their pending-execution statements.
+
 Latest hosted verification — 2026-10-11: [run `38106334554`](https://github.com/chonnakanch/yomimado/actions/runs/38106334554)
 at `2bf94bd` passes every build/install/UI/runtime and private-upload check.
 Downloaded evidence `11690562200` matches GitHub SHA-256
@@ -394,14 +428,14 @@ desktop reports `NotSigned`; browser/SmartScreen behavior is still untested.
 The table below describes the current ONNX replacement. Historical installed
 and PC results above remain bound to their original setup hashes.
 
-| Requested gate                | Current evidence                                                                                                                               | Remaining work                                                                                                 |
-| ----------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------- |
-| 1 — Pinned environment/freeze | CPython 3.11.17, separated export/runtime environments, NumPy 2.4.6 and CPU ONNX parity pass in Windows Actions                                | Verify the final frozen and installed replacement                                                              |
-| 2 — Native licences/sources   | 84 service native files inventoried; preferred sources, exact bindings and missing notices prepared; Intel Torch/IPP excluded from replacement | Verify final source/notices archive and installed bindings; resolve conditional Microsoft redistribution terms |
-| 3 — Private installed app     | Replacement NSIS, installation/startup/cleanup and integrated source WebView/CRT checks pass                                                   | Corrected hosted page-scan cancellation and private staging, followed by final exact-hash PC tests             |
-| 4 — Installed runtime         | Installed ONNX geometry, tokenization, dictionaries, kanji, fresh translation and restart persistence pass                                     | Verify the final setup after source/notice and repaint corrections; source archive remains unapproved          |
-| 5 — Separate PC               | Windows 11 x64 architecture confirmed; older exact setup has reported functional/scaling passes                                                | Fresh final-hash checklist and protected human approval; AMD and mixed-monitor hardware remain untested        |
-| 6 — Joint release-on-main     | Existing macOS path preserved; no Windows publisher enabled                                                                                    | Integrate only after Windows runtime/source and exact-installer human gates pass                               |
+| Requested gate                | Current evidence                                                                                                  | Remaining work                                                                                                      |
+| ----------------------------- | ----------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
+| 1 — Pinned environment/freeze | Final CPython 3.11.17/NumPy 2.4.6/CPU ONNX freeze, parity and exact installed checks pass                         | Complete                                                                                                            |
+| 2 — Native licences/sources   | 80 frozen AMD64 PE files; exact input/source bindings and downloaded source/notices hashes verify                 | Microsoft redistribution entitlement/end-user terms; final distribution review; full source-only rebuild unverified |
+| 3 — Private installed app     | Exact NSIS install/startup/cleanup, UI/model/shortcut, embedded plugin, WebView/CRT and private asset checks pass | Fresh exact-hash PC tests                                                                                           |
+| 4 — Installed runtime         | Final installed geometry, tokenization, dictionary/kanji, fresh translation and restart persistence pass          | Hosted automation complete; separate PC results pending                                                             |
+| 5 — Separate PC               | Windows 11 x64 architecture confirmed; old setup's functional/scaling results retained                            | PC unavailable; all six final-hash checks untested; AMD/mixed-monitor/missing-WebView2 cases untested               |
+| 6 — Joint release-on-main     | Existing macOS path preserved; no Windows publisher enabled                                                       | Integrate only after distribution and protected exact-installer human gates pass                                    |
 
 Independent IPP removal is prepared in **Windows OpenCV source audit**, with
 original source/vendor notice pins, accepted CMake cache checks, synthetic
@@ -490,18 +524,17 @@ the macOS frozen runtime is not a Windows seed.
 - [x] Create a Windows-specific Python lock, replacing macOS-only dependencies
       and recording CPU Torch/torchvision, tokenizer, image and ONNX compatibility.
       Avoid FFmpeg/video support, training binaries and unused codecs where practical.
-- [ ] Collect the Windows runtime's EXE, DLL and PYD inventory before clearing
-      public distribution. Verify exact licences, notices and native provenance,
-      including OpenCV, NumPy/BLAS, Torch/OpenMP, Pillow, GEOS and Python libraries.
-      Select source builds or different binaries when concrete gaps require them.
-      The [original-runtime GPL review](windows-gpl-compatibility.md) identifies
-      a compatibility conflict under the FSF interpretation, with exact detector
-      calls and loaded IPP/MKL binary evidence. Resolve it through compatible
-      replacements or sufficient rights-holder permission before public delivery.
-- [ ] Preserve exact corresponding sources, build recipes, modifications and
-      applicable relinking/replacement instructions for the actual bundled inputs.
-      Verify archive hashes, source coverage and required notices; record review
-      scope and any source-only rebuild limitations without claiming unrun checks.
+- [x] Collect the actual EXE/DLL/PYD inventory and native provenance: final
+      run `38108583125` records 80 frozen AMD64 PE files, desktop CRT inputs
+      and the separate i686 NSIS host/plugin. The CPU ONNX replacement excludes
+      the original runtime's Torch/MKL/IPP inputs; exact installed identities pass.
+- [x] Preserve pinned preferred sources, build recipes, modifications, full
+      notices and relinking/replacement instructions. Verify the actual downloaded
+      source/notices archive hashes and retained dependency source/notice bytes.
+      See the final [source review](windows-source-review.md). Independent full
+      source-only rebuilding remains unverified; no blanket clearance is inferred.
+- [ ] Complete public-distribution review, including the maintainer's applicable
+      Microsoft redistribution grant and Microsoft-only end-user requirements.
 - [x] Freeze the service in an isolated Windows environment using
       `windows_packaged_main.py`, initially as a directory bundle. Include pinned OCR,
       translation and dictionary assets; exclude the detector weights.
@@ -522,9 +555,10 @@ before treating any installer as a public candidate.
 - [x] Add Windows service startup in Rust with the `.exe` resource path,
       hidden child console, explicit local asset/data paths and existing offline
       model flags. Keep the API on loopback and preserve the macOS path.
-- [ ] Verify startup failures and occupied service port produce useful errors;
+- [x] Verify startup failures and occupied service port produce useful errors;
       quitting/relaunching does not leave an orphaned service or reuse an
-      unrelated process. Avoid logging captured screen contents.
+      unrelated process. Final hosted startup/UI/cleanup checks pass; PC cases
+      remain separate. Avoid logging captured screen contents.
 - [x] Use Tauri's writable app data directory for models, SQLite and indexes;
       verify the actual installed path. Reconcile the Python fallback and
       README paths if needed; do not write mutable data into install resources.
@@ -616,11 +650,14 @@ Only after the Windows candidate clears its runtime/source and installer gates:
 
 ## Next action and current limitations
 
-Next action: resolve the native/source entries in the source worksheet and
-perform the numbered PC checklist when the separate hardware is available.
-The manifest
-collects original sdists and source/binary archives; it does not claim complete
-corresponding-source coverage. The selected compiler/SDK fail closed if absent
+Next action: keep setup `2a5ef5452082…` private as requested, establish the
+maintainer's Microsoft redistribution entitlement and review the component-only
+terms/acceptance requirement. Perform the six exact-hash PC checks when the
+confirmed Windows 11 x64 hardware is available. Protected human approval and
+joint release integration wait for these results. Actual installed input/source
+bindings and downloaded source/notices checks pass; independent full source-only
+rebuilding is unverified and public approval flags remain false.
+The selected compiler/SDK fail closed if absent
 from the hosted image. Dictionary downloads also fail if the daily snapshot
 moves; supply the pinned snapshot or deliberately rebuild with new hashes. Candidate CI may assist development before publication CI is enabled.
 Run `37720960120` rejected changed upstream KANJIDIC2 bytes before freezing.

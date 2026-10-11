@@ -1,11 +1,29 @@
 # Windows candidate test record
 
+Current exact candidate — 2026-10-11: [private draft](https://github.com/chonnakanch/yomimado/releases/tag/untagged-a60c37d3e98452ad3180),
+from successful [run `38108583125`](https://github.com/chonnakanch/yomimado/actions/runs/38108583125)
+at `ca0fed317976dcbf3267101324859e497f2b0487`.
+`YomiMado_0.1.0_x64-setup.exe` SHA-256:
+`2a5ef545208214efabb9dc37bf88e15089c7a5ee69ca84ac58fb449afe063ce6`.
+All automated installed checks pass. The maintainer reports **PC unavailable;
+keep candidate private**. Each of the six checks below is **untested for this
+hash**; earlier passes remain historical evidence only. AMD hardware, additional
+monitors/mixed scaling and a clean machine without WebView2 remain untested.
+The human installer gate is open and is not approved by automated checks.
+
+When the PC is available, download this exact setup and compare its hash with
+the draft's `SHA256SUMS.txt`, then report pass/fail/untested for checks 1–6.
+In PowerShell: `Get-FileHash "$env:USERPROFILE\Downloads\YomiMado_0.1.0_x64-setup.exe" -Algorithm SHA256`.
+The previously confirmed Windows 11 Home 25H2 build 26200.9457, x64 OS/x64
+processor and 2560 × 1440 monitor specification need not be requested again
+unless the test machine changes.
+
 Replacement test preparation — 2026-10-11: the Windows runtime now selects
 CPU ONNX inference, NumPy 2.4.6, a source-built Sudachi binding, unchanged
 canonical VC runtime copies and a source-only WebView loader. Final packaging
 also omits original export-only PyTorch weights. These changes require a fresh
 exact-installer test; earlier reports do not approve the replacement. Its setup
-hash and private draft will be recorded after automated installed checks pass.
+hash and private draft are recorded above after automated installed checks pass.
 Use the confirmed x64 PC specification below unless it has changed.
 
 The short final-candidate report should contain the verified setup hash and
