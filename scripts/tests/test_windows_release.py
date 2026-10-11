@@ -328,18 +328,21 @@ class WindowsReleaseTests(unittest.TestCase):
         def api(url, method="GET", data=None, content_type=None):
             calls.append((url, method, data))
             if url.endswith("/releases?per_page=100"):
-                return []
-            if url.endswith("/releases"):
-                self.assertTrue(data["draft"])
-                self.assertTrue(data["prerelease"])
-                return {
-                    "id": 1,
-                    "draft": True,
-                    "upload_url": "https://uploads.github.com/private{?name}",
-                }
+                return [
+                    {
+                        "id": 1,
+                        "draft": True,
+                        "prerelease": True,
+                        "target_commitish": "a" * 40,
+                        "tag_name": "windows-private-test-" + "a" * 40,
+                        "assets": [],
+                        "upload_url": "https://uploads.github.com/private{?name}",
+                    }
+                ]
             if url.endswith("/releases/1"):
                 return {
                     "draft": True,
+                    "prerelease": True,
                     "target_commitish": "a" * 40,
                     "tag_name": "windows-private-test-" + "a" * 40,
                     "html_url": "https://github.com/private-draft",
@@ -369,13 +372,80 @@ class WindowsReleaseTests(unittest.TestCase):
         ):
             draft.stage(self.root)
         self.assertEqual(tags.call_count, 2)
-        self.assertEqual(sum(method == "POST" for _, method, _ in calls), 4)
+        self.assertEqual(sum(method == "POST" for _, method, _ in calls), 3)
         self.assertFalse(
             any(
-                method in ("PATCH", "PUT") or "/git/refs" in url
+                method in ("PATCH", "PUT")
+                or "/git/refs" in url
+                or (method == "POST" and url.endswith("/releases"))
                 for url, method, _ in calls
             )
         )
+
+    def test_private_preflight_requires_owner_draft_without_creating_release(self):
+        with (
+            patch.object(draft, "workflow_revision", return_value="a" * 40),
+            patch.object(draft, "tag_absent"),
+            patch.object(draft, "request", return_value=[]) as api,
+            self.assertRaisesRegex(ValueError, "Prepare an empty owner-only draft"),
+        ):
+            draft.preflight()
+        api.assert_called_once_with(draft.API + "/releases?per_page=100")
+
+    def test_private_preflight_rejects_nonempty_published_or_wrong_target(self):
+        original = {
+            "draft": True,
+            "prerelease": True,
+            "assets": [],
+            "target_commitish": "a" * 40,
+            "tag_name": "windows-private-test-" + "a" * 40,
+        }
+        for field, value in (
+            ("draft", False),
+            ("prerelease", False),
+            ("assets", [{"name": "old-setup.exe"}]),
+            ("target_commitish", "develop"),
+        ):
+            with (
+                self.subTest(field=field),
+                patch.object(draft, "workflow_revision", return_value="a" * 40),
+                patch.object(draft, "tag_absent"),
+                patch.object(
+                    draft, "request", return_value=[{**original, field: value}]
+                ),
+                self.assertRaisesRegex(ValueError, "empty exact-commit"),
+            ):
+                draft.preflight()
+        with (
+            patch.object(draft, "workflow_revision", return_value="a" * 40),
+            patch.object(draft, "tag_absent"),
+            patch.object(draft, "request", return_value=[original, original]),
+            self.assertRaisesRegex(ValueError, "Ambiguous"),
+        ):
+            draft.preflight()
+
+    def test_private_preflight_rejects_untrusted_workflow_context_before_api(self):
+        for field, value in (
+            ("GITHUB_ACTIONS", "false"),
+            ("GITHUB_REPOSITORY", "other/repo"),
+            ("GITHUB_REF", "refs/heads/main"),
+            ("GITHUB_SHA", "develop"),
+        ):
+            env = {
+                "GITHUB_ACTIONS": "true",
+                "GITHUB_REPOSITORY": draft.REPOSITORY,
+                "GITHUB_REF": "refs/heads/develop",
+                "GITHUB_SHA": "a" * 40,
+                field: value,
+            }
+            with (
+                self.subTest(field=field),
+                patch.dict("os.environ", env),
+                patch.object(draft, "request") as api,
+                self.assertRaisesRegex(ValueError, "restricted"),
+            ):
+                draft.preflight()
+            api.assert_not_called()
 
     def test_actual_lock_matches_and_only_cpu_torch_is_selected(self):
         manifest = release.read_json(release.SERVICE / "windows-inputs.json")

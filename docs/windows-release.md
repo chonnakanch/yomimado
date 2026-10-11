@@ -1,5 +1,27 @@
 # First Windows pre-release plan
 
+Overlay correction execution — 2026-10-11: [run `38128735546`](https://github.com/chonnakanch/yomimado/actions/runs/38128735546)
+at `1236d32598c84f3c0b39487a15536be5385005d9` builds/installs the setup and passes
+startup, UI/model/buttons/shortcuts, frozen OCR/learning and persistence. The job
+fails only when GitHub rejects private draft creation with HTTP 403. No new
+installer was uploaded; the prior available candidate below remains unchanged.
+Hosted checks do not establish corrected visual alignment on the separate PC.
+
+[GitHub's release API](https://docs.github.com/en/rest/releases/releases#create-a-release)
+requires workflow authority when the target differs in workflow files from the
+default branch; `GITHUB_TOKEN` cannot obtain that authority. The candidate now
+checks for an empty owner-prepared exact-commit draft **before** the long build,
+and only uploads assets to that draft afterward. It sends no release-create,
+release-update or tag-create API request. Credentials and permissions stay unchanged.
+
+Before a candidate run, save an empty draft in GitHub Releases with tag field
+`windows-private-test-<full source SHA>`, exact target commit `<full source SHA>`,
+pre-release selected, and a title/body clearly marking private testing and open
+gates. Use **Save draft**, never Publish or create a Git tag. A newly pushed
+commit may stop at this early preflight until its draft is ready; rerun that
+unchanged job after preparation. Nonempty/published/ambiguous/wrong-target drafts
+are rejected; existing assets are never overwritten or deleted automatically.
+
 Current private candidate — 2026-10-11: [run `38108583125`](https://github.com/chonnakanch/yomimado/actions/runs/38108583125)
 at `ca0fed317976dcbf3267101324859e497f2b0487` succeeds in **46 minutes 8 seconds**.
 Exact installation, hidden bundled-service startup without developer Python/CUDA,
@@ -28,8 +50,8 @@ keeps that alignment defect open. The maintainer confirms the downloaded hash
 above and reports all boxes shifted right at 100%, 125% and 150%.
 The Windows-only overlay correction disables its default shadow: pinned Tao
 adds hidden client-area insets for undecorated shadowed windows, whereas OCR
-positioning assumes an inset-free origin. Hosted build and fresh visual
-verification of the correction at `1236d32` remain required. Keep candidates private.
+positioning assumes an inset-free origin. Hosted installed checks for the correction pass, but private upload recovery and
+fresh exact-hash visual verification remain required. Keep candidates private.
 The maintainer also reports **no/unsure Visual Studio licence**;
 Microsoft redistribution entitlement and component-specific end-user terms
 remain unresolved. A [notice draft](windows-microsoft-distribution-notice.draft.md)

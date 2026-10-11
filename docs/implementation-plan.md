@@ -19,7 +19,10 @@ a slight rightward OCR-box offset. The downloaded hash matches the candidate;
 all boxes shift right at 100%/125%/150%. Visual alignment remains open.
 The Windows-only OCR overlay at `1236d32` disables the default shadow, whose native
 client-area insets conflict with the requested screen origin. Corrected hosted
-execution and exact-installer visual testing remain required; keep it private.
+execution passes in run `38128735546`; private draft creation alone fails with
+HTTP 403. An early exact-draft preflight and owner-prepared draft are prepared to resolve staging
+without broader token permissions. Upload recovery and exact-installer visual
+testing remain required; keep it private.
 Protected approval remains open. The maintainer's
 Visual Studio redistribution grant is also no/unsure; Microsoft component
 end-user terms remain unresolved. Full source-only rebuild is unverified.

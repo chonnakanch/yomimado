@@ -78,6 +78,10 @@ jobs:
         with:
           python-version: "3.11.9" # Bootstrap only; frozen runtime is source-built 3.11.17.
           architecture: x64
+      - name: Verify empty owner-only draft before building
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python scripts/windows_private_draft.py --preflight
       - name: Restore hash-pinned original dictionary snapshots
         env:
           GH_TOKEN: ${{ github.token }}

@@ -72,7 +72,7 @@ def candidate_files(directory: Path, revision: str) -> list[Path]:
     return files
 
 
-def stage(directory: Path) -> None:
+def workflow_revision() -> str:
     revision = os.environ["GITHUB_SHA"]
     if (
         os.environ.get("GITHUB_ACTIONS") != "true"
@@ -83,40 +83,47 @@ def stage(directory: Path) -> None:
         raise ValueError(
             "Private staging is restricted to the tracked development workflow"
         )
-    files = candidate_files(directory, revision)
+    return revision
+
+
+def preflight() -> dict:
+    """Read-only check before building; Actions cannot create this draft."""
+    revision = workflow_revision()
     tag = "windows-private-test-" + revision
     tag_absent(tag)
     existing = [
         r for r in request(API + "/releases?per_page=100") if r["tag_name"] == tag
     ]
+    if not existing:
+        raise ValueError(
+            "Prepare an empty owner-only draft in GitHub before building: tag "
+            + tag
+            + "; exact target commit "
+            + revision
+            + ". Save as draft only; do not publish or create a Git tag. "
+            "GITHUB_TOKEN cannot create releases for workflow changes relative "
+            "to the default branch. No broader token permissions are required."
+        )
     if len(existing) > 1:
         raise ValueError("Ambiguous private draft")
-    if existing:
-        release = existing[0]
-        if (
-            release["draft"] is not True
-            or release["target_commitish"] != revision
-            or release["assets"]
-        ):
-            raise ValueError("Only an empty exact-commit private draft can be staged")
-    else:
-        release = request(
-            API + "/releases",
-            "POST",
-            {
-                "tag_name": tag,
-                "target_commitish": revision,
-                "name": "PRIVATE Windows installer test — " + revision[:12],
-                "draft": True,
-                "prerelease": True,
-                "body": "Private maintainer test only. Source/licence review and exact-installer human approval remain OPEN. Do not publish this draft.\n\nSource: "
-                + revision
-                + "\n\n"
-                + (directory / "SHA256SUMS.txt").read_text(),
-            },
+    release = existing[0]
+    if (
+        release["draft"] is not True
+        or release["prerelease"] is not True
+        or release["target_commitish"] != revision
+        or release["assets"]
+    ):
+        raise ValueError(
+            "Only an empty exact-commit private pre-release draft can be staged"
         )
-    if release["draft"] is not True:
-        raise ValueError("GitHub did not create an unpublished draft")
+    return release
+
+
+def stage(directory: Path) -> None:
+    revision = workflow_revision()
+    files = candidate_files(directory, revision)
+    release = preflight()
+    tag = "windows-private-test-" + revision
     upload = release["upload_url"].split("{")[0]
     for path in files:
         print("Staging private asset: " + path.name, flush=True)
@@ -129,6 +136,7 @@ def stage(directory: Path) -> None:
     final = request(API + "/releases/" + str(release["id"]))
     if (
         final["draft"] is not True
+        or final["prerelease"] is not True
         or final["target_commitish"] != revision
         or final["tag_name"] != tag
     ):
@@ -146,5 +154,13 @@ def stage(directory: Path) -> None:
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("directory", type=Path)
-    stage(parser.parse_args().directory)
+    parser.add_argument("directory", type=Path, nargs="?")
+    parser.add_argument("--preflight", action="store_true")
+    args = parser.parse_args()
+    if args.preflight and args.directory is None:
+        result = preflight()
+        print("Verified empty owner-only draft: " + result["html_url"])
+    elif args.directory is not None and not args.preflight:
+        stage(args.directory)
+    else:
+        parser.error("Specify either --preflight or a candidate directory")
