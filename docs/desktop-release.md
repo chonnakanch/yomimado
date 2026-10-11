@@ -19,11 +19,12 @@ candidate` remains the separate development-only installer workflow.
    version is skipped; an existing incomplete tag fails closed. `0.x.x` and
    `alpha.N`/`beta.N`/`rc.N` versions are pre-releases; `1.0.0` and later without
    suffixes are stable.
-2. **seed-inputs** waits for a review in the existing protected `macos-release`
-   environment. This review permits private input access only. GitHub requires
+   Release titles use only the version: **YomiMado v0.1.0**.
+2. **seed-inputs** runs automatically on protected `main`, without an environment
+   approval or personal token. GitHub requires
    `contents: write` to read unpublished drafts, so this isolated job uses a
    short-lived job token and sends **GET requests only**. It checks current main,
-   environment protection, unique private seed identity and declared/actual byte
+   effective main rules, publisher environment protection, unique private seed identity and declared/actual byte
    hashes. It exports three pinned macOS seed files and the pinned Windows
    dictionary snapshot into separate one-day artifacts. It creates no release or
    tag and approves no installer. No personal token or new secret is needed.
@@ -51,22 +52,29 @@ candidate` remains the separate development-only installer workflow.
 
 The environment keeps its historical `macos-release` name to preserve its already
 configured reviewer, exact `main` branch rule and disabled administrator bypass.
-Its **publish** review now covers both platforms. The earlier seed-input review
-cannot substitute for the later exact-installer review. The agent never supplies
-either owner review. Build/provenance files retain `installedAppVerified=false`
+Its **publish** review now covers both platforms. Builds and private input transfer
+require no manual review. The agent never supplies the owner publication review.
+Build/provenance files retain `installedAppVerified=false`
 and private Windows flags: automated checks do not rewrite archived bytes or
 pretend to have performed the separate human test.
 
 ## First execution and remaining external steps
 
+- [x] Protect exact branch `main` with active ruleset
+      [Protected main](https://github.com/chonnakanch/yomimado/settings/rules/24885215):
+      pull requests, resolved comments, GitHub Actions `gates` and current-base
+      checks; deletion and force pushes blocked; bypass list empty. Required PR
+      review count is zero for this solo-maintainer project. The separate installer
+      publication approval remains required.
+- [x] Remove build approval; check effective main rules before private inputs and
+      publication. Gate checks run on every main PR and develop/main push without
+      path filters, so a documentation-only PR can satisfy the required check.
 - [x] Latest private Windows installer: automated suite and hash-confirmed local
       six-check report pass on Windows 11 x64.
 - [x] Shared workflow, strict transfer/upload gates, permissions and version rules
       implemented; existing macOS runtime scope preserved.
 - [ ] Owner performs the intended first versioned merge to `main`. This task does
       **not** authorize the agent to do that merge or create a public version tag.
-- [ ] Review the **seed-inputs** deployment after inspecting the merged commit.
-      This is GET-only private seed access, not a release/installer approval.
 - [ ] Both hosted builders and the combined verification pass. The first combined
       execution remains unverified until this main run; previous private Windows
       execution does not claim that the whole shared workflow ran.
@@ -86,13 +94,13 @@ disappears or changes, restore its exact original assets privately; do not publi
 it or widen builder permissions. Changed shared OCR/dependency/licence inputs
 still require a newly reviewed macOS seed instead of using stale runtime code.
 
-Local verification — 2026-10-11: **220 release-tool tests pass**, including actual
+Local verification — 2026-10-11: **222 release-tool tests pass**, including actual
 publisher-shell rehearsals for `0.1.0`, `1.0.0-beta.1` and `1.0.0`. Unsafe
-default branch, stale/advanced main, unprotected environment, tag collision and
+default branch, stale/advanced main, missing effective main rules, unprotected environment, tag collision and
 tampered upload cannot publish. Workflow actionlint, Python lint/format and
 document formatting pass. The macOS seed comparison is preserved. The separate
 **Desktop release gate checks** workflow runs these lightweight publisher and
-version tests on `develop` with read-only permission and local fake APIs; it
+version tests on every `main` PR and `develop`/`main` push with read-only permission and local fake APIs; it
 neither builds an installer nor accesses private seeds.
 
 Hosted gate-check record — [run `38155209350`](https://github.com/chonnakanch/yomimado/actions/runs/38155209350)

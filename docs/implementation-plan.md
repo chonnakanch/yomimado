@@ -8,6 +8,15 @@ Build a small vertical slice first. Do not implement future features before the 
 
 ## Current status
 
+Release automation update (2026-10-11): version-only titles such as
+`YomiMado v0.1.0`; private input transfer and both builds run without manual
+approval on protected `main`. Active ruleset `24885215` requires pull requests,
+resolved comments and current-base GitHub Actions `gates`; deletion and force
+pushes are blocked with no bypass actors. Effective rules are checked before
+private inputs and publication. Final owner review of both exact new installers
+remains required. The first combined main execution remains pending the intended
+merge; no merge, version tag or public release is performed here.
+
 Current Windows component-terms setup (2026-10-11): source `f8396cc`,
 [run `38142782743`, attempt 4](https://github.com/chonnakanch/yomimado/actions/runs/38142782743),
 passes all automated gates in 46 minutes 19 seconds. Setup SHA-256:

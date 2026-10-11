@@ -2,14 +2,9 @@ name: Desktop release gate checks
 
 "on":
   push:
-    branches: [develop]
-    paths:
-      - .github/workflows/macos-prerelease.yml
-      - .github/workflows/desktop-release-checks.yml
-      - scripts/desktop_release.py
-      - scripts/macos-ci-release.py
-      - scripts/tests/test_desktop_release.py
-      - scripts/tests/test_macos_ci_release.py
+    branches: [develop, main]
+  pull_request:
+    branches: [main]
   workflow_dispatch:
 
 permissions:

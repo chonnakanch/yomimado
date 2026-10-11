@@ -28,6 +28,18 @@ ENVIRONMENT = {
     "protection_rules": [{"type": "required_reviewers", "reviewers": [{"id": 123}]}],
 }
 POLICIES = {"branch_policies": [{"name": "main", "type": "branch"}]}
+MAIN_RULES = [
+    {"type": "pull_request"},
+    {"type": "deletion"},
+    {"type": "non_fast_forward"},
+    {
+        "type": "required_status_checks",
+        "parameters": {
+            "strict_required_status_checks_policy": True,
+            "required_status_checks": [{"context": "gates", "integration_id": 15368}],
+        },
+    },
+]
 
 
 def fixtures(root, version="0.1.0"):
@@ -199,6 +211,46 @@ class ArtifactTests(unittest.TestCase):
 
 
 class PrivateInputTests(unittest.TestCase):
+    def test_main_protection_requires_each_rule_and_trusted_current_base_check(self):
+        release.verify_main_rules(MAIN_RULES)
+        for index in range(len(MAIN_RULES)):
+            with self.subTest(missing=index), self.assertRaises(ValueError):
+                release.verify_main_rules(MAIN_RULES[:index] + MAIN_RULES[index + 1 :])
+        for wrong in (False, None):
+            changed = copy.deepcopy(MAIN_RULES)
+            changed[-1]["parameters"]["strict_required_status_checks_policy"] = wrong
+            with self.assertRaises(ValueError):
+                release.verify_main_rules(changed)
+        for field, wrong in (("context", "other"), ("integration_id", None)):
+            changed = copy.deepcopy(MAIN_RULES)
+            changed[-1]["parameters"]["required_status_checks"][0][field] = wrong
+            with self.assertRaises(ValueError):
+                release.verify_main_rules(changed)
+        for wrong in (None, {}, MAIN_RULES * 25):
+            with self.assertRaises(ValueError):
+                release.verify_main_rules(wrong)
+
+    def test_unprotected_main_cannot_enumerate_or_download_private_seeds(self):
+        with (
+            tempfile.TemporaryDirectory() as temporary,
+            patch.object(release, "main_scope"),
+            patch.dict(os.environ, {"GITHUB_SHA": REVISION}),
+            patch.object(
+                release,
+                "request",
+                side_effect=[
+                    {"default_branch": "main"},
+                    {"object": {"sha": REVISION}},
+                    [],
+                ],
+            ) as api,
+            patch.object(release, "build_opener") as opener,
+            self.assertRaisesRegex(ValueError, "Main requires"),
+        ):
+            release.download_inputs(Path(temporary))
+        self.assertEqual(api.call_count, 3)
+        opener.assert_not_called()
+
     def test_wrong_branch_repository_and_non_actions_cannot_read_inputs(self):
         valid = {
             "GITHUB_ACTIONS": "true",
@@ -276,6 +328,7 @@ class PrivateInputTests(unittest.TestCase):
         answers = [
             {"default_branch": "main"},
             {"object": {"sha": REVISION}},
+            MAIN_RULES,
             ENVIRONMENT,
             POLICIES,
             [draft],
@@ -369,6 +422,7 @@ class PublisherRehearsalTests(unittest.TestCase):
             )
             release.write_json(root / "environment.json", ENVIRONMENT)
             release.write_json(root / "policies.json", POLICIES)
+            release.write_json(root / "expected-main-rules.json", MAIN_RULES)
             binary = root / "bin"
             binary.mkdir()
             (binary / "python3").symlink_to(sys.executable)
@@ -386,6 +440,8 @@ class PublisherRehearsalTests(unittest.TestCase):
                     endpoint=next(a for a in args[1:] if a.startswith('repos/'))
                     if '--method' in args:
                         (root/'tag.txt').write_text(os.environ['GITHUB_SHA']); print('{}')
+                    elif '/rules/branches/main?' in endpoint:
+                        print('[]' if scenario=='unprotected-main' else (root/'expected-main-rules.json').read_text())
                     elif endpoint.endswith('/deployment-branch-policies'): print((root/'policies.json').read_text())
                     elif endpoint.endswith('/environments/macos-release'):
                         value=json.loads((root/'environment.json').read_text())
@@ -434,6 +490,7 @@ class PublisherRehearsalTests(unittest.TestCase):
                 self.assertTrue((root / "published.txt").exists())
                 created = (root / "created.txt").read_text()
                 self.assertIn("--draft", created)
+                self.assertIn("--title YomiMado v" + version + " --notes-file", created)
                 self.assertEqual(
                     "--prerelease" in created, release.macos.is_prerelease(version)
                 )
@@ -459,6 +516,7 @@ class PublisherRehearsalTests(unittest.TestCase):
             "default-branch",
             "stale",
             "unprotected",
+            "unprotected-main",
             "tag-collision",
             "upload-tamper",
             "advance-during-upload",
@@ -482,6 +540,13 @@ class PublisherRehearsalTests(unittest.TestCase):
         self.assertEqual(workflow.count("gh release create"), 1)
         self.assertEqual(workflow.count("gh release edit"), 1)
         self.assertIn("name: Desktop release from main", workflow)
+        inputs = workflow.split("\n  seed-inputs:\n", 1)[1].split("\n  build:\n", 1)[0]
+        self.assertNotIn("environment:", inputs)
+        self.assertEqual(workflow.count("environment: macos-release"), 1)
+        checks = (ROOT / ".github/workflows/desktop-release-checks.yml").read_text()
+        self.assertIn("branches: [develop, main]", checks)
+        self.assertIn("pull_request:\n    branches: [main]", checks)
+        self.assertNotIn("paths:", checks)
 
 
 if __name__ == "__main__":

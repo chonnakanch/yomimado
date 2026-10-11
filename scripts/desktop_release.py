@@ -1,6 +1,6 @@
 """Hash-bound inputs and combined macOS/Windows release artifacts.
 
-Private seed access is GET-only in a protected input job. Builders receive
+Private seed access is GET-only on protected main, without build approval. Builders receive
 hashed artifacts without credentials; only the protected publisher creates
 the shared version tag and release. Build records never claim human approval.
 """
@@ -57,6 +57,33 @@ def main_scope() -> None:
         )
 
 
+def verify_main_rules(rules: list[dict]) -> None:
+    """Require effective main protections using the metadata-only rules API.
+
+    GitHub omits disabled/evaluate rules here. Bypass actors are not exposed
+    to the job token; the empty bypass list is verified in owner settings.
+    """
+    if not isinstance(rules, list) or len(rules) >= 100:
+        raise ValueError("Invalid or truncated effective main rules")
+    types = {r.get("type") for r in rules}
+    checks = [
+        r.get("parameters", {})
+        for r in rules
+        if r.get("type") == "required_status_checks"
+    ]
+    if not {"pull_request", "deletion", "non_fast_forward"}.issubset(types) or not any(
+        c.get("strict_required_status_checks_policy") is True
+        and any(
+            check.get("context") == "gates" and check.get("integration_id") == 15368
+            for check in c.get("required_status_checks", [])
+        )
+        for c in checks
+    ):
+        raise ValueError(
+            "Main requires pull requests, GitHub Actions gates, current-base checks and deletion/force-push protection"
+        )
+
+
 def seed_release(releases: list[dict], platform: str) -> dict:
     pinned = INPUTS[platform]
     matches = [r for r in releases if r.get("tag_name") == pinned["tag"]]
@@ -85,6 +112,7 @@ def download_inputs(directory: Path) -> None:
         != os.environ["GITHUB_SHA"]
     ):
         raise ValueError("Private inputs require the current default main commit")
+    verify_main_rules(request(API + "/rules/branches/main?per_page=100"))
     macos.verify_environment(
         request(API + "/environments/macos-release"),
         request(API + "/environments/macos-release/deployment-branch-policies"),
@@ -325,6 +353,7 @@ def main() -> None:
         "action",
         choices=(
             "download-inputs",
+            "verify-main-rules",
             "verify-inputs",
             "restore-dictionaries",
             "windows-record",
@@ -345,6 +374,8 @@ def main() -> None:
     args = parser.parse_args()
     if args.action == "download-inputs":
         download_inputs(args.directory)
+    elif args.action == "verify-main-rules":
+        verify_main_rules(read_json(args.directory))
     elif args.action == "verify-inputs":
         verify_inputs(args.directory, args.platform)
     elif args.action == "restore-dictionaries":

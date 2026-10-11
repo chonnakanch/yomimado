@@ -352,7 +352,8 @@ consistent. Release classification (2026-10-07) is automatic:
   `1.0.0-beta.1`. Replace `N` with a number; literal `beta.x` is not a version.
 - Versions `1.0.0` and later without a suffix are **stable releases**.
 
-The GitHub flag, title and notes follow this classification. Candidate provenance
+Release titles use the version alone, such as **YomiMado v0.1.0**. The GitHub flag
+and notes follow this classification. Candidate provenance
 records the boolean `prerelease`; artifact verification and uploaded-draft
 verification reject a mismatched flag. Both release types require the same
 installer approval and source/bundle verification. Stable publication does not
@@ -370,7 +371,7 @@ One-time GitHub setup, before the first merge:
    `YomiMado_0.1.0_sources_5120506.tar.gz` and
    `YomiMado_0.1.0_notices_5120506.tar.gz` from `services/ocr/build/`.
    Their SHA-256 values are pinned in the workflow; incorrect inputs fail.
-2. The separately protected GET-only `seed-inputs` job locates the unique
+2. The automatic GET-only `seed-inputs` job on protected `main` locates the unique
    unpublished draft by its fixed staging name and checks all three hashes.
    It transfers pinned artifacts to read-only builders; no release-ID variable
    or personal token is needed. See [the shared flow](desktop-release.md).
@@ -378,8 +379,8 @@ One-time GitHub setup, before the first merge:
    reviewer. Allow deployments from `main`. Permit the owner to approve their
    own run for this personal project. The workflow checks through GitHub's API
    that a real required-reviewer rule exists; an unprotected or absent
-   environment cannot publish. Protect `main` against unintended direct pushes
-   if releases must occur only through feature merges.
+   environment cannot publish. Protect `main` with pull requests, required
+   `gates` checks against the current base, no force pushes/deletion and no bypass.
 4. Create `main` from the intended baseline, **set it as GitHub's default
    branch**, then merge the release change and subsequent versioned features
    into it. The workflow refuses publication while the default branch differs:
@@ -408,20 +409,21 @@ token cannot see its existing owner-only draft in the release listing. The macOS
 build uses the fixed seed-tag endpoint instead and has not yet executed on
 GitHub; its ability to download draft assets with the read-only token is therefore
 unverified. The Windows direct-tag preflight also fails in run `37938465690`;
-review protected seed input access before the first main release execution.
+verify private seed input access before the first main release execution.
 Preserve the private seed and protected publisher;
 do not publish the seed or widen build-job permissions to bypass this check.
 
-Prepared resolution — 2026-10-11: a separate `seed-inputs` job, protected by
-`macos-release`, uses a short-lived `contents: write` job token only for GET
+Prepared resolution — 2026-10-11: a separate automatic `seed-inputs` job on
+protected `main` uses a short-lived `contents: write` job token only for GET
 requests and hash checks, then transfers pinned inputs to read-only builders.
-The owner reviews private access independently of the later **publish** review.
+Main's active ruleset is verified before input access; no build approval is required.
+The owner reviews both exact installers in the later **publish** review.
 No seed is published, builder permission widened, personal token added or human
 installer test inferred. Its first hosted execution remains pending the intended
 main merge; the earlier risk is not described as an executed success.
 
 The hobby target uses GitHub's job-scoped token and no Apple keys, passwords or
-signing/notarization secrets. Only the separately protected input and publish
+signing/notarization secrets. Only the isolated input and protected publish
 jobs have `contents: write`; the input code is GET-only and only publish mutates
 release/tag state. Actions are pinned to commit hashes. The Apple Silicon job
 reuses the exact reviewed frozen runtime from the seed, rebuilds frontend/Rust
@@ -443,7 +445,7 @@ check its hashes, and test the exact installed DMG using
 [the existing-Mac checklist](macos-clean-mac-test.md). Approving `macos-release`
 attests to those installed-app checks for this exact candidate, not the older
 seed. Test the Windows setup from the same combined artifact using its six-check
-report before this publish review; seed-input access review approves no installer.
+report before this publish review; automatic builds approve no installer.
 The workflow then creates `v<version>` at the merged commit, uploads the
 DMG and Windows setup, both corresponding-source/notice deliveries, checksums
 and provenance records to one draft, and makes it public only after upload verification. The provenance

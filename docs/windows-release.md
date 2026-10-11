@@ -335,8 +335,8 @@ The workflow remains on `develop`; no merge, public tag or publication is perfor
 The first main run and protected reviews of its new installers remain required:
 
 - [x] Add a Windows build/verification job with pinned actions/tools and private
-      candidate artifacts. Builders stay read-only; private seed access has a separately
-      protected GET-only input job, and only the protected publisher mutates releases.
+      candidate artifacts. Builders stay read-only; private seed access has an
+      automatic GET-only input job on protected main, and only the protected publisher mutates releases.
 - [x] Use the same app version rules: `0.x.x` and `alpha.N`/`beta.N`/`rc.N`
       versions are pre-releases; `1.0.0` and later without a suffix are stable.
 - [x] Extend source-input comparison deliberately for Windows-only recipes and

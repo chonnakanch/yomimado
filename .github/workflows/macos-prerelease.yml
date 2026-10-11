@@ -59,19 +59,20 @@ jobs:
             exit 0
           fi
           test "$(gh api "repos/$GITHUB_REPOSITORY" --jq .default_branch)" = main
+          gh api "repos/$GITHUB_REPOSITORY/rules/branches/main?per_page=100" > "$RUNNER_TEMP/main-rules.json"
+          python scripts/desktop_release.py verify-main-rules --directory "$RUNNER_TEMP/main-rules.json"
           gh api "repos/$GITHUB_REPOSITORY/environments/macos-release" > "$RUNNER_TEMP/release-environment.json"
           gh api "repos/$GITHUB_REPOSITORY/environments/macos-release/deployment-branch-policies" > "$RUNNER_TEMP/release-policies.json"
           python scripts/macos-ci-release.py verify-environment --directory "$RUNNER_TEMP/release-environment.json" --policies "$RUNNER_TEMP/release-policies.json"
           echo "release=true" >> "$GITHUB_OUTPUT"
 
   # Push access is required to read unpublished seeds. Keep it out of builders,
-  # review this GET-only job separately, and use no long-lived personal token.
+  # run this GET-only job on protected main, with no personal token or build approval.
   seed-inputs:
     needs: plan
     if: needs.plan.outputs.release == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 30
-    environment: macos-release
     permissions:
       contents: write
     steps:
@@ -470,7 +471,7 @@ jobs:
             echo "Source commit: $GITHUB_SHA"
             cat candidate/desktop-SHA256SUMS.txt
             echo 'Download verified-desktop-candidate. Run the macOS and Windows local checklists; retain the fresh-Mac waiver and explicitly untested Windows hardware cases.'
-            echo 'Seed-inputs review permitted private GET access only; it did not approve these installers.'
+            echo 'Builds and private input transfer run automatically on protected main; publication requires this separate installer review.'
           } >> "$GITHUB_STEP_SUMMARY"
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
@@ -511,6 +512,8 @@ jobs:
           test "$(jq -r .tag <<< "$EXPECTED_RECORD")" = "$RELEASE_TAG"
           test "$(jq -r .prerelease <<< "$EXPECTED_RECORD")" = "$RELEASE_PRERELEASE"
           test "$(gh api "repos/$GITHUB_REPOSITORY" --jq .default_branch)" = main
+          gh api "repos/$GITHUB_REPOSITORY/rules/branches/main?per_page=100" > "$RUNNER_TEMP/main-rules.json"
+          python3 scripts/desktop_release.py verify-main-rules --directory "$RUNNER_TEMP/main-rules.json"
           gh api "repos/$GITHUB_REPOSITORY/environments/macos-release" > "$RUNNER_TEMP/release-environment.json"
           gh api "repos/$GITHUB_REPOSITORY/environments/macos-release/deployment-branch-policies" > "$RUNNER_TEMP/release-policies.json"
           python3 scripts/macos-ci-release.py verify-environment --directory "$RUNNER_TEMP/release-environment.json" --policies "$RUNNER_TEMP/release-policies.json"
@@ -538,12 +541,9 @@ jobs:
           release_options=(--draft)
           if [ "$RELEASE_PRERELEASE" = true ]; then
             release_options+=(--prerelease)
-            release_label=pre-release
-          else
-            release_label=release
           fi
           gh release create "$RELEASE_TAG" candidate/* --repo "$GITHUB_REPOSITORY" --verify-tag \
-            --target "$GITHUB_SHA" --title "YomiMado $RELEASE_TAG — $release_label" \
+            --target "$GITHUB_SHA" --title "YomiMado $RELEASE_TAG" \
             --notes-file "$RUNNER_TEMP/release-notes.md" "${release_options[@]}"
           gh api "repos/$GITHUB_REPOSITORY/releases/tags/$RELEASE_TAG" > "$RUNNER_TEMP/uploaded-release.json"
           test "$(gh api "repos/$GITHUB_REPOSITORY/git/ref/tags/$RELEASE_TAG" --jq .object.sha)" = "$GITHUB_SHA"
@@ -551,4 +551,6 @@ jobs:
           # main may advance while large assets upload. Recheck immediately
           # before making the verified draft public; never move its tag.
           test "$(gh api "repos/$GITHUB_REPOSITORY/git/ref/heads/main" --jq .object.sha)" = "$GITHUB_SHA"
+          gh api "repos/$GITHUB_REPOSITORY/rules/branches/main?per_page=100" > "$RUNNER_TEMP/main-rules.json"
+          python3 scripts/desktop_release.py verify-main-rules --directory "$RUNNER_TEMP/main-rules.json"
           gh release edit "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY" --draft=false
