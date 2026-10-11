@@ -22,9 +22,14 @@ the notices archive matches
 `bf5db559a02d6c652a7b37c60bdfd988d9ef1f8592f983e20c7cd866a7d701d4`.
 Their detailed inspection is recorded in [the source review](windows-source-review.md).
 
-The maintainer reports **PC unavailable; keep candidate private**. All six
-[fresh exact-installer checks](windows-installed-test.md) remain untested for
-this hash. The maintainer also reports **no/unsure Visual Studio licence**;
+The maintainer now reports retesting the new installer: **all features work**,
+but OCR boxes shift slightly right. The [test record](windows-installed-test.md)
+keeps that alignment defect open, pending exact downloaded-hash and scale details.
+The Windows-only overlay correction disables its default shadow: pinned Tao
+adds hidden client-area insets for undecorated shadowed windows, whereas OCR
+positioning assumes an inset-free origin. Hosted build and fresh visual
+verification of the corrected installer remain required. Keep candidates private.
+The maintainer also reports **no/unsure Visual Studio licence**;
 Microsoft redistribution entitlement and component-specific end-user terms
 remain unresolved. A [notice draft](windows-microsoft-distribution-notice.draft.md)
 is prepared for review, not activated in the installer. Full source-only rebuild
@@ -428,14 +433,14 @@ desktop reports `NotSigned`; browser/SmartScreen behavior is still untested.
 The table below describes the current ONNX replacement. Historical installed
 and PC results above remain bound to their original setup hashes.
 
-| Requested gate                | Current evidence                                                                                                  | Remaining work                                                                                                      |
-| ----------------------------- | ----------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
-| 1 — Pinned environment/freeze | Final CPython 3.11.17/NumPy 2.4.6/CPU ONNX freeze, parity and exact installed checks pass                         | Complete                                                                                                            |
-| 2 — Native licences/sources   | 80 frozen AMD64 PE files; exact input/source bindings and downloaded source/notices hashes verify                 | Microsoft redistribution entitlement/end-user terms; final distribution review; full source-only rebuild unverified |
-| 3 — Private installed app     | Exact NSIS install/startup/cleanup, UI/model/shortcut, embedded plugin, WebView/CRT and private asset checks pass | Fresh exact-hash PC tests                                                                                           |
-| 4 — Installed runtime         | Final installed geometry, tokenization, dictionary/kanji, fresh translation and restart persistence pass          | Hosted automation complete; separate PC results pending                                                             |
-| 5 — Separate PC               | Windows 11 x64 architecture confirmed; old setup's functional/scaling results retained                            | PC unavailable; all six final-hash checks untested; AMD/mixed-monitor/missing-WebView2 cases untested               |
-| 6 — Joint release-on-main     | Existing macOS path preserved; no Windows publisher enabled                                                       | Integrate only after distribution and protected exact-installer human gates pass                                    |
+| Requested gate                | Current evidence                                                                                                   | Remaining work                                                                                                      |
+| ----------------------------- | ------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------- |
+| 1 — Pinned environment/freeze | Final CPython 3.11.17/NumPy 2.4.6/CPU ONNX freeze, parity and exact installed checks pass                          | Complete                                                                                                            |
+| 2 — Native licences/sources   | 80 frozen AMD64 PE files; exact input/source bindings and downloaded source/notices hashes verify                  | Microsoft redistribution entitlement/end-user terms; final distribution review; full source-only rebuild unverified |
+| 3 — Private installed app     | Exact NSIS install/startup/cleanup, UI/model/shortcut, embedded plugin, WebView/CRT and private asset checks pass  | Fresh exact-hash PC tests                                                                                           |
+| 4 — Installed runtime         | Final installed geometry, tokenization, dictionary/kanji, fresh translation and restart persistence pass           | Hosted automation complete; separate PC results pending                                                             |
+| 5 — Separate PC               | Windows 11 x64 architecture confirmed; new installer has a reported functional pass with a slight rightward offset | Resolve alignment, bind downloaded hash and finish scoped cases; AMD/mixed-monitor/missing-WebView2 cases untested  |
+| 6 — Joint release-on-main     | Existing macOS path preserved; no Windows publisher enabled                                                        | Integrate only after distribution and protected exact-installer human gates pass                                    |
 
 Independent IPP removal is prepared in **Windows OpenCV source audit**, with
 original source/vendor notice pins, accepted CMake cache checks, synthetic
@@ -652,8 +657,9 @@ Only after the Windows candidate clears its runtime/source and installer gates:
 
 Next action: keep setup `2a5ef5452082…` private as requested, establish the
 maintainer's Microsoft redistribution entitlement and review the component-only
-terms/acceptance requirement. Perform the six exact-hash PC checks when the
-confirmed Windows 11 x64 hardware is available. Protected human approval and
+terms/acceptance requirement. Verify the corrected overlay in Windows Actions
+and on the confirmed Windows 11 x64 PC; record the downloaded hash and scoped
+checklist results. Protected human approval and
 joint release integration wait for these results. Actual installed input/source
 bindings and downloaded source/notices checks pass; independent full source-only
 rebuilding is unverified and public approval flags remain false.

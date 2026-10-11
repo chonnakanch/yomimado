@@ -247,18 +247,22 @@ pub fn show_overlay(
         "estimatedReadingOrder": estimated_reading_order,
     });
     store.set(state)?;
-    let window = WebviewWindowBuilder::new(app, "ocr-overlay", WebviewUrl::App(OVERLAY_URL.into()))
-        .transparent(true)
-        .decorations(false)
-        .always_on_top(true)
-        .accept_first_mouse(true)
-        .skip_taskbar(true)
-        .visible(false)
-        .build()
-        .map_err(|error| {
-            let _ = store.clear();
-            error.to_string()
-        })?;
+    let builder =
+        WebviewWindowBuilder::new(app, "ocr-overlay", WebviewUrl::App(OVERLAY_URL.into()))
+            .transparent(true)
+            .decorations(false)
+            .always_on_top(true)
+            .accept_first_mouse(true)
+            .skip_taskbar(true)
+            .visible(false);
+    // Tao adds client-area insets to undecorated Windows windows with shadows.
+    // OCR uses the requested screen origin, so that frame would shift polygons.
+    #[cfg(target_os = "windows")]
+    let builder = builder.shadow(false);
+    let window = builder.build().map_err(|error| {
+        let _ = store.clear();
+        error.to_string()
+    })?;
     let result = (|| {
         window
             .set_position(PhysicalPosition::new(layout.window_x, layout.window_y))

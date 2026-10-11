@@ -5,13 +5,26 @@ from successful [run `38108583125`](https://github.com/chonnakanch/yomimado/acti
 at `ca0fed317976dcbf3267101324859e497f2b0487`.
 `YomiMado_0.1.0_x64-setup.exe` SHA-256:
 `2a5ef545208214efabb9dc37bf88e15089c7a5ee69ca84ac58fb449afe063ce6`.
-All automated installed checks pass. The maintainer reports **PC unavailable;
-keep candidate private**. Each of the six checks below is **untested for this
-hash**; earlier passes remain historical evidence only. AMD hardware, additional
-monitors/mixed scaling and a clean machine without WebView2 remain untested.
-The human installer gate is open and is not approved by automated checks.
+All automated installed checks pass. On 2026-10-11 the maintainer reports
+retesting the new Windows installer and confirms **all features work**, with
+OCR boxes shifted slightly right of the text. Record a reported functional
+pass and an **open alignment defect**. The downloaded-file hash and affected
+scales/uniformity are awaiting clarification; the report refers to this linked
+candidate but is not yet independently bound to its exact downloaded hash.
+The broad feature report does not specifically establish browser/security,
+upgrade/uninstall, reboot/cache or all scale-specific checklist cases.
+AMD hardware, additional monitors/mixed scaling and a clean machine without
+WebView2 remain untested. The human installer gate remains open.
 
-When the PC is available, download this exact setup and compare its hash with
+Investigation identifies that the OCR overlay retains Tauri's default Windows
+shadow. In pinned Tao 0.35.3, `WM_NCCALCSIZE` adds client-area insets for
+undecorated shadowed windows; overlay positioning assumes no such inset.
+The prepared Windows-only fix disables the OCR overlay's shadow, keeping
+detector geometry and macOS behavior unchanged. A new exact installer and
+visual check are required; this cause is plausible but not confirmed as the
+sole cause of the reported offset. Do not apply a guessed leftward pixel offset.
+
+For the reported test, compare this setup's hash with
 the draft's `SHA256SUMS.txt`, then report pass/fail/untested for checks 1–6.
 In PowerShell: `Get-FileHash "$env:USERPROFILE\Downloads\YomiMado_0.1.0_x64-setup.exe" -Algorithm SHA256`.
 The previously confirmed Windows 11 Home 25H2 build 26200.9457, x64 OS/x64

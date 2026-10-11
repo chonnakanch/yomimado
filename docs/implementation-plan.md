@@ -14,8 +14,12 @@ private-upload suite in 46 minutes 8 seconds. Exact source-built NSIS plugin,
 WebView loader and canonical VC identities pass; downloaded diagnostic,
 source and notices digests verify independently. The private setup SHA-256 is
 `2a5ef545208214efabb9dc37bf88e15089c7a5ee69ca84ac58fb449afe063ce6`.
-The maintainer reports PC unavailable and requests that it remain private.
-Fresh Windows 11 checks and protected approval remain open. The maintainer's
+The maintainer now reports all features working after a new Windows test, with
+a slight rightward OCR-box offset. Hash/scale details and visual alignment remain
+open. The Windows-only OCR overlay now disables the default shadow, whose native
+client-area insets conflict with the requested screen origin. Corrected hosted
+execution and exact-installer visual testing remain required; keep it private.
+Protected approval remains open. The maintainer's
 Visual Studio redistribution grant is also no/unsure; Microsoft component
 end-user terms remain unresolved. Full source-only rebuild is unverified.
 macOS runtime-seed scope verification passes after an explicit Windows-only
@@ -954,7 +958,9 @@ Before any public release:
 - [ ] implement and verify Windows installation/runtime requirements
       Final private CPU ONNX setup passes hosted installation, UI, learning,
       persistence, native-input and source/notices delivery checks. Fresh
-      exact-hash PC tests are blocked by PC availability; Microsoft redistribution
+      PC retest reports all features working but a slight rightward box offset;
+      the Windows-only shadow fix still needs hosted and visual verification.
+      Exact downloaded-hash/scoped test details, Microsoft redistribution
       entitlement/end-user terms and protected human approval remain open.
       Full source-only rebuild is unverified. Existing macOS packaging/publisher
       remains unchanged; joint release integration waits for these gates.

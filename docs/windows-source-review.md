@@ -32,8 +32,10 @@ This is actual delivered-source/notices verification, not inherited macOS approv
 Independent full source-only rebuilding is **unverified**; no byte-identical
 rebuild or blanket legal approval is claimed. The maintainer reports no/unsure
 Visual Studio entitlement; [Microsoft-only distribution conditions](windows-microsoft-runtime.md)
-remain unresolved. Fresh Windows 11 testing is blocked by PC availability and
-the maintainer requests that the candidate remain private. Source/public
+remain unresolved. The maintainer now reports a functional Windows retest with
+a slight rightward box offset; a Windows-only overlay shadow correction needs
+hosted and visual verification, and the downloaded hash is awaiting confirmation.
+Keep the candidate private. Source/public
 approval flags remain false pending final distribution review and protected
 human approval. The historical preparation entries below are superseded where
 the successful final run provides the required execution/archive evidence.
