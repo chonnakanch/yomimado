@@ -13,8 +13,13 @@ version **14.44.35211.0**, from `14.44.35112/x64/Microsoft.VC143.CRT`.
 It replaces existing standard/renamed runtime inputs without altering any PE
 bytes, follows normal/delay-loaded VC dependencies, and retains every original
 and replacement hash. Inventory binds the replacements to canonical originals.
-The next Windows installed test must verify this replacement; provenance is
-separate from contractual redistribution permission.
+Run `38104876515` now verifies the installed canonical replacements, including
+the ten desktop copies and standard/renamed service inputs. Its downloaded
+evidence `11689928315` matches SHA-256
+`cd0698778aff9f54d252ce85fbc339616fa8b8ae0279b4404b472a806fcf4626`.
+Startup, cleanup and frozen ONNX learning pass, while page-scan cancellation
+fails its UI gate. Provenance is separate from contractual redistribution
+permission; that diagnostic setup is not approved for release.
 
 ## Actual files and canonical inputs
 
@@ -35,8 +40,9 @@ input identity, not the maintainer's contractual entitlement. Missing matches
 must be resolved from an exact original distribution or a tested replacement;
 a matching product/version string is insufficient.
 
-The forthcoming NumPy/Sudachi candidate needs its own installed inventory.
-The historical comparison does not silently approve new files.
+The same run supplies its own NumPy 2.4.6/Sudachi installed inventory. The
+corrected final candidate still needs exact installed and archive verification;
+the historical comparison does not silently approve new files.
 
 ## Separate redistribution and GPL questions
 
@@ -71,15 +77,19 @@ this does not make application libraries such as Intel MKL/IPP System Libraries.
 1. Verify the new candidate's actual VC DLLs against unchanged canonical
    distributable inputs, with exact versions and notices. The prepared recipe
    replaces the old Shapely copy and tool-directory inputs; its installed
-   execution remains pending.
+   execution passes in the diagnostic run above; repeat the exact checks for
+   the corrected final setup.
 2. Establish the maintainer's applicable redistribution grant and satisfy its
    distribution/end-user requirements specifically for Microsoft components.
    Do not impose proprietary restrictions on YomiMado's GPL code. An alternative
    is a separately installed official Microsoft prerequisite, with proper clean-PC
    detection and installed tests; that packaging path is not implemented here.
-3. Finish the WebView2 SDK loader assessment separately. Its exact BSD licence,
-   NOTICE and wrapper sources are retained, but SDK-loader source/System Library
-   scope is not established by VC-runtime provenance.
+3. Verify the source-only WebView loader in the corrected setup. The diagnostic
+   run binds its MIT implementation, adapter marker and exact static-library
+   hash to all Cargo outputs and the installed desktop EXE. Public SDK headers
+   and original BSD licence/NOTICE remain retained; the SDK loader object is
+   replaced. This resolves the loader source preparation gap independently of
+   VC-runtime provenance. Final full UI verification remains open.
 4. Verify the exact resulting setup and its source/notices delivery, then obtain
    fresh maintainer installed-app confirmation and protected release approval.
 

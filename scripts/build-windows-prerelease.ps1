@@ -29,6 +29,7 @@ if (-not $IsWindows -or $env:PROCESSOR_ARCHITECTURE -ne 'AMD64') {
 }
 if ((git status --porcelain)) { throw 'Commit changes before building a candidate.' }
 $Revision = git rev-parse HEAD
+Invoke-Checked npm @('ci', '--prefix', 'apps/desktop')
 if ($Prepare) {
     New-Item -ItemType Directory -Force $Build | Out-Null
     # Fail on moved daily dictionaries before compiling Python/Rust or freezing.
@@ -39,6 +40,8 @@ if ($Prepare) {
     if ($Onnx) {
         # The baseline is export-only. No Torch package enters the frozen runtime.
         Invoke-Checked $RuntimePython @('scripts/prepare_onnx_probe.py', '--runtime', (Join-Path $Build 'venv'), '--baseline', (Join-Path $Build 'onnx-baseline'))
+        # Check the small installer plugin before the longer OCR native build.
+        Invoke-Checked $Python @('scripts/windows_nsis_plugin.py')
         # Reuse the independently verified focused IPP-free build recipe.
         # Prebuilt Torch remains export-only; no Torch source compilation occurs.
         Invoke-Checked $RuntimePython @('scripts/build-opencv-windows.py', (Join-Path $Service 'build/onnx-prototype/smoke-detector.onnx'))
@@ -51,6 +54,7 @@ if ($Prepare) {
         $Inputs = Get-Content (Join-Path $Service 'windows-inputs.json') -Raw | ConvertFrom-Json
         $Files = @($Inputs.packages | ForEach-Object { Join-Path $Build "inputs/$($_.filename)" })
         Invoke-Checked $Python (@('-m', 'pip', 'install', '--no-index', '--no-deps', '--no-build-isolation') + $Files)
+        Invoke-Checked $Python @('scripts/windows_nsis_plugin.py')
     }
     Invoke-Checked $Python @('-m', 'pip', 'install', '--no-index', '--no-deps', '--no-build-isolation', $Service)
     Invoke-Checked $Python @('-m', 'pip', 'check')
@@ -59,7 +63,7 @@ if (-not (Test-Path $Python)) { throw 'Prepare the isolated Windows runtime firs
 $env:PYTHONPATH = $Service
 Invoke-Checked $Python @('-m', 'pytest', 'services/ocr/tests')
 Invoke-Checked $Python @('-m', 'unittest', 'discover', '-s', 'scripts/tests', '-p', 'test_windows*.py')
-Invoke-Checked npm @('ci', '--prefix', 'apps/desktop')
+if (-not $Prepare) { Invoke-Checked $Python @('scripts/windows_nsis_plugin.py') }
 Invoke-Checked npm @('test', '--prefix', 'apps/desktop')
 Invoke-Checked $Python @('scripts/windows_webview_runtime.py', 'stage')
 Invoke-Checked cargo @('test', '--locked', '--manifest-path', 'apps/desktop/src-tauri/Cargo.toml')
@@ -108,6 +112,7 @@ Copy-Item (Join-Path $Root 'docs/windows-native-replacement.md') $Notices
 Copy-Item (Join-Path $Root 'docs/windows-numpy-runtime.md') $Notices
 Copy-Item (Join-Path $Root 'docs/windows-sudachi-runtime.md') $Notices
 Copy-Item (Join-Path $Root 'docs/windows-microsoft-runtime.md') $Notices
+Copy-Item (Join-Path $Root 'docs/windows-nsis-runtime.md') $Notices
 if ($Onnx) {
     Copy-Item (Join-Path $Root 'scripts/onnx-probe-inputs.json') $Notices
     Copy-Item (Join-Path $Resources 'assets/onnx/export.json') (Join-Path $Notices 'windows-onnx-export.json')

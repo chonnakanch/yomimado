@@ -13,7 +13,11 @@
     },
     "windows": {
       "webviewInstallMode": { "type": "downloadBootstrapper", "silent": true },
-      "nsis": { "installMode": "currentUser", "compression": "zlib" }
+      "nsis": {
+        "installMode": "currentUser",
+        "compression": "zlib",
+        "template": "../../../services/ocr/build/windows/nsis-plugin/installer.nsi"
+      }
     }
   }
 }

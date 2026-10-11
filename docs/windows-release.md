@@ -1,5 +1,14 @@
 # First Windows pre-release plan
 
+Final installer preparation — 2026-10-11: corrected UI/source candidate
+`2802db6` is queued in run `38107367762`, with an exact empty owner-only draft
+saved and no public tag. Independent review finds the stock NSIS Tauri plugin's
+source archive has no dependency lock. A short source build now pins its seven
+registry inputs and 15 notices, tests the original plugin and checks the exact
+embedded DLL. Offline source preparation passes locally; hosted execution is
+required. See [the installer source record](windows-nsis-runtime.md). The next
+candidate includes this correction; older setup hashes do not approve it.
+
 Installed ONNX candidate — 2026-10-11: run `38104876515` at `c919d6a`
 successfully builds NSIS after excluding the verified export-only weights.
 Exact installation, bundled startup without developer Python/CUDA, quit cleanup,

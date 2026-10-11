@@ -488,6 +488,12 @@ def installer_inputs(installed: Path, installer: Path) -> dict:
         "publicDistributionApproved": False,
     }
     if (
+        installed / "ocr/notices/source-built-nsis-plugin/build-verification.json"
+    ).is_file():
+        from windows_nsis_plugin import verify as verify_nsis_plugin
+
+        record["sourceBuiltNsisPlugin"] = verify_nsis_plugin(installed, installer)
+    if (
         installed / "ocr/notices/source-webview-loader/windows-webview-loader.json"
     ).is_file():
         from windows_webview_runtime import verify

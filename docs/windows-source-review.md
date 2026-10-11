@@ -5,6 +5,15 @@ Windows binary, or attest to a test that has not run. A private candidate may
 be assembled to inspect actual inputs; public distribution is blocked until
 all entries below have concrete evidence.
 
+Installer plugin preparation — 2026-10-11: the original NSIS Tauri 0.5.3 source
+archive omits its dependency lock. The [short Windows recipe](windows-nsis-runtime.md)
+now builds that unchanged source with a deliberately resolved seven-crate graph,
+15 original notices and offline Cargo verification. The official CLI 2.11.5
+template is pinned; only plugin lookup changes. Exact rendered-template and
+embedded-DLL checks must pass on Windows. NSIS 3.11's own COPYING is separately
+verified: zlib/libpng, bzip2 and CPL-1.0 LZMA with its linking exception; the
+selected installer compression is zlib. No long Torch build is introduced.
+
 Additional exact-input checks — 2026-10-11: NumPy 2.4.6's own preferred source
 and 25 original notices are now retained; the export-only 1.26.4 source does not
 cover this runtime. PyYAML 6.0.3's [exact Windows release recipe](https://github.com/yaml/pyyaml/blob/49790e73684bebad1df05ef8d828fa12f685bffb/.github/workflows/ci.yaml)
