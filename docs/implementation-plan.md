@@ -8,28 +8,26 @@ Build a small vertical slice first. Do not implement future features before the 
 
 ## Current status
 
-Windows hosted verification (2026-10-11): final ONNX candidate `ca0fed3`, run
-`38108583125`, passes the complete build/install/UI/OCR/learning/persistence and
-private-upload suite in 46 minutes 8 seconds. Exact source-built NSIS plugin,
-WebView loader and canonical VC identities pass; downloaded diagnostic,
-source and notices digests verify independently. The private setup SHA-256 is
-`2a5ef545208214efabb9dc37bf88e15089c7a5ee69ca84ac58fb449afe063ce6`.
-The maintainer now reports all features working after a new Windows test, with
-a slight rightward OCR-box offset. The downloaded hash matches the candidate;
-all boxes shift right at 100%/125%/150%. Visual alignment remains open.
-The Windows-only OCR overlay at `1236d32` disables the default shadow, whose native
-client-area insets conflict with the requested screen origin. Corrected hosted
-execution passes in run `38128735546`; private draft creation alone fails with
-HTTP 403. An early exact-draft preflight and owner-prepared draft are prepared to resolve staging
-without broader token permissions. Upload recovery and exact-installer visual
-testing remain required; keep it private.
-Protected approval remains open. The maintainer's
-Visual Studio redistribution grant is also no/unsure; Microsoft component
-end-user terms remain unresolved. Full source-only rebuild is unverified.
-macOS runtime-seed scope verification passes after an explicit Windows-only
-plugin-script exception; its release path is preserved. Joint publication is
-not enabled. Retired Windows trial histories remain recoverable in Git at
-`ee1b7f5`; current evidence is linked below.
+Windows hosted verification (2026-10-11): CPU ONNX candidate `8c46366`, run
+`38133593809` attempt 2, passes the complete build/install/UI/OCR/learning,
+persistence, native-input and private-upload suite in 45 minutes 42 seconds.
+The private setup SHA-256 is
+`7ff298c597de9c33d23bb598bf16d6f41761219e51fc0b61951ed6c54174c6d9`.
+Downloaded diagnostic evidence and exact setup/provenance/plugin bindings verify.
+The maintainer confirms the matching download hash, corrected OCR-box alignment
+at 100%/125%/150% and all listed local installer checks: browser/security,
+model/shortcuts/cleanup, offline OCR/lookup/new translation, saved data/model/cache
+after restart/reboot and upgrade/uninstall/reinstall. The visual offset and local
+installer checklist are closed for this exact setup. Untested hardware cases
+remain explicit in [the test record](windows-installed-test.md).
+
+Protected approval remains open. The maintainer's Visual Studio redistribution
+grant is no/unsure; Microsoft component end-user terms remain unresolved.
+Full source-only rebuild is unverified. The early owner-prepared draft preflight
+and sequential upstream NSIS tests now pass without broader permissions or
+skipped tests. macOS runtime-seed scope verification passes; its release path
+is preserved and joint publication is not enabled. Retired Windows trial
+histories remain recoverable in Git at `ee1b7f5`.
 
 The delivered Windows runtime uses CPU ONNX inference with NumPy 2.4.6 and a
 source-built Sudachi binding. Prebuilt Torch and NumPy 1.26.4 remain only in the
@@ -77,8 +75,8 @@ using [the release plan](windows-release.md) and
 [exact-installer test record](windows-installed-test.md). The maintainer's
 System/About report confirms Windows 11 Home 25H2 build 26200.9457, a 64-bit OS,
 x64 Core i5-14500 and 32 GB RAM; the display is 2560 × 1440. The newest tested
-setup hash is confirmed and features work, but every OCR box shifts right at
-100%/125%/150%. A Windows-only overlay correction is being verified. AMD,
+setup hash is confirmed; the Windows-only shadow fix restores OCR-box alignment
+at 100%/125%/150%, and the maintainer reports all listed local checks pass. AMD,
 multiple monitors/mixed scaling and missing-WebView2 installation remain untested.
 
 The hosted ONNX candidate passes exact installed runtime and source/notices
@@ -834,10 +832,9 @@ Before any public release:
       publication in `docs/windows-release.md`
 - [ ] implement and verify Windows installation/runtime requirements
       Final private CPU ONNX setup passes hosted installation, UI, learning,
-      persistence, native-input and source/notices delivery checks. Fresh
-      PC retest reports all features working but a slight rightward box offset;
-      the Windows-only shadow fix still needs hosted and visual verification.
-      Scoped test details, Microsoft redistribution
+      persistence, native-input and source/notices delivery checks. Exact-hash
+      PC retest confirms the shadow fix at all three scales and all listed local
+      installer checks pass. Untested hardware remains documented. Microsoft redistribution
       entitlement/end-user terms and protected human approval remain open.
       Full source-only rebuild is unverified. Existing macOS packaging/publisher
       remains unchanged; joint release integration waits for these gates.

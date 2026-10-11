@@ -6,7 +6,7 @@ be assembled to inspect actual inputs; public distribution is blocked until
 all entries below have concrete evidence.
 
 Final downloaded delivery inspection — 2026-10-11: successful Windows run
-`38108583125` at `ca0fed317976dcbf3267101324859e497f2b0487` verifies the exact
+`38133593809` attempt 2 at `8c46366d04e96d5356c250605e7ea936db209eb3` verifies the exact
 installed CPU ONNX runtime, native inputs, NSIS plugin, WebView loader and
 canonical VC copies. The frozen service's 80 PE files are AMD64; its bootloader,
 service code and application package have separate binding records. CPU ONNX
@@ -14,29 +14,32 @@ execution, geometry, learning and restart persistence pass without developer
 Python/CUDA or a bundled detector model.
 
 The downloaded `windows-source-preparation.tar.gz` has SHA-256
-`9dcd33c393830d84f9bd547f4080c463c262af8313b8c210bd6083f2d8d1622b`;
+`8a3d170f77e2c4f242890dab35e62e19c47c13d58e3ce6d6a94cf314b59cfea8`;
 `windows-notices.tar.gz` has
-`bf5db559a02d6c652a7b37c60bdfd988d9ef1f8592f983e20c7cd866a7d701d4`.
+`003876ac910258ad006ab5281604ff5d854c16d255b33beaf686d719fcd314bb`.
 Inspection of their actual bytes verifies all **56 native preferred-source
 archives**, **284 Python Rust registry archives and 540 notices**, and the
 original NSIS plugin archive plus its **seven registry inputs and 15 notices**
 (with the plugin's two own licence texts retained separately). The archive
 contains **27 ONNX preferred-source inputs, three port files and 48 original
 notices**, all verified against their pinned hashes. These checks are recorded
-with the downloaded delivery evidence.
-The 64-member preferred Manga OCR source archive contains no image assets;
-the raw image-containing sdist is absent. No detector-model filename occurs in
-the outer source archive, and packaged resource/model-exclusion checks pass.
+with the downloaded delivery evidence. The source-built Sudachi archive and all
+62 registry inputs/full notices also verify. The new archives contain 1,035
+regular source-delivery members and 1,880 regular notice members; each is hashed
+locally without extracting or executing upstream code. The preferred Manga OCR
+archive retains its pinned delivery hash; the raw image-containing sdist is absent.
+No detector-model filename occurs in the outer source archive, and packaged
+resource/model-exclusion checks pass.
 This is actual delivered-source/notices verification, not inherited macOS approval.
 
 Independent full source-only rebuilding is **unverified**; no byte-identical
 rebuild or blanket legal approval is claimed. The maintainer reports no/unsure
 Visual Studio entitlement; [Microsoft-only distribution conditions](windows-microsoft-runtime.md)
-remain unresolved. The maintainer now reports a functional Windows retest with
-a slight rightward box offset; a Windows-only overlay shadow correction needs
-hosted and visual verification. The maintainer confirms the setup hash recorded in
-[the installed test record](windows-installed-test.md) and reports all boxes
-shifted right at 100%, 125% and 150%.
+remain unresolved. The maintainer confirms the corrected setup's SHA-256,
+alignment at 100%, 125% and 150% and all listed local installer checks pass in
+[the installed test record](windows-installed-test.md). That closes the local
+test checklist without granting Microsoft redistribution entitlement or
+approving the protected publisher.
 Keep the candidate private. Source/public
 approval flags remain false pending final distribution review and protected
 human approval. This summary replaces the per-attempt preparation timeline;

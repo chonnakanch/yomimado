@@ -1,46 +1,46 @@
 # First Windows pre-release plan
 
-Overlay correction execution — 2026-10-11: [run `38128735546`](https://github.com/chonnakanch/yomimado/actions/runs/38128735546)
-at `1236d32598c84f3c0b39487a15536be5385005d9` builds/installs the setup and passes
-startup, UI/model/buttons/shortcuts, frozen OCR/learning and persistence. The job
-fails only when GitHub rejects private draft creation with HTTP 403. No new
-installer was uploaded; the prior available candidate below remains unchanged.
-Hosted checks do not establish corrected visual alignment on the separate PC.
+Current private candidate — 2026-10-11: [run `38133593809`, attempt 2](https://github.com/chonnakanch/yomimado/actions/runs/38133593809)
+at `8c46366d04e96d5356c250605e7ea936db209eb3` passes the complete
+build/install/UI/OCR/learning/persistence and uploaded-asset suite in **45 minutes
+42 seconds**. The [owner-only draft](https://github.com/chonnakanch/yomimado/releases/tag/untagged-369bebe25308d4e82cc2)
+contains the verified setup, corresponding sources, dictionaries, notices and
+provenance. `YomiMado_0.1.0_x64-setup.exe` SHA-256:
+`7ff298c597de9c33d23bb598bf16d6f41761219e51fc0b61951ed6c54174c6d9`.
 
-[GitHub's release API](https://docs.github.com/en/rest/releases/releases#create-a-release)
-requires workflow authority when the target differs in workflow files from the
-default branch; `GITHUB_TOKEN` cannot obtain that authority. The candidate now
-checks for an empty owner-prepared exact-commit draft **before** the long build,
-and only uploads assets to that draft afterward. It sends no release-create,
-release-update or tag-create API request. Credentials and permissions stay unchanged.
+The maintainer confirms that exact downloaded hash and that the rightward
+OCR-box offset is fixed at **100%, 125% and 150%** on the previously confirmed
+Windows 11 x64 PC and 2560 × 1440 display. The maintainer also confirms all
+listed browser/security, model/shortcut/cleanup, offline learning, restart/reboot
+persistence and upgrade/uninstall/reinstall checks pass for this same setup.
+The local installer checklist is complete; protected publication approval stays open.
+See [the installed test record](windows-installed-test.md).
 
-Recovery: fix `3ca497d9b32ed3abfb29cbb5e594c3bd486a7a66` passes 205 release-tool
-tests, workflow/Python lint and macOS runtime-reuse scope checks. Its
-[owner-only empty draft](https://github.com/chonnakanch/yomimado/releases/tag/untagged-14ed2a435e51a23c7e93)
-is saved for that exact target, with pre-release selected; the public tag is
-verified absent. [Run `38132376703`, attempt 2](https://github.com/chonnakanch/yomimado/actions/runs/38132376703)
-passes the read-only preflight, then fails after 7 minutes 45 seconds in the
-upstream NSIS plugin's `spawn_with_spaces` test, before OpenCV/app compilation.
-Artifact `11700181126` matches GitHub SHA-256
-`d513c05a4ad65bdfb526a665d7eb97cbac515665633192fe7a0a234792f9a2f7`.
-The exact retained upstream source shows both spawn tests temporarily changing
-the same process token privilege while the default Rust harness runs them
-concurrently. A privilege-restoration race is inferred; the log does not report
-a Windows error code. The recipe now runs **all** upstream tests with
-`--test-threads=1`, preserving source bytes, locked inputs and production build
-flags. All 206 release-tool tests, Python/workflow lint and macOS runtime-reuse
-scope checks pass locally. No test is skipped or failure retried automatically.
-Full build/install/asset transfer and fresh visual checks remain pending. Attempt 1
-stopped before the long build because the draft had not yet been saved.
+Downloaded diagnostic artifact `11701215883` matches GitHub SHA-256
+`4b2267a29f12e16f8ad07d258542b4afb150e505ac1e1230b974bc78774fb6f8`.
+Its setup/provenance bindings, installed startup/cleanup, model/buttons/shortcuts,
+horizontal/vertical OCR, tokenization, dictionaries, kanji, uncached translation
+and restart persistence verify. The exact embedded source-built NSIS plugin,
+source-only WebView loader and canonical VC runtime checks pass. The service
+contains 80 AMD64 PE inputs, CPU ONNX inference and no Torch/CUDA or bundled
+detector weights. Hosted Windows Server results remain distinct from the PC report.
 
-Sequential-test retry: [run `38133593809`, attempt 2](https://github.com/chonnakanch/yomimado/actions/runs/38133593809)
-at `8c46366d04e96d5356c250605e7ea936db209eb3` passes the draft preflight and
-reports **"Locked NSIS plugin built and tested"**. OCR native compilation and
-the full installer/installed-app/asset checks are still running. Its
-[empty owner-only draft](https://github.com/chonnakanch/yomimado/releases/tag/untagged-369bebe25308d4e82cc2)
-was saved for the exact source target with pre-release selected; the public tag
-is verified absent. This establishes recovery of the failing plugin stage,
-not completion or approval of the installer.
+The downloaded source and notice bundles match SHA-256
+`8a3d170f77e2c4f242890dab35e62e19c47c13d58e3ce6d6a94cf314b59cfea8` and
+`003876ac910258ad006ab5281604ff5d854c16d255b33beaf686d719fcd314bb`.
+Their native preferred archives, Python Rust crates/notices, ONNX inputs/ports,
+NSIS and Sudachi originals/notices verify against the pinned records.
+See [the delivered-source inspection](windows-source-review.md).
+
+The earlier draft-creation HTTP 403 is resolved by an owner-prepared empty
+exact-commit draft and an early read-only preflight; asset uploads then succeed
+without broader permissions. The candidate sends no release-create,
+release-update or tag-create API request. The public tag is verified absent.
+The intermittent upstream NSIS spawn test is resolved in this run by executing
+all tests sequentially, preserving source bytes, locked inputs and production
+build flags. All 206 release-tool tests, Python/workflow lint and macOS
+runtime-reuse scope checks pass locally; no test is skipped or failure retried
+automatically. Previous failure evidence remains in Git at `02be7e0`.
 
 Before a candidate run, save an empty draft in GitHub Releases with tag field
 `windows-private-test-<full source SHA>`, exact target commit `<full source SHA>`,
@@ -50,7 +50,7 @@ commit may stop at this early preflight until its draft is ready; rerun that
 unchanged job after preparation. Nonempty/published/ambiguous/wrong-target drafts
 are rejected; existing assets are never overwritten or deleted automatically.
 
-Current private candidate — 2026-10-11: [run `38108583125`](https://github.com/chonnakanch/yomimado/actions/runs/38108583125)
+Previous private candidate — 2026-10-11: [run `38108583125`](https://github.com/chonnakanch/yomimado/actions/runs/38108583125)
 at `ca0fed317976dcbf3267101324859e497f2b0487` succeeds in **46 minutes 8 seconds**.
 Exact installation, hidden bundled-service startup without developer Python/CUDA,
 quit cleanup, model setup/cancellation, buttons/shortcuts, horizontal/vertical OCR,
@@ -72,14 +72,12 @@ the notices archive matches
 `bf5db559a02d6c652a7b37c60bdfd988d9ef1f8592f983e20c7cd866a7d701d4`.
 Their detailed inspection is recorded in [the source review](windows-source-review.md).
 
-The maintainer now reports retesting the new installer: **all features work**,
-but OCR boxes shift slightly right. The [test record](windows-installed-test.md)
-keeps that alignment defect open. The maintainer confirms the downloaded hash
-above and reports all boxes shifted right at 100%, 125% and 150%.
-The Windows-only overlay correction disables its default shadow: pinned Tao
-adds hidden client-area insets for undecorated shadowed windows, whereas OCR
-positioning assumes an inset-free origin. Hosted installed checks for the correction pass, but private upload recovery and
-fresh exact-hash visual verification remain required. Keep candidates private.
+The previous setup's maintainer-confirmed feature pass included a uniform
+rightward OCR-box offset at all three scales. The Windows-only correction
+disables the overlay shadow: pinned Tao adds hidden client-area insets for
+undecorated shadowed windows, whereas OCR positioning assumes an inset-free
+origin. The replacement's exact-hash visual retest above closes that defect.
+Keep candidates private while distribution review and protected approval are open.
 The maintainer also reports **no/unsure Visual Studio licence**;
 Microsoft redistribution entitlement and component-specific end-user terms
 remain unresolved. A [notice draft](windows-microsoft-distribution-notice.draft.md)
@@ -100,9 +98,9 @@ and PC results above remain bound to their original setup hashes.
 | ----------------------------- | ----------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
 | 1 — Pinned environment/freeze | Final CPython 3.11.17/NumPy 2.4.6/CPU ONNX freeze, parity and exact installed checks pass                         | Complete                                                                                                            |
 | 2 — Native licences/sources   | 80 frozen AMD64 PE files; exact input/source bindings and downloaded source/notices hashes verify                 | Microsoft redistribution entitlement/end-user terms; final distribution review; full source-only rebuild unverified |
-| 3 — Private installed app     | Exact NSIS install/startup/cleanup, UI/model/shortcut, embedded plugin, WebView/CRT and private asset checks pass | Fresh exact-hash PC tests                                                                                           |
-| 4 — Installed runtime         | Final installed geometry, tokenization, dictionary/kanji, fresh translation and restart persistence pass          | Hosted automation complete; separate PC results pending                                                             |
-| 5 — Separate PC               | Windows 11 x64 architecture and new setup hash confirmed; features pass, all boxes shift right at 100%/125%/150%  | Resolve alignment and finish scoped cases; AMD/mixed-monitor/missing-WebView2 cases untested                        |
+| 3 — Private installed app     | Exact NSIS install/startup/cleanup, UI/model/shortcut, embedded plugin, WebView/CRT and private asset checks pass | Local checklist complete; protected publication approval remains open                                               |
+| 4 — Installed runtime         | Final installed geometry, tokenization, dictionary/kanji, fresh translation and restart persistence pass          | Hosted and listed PC checks complete                                                                                |
+| 5 — Separate PC               | Windows 11 x64/hash confirmed; listed local checks and corrected alignment pass at 100%/125%/150%                 | AMD/mixed-monitor/left-of-primary/missing-WebView2 cases remain untested                                            |
 | 6 — Joint release-on-main     | Existing macOS path preserved; no Windows publisher enabled                                                       | Integrate only after distribution and protected exact-installer human gates pass                                    |
 
 The active candidate builds the minimal OpenCV runtime from pinned sources with
@@ -144,8 +142,8 @@ images. No feature redesign or model-payload optimization in this work.
 
 The existing cross-platform `xcap` capture abstraction, geometry transforms,
 Ctrl+Shift+O / Ctrl+Shift+S shortcuts, overlay and Python API can be reused.
-Windows functions have a hash-bound maintainer pass; the reported uniform
-rightward overlay offset remains under correction in [the test record](windows-installed-test.md).
+Windows functions have a hash-bound maintainer pass; the uniform
+rightward overlay offset is resolved on the exact corrected setup in [the test record](windows-installed-test.md).
 
 Concrete packaging gaps:
 
@@ -153,7 +151,8 @@ Concrete packaging gaps:
   `runtime/yomimado-ocr.exe` without a console, supplies explicit resource/data
   paths, checks PID/instance readiness after the service binds loopback and
   closes a kill-on-close job when the desktop exits. Installed startup and normal
-  quit cleanup pass in Windows CI; the human installed-app gate remains open.
+  quit cleanup pass in Windows CI; the exact-hash local checklist now passes,
+  while protected publication approval remains open.
 - `tauri.release.conf.json` targets DMG and contains macOS settings. The separate
   Windows release override supplies the production CSP and OCR resources.
 - `requirements-macos-release.txt` and `build-macos-prerelease.sh` are specific

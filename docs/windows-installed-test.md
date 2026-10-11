@@ -1,52 +1,61 @@
 # Windows candidate test record
 
-Current exact candidate — 2026-10-11: [private draft](https://github.com/chonnakanch/yomimado/releases/tag/untagged-a60c37d3e98452ad3180),
-from successful [run `38108583125`](https://github.com/chonnakanch/yomimado/actions/runs/38108583125)
-at `ca0fed317976dcbf3267101324859e497f2b0487`.
+Current exact candidate — 2026-10-11: [private draft](https://github.com/chonnakanch/yomimado/releases/tag/untagged-369bebe25308d4e82cc2),
+from successful [run `38133593809`, attempt 2](https://github.com/chonnakanch/yomimado/actions/runs/38133593809)
+at `8c46366d04e96d5356c250605e7ea936db209eb3`.
 `YomiMado_0.1.0_x64-setup.exe` SHA-256:
-`2a5ef545208214efabb9dc37bf88e15089c7a5ee69ca84ac58fb449afe063ce6`.
-All automated installed checks pass. On 2026-10-11 the maintainer reports
-retesting the new Windows installer and confirms **all features work**, with
-OCR boxes shifted slightly right of the text. Record a reported functional
-pass and an **open alignment defect**. The maintainer confirms the downloaded
-SHA-256 matches `2a5ef545208214efabb9dc37bf88e15089c7a5ee69ca84ac58fb449afe063ce6`;
-this report is bound to that exact setup. All boxes shift right at **100%,
-125% and 150%**, supporting an origin-offset diagnosis over uneven detector
-padding, without proving the cause until the corrected setup is tested.
-The broad feature report does not specifically establish browser/security,
-upgrade/uninstall, reboot/cache or all scale-specific checklist cases.
-AMD hardware, additional monitors/mixed scaling and a clean machine without
-WebView2 remain untested. The human installer gate remains open.
+`7ff298c597de9c33d23bb598bf16d6f41761219e51fc0b61951ed6c54174c6d9`.
+All automated installed checks pass. The downloaded diagnostic artifact matches
+GitHub SHA-256 `4b2267a29f12e16f8ad07d258542b4afb150e505ac1e1230b974bc78774fb6f8`;
+its setup/provenance and embedded-plugin bindings verify.
 
-Investigation identifies that the OCR overlay retains Tauri's default Windows
-shadow. In pinned Tao 0.35.3, `WM_NCCALCSIZE` adds client-area insets for
-undecorated shadowed windows; overlay positioning assumes no such inset.
-The Windows-only fix at `1236d32` disables the OCR overlay's shadow, keeping
-detector geometry and macOS behavior unchanged. A new exact installer and
-visual check are required; this cause is plausible but not confirmed as the
-sole cause of the reported offset. Do not apply a guessed leftward pixel offset.
-The corrected private build is running in
-[run `38128735546`](https://github.com/chonnakanch/yomimado/actions/runs/38128735546).
+The maintainer explicitly confirms that the tested download matches this hash,
+the rightward OCR-box offset is solved at **100%, 125% and 150%**, and **all**
+subsequently listed local installer checks pass. These are maintainer-reported
+Windows 11 PC results, distinct from hosted Windows Server automation.
+
+| Exact-installer local check                                                      | Maintainer result |
+| -------------------------------------------------------------------------------- | ----------------- |
+| Browser download with Defender/SmartScreen enabled and installation              | Pass              |
+| No terminal, clean quit, model import/cancel/wrong-file handling, both shortcuts | Pass              |
+| Offline OCR, dictionary lookup and new-sentence translation                      | Pass              |
+| Saved data, imported model and translation cache after restart and reboot        | Pass              |
+| Corrected OCR-box alignment at 100%, 125% and 150%                               | Pass              |
+| Upgrade, uninstall and reinstall                                                 | Pass              |
+
+The previously confirmed PC is Windows 11 Home 25H2 build 26200.9457, x64
+OS/x64 Core i5-14500, 32 GB RAM and one 2560 × 1440 display. No new machine
+specification is inferred. AMD hardware, additional monitors/mixed scaling,
+left-of-primary layout and a clean machine without WebView2 remain untested.
+The broad scale check does not add detailed hover/edge-target coverage.
+
+**The local installer checklist is complete for this exact setup.** Protected
+publication approval and Microsoft redistribution entitlement/component terms
+remain open. Immutable private candidate metadata still has
+`installedAppVerified=false` and `publicDistributionApproved=false`; this human
+report does not rewrite archived bytes or approve the protected publisher.
+
+The Windows-only correction at `1236d32` disables the OCR overlay's default
+shadow. Pinned Tao 0.35.3 adds client-area insets for undecorated shadowed windows,
+while OCR positioning assumes an inset-free origin. The replacement includes
+that correction, and the exact-hash retest closes the observed offset without
+a guessed pixel adjustment or a change to detector geometry/macOS behavior.
 Local verification passes 10 frontend coordinate/overlay tests, nine native
-overlay tests, Rust clippy/format, and the frontend typecheck/production build.
-No corrected setup hash or visual result is claimed before that build completes.
+overlay tests, Rust clippy/format and the frontend typecheck/production build.
 
-For the corrected installer, compare its new hash with
-the draft's `SHA256SUMS.txt`, then report pass/fail/untested for checks 1–6.
-In PowerShell: `Get-FileHash "$env:USERPROFILE\Downloads\YomiMado_0.1.0_x64-setup.exe" -Algorithm SHA256`.
-The previously confirmed Windows 11 Home 25H2 build 26200.9457, x64 OS/x64
-processor and 2560 × 1440 monitor specification need not be requested again
-unless the test machine changes.
+The previous setup `2a5ef545208214efabb9dc37bf88e15089c7a5ee69ca84ac58fb449afe063ce6`
+from run `38108583125` had a maintainer-confirmed feature pass but a uniform
+rightward shift at all three scales. Its defect is superseded by the result
+above; historical reports remain bound to their own hashes.
 
-Replacement test preparation — 2026-10-11: the Windows runtime now selects
+Runtime replacement — 2026-10-11: the Windows runtime selects
 CPU ONNX inference, NumPy 2.4.6, a source-built Sudachi binding, unchanged
 canonical VC runtime copies and a source-only WebView loader. Final packaging
-also omits original export-only PyTorch weights. These changes require a fresh
-exact-installer test; earlier reports do not approve the replacement. Its setup
-hash and private draft are recorded above after automated installed checks pass.
-Use the confirmed x64 PC specification below unless it has changed.
+also omits original export-only PyTorch weights. The exact-hash result above
+covers this replacement. Earlier reports remain bound to their own setups.
+Use the confirmed x64 PC specification unless the machine changes.
 
-The short final-candidate report should contain the verified setup hash and
+For any future rebuilt setup, the short report should contain its verified hash and
 **pass / fail / untested** for these six checks:
 
 1. Browser download, hash match, SmartScreen/Defender observations and per-user
@@ -63,7 +72,12 @@ The short final-candidate report should contain the verified setup hash and
    removal and whether study/model data is retained. Mark additional monitors,
    AMD hardware and missing-WebView2 clean-machine cases untested if unavailable.
 
-Newer private preparation candidate — 2026-10-10: [run `38022182370`](https://github.com/chonnakanch/yomimado/actions/runs/38022182370)
+## Historical candidate results
+
+These results describe older setups. Their instructions and open findings are
+historical; the exact new setup and current local checklist status are above.
+
+Private preparation candidate — 2026-10-10: [run `38022182370`](https://github.com/chonnakanch/yomimado/actions/runs/38022182370)
 at `65ac794370fe2b0f60d7ed968ac0be2c04ca4d51` passes the complete automated
 suite and private uploaded-asset checks. Its setup SHA-256 is
 `4639a6351eb8ec708cc824fe96c98a0e1f82ccf304eb1e9641d19823a6d1782d`.
