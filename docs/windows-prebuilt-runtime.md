@@ -1,22 +1,22 @@
 # Windows prebuilt runtime investigation
 
-Follow-up: the maintainer selected an isolated ONNX experiment. Its initial
-[local comparison](windows-onnx-prototype.md) passes the bounded OCR/translation
-fixtures without Torch in the inference process. Windows execution, final
-native/source review and installed packaging remain open; this does not change
-the drop-in Torch findings below.
+Historical package investigation, reviewed 2026-10-10 after the maintainer
+chose to avoid long source builds. **No compatible drop-in Torch replacement
+was established among the packages below.** This is a bounded snapshot, not a
+claim that no such package exists anywhere.
 
-Reviewed 2026-10-10 following the maintainer's decision to avoid long source
-builds. **No compatible drop-in Torch replacement has been established in the
-packages checked below.** This is a bounded investigation, not a claim that no
-such package exists anywhere. No alternative binary has been installed, executed,
-added to the candidate or approved for public distribution.
+The selected alternative is now implemented: the private Windows candidate
+uses CPU ONNX inference, and complete hosted installed checks pass. See
+[the current release plan](windows-release.md) for the exact setup hash and
+remaining licence, alignment and human gates. Torch 2.8.0+cpu and torchvision
+0.23.0+cpu remain only in the export/parity reference environment; they are
+excluded from the installed runtime. These findings explain that choice and
+do not constitute approval of the original combined Torch service.
 
-The target remains Windows 11 x64, CPython 3.11.17, CPU inference and existing
-OCR/learning behavior. The current environment pins Torch 2.8.0+cpu and
-torchvision 0.23.0+cpu. A version change must also establish Python/native ABI,
-operator, model, Transformers and frozen-service compatibility. A package's
-top-level BSD/MIT label does not clear its bundled native libraries.
+The target remains Windows 11 x64, CPython 3.11.17 and existing OCR/learning
+behavior. A package's top-level BSD/MIT label does not clear its bundled native
+libraries. Model, Python/native ABI, operator and frozen-service compatibility
+must also be verified.
 
 ## Package findings
 
@@ -36,48 +36,28 @@ Torch. The same caution applies to IPP in the original OpenCV wheel.
 Apache-licensed oneDNN and separately licensed MKL must be reviewed individually;
 a name containing `MKLDNN` alone does not prove proprietary MKL.
 
-## Build policy
+## Selected build path and release gates
 
-**Windows Torch source audit** now has no push trigger. It retains a manual
-dispatch with `allow_long_source_build` defaulting to false; compilation requires
-an explicit true value on `develop`. The maintainer has chosen not to use that
-route during this investigation. Updating the workflow does not cancel an
-already running job from an older commit.
+The retired Windows Torch source-audit workflow and its exclusive tools,
+manifests and tests are removed. Their history is recoverable at Git revision
+`ee1b7f5`. The active **Windows private candidate** exports and compares models
+using prebuilt reference packages, then freezes and tests the separate Torch-free
+ONNX runtime. It does not compile Torch. The reviewed candidate completed in
+46 minutes 8 seconds; future run duration is not guaranteed.
 
-**Windows private candidate** is a separate installer workflow. It already
-installs pinned prebuilt Torch wheels and does not call the Torch source builder.
-Its previous roughly 30-minute duration does not imply a time guarantee for a
-new runtime. The macOS seed path and publisher are unchanged.
+The maintainer cancelled the earlier source run and separately authorized
+deletion of all 58 historical Actions runs; their identities are
+[recorded](windows-actions-history.md). No new source build is required by this
+package investigation. The macOS seed and publisher are preserved.
 
-The maintainer cancelled source run `38040678348`; the public API confirmed
-`cancelled`. On subsequent explicit instruction, all 58 historical Actions runs
-were deleted and their identities were [recorded](windows-actions-history.md).
-No subsequent long source run was dispatched by this investigation.
-
-## Remaining decision and release gates
-
-For a drop-in prebuilt route, the concrete blocker is obtaining an exact
-Windows x64 Python Torch binary with compatible native permissions, matching
-bindings, notices and corresponding-source/build coverage. The checked packages
-do not satisfy it. The original installer remains private.
-
-Two further avenues avoid a full Torch source build:
-
-1. Investigate a different prebuilt inference runtime, such as ONNX Runtime, for
-   **both recognition and local translation**, and remove Torch/torchvision use
-   from the detector path. This is a backend migration, not a package substitution.
-   First prove the existing local models, generation/tokenization and horizontal/
-   vertical OCR geometry in an isolated prototype; then review exact runtime/model
-   inputs and repeat the complete installed tests. No feasibility pass is claimed.
-2. Obtain sufficient additional permission for the exact original combined
-   runtime from the relevant GPL rights holders. No contact was made and no grant
-   is claimed; this is an external permission route, not an automated approval.
-
-Neither avenue bypasses the other native source/notices gaps in the
-[source worksheet](windows-source-review.md), exact-installer human gate or
-requirement to exclude detector weights. A new runtime requires a new private
-installer/hash and fresh tests; results bound to `51b0091103c1…` do not
-automatically transfer. Joint publication on `main` remains gated.
+The ONNX route passed horizontal/vertical OCR and translation comparison, then
+complete installed verification. Native permissions, source/notices coverage,
+model exclusion and exact-installer human approval remain separate gates in
+[the source review](windows-source-review.md). The latest tested candidate has
+a confirmed rightward overlay offset; its correction needs fresh verification.
+Microsoft redistribution entitlement and component terms also remain open.
+Joint publication on `main` stays gated; old installer results do not transfer
+to a changed runtime or setup hash.
 
 ## Evidence retained
 

@@ -25,28 +25,15 @@ Visual Studio redistribution grant is also no/unsure; Microsoft component
 end-user terms remain unresolved. Full source-only rebuild is unverified.
 macOS runtime-seed scope verification passes after an explicit Windows-only
 plugin-script exception; its release path is preserved. Joint publication is
-not enabled. Earlier dated entries below record historical preparation states.
+not enabled. Retired Windows trial histories remain recoverable in Git at
+`ee1b7f5`; current evidence is linked below.
 
-Windows comparison correction (2026-10-11): the export-only reference retains
-NumPy 1.26.4 for the original detector's legacy aliases, while the delivered
-ONNX environment selects NumPy 2.4.6. Exact wheel/native/notice hashes and tests
-enforce separate environments. Hosted parity and installed verification remain
-open after run `38067916664` failed before producing an installer.
-
-Windows tokenizer preparation (2026-10-11): the ONNX candidate now builds only
-the small Sudachi binding with a retained, deliberately resolved offline Cargo
-graph, replacing the old wheel's incomplete published dependency evidence.
-All 62 original crate checksums and 128 notices verify, and the Windows graph
-resolves offline locally. Windows compilation and exact installed tokenization
-remain pending. No Torch source build or macOS runtime change is introduced.
-
-Windows prebuilt BLAS preparation (2026-10-10): NumPy 2.4.6's official x64
-wheel replaces the old static-libquadmath input. Its actual BLAS DLL matches
-the tagged scipy-openblas64 0.3.31.188.0 supplier; the preferred code, patch,
-linker-map exclusion gate, original notices and GCC runtime exception are
-retained. Full Windows parity and new exact-installer verification remain
-required. No NumPy/Torch source build or macOS runtime change is introduced.
-See [the input review](windows-numpy-runtime.md).
+The delivered Windows runtime uses CPU ONNX inference with NumPy 2.4.6 and a
+source-built Sudachi binding. Prebuilt Torch and NumPy 1.26.4 remain only in the
+separate export/parity reference environment. The abandoned long Torch source
+build workflow and its exclusive tooling are removed. Exact native inputs,
+source archives, notices and installed checks are retained in
+[the Windows source review](windows-source-review.md).
 
 Installer audit (2026-10-06): the approved hobby candidate passed browser
 download hash/quarantine and Finder installation, but first launch reported
@@ -82,139 +69,25 @@ unmerged as requested. Hosted execution and its new installer confirmation
 are pending the first merge; no version tag or public release has been created.
 See [the release setup](macos-release.md#release-on-merge-to-main).
 
-Next platform milestone (2026-10-07): prepare the first Windows pre-release
-using [the Windows release plan](windows-release.md). Initial planned target
-is Windows 11 x64 with a per-user NSIS installer. The maintainer has a separate
-Windows 11 PC for manual checks, without live agent access; its x64 architecture
-is confirmed by the 2026-10-08 System/About report below. Windows-only startup, a pinned source-Python/CPU-wheel build, a per-user NSIS
-override and an independent candidate workflow are prepared. Local macOS tests
-and frontend build pass; hosted Windows Python/service/frontend/Rust tests and
-freezing pass. Hosted run `37589437962` also built NSIS and passed exact installed
-resource verification, desktop startup and process cleanup. Real installed OCR
-exposed an excluded `torch.testing` import; that recipe is corrected, and copied
-Windows OS DLLs are removed. Run `37717190035` reached real installed horizontal
-and vertical OCR/geometry, tokenization, dictionary/kanji, uncached translation
-and save assertions; its loaded-module diagnostic failed before restart
-verification because Windows PowerShell inherited incompatible PS7 modules.
-That diagnostic is corrected. Run `37720960120` rejected a moved daily
-KANJIDIC2 snapshot; a deliberate 2026-10-08 snapshot and early asset checking
-are committed, with original dictionaries retained in candidate delivery.
-Run `37721943728` then passed the complete installed runtime checks at
-`79065df7ba34a3aaa4ddb3a1ebb30e164405742a`: startup/cleanup, actual native
-loading, horizontal/vertical OCR geometry, tokenization, dictionary/kanji,
-uncached translation and saved-data/cache restart. Its private per-user NSIS
-setup has SHA-256
-`01a28c0f4964b2df1733814670b3024d8aa18c525b544965a50189ec25ecab0a`.
-All 94 frozen service PE files and the installed desktop are AMD64; the NSIS
-setup/uninstaller use x86 host stubs. This Windows Server 2022 execution does
-not establish Windows 11 hardware coverage. The owner-only draft retains eight
-hash-verified assets, including original dictionary snapshots. Native source
-bindings, Intel MKL/IPP compatibility or compatible replacement builds, and
-the exact installed-app human gate remain open. The maintainer subsequently
-reports setup completion but a blank terminal, absent detector setup, inactive
-scan buttons and a shortcut freeze. The human installer gate fails. The
-replacement fixes Windows GUI subsystem/model setup and the documented
-WebView2 deadlock from synchronous window creation, with installed UI regression
-checks for buttons, shortcuts and cancellation. Replacement run `37802965979`
-at `c69eff996f7e85ea88ecb4f0407e05cf5d8ec8b5` passes the complete hosted
-build/install/UI/runtime/learning suite and owner-only draft asset hash checks.
-On 2026-10-09 the maintainer reports detector import, OCR, shortcuts, dictionary
-lookup, saving and viewing work. User-local screenshots show close OCR alignment
-with uneven boundary padding; no clear global scale offset is apparent. The
-maintainer's 2026-10-09 PowerShell setup hash matches the private draft's checksum
-file and GitHub asset digest:
-`51b0091103c10c03ecd3748039bd4db0631381fb43885fe7163b889821fba207`.
-The named functional reports are bound to that installer. Settings confirms
-2560 × 1440, landscape, at 100%; maintainer-labelled OCR screenshots show close
-visual alignment at 100%, 125% and 150% without obvious page-wide drift.
-Subsequent popup screenshots show that clicking the same tested region opens
-its matching text fully on-screen at each scale. The maintainer also confirms
-that all four popup buttons respond at 100%/125%/150%. In the subsequent explicit
-offline/restart check, a new sentence translates with internet disconnected and
-saved words/sentences remain after app restart with maintainer confirmation.
-The maintainer subsequently confirms all four lifecycle/reboot checks pass:
-app/service processes disappear after quit; relaunch opens no terminal and retains
-model/saved data; offline OCR/dictionary lookup works; both shortcuts and page
-scan work after Windows reboot. Translation-cache persistence and saved entries
-after reboot remain unconfirmed. Selection accuracy, hover,
-other targets/edges and scale-change/relaunch cases, boundary
-follow-up and other manual cases remain pending. No manga screenshots
-are added to public fixtures or delivery. The maintainer's System/About report
-confirms a 64-bit OS and x64 processor, Windows 11 Home 25H2 build 26200.9457,
-Core i5-14500 and 32 GB RAM. Multiple-monitor/mixed-scaling cases remain untested.
-No public Windows release integration or passing Windows 11 installer gate is claimed.
-Windows OpenCV source execution is prepared independently (2026-10-09): pinned
-source/tool/vendor notices, a static PYD with IPP/video/GPU backends disabled,
-synthetic geometry and CPU detector inference in native/frozen probes. The
-Windows audit workflow exports textual evidence only. Run `37934320710` passes
-source/native/frozen checks; local archive inspection verifies exact notice,
-recipe/cache/probe hashes and matching geometry/detector results. It also reveals
-the static CRT default remained enabled despite the requested DLL runtime.
-Corrected run `37938195277` passes with static CRT disabled: all 648 generated
-commands select the release DLL runtime, AMD64 imports use VC/UCRT and
-native/frozen geometry and detector outputs match. Downloaded textual evidence
-and original notices are verified independently; complete installed replacement
-and source/public approval remain open.
-The tested installer, macOS seed and publication gates remain unchanged.
+Windows milestone: finish the first Windows 11 x64 per-user NSIS pre-release
+using [the release plan](windows-release.md) and
+[exact-installer test record](windows-installed-test.md). The maintainer's
+System/About report confirms Windows 11 Home 25H2 build 26200.9457, a 64-bit OS,
+x64 Core i5-14500 and 32 GB RAM; the display is 2560 × 1440. The newest tested
+setup hash is confirmed and features work, but every OCR box shifts right at
+100%/125%/150%. A Windows-only overlay correction is being verified. AMD,
+multiple monitors/mixed scaling and missing-WebView2 installation remain untested.
 
-Windows source/native and installer gates remain open. Add joint release-on-main
-publication only after those gates pass, using one publisher for both platforms.
-
-Original Windows GPL compatibility review (2026-10-10): exact detector calls,
-loaded binary bindings, Intel terms and exception checks are recorded in the
-[review](windows-gpl-compatibility.md). The original combined service conflicts
-with the FSF's published GPL interpretation; sufficient additional permission
-or compatible libraries are required by the project's release review. The initial
-source rebuild is one resolution, not a universal Windows distribution requirement.
-
-Windows prebuilt investigation (2026-10-10): the maintainer chooses to avoid long
-source builds. The Torch source workflow is now manual-only with an explicit
-false-by-default opt-in. The separate installer workflow already uses prebuilt
-Torch. The [package review](windows-prebuilt-runtime.md) checks official wheels/
-recipes, Conda-forge, DirectML, JavaCPP and community alternatives; no compatible
-drop-in Windows Python CPU replacement is established. Exact compatible binary
-inputs, a proven alternative inference backend or sufficient additional permission
-remain needed before public distribution. No new runtime or installer is approved.
-
-Windows ONNX feasibility (2026-10-10): implemented isolated hash-pinned model
-conversion, NumPy generation and detector filtering with a Torch-free inference
-process. Local horizontal/vertical synthetic OCR responses and three uncached
-translations match the baseline exactly; 13 focused tests pass. The independent
-Windows hosted prototype uses prebuilt inputs, without a Torch source build.
-Windows hosted run `38047950684` passes in 4 minutes 6 seconds. Private packaging
-now selects the ONNX backend, repeats parity using final Python 3.11.17 and tests
-the exact installed runtime. Frozen execution, native-source review and fresh
-exact-installer human approval remain open. See [the prototype record](windows-onnx-prototype.md).
-The maintainer confirmed clearing all 58 historical Actions runs; deletion and
-removal of the temporary cleanup job are [recorded](windows-actions-history.md).
-
-Windows Torch audit update (2026-10-10): run `38024770382` passes the early
-Windows compiler corrections, then fails full compilation on an omitted Kineto
-header after about 84 minutes. Downloaded evidence, source/notice/cache and all
-compiler guards verify. The audit now pins Kineto's original required header and
-notices, compiles the failed consumer early, and reports progress every 30 seconds.
-The next Windows run must establish a completed CPU Torch/vision build and probes;
-no installer, macOS runtime or release approval is changed by this preparation.
-The next run `38031623655` clears the omitted header and reaches the
-`torch_cpu.dll` link, then fails on an unavailable distributed Work constructor.
-Its downloaded evidence verifies. A hash-pinned conditional patch to NativeRT's
-Work declarations, early object-symbol checks and a disabled-distributed probe
-are prepared; full Windows linking/inference still require a successful rerun.
-
-Independent native progress (2026-10-09): **Windows GEOS source audit** run
-`37877467511` at `a10db77ec91d5e1e0f96f444b0a98376c641774a` passes source/tool/notice
-hash checks, a pinned Windows GEOS build, upstream CTest and replacement of
-both DLLs in an isolated frozen Shapely probe. Actual loaded paths/hashes and
-geometry results are checked, while EXE/PYD hashes stay unchanged. This does
-not modify the working private installer, establish full installed OCR
-replacement or approve source/installer gates. The evidence ZIP is now locally
-hash-verified and inspected: all 431 CTests pass; recipe/cache/probe bindings and
-actual loaded replacement DLL hashes match. The next audit prepares baseline and
-replacement OCR/learning checks in a disposable installation of the exact tested
-setup, preserving all other installed bytes and restoring the original DLLs.
-Hosted full-service replacement remains pending. Final source assembly, Intel-free
-Torch/OpenCV builds and the remaining PC cases remain open; see the
-[native worksheet](windows-native-rebuild.md).
+The hosted ONNX candidate passes exact installed runtime and source/notices
+checks. Microsoft redistribution entitlement/end-user terms and protected
+exact-installer approval remain open; full source-only rebuild is unverified.
+Keep the candidate private and add joint release-on-main publication only after
+those gates pass, using one publisher/tag for both platforms. macOS remains on
+its reviewed runtime path. The earlier package investigation is retained in
+[the prebuilt review](windows-prebuilt-runtime.md); the completed ONNX migration
+is recorded in [the prototype record](windows-onnx-prototype.md). The maintainer's
+previous deletion of 58 historical Actions runs is
+[recorded separately](windows-actions-history.md).
 
 Status audit (2026-10-05): the capture → local OCR → interactive overlay →
 learning-popup flow works with user-installed models on macOS and has been
