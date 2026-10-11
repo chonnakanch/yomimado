@@ -34,7 +34,8 @@ rebuild or blanket legal approval is claimed. The maintainer reports no/unsure
 Visual Studio entitlement; [Microsoft-only distribution conditions](windows-microsoft-runtime.md)
 remain unresolved. The maintainer now reports a functional Windows retest with
 a slight rightward box offset; a Windows-only overlay shadow correction needs
-hosted and visual verification, and the downloaded hash is awaiting confirmation.
+hosted and visual verification. The maintainer confirms the exact downloaded hash
+above and reports all boxes shifted right at 100%, 125% and 150%.
 Keep the candidate private. Source/public
 approval flags remain false pending final distribution review and protected
 human approval. The historical preparation entries below are superseded where

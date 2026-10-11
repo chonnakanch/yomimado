@@ -15,8 +15,9 @@ WebView loader and canonical VC identities pass; downloaded diagnostic,
 source and notices digests verify independently. The private setup SHA-256 is
 `2a5ef545208214efabb9dc37bf88e15089c7a5ee69ca84ac58fb449afe063ce6`.
 The maintainer now reports all features working after a new Windows test, with
-a slight rightward OCR-box offset. Hash/scale details and visual alignment remain
-open. The Windows-only OCR overlay now disables the default shadow, whose native
+a slight rightward OCR-box offset. The downloaded hash matches the candidate;
+all boxes shift right at 100%/125%/150%. Visual alignment remains open.
+The Windows-only OCR overlay at `1236d32` disables the default shadow, whose native
 client-area insets conflict with the requested screen origin. Corrected hosted
 execution and exact-installer visual testing remain required; keep it private.
 Protected approval remains open. The maintainer's
@@ -960,7 +961,7 @@ Before any public release:
       persistence, native-input and source/notices delivery checks. Fresh
       PC retest reports all features working but a slight rightward box offset;
       the Windows-only shadow fix still needs hosted and visual verification.
-      Exact downloaded-hash/scoped test details, Microsoft redistribution
+      Scoped test details, Microsoft redistribution
       entitlement/end-user terms and protected human approval remain open.
       Full source-only rebuild is unverified. Existing macOS packaging/publisher
       remains unchanged; joint release integration waits for these gates.

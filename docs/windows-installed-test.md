@@ -8,9 +8,11 @@ at `ca0fed317976dcbf3267101324859e497f2b0487`.
 All automated installed checks pass. On 2026-10-11 the maintainer reports
 retesting the new Windows installer and confirms **all features work**, with
 OCR boxes shifted slightly right of the text. Record a reported functional
-pass and an **open alignment defect**. The downloaded-file hash and affected
-scales/uniformity are awaiting clarification; the report refers to this linked
-candidate but is not yet independently bound to its exact downloaded hash.
+pass and an **open alignment defect**. The maintainer confirms the downloaded
+SHA-256 matches `2a5ef545208214efabb9dc37bf88e15089c7a5ee69ca84ac58fb449afe063ce6`;
+this report is bound to that exact setup. All boxes shift right at **100%,
+125% and 150%**, supporting an origin-offset diagnosis over uneven detector
+padding, without proving the cause until the corrected setup is tested.
 The broad feature report does not specifically establish browser/security,
 upgrade/uninstall, reboot/cache or all scale-specific checklist cases.
 AMD hardware, additional monitors/mixed scaling and a clean machine without
@@ -19,12 +21,17 @@ WebView2 remain untested. The human installer gate remains open.
 Investigation identifies that the OCR overlay retains Tauri's default Windows
 shadow. In pinned Tao 0.35.3, `WM_NCCALCSIZE` adds client-area insets for
 undecorated shadowed windows; overlay positioning assumes no such inset.
-The prepared Windows-only fix disables the OCR overlay's shadow, keeping
+The Windows-only fix at `1236d32` disables the OCR overlay's shadow, keeping
 detector geometry and macOS behavior unchanged. A new exact installer and
 visual check are required; this cause is plausible but not confirmed as the
 sole cause of the reported offset. Do not apply a guessed leftward pixel offset.
+The corrected private build is running in
+[run `38128735546`](https://github.com/chonnakanch/yomimado/actions/runs/38128735546).
+Local verification passes 10 frontend coordinate/overlay tests, nine native
+overlay tests, Rust clippy/format, and the frontend typecheck/production build.
+No corrected setup hash or visual result is claimed before that build completes.
 
-For the reported test, compare this setup's hash with
+For the corrected installer, compare its new hash with
 the draft's `SHA256SUMS.txt`, then report pass/fail/untested for checks 1–6.
 In PowerShell: `Get-FileHash "$env:USERPROFILE\Downloads\YomiMado_0.1.0_x64-setup.exe" -Algorithm SHA256`.
 The previously confirmed Windows 11 Home 25H2 build 26200.9457, x64 OS/x64
