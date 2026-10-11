@@ -50,6 +50,23 @@ commit may stop at this early preflight until its draft is ready; rerun that
 unchanged job after preparation. Nonempty/published/ambiguous/wrong-target drafts
 are rejected; existing assets are never overwritten or deleted automatically.
 
+Use GitHub's [documented release-form parameters](https://docs.github.com/en/repositories/releasing-projects-on-github/automation-for-release-forms-with-query-parameters)
+to prefill `tag=windows-private-test-<full SHA>`, `target=<full SHA>` and
+`prerelease=1` on `/releases/new`. Verify the form's target is the commit before
+saving, then reopen the draft and verify it persisted. A branch name alone is
+not the required immutable target. Wait for any tag validation/loading state to
+finish before saving. Keep only one draft using that candidate staging name;
+rename unused empty drafts rather than deleting retained evidence.
+
+Component-terms replacement — 2026-10-11: commit `f8396cc` records the owner's
+Community 2022 obtained-copy/acceptance confirmation, includes the Microsoft-only
+terms page and requires exact-hash silent/passive assent. All 208 release-tool
+tests, lint/format, PowerShell syntax, actionlint and the macOS runtime-reuse scope
+check pass. [Run `38142782743`, attempt 4](https://github.com/chonnakanch/yomimado/actions/runs/38142782743)
+passes the empty exact-commit draft preflight and is building the new private
+setup. Its installed verification, hashes and fresh local checklist are pending;
+no protected human or public approval is granted.
+
 Previous private candidate — 2026-10-11: [run `38108583125`](https://github.com/chonnakanch/yomimado/actions/runs/38108583125)
 at `ca0fed317976dcbf3267101324859e497f2b0487` succeeds in **46 minutes 8 seconds**.
 Exact installation, hidden bundled-service startup without developer Python/CUDA,

@@ -1,6 +1,26 @@
 # Windows candidate test record
 
-Current exact candidate — 2026-10-11: [private draft](https://github.com/chonnakanch/yomimado/releases/tag/untagged-369bebe25308d4e82cc2),
+Component-terms candidate — 2026-10-11: [run `38142782743`, attempt 4](https://github.com/chonnakanch/yomimado/actions/runs/38142782743)
+is building source `f8396ccd5e7352a62e526c68438cc7f3c9cedc60` for this
+[private draft](https://github.com/chonnakanch/yomimado/releases/tag/untagged-e959857f82b89c87c77b).
+Hosted installer verification, a new setup hash and its local report are pending.
+The old setup's passing results below do not cover this changed installer.
+
+Once the new candidate passes automation, check its published private SHA-256
+and report pass/fail/untested for these six local checks:
+
+1. Browser download with Defender/SmartScreen enabled; terms initially unchecked;
+   cancel before installation, then review/accept and install or upgrade normally.
+2. No terminal; model import/cancel/wrong-file handling; both shortcuts and page
+   scan; clean quit and relaunch without orphan processes.
+3. Offline OCR, tokenization, dictionary/kanji lookup and a new uncached translation;
+   save and view a word and sentence.
+4. Imported model, saved entries and translation cache survive restart and reboot.
+5. OCR alignment and clicking the matching region/popup at 100%, 125% and 150%.
+6. Upgrade, uninstall and reinstall behave correctly; report retained or removed
+   learning data explicitly. Keep previously untested hardware cases untested.
+
+Last verified exact candidate — 2026-10-11: [private draft](https://github.com/chonnakanch/yomimado/releases/tag/untagged-369bebe25308d4e82cc2),
 from successful [run `38133593809`, attempt 2](https://github.com/chonnakanch/yomimado/actions/runs/38133593809)
 at `8c46366d04e96d5356c250605e7ea936db209eb3`.
 `YomiMado_0.1.0_x64-setup.exe` SHA-256:
