@@ -4,18 +4,18 @@ Reviewed 2026-10-11. Status: conditional redistribution evidence remains open.
 This records actual inputs and the remaining decisions; it does not accept a
 Microsoft agreement for the maintainer or approve an installer.
 
-Final technical verification — 2026-10-11: [run `38108583125`](https://github.com/chonnakanch/yomimado/actions/runs/38108583125)
-at `ca0fed317976dcbf3267101324859e497f2b0487` passes all installed startup, UI,
+Final technical verification — 2026-10-11: [run `38133593809`, attempt 2](https://github.com/chonnakanch/yomimado/actions/runs/38133593809)
+at `8c46366d04e96d5356c250605e7ea936db209eb3` passes all installed startup, UI,
 learning and persistence gates. The exact setup SHA-256 is
-`2a5ef545208214efabb9dc37bf88e15089c7a5ee69ca84ac58fb449afe063ce6`.
+`7ff298c597de9c33d23bb598bf16d6f41761219e51fc0b61951ed6c54174c6d9`.
 Its ten desktop VC DLLs and standard/renamed frozen-service copies match the
 canonical unchanged VC143 **14.44.35211.0** originals. The source-only MIT
 WebView loader's recipe/static-library binding passes for all Cargo outputs
 and the installed desktop EXE. Its BSD SDK headers/notices remain retained.
 The short source-built NSIS plugin passes upstream tests and exact embedded
 DLL verification, with static compiler runtime linkage and no dynamic VC imports.
-Downloaded diagnostic artifact `11692047068` matches GitHub's SHA-256
-`dfcfa3ba25054f555681b466357f25ba57a0a4fa59cce23992409542681fb3f7`.
+Downloaded diagnostic artifact `11701215883` matches GitHub's SHA-256
+`4b2267a29f12e16f8ad07d258542b4afb150e505ac1e1230b974bc78774fb6f8`.
 These results resolve technical identity/integration gates, independently of
 contractual permission.
 
@@ -25,7 +25,21 @@ Studio licence. Public redistribution remains blocked. The
 the exact files and owner completion steps; it is not an agreement and is not
 enabled as an installer licence page. The maintainer must establish their grant
 and review/satisfy the Microsoft-specific end-user/distributor requirements.
-The Windows PC is unavailable, so fresh exact-installer testing also remains open.
+The maintainer confirms this exact setup hash and all listed local tests,
+including corrected alignment at 100%/125%/150%. The local test checklist is
+complete; [untested hardware cases](windows-installed-test.md) remain explicit.
+Protected publication approval remains open.
+
+Owner acquisition route — checked 2026-10-11: Microsoft's
+[2022 release history](https://learn.microsoft.com/en-us/visualstudio/releases/2022/release-history#evergreen-bootstrappers)
+still lists the Community bootstrapper on Current 17.14. The maintainer can
+obtain this edition and review/accept its terms on their Windows PC. The
+[Community terms](https://visualstudio.microsoft.com/license-terms/vs2022-ga-community/)
+allow individual developers to develop their own applications; the edition is
+free. An accepted applicable licence, not a payment or a Windows OS licence,
+is the unresolved fact. Do not substitute the newer default download without
+reviewing its applicable terms. Record only edition, version and acceptance
+date/confirmation; no account information or key is needed.
 
 The dated input history below does not supersede these current results.
 
@@ -107,9 +121,10 @@ this does not make application libraries such as Intel MKL/IPP System Libraries.
 2. Include reviewed component-specific terms/acceptance and notices if required;
    any changed installer must repeat the passing canonical VC, source-only
    WebView loader, embedded plugin and source/notices delivery checks.
-3. Obtain fresh maintainer installed-app confirmation for the resulting exact
-   setup and protected release approval. The current setup's automated checks
-   pass, but the maintainer requests that it stay private while the PC is unavailable.
+3. Obtain fresh maintainer installed-app confirmation if terms or packaging
+   change the setup, then protected release approval. The current exact setup's
+   automated and listed local checks pass. Keep it private while the owner
+   entitlement and component terms are unresolved.
 
 These gates are concrete distribution checks. No long Torch build, paid code
 signing requirement or self-approved installer gate is introduced.

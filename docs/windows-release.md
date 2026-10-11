@@ -188,7 +188,7 @@ the macOS frozen runtime is not a Windows seed.
       and recording CPU Torch/torchvision, tokenizer, image and ONNX compatibility.
       Avoid FFmpeg/video support, training binaries and unused codecs where practical.
 - [x] Collect the actual EXE/DLL/PYD inventory and native provenance: final
-      run `38108583125` records 80 frozen AMD64 PE files, desktop CRT inputs
+      run `38133593809` records 80 frozen AMD64 PE files, desktop CRT inputs
       and the separate i686 NSIS host/plugin. The CPU ONNX replacement excludes
       the original runtime's Torch/MKL/IPP inputs; exact installed identities pass.
 - [x] Preserve pinned preferred sources, build recipes, modifications, full
@@ -227,7 +227,8 @@ before treating any installer as a public candidate.
       README paths if needed; do not write mutable data into install resources.
       CI records `%APPDATA%\com.yomimado.desktop`, verifies bundled startup and
       normal quit cleanup, and passes saved-data/cache restart. The separate PC
-      still needs the numbered startup/error/relaunch cases.
+      passes the listed clean-quit and restart/reboot persistence checks on the
+      exact current hash; occupied-port error handling remains automated coverage.
 - [x] Add the Windows release configuration and the smallest build entry point
       needed to assemble reviewed resources and an NSIS per-user installer.
       Fail on absent runtime, missing notices, mixed architecture or model leakage.
@@ -254,33 +255,34 @@ each case, with synthetic screenshots only if useful. New hashes need new
 installer confirmation. A new user profile or disposable VM is useful for
 first-run isolation; existing-machine results must be labelled accurately.
 
-- [ ] Browser download, hash verification, SmartScreen result, per-user setup,
-      Start menu launch, quit/relaunch and uninstall/reinstall or upgrade using
-      disposable test data. Preserve unrelated user data and privacy settings.
+- [x] Browser download, exact hash match and installation with
+      Defender/SmartScreen enabled; no terminal and clean quit. Maintainer
+      reports pass for current setup `7ff298c5…`. Additional Start menu/error
+      subcases are not inferred from this report.
 - [ ] Missing WebView2 handling and documented prerequisite installation;
       test offline setup when the runtime is already present. Record any
       missing-runtime test that cannot be performed as untested.
-- [ ] Detector dialog cancellation, wrong-file rejection, hash-checked import,
+- [x] Detector dialog cancellation, wrong-file rejection, hash-checked import,
       persistence after relaunch and clear missing-model messaging.
-- [ ] Ctrl+Shift+O selection and interactive vertical/horizontal OCR; popup
-      hit-testing, dictionary/kanji attribution and uncached local translation.
-- [ ] Page scan and Ctrl+Shift+S saved-area flow; overlay visibility, focus and
-      cancellation without leaving a full-screen input-blocking window.
-- [ ] Alignment at 100%, 125% and 150% scaling; two monitors with different
-      scaling, one left of the primary monitor, plus layout changes where
-      available. Specify missing hardware cases instead of claiming coverage.
-      Visual OCR alignment is observed at all three scales on the 2560 × 1440
-      display. Clicking the tested region opens its matching popup fully on-screen
-      at each scale, and all four popup buttons respond with maintainer confirmation.
-      Selection, hover, other targets and relaunch remain open.
-- [ ] Offline capture/lookup/uncached translation; saved words/sentences and
+- [x] OCR, dictionary/kanji learning, new offline translation and both capture
+      shortcuts pass in the maintainer's feature report and listed local checks.
+      Horizontal/vertical geometry also passes hosted installed automation.
+- [x] Page scan works in the maintainer's reported feature tests. Detailed
+      focus/cancellation subcases remain hosted UI coverage rather than a new
+      claim of individually reported PC results.
+- [x] Corrected OCR-box alignment at 100%, 125% and 150% on the single
+      2560 × 1440 display; matching popup and buttons respond. Exact current
+      hash confirmed. Detailed hover/edge-target subcases are not inferred.
+- [ ] Additional monitors/mixed scaling, left-of-primary layout and AMD
+      hardware: untested. These limitations do not undo the recorded single-PC
+      tests or claim coverage unavailable to the maintainer.
+- [x] Offline capture/lookup/uncached translation; saved words/sentences and
       translation cache across relaunch, then shortcut/capture after reboot.
-      Offline uncached sentence translation and saved-word/sentence persistence
-      after app restart, offline OCR/lookup, and both shortcuts/page scan after reboot
-      are maintainer-confirmed; cache persistence and saved-entry verification after
-      reboot remain open.
-- [ ] Save/remove only synthetic test entries. Check upgrade/reinstall preserves
-      intended learning data and the imported model; document uninstall retention.
+      The maintainer confirms saved data/model/cache after restart and reboot
+      and the listed offline checks for the exact current setup.
+- [x] Upgrade, uninstall and reinstall pass in the maintainer's listed tests.
+      Do not infer a different uninstall retention policy; only disposable
+      test data should be used when repeating these checks.
 
 Exit: exact-installer confirmation, with failures resolved and limitations
 explicit. macOS's fresh-Mac waiver does not imply Windows testing passed.
@@ -313,12 +315,12 @@ Only after the Windows candidate clears its runtime/source and installer gates:
 
 ## Next action and current limitations
 
-Next action: keep setup `2a5ef5452082…` private as requested, establish the
+Next action: keep setup `7ff298c597de…` private, establish the
 maintainer's Microsoft redistribution entitlement and review the component-only
-terms/acceptance requirement. Verify the corrected overlay in Windows Actions
-and on the confirmed Windows 11 x64 PC; record the downloaded hash and scoped
-checklist results. Protected human approval and
-joint release integration wait for these results. Actual installed input/source
+terms/acceptance requirement using [the prepared review](windows-microsoft-distribution-notice.draft.md).
+The corrected overlay and listed local checks already pass on the confirmed
+Windows 11 x64 PC with its downloaded hash recorded. Protected human approval
+and joint release integration wait for distribution clearance. Actual installed input/source
 bindings and downloaded source/notices checks pass; independent full source-only
 rebuilding is unverified and public approval flags remain false.
 The selected compiler/SDK fail closed if absent

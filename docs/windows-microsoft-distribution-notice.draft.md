@@ -56,3 +56,47 @@ but requires revised packaging, clean-machine detection and installed testing.
 It is not implemented by this notice. No Microsoft agreement is accepted on
 the maintainer's behalf, and no paid Windows application-publishing licence or
 paid code-signing requirement is introduced.
+
+## Owner acquisition instructions
+
+Microsoft's [2022 release history](https://learn.microsoft.com/en-us/visualstudio/releases/2022/release-history#evergreen-bootstrappers)
+lists Community under Current 17.14. On the Windows PC, obtain that edition,
+review the offered licence and accept it yourself if you agree. Community is
+free for individual developers; a Professional/Enterprise purchase is not
+required for this personal project. Record edition, version and your acceptance
+confirmation/date. Do not send a key or account information. Installing only
+the Visual C++ Redistributable as an end user does not establish the distributor
+grant. The current public download landing page may offer a newer edition;
+using another edition needs its own applicable-terms review.
+
+## Prepared acceptance implementation review
+
+The [exact pinned Tauri CLI 2.11.5 NSIS template](https://github.com/tauri-apps/tauri/blob/tauri-cli-v2.11.5/crates/tauri-bundler/src/bundle/windows/nsis/installer.nsi)
+includes an optional licence page,
+but its `SkipIfPassive` callback skips that page in passive mode, and silent
+installation does not display interactive pages. Merely setting `bundle.licenseFile`
+would therefore not establish assent in every installation path.
+
+After the owner grant and component-only agreement have been reviewed:
+
+1. Retain the final Microsoft-component terms in the installer, installed notice
+   directory and delivered notices, and bind their exact hash in provenance.
+   Explicitly preserve YomiMado's GPL rights and each other component's licence.
+2. Present the reviewed text with affirmative acceptance in interactive setup;
+   cancellation/declining must exit before installing files. Treat update setup
+   consistently; do not assume that an earlier install accepted changed text.
+3. Either reject silent/passive installation when assent is required or require
+   an explicit documented acceptance argument bound to the exact terms hash.
+   Do not silently treat `/S`, passive mode or a previous install as consent.
+4. Verify decline/cancel, interactive acceptance and silent/passive behavior in
+   Windows Actions and the exact installed candidate. Preserve the retained
+   NSIS plugin/template source bindings, per-user installation and macOS path.
+5. Distributors need the reviewed obligations and their own agreement evidence;
+   an installer page for end users alone does not establish downstream compliance.
+
+This is a concrete engineering review plan, not active installer logic or a
+claim that a drafted agreement meets the protective standard. The owner must
+review the complete applicable Microsoft conditions before approving the text.
+Current setup `7ff298c5…` has a passing technical/local test record but includes
+no accepted component-specific terms page. A changed package requires a new
+hash and exact-installer confirmation before protected publication approval.
