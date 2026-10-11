@@ -30,7 +30,8 @@ offline and preserves those original archives, notices, the new lock and the
 recipe. This is a short installer-plugin build, separate from Torch.
 
 `scripts/windows_nsis_plugin.py` uses Rust 1.98.1 and the pinned Windows MSVC/SDK
-toolchain. It runs the upstream workspace tests with its `test` feature, then
+toolchain. It runs all upstream workspace tests with its `test` feature and
+`--test-threads=1`, then
 builds the production DLL with the original `DllMain` entrypoint. The NSIS host
 is **i686**, while YomiMado and the frozen service remain **x64**. A target-only
 linker script supplies x86 libraries without changing the host compiler's x64
@@ -63,7 +64,7 @@ sources/notices does not claim that their code is embedded.
 For a rebuild, use the project source at the recorded revision, the retained
 original archives and lock, and the pinned Windows toolchain. Run the preparation
 recipe, then `cargo test --offline --locked --release --target
-i686-pc-windows-msvc --workspace --features test` and the analogous
+i686-pc-windows-msvc --workspace --features test -- --test-threads=1` and the analogous
 `cargo build --package nsis-tauri-utils` without the test feature under the
 task-owned Cargo environment.
 The producer records the complete commands and logs. The verified execution

@@ -29,9 +29,18 @@ concurrently. A privilege-restoration race is inferred; the log does not report
 a Windows error code. The recipe now runs **all** upstream tests with
 `--test-threads=1`, preserving source bytes, locked inputs and production build
 flags. All 206 release-tool tests, Python/workflow lint and macOS runtime-reuse
-scope checks pass locally. No test is skipped or failure retried automatically. Windows execution,
-build/install/asset transfer and fresh visual checks remain pending. Attempt 1
+scope checks pass locally. No test is skipped or failure retried automatically.
+Full build/install/asset transfer and fresh visual checks remain pending. Attempt 1
 stopped before the long build because the draft had not yet been saved.
+
+Sequential-test retry: [run `38133593809`, attempt 2](https://github.com/chonnakanch/yomimado/actions/runs/38133593809)
+at `8c46366d04e96d5356c250605e7ea936db209eb3` passes the draft preflight and
+reports **"Locked NSIS plugin built and tested"**. OCR native compilation and
+the full installer/installed-app/asset checks are still running. Its
+[empty owner-only draft](https://github.com/chonnakanch/yomimado/releases/tag/untagged-369bebe25308d4e82cc2)
+was saved for the exact source target with pre-release selected; the public tag
+is verified absent. This establishes recovery of the failing plugin stage,
+not completion or approval of the installer.
 
 Before a candidate run, save an empty draft in GitHub Releases with tag field
 `windows-private-test-<full source SHA>`, exact target commit `<full source SHA>`,
