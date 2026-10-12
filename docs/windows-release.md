@@ -1,6 +1,14 @@
 # First Windows pre-release plan
 
-Current shared main candidate — 2026-10-12: [run `38196721752`](https://github.com/chonnakanch/yomimado/actions/runs/38196721752)
+Latest rebuild — 2026-10-12: owner-authorized PR #3 merges at `5159473`.
+[Joint run `38201230907`](https://github.com/chonnakanch/yomimado/actions/runs/38201230907)
+passes planning/private input transfer; both builders run automatically and
+main's lightweight gate checks pass. Its fresh artifacts,
+hashes and local exact-installer reports are pending. The `99b1312` candidate
+below is superseded and must not receive publication approval. Keep the new
+candidate private while the Windows PC is available later.
+
+Superseded shared main candidate — 2026-10-12: [run `38196721752`](https://github.com/chonnakanch/yomimado/actions/runs/38196721752)
 at `99b13124424901f425a49de7ed87557eee6230a9` passes all automatic Windows
 build/install/UI/OCR/learning/persistence/source checks in **39 minutes 17 seconds**.
 Combined macOS/Windows verification also passes. The private

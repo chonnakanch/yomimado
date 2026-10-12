@@ -1,5 +1,13 @@
 # First macOS pre-release gate
 
+Latest rebuild — 2026-10-12: owner-authorized PR #3 merges at `5159473`.
+[Joint run `38201230907`](https://github.com/chonnakanch/yomimado/actions/runs/38201230907)
+passes planning/private input transfer; both builders run automatically and
+main's lightweight gate checks pass. Its fresh artifacts,
+hashes and local exact-installer reports are pending. The `99b1312` candidate
+below is superseded and must not receive publication approval. Keep the new
+candidate private while the Windows PC is available later.
+
 Distribution: a downloadable **Apple Silicon DMG on GitHub Releases**, for
 macOS **14 or later**, outside the Mac App Store.
 
@@ -16,7 +24,7 @@ explicit hobby candidate path, with source and exact-DMG checks. Neither path
 publishes anything automatically from the local build script. Do not upload a
 private build or an incomplete candidate.
 
-Current shared main candidate — 2026-10-12: [run `38196721752`](https://github.com/chonnakanch/yomimado/actions/runs/38196721752)
+Superseded shared main candidate — 2026-10-12: [run `38196721752`](https://github.com/chonnakanch/yomimado/actions/runs/38196721752)
 at `99b13124424901f425a49de7ed87557eee6230a9` passes the repaired automatic
 macOS build in **14 minutes 37 seconds**, including mounted signature/native/
 source/offline runtime checks. Combined Windows/macOS verification passes.

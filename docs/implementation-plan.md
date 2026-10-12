@@ -8,11 +8,15 @@ Build a small vertical slice first. Do not implement future features before the 
 
 ## Current status
 
-Prepared CI follow-up (2026-10-12): move shared concurrency from the whole
-workflow to the protected publisher only. Pending human installer approval must
-not queue later main builds; tag creation/uploads remain serial and cannot be
-cancelled by a later main push. App/runtime inputs stay unchanged. This follow-up
-is not covered by the owner's PR #2-only authorization and remains on develop.
+CI follow-up merged (2026-10-12): the owner separately authorizes PR #3,
+merged at `5159473`. Publisher-only concurrency is deployed; pending installer
+approval no longer queues later main builds. Main gate checks pass in run
+`38201230971`; joint build `38201230907` passes planning/private input transfer
+and both builders run automatically. The older
+`99b1312` candidate is superseded and cannot publish after main advances.
+Fresh build results, hashes and both exact-installer local checks remain
+pending. The Windows PC is available later; owner publication approval stays
+open. App/runtime inputs are unchanged.
 
 CI repair rollout (2026-10-12): the owner authorizes PR #2 only, merged at
 `99b1312`. Main gate checks pass (`38196721793`); joint run `38196721752` passes

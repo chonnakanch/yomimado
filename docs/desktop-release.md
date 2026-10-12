@@ -1,6 +1,18 @@
 # Shared desktop release checklist
 
-Prepared 2026-10-11 on `develop`. The maintainer confirms the private Windows
+Latest rollout — 2026-10-12: the owner explicitly authorizes [PR #3](https://github.com/chonnakanch/yomimado/pull/3),
+merged at `5159473da21c952f1a4dc87c457bba82edf5edde`. Both required PR checks
+pass; the new main [gate run `38201230971`](https://github.com/chonnakanch/yomimado/actions/runs/38201230971)
+passes. [Joint build `38201230907`](https://github.com/chonnakanch/yomimado/actions/runs/38201230907)
+passes planning and automatic private input transfer; both platform builders
+are running without approval. Publisher-only concurrency is now deployed, so the older
+waiting review does not hold later builds. Main has advanced: candidate
+`99b1312` is superseded and its publication job must not be approved. Fresh
+artifact hashes, automatic build results and both exact-installer local tests
+remain pending. The Windows PC is available later; keep candidates private and
+leave the protected owner publication review open.
+
+Historical preparation — 2026-10-11 on `develop`. The maintainer confirms the private Windows
 setup SHA-256 `756b7dc6003af202e4df95e946edcbc7fe409c41cfd0d2fc3be4062f758b4a1b`
 and all six local checklist groups pass. Actual Windows native inputs, delivered
 sources/notices, owner Community 2022 confirmation and component-terms checks
@@ -30,7 +42,7 @@ public version tag or release has been created. Subsequent repair merges are
 not authorized by this PR #2 confirmation. Publication approval remains
 reserved to the owner.
 
-Current private delivery — [verified-desktop-candidate](https://github.com/chonnakanch/yomimado/actions/runs/38196721752/artifacts/11724359701),
+Superseded private delivery — [verified-desktop-candidate](https://github.com/chonnakanch/yomimado/actions/runs/38196721752/artifacts/11724359701),
 artifact `11724359701` (4.06 GB), retained for 14 days from this run. GitHub's
 artifact ZIP SHA-256 is
 `dbc7285933b3f02883e9a3d4b4081d6ea1545581fd7edd815c93439597599eb9`.
@@ -50,11 +62,12 @@ later; keep this candidate private. Previous passing installers have different
 bytes. Download before artifact expiry; an expired artifact requires a new
 build and a new exact-hash report. Fresh-Mac testing remains waived.
 
-Follow-up prepared on `develop`: serialize only the **publish** job, rather
-than the whole workflow. A pending installer review must not queue subsequent
+Follow-up merged through authorized PR #3: serialize only the **publish** job,
+rather than the whole workflow. A pending installer review must not queue subsequent
 main builds. Publisher uploads remain non-cancellable and serial; current-main
 and absent-tag checks still reject stale candidates and collisions. This repair
-does not change app/runtime inputs and needs separate merge authorization.
+does not change app/runtime inputs. The owner supplied its separate merge
+authorization; protected publication approval remains separate.
 
 The existing [workflow file](../.github/workflows/macos-prerelease.yml) is now named
 **Desktop release from main**. Keeping the file replaces the previous macOS-only
@@ -100,7 +113,7 @@ candidate` remains the separate development-only installer workflow.
    prevents publication. Tags and existing assets are never overwritten.
    Publisher-only concurrency keeps tag creation/uploads serial without holding
    later builds behind a pending human review. Uploads are never cancelled by a
-   later main push. The current main workflow has not yet received this follow-up.
+   later main push. Main now includes this follow-up through PR #3.
 
 The environment keeps its historical `macos-release` name to preserve its already
 configured reviewer, exact `main` branch rule and disabled administrator bypass.
@@ -121,8 +134,9 @@ pretend to have performed the separate human test.
 - [x] Remove build approval; check effective main rules before private inputs and
       publication. Gate checks run on every main PR and develop/main push without
       path filters, so a documentation-only PR can satisfy the required check.
-- [x] Latest private Windows installer: automated suite and hash-confirmed local
-      six-check report pass on Windows 11 x64.
+- [x] Historical private setup `756b7dc6…`: automated suite and hash-confirmed
+      local six-check report pass on Windows 11 x64. New main setups need fresh
+      exact-hash local reports.
 - [x] Shared workflow, strict transfer/upload gates, permissions and version rules
       implemented; existing macOS runtime scope preserved.
 - [x] Owner explicitly authorizes PR #1's first versioned merge to `main`; both
