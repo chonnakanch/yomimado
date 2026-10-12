@@ -14,9 +14,8 @@ import re
 import shutil
 import subprocess
 import tarfile
-from pathlib import Path
-
 import tomllib
+from pathlib import Path
 
 SEED_REVISION = "5120506bdf5cf5fa93e2780484985473038f2195"
 ROOT = Path(__file__).resolve().parent.parent
@@ -111,6 +110,8 @@ def verify_reuse(root: Path = ROOT) -> None:
         "README.md",
         ".github/workflows/macos-prerelease.yml",
         ".github/workflows/desktop-release-checks.yml",
+        ".github/workflows/desktop-release-resume.yml",
+        "scripts/desktop_release_recovery.py",
         "scripts/macos-ci-release.py",
         "scripts/desktop_release.py",
         # These inputs are used only by the independent Windows candidate path.

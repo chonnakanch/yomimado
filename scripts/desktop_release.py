@@ -290,11 +290,13 @@ def combine(
     return record
 
 
-def verify_combined(directory: Path, expected: dict) -> None:
+def verify_combined(
+    directory: Path, expected: dict, *, source_revision: str | None = None
+) -> None:
     version = macos.version()
     names = macos_names(version) | windows_names(version)
     if (
-        expected.get("sourceRevision") != os.environ["GITHUB_SHA"]
+        expected.get("sourceRevision") != (source_revision or os.environ["GITHUB_SHA"])
         or not re.fullmatch(r"[0-9a-f]{40}", expected["sourceRevision"])
         or expected.get("version") != version
         or expected.get("tag") != "v" + version
@@ -333,12 +335,51 @@ def verify_combined(directory: Path, expected: dict) -> None:
         raise ValueError("Combined checksums differ")
 
 
-def verify_uploaded(directory: Path, expected: dict, report: dict) -> None:
-    verify_combined(directory, expected)
-    assets = {p.name: "sha256:" + digest(p) for p in directory.iterdir()}
+def select_uploaded_release(pages: list[list[dict]], expected: dict) -> int:
+    """Select one exact draft from the paginated listing, never the by-tag API."""
+    if (
+        not isinstance(pages, list)
+        or not pages
+        or len(pages) > 20
+        or any(not isinstance(page, list) or len(page) > 100 for page in pages)
+        or len(pages[-1]) == 100
+    ):
+        raise ValueError("Invalid, incomplete or excessive release enumeration")
+    matches = [
+        item
+        for page in pages
+        for item in page
+        if item.get("tag_name") == expected["tag"]
+    ]
+    if len(matches) != 1:
+        raise ValueError("Missing or ambiguous uploaded release")
+    report = matches[0]
     if (
         report.get("draft") is not True
+        or report.get("target_commitish") != expected["sourceRevision"]
+        or report.get("prerelease") is not expected["prerelease"]
+        or report.get("name") != "YomiMado " + expected["tag"]
+        or type(report.get("id")) is not int
+        or report["id"] <= 0
+    ):
+        raise ValueError("Uploaded draft identity differs")
+    return report["id"]
+
+
+def verify_uploaded(
+    directory: Path,
+    expected: dict,
+    report: dict,
+    *,
+    draft: bool = True,
+    source_revision: str | None = None,
+) -> None:
+    verify_combined(directory, expected, source_revision=source_revision)
+    assets = {p.name: "sha256:" + digest(p) for p in directory.iterdir()}
+    if (
+        report.get("draft") is not draft
         or report.get("tag_name") != expected["tag"]
+        or report.get("target_commitish") != expected["sourceRevision"]
         or report.get("prerelease") is not expected["prerelease"]
         or len(report.get("assets", [])) != len(assets)
         or {a["name"]: a.get("digest") for a in report["assets"]} != assets
@@ -361,6 +402,8 @@ def main() -> None:
             "combine",
             "verify-combined",
             "verify-uploaded",
+            "verify-published",
+            "select-uploaded-release",
         ),
     )
     parser.add_argument("--directory", type=Path, required=True)
@@ -395,9 +438,16 @@ def main() -> None:
         print(json.dumps(record, separators=(",", ":")))
     elif args.action == "verify-combined":
         verify_combined(args.directory, json.loads(args.expected))
+    elif args.action == "select-uploaded-release":
+        expected = json.loads(args.expected)
+        verify_combined(args.directory, expected)
+        print(select_uploaded_release(read_json(args.report), expected))
     else:
         verify_uploaded(
-            args.directory, json.loads(args.expected), read_json(args.report)
+            args.directory,
+            json.loads(args.expected),
+            read_json(args.report),
+            draft=args.action != "verify-published",
         )
 
 
