@@ -14,8 +14,13 @@ preserves the existing tag/assets and the same passed installer bytes. Its
 strict repair scope rejects app/runtime changes and unrelated develop cleanup.
 See [the recovery checks and owner steps](desktop-release-recovery.md).
 All 233 develop tests and 231 isolated-main release-tool tests, lint/format,
-actionlint and Mac runtime scope checks pass. PR #4 excludes unrelated cleanup;
-its merge authorization and hosted recovery/new owner review remain pending. Do not rerun the old publisher or delete/move the tag or draft.
+actionlint and Mac runtime scope checks pass. The owner separately authorizes
+PR #4 and recovery dispatch; it merges at
+`a30d0ba2b931ab9443b656b64ed55ba7a1d9ffc0`. Only the nine explicit release
+repair files differ from the tested source. Recovery
+[run `38257468295`](https://github.com/chonnakanch/yomimado/actions/runs/38257468295)
+starts on protected main; automatic verification and its new owner publication
+review remain pending. Do not rerun the old publisher or delete/move the tag or draft.
 
 Latest rollout — 2026-10-12: the owner explicitly authorizes [PR #3](https://github.com/chonnakanch/yomimado/pull/3),
 merged at `5159473da21c952f1a4dc87c457bba82edf5edde`. Both required PR checks
@@ -210,8 +215,10 @@ pretend to have performed the separate human test.
 - [x] Owner approves the original **publish** after both new exact-installer tests pass.
       Keep fresh-Mac testing waived and Windows AMD, additional/mixed-scale/left-of-
       primary monitors and a clean machine missing WebView2 explicitly untested.
-- [ ] Merge the separately authorized repair and pass the pinned recovery's
-      automatic gate, then receive its new protected owner publication review.
+- [x] Separately authorize and merge focused PR #4 at `a30d0ba`; dispatch
+      pinned recovery `38257468295` on protected main without rebuilding.
+- [ ] Pass the recovery's automatic exact-candidate gate and receive its new
+      protected owner publication review.
 - [ ] Check the resulting public release contains both installers and every source,
       notice and checksum asset with the intended classification and commit.
 

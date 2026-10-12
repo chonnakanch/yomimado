@@ -14,9 +14,11 @@ on its unpublished-draft by-tag lookup. The release stays private; the tag and
 both passed installer hashes are preserved. Focused PR #4 (`13ce1bb`) uses
 listing/ID lookup and a pinned, protected recovery that can publish only this
 unchanged draft after a new owner review. All 233 develop and 231 isolated-main
-tests, lint/format, actionlint and Mac runtime scope checks pass. PR #4 merge
-authorization and hosted
-recovery remain pending; unrelated develop cleanup is excluded. See
+tests, lint/format, actionlint and Mac runtime scope checks pass. The owner
+separately authorizes PR #4 and recovery dispatch. PR #4 merges at `a30d0ba`,
+with only nine explicit repair files changed; unrelated develop cleanup is
+excluded. Recovery `38257468295` starts on protected main; automatic verification
+and a new owner deployment review remain pending. See
 [the recovery record](desktop-release-recovery.md).
 
 CI follow-up merged (2026-10-12): the owner separately authorizes PR #3,
