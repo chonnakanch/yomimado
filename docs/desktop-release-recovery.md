@@ -67,7 +67,8 @@ moves, stop and investigate; do not broaden this pinned recovery or silently
 repair state. This is a recovery for one known retained candidate, not a general
 stale-candidate publication mechanism.
 
-Local validation: all **233 release-tool tests pass**, including actual normal
+Local validation: **233 develop tests and 231 isolated-main release-tool tests
+pass**, including actual normal
 publisher shell rehearsals with draft-by-tag HTTP 404, stable/pre-release
 classification, and the recovery rejection/single-mutation tests. Ruff
 (Python 3.11), formatting and actionlint pass. Hosted recovery verification

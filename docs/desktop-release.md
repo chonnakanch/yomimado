@@ -1,20 +1,39 @@
 # Shared desktop release checklist
 
+Publication failure — 2026-10-12: after protected owner review, run
+`38201230907` creates `v0.1.0` at the tested `5159473` source and uploads the
+17 delivery files to a private **YomiMado v0.1.0** pre-release draft. The next
+`GET /releases/tags/v0.1.0` request fails with HTTP 404 because the draft is
+unpublished. The release remains private at `untagged-e301a488f7929f16aa3d`;
+the tag already exists. Both exact installers' passing results remain valid.
+
+Focused [PR #4](https://github.com/chonnakanch/yomimado/pull/4), source `13ce1bb`,
+resolves drafts through the complete release listing
+and verifies/publishes by ID. A separately protected, one-candidate recovery
+preserves the existing tag/assets and the same passed installer bytes. Its
+strict repair scope rejects app/runtime changes and unrelated develop cleanup.
+See [the recovery checks and owner steps](desktop-release-recovery.md).
+All 233 develop tests and 231 isolated-main release-tool tests, lint/format,
+actionlint and Mac runtime scope checks pass. PR #4 excludes unrelated cleanup;
+its merge authorization and hosted recovery/new owner review remain pending. Do not rerun the old publisher or delete/move the tag or draft.
+
 Latest rollout — 2026-10-12: the owner explicitly authorizes [PR #3](https://github.com/chonnakanch/yomimado/pull/3),
 merged at `5159473da21c952f1a4dc87c457bba82edf5edde`. Both required PR checks
 pass; the new main [gate run `38201230971`](https://github.com/chonnakanch/yomimado/actions/runs/38201230971)
 passes. [Joint build `38201230907`](https://github.com/chonnakanch/yomimado/actions/runs/38201230907)
 passes all automatic jobs: **Windows 36 minutes 18 seconds**, **macOS 12 minutes
 16 seconds**, combined verification **1 minute 34 seconds**. The protected
-publisher is waiting for the owner; it has not executed. Publisher-only
+publisher subsequently runs after owner review and fails at the draft lookup,
+as recorded above. Publisher-only
 concurrency is deployed, so the older waiting review does not hold later builds.
 Main has advanced: candidate `99b1312` is superseded and its publication job must
 not be approved. The latest exact DMG passes the existing-Mac installed gate
 with explicit maintainer confirmation and independently verified download
 hashes. The maintainer reports all six Windows checks pass and explicitly
 confirms setup SHA-256 `a8275246…`. Both current exact-installer local gates are
-complete. Keep the candidate private until the owner's separate protected
-publication review. No new build or main merge is needed for these test records.
+complete. The release remains private after the original protected publication
+review and failed lookup. The repair needs separate merge authorization and
+new protected recovery review; it proposes no installer rebuild or retest.
 
 Current delivery — [verified-desktop-candidate](https://github.com/chonnakanch/yomimado/actions/runs/38201230907/artifacts/11726850805),
 artifact `11726850805` (4.06 GB), retained for 14 days from this run. GitHub's
@@ -48,7 +67,7 @@ Both [the six Windows checks](windows-installed-test.md) and
 hashes. Fresh-Mac testing remains waived. Only the owner may approve
 **this run's** publisher after reviewing the exact candidate; do not approve the
 superseded run. Download before the artifact's retention expires.
-No public version tag or release has been created.
+The version tag now exists; the release remains a private draft.
 
 Historical preparation — 2026-10-11 on `develop`. The maintainer confirms the private Windows
 setup SHA-256 `756b7dc6003af202e4df95e946edcbc7fe409c41cfd0d2fc3be4062f758b4a1b`
@@ -188,9 +207,11 @@ pretend to have performed the separate human test.
 - [x] Hosted transfer verifies all 17 exact files and source/version/hash bindings.
       Independent agent inspection of the Windows/combined ZIP is not performed
       locally; protected publication rechecks files and uploaded asset digests.
-- [ ] Owner approves **publish** only after both new exact-installer tests pass.
+- [x] Owner approves the original **publish** after both new exact-installer tests pass.
       Keep fresh-Mac testing waived and Windows AMD, additional/mixed-scale/left-of-
       primary monitors and a clean machine missing WebView2 explicitly untested.
+- [ ] Merge the separately authorized repair and pass the pinned recovery's
+      automatic gate, then receive its new protected owner publication review.
 - [ ] Check the resulting public release contains both installers and every source,
       notice and checksum asset with the intended classification and commit.
 

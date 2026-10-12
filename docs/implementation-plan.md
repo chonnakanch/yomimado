@@ -8,6 +8,17 @@ Build a small vertical slice first. Do not implement future features before the 
 
 ## Current status
 
+Publication recovery prepared (2026-10-12): the owner-approved publisher for
+`5159473` creates `v0.1.0` and uploads all 17 files, then fails with HTTP 404
+on its unpublished-draft by-tag lookup. The release stays private; the tag and
+both passed installer hashes are preserved. Focused PR #4 (`13ce1bb`) uses
+listing/ID lookup and a pinned, protected recovery that can publish only this
+unchanged draft after a new owner review. All 233 develop and 231 isolated-main
+tests, lint/format, actionlint and Mac runtime scope checks pass. PR #4 merge
+authorization and hosted
+recovery remain pending; unrelated develop cleanup is excluded. See
+[the recovery record](desktop-release-recovery.md).
+
 CI follow-up merged (2026-10-12): the owner separately authorizes PR #3,
 merged at `5159473`. Publisher-only concurrency is deployed; pending installer
 approval no longer queues later main builds. Main gate checks pass in run
@@ -23,8 +34,9 @@ all six Windows checks pass and the setup hash matches `a8275246…`, closing th
 latest exact setup's local gate on the previously confirmed Windows 11 x64 PC.
 The full delivery passes hosted exact-file/source/notice/hash verification;
 independent agent inspection of the Windows/combined ZIP is not performed
-locally. The protected owner publisher is waiting and has not executed; its
-exact-file and uploaded-asset verification remain enforced. Both platform
+locally. The original protected publisher subsequently executes and fails after
+upload at draft lookup; its exact-file/uploaded-asset gates are preserved in the
+prepared recovery. Both platform
 installer gates pass, with documented waivers/untested hardware retained.
 App/runtime inputs are unchanged; separate owner publication approval is open.
 
