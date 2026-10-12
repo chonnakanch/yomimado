@@ -5,7 +5,21 @@ setup SHA-256 `756b7dc6003af202e4df95e946edcbc7fe409c41cfd0d2fc3be4062f758b4a1b`
 and all six local checklist groups pass. Actual Windows native inputs, delivered
 sources/notices, owner Community 2022 confirmation and component-terms checks
 are recorded separately from macOS clearance. Protected publication approval
-remains open. No merge to `main`, public version tag or release is performed here.
+remains open. The owner authorized [PR #1](https://github.com/chonnakanch/yomimado/pull/1)
+and it merged at `ffd1acc2c4a241864143fca61195e849cd8f1893`. No public version
+tag or release has been created.
+
+First main execution — [run `38157096085`](https://github.com/chonnakanch/yomimado/actions/runs/38157096085):
+planning and automatic private input transfer pass. The Windows builder passes
+every automated gate in **43 minutes 6 seconds**; its setup SHA-256 is
+`4d9a57ab67e947842abe433b33db0155a1ea36f08b4d3e9825fdc341cbc7ab2f`.
+These new bytes have not been locally approved. The macOS builder stops during
+bootstrap because GitHub does not provide Python 3.11.17 for Darwin arm64.
+Combined verification and publication are skipped. The repair pins verification
+tools to the available **3.11.9 arm64** entry in
+[GitHub's Python manifest](https://raw.githubusercontent.com/actions/python-versions/main/versions-manifest.json);
+the exact reviewed **3.11.17 frozen runtime** still comes from the hash-pinned seed.
+The repaired hosted execution remains pending.
 
 The existing [workflow file](../.github/workflows/macos-prerelease.yml) is now named
 **Desktop release from main**. Keeping the file replaces the previous macOS-only
@@ -73,11 +87,11 @@ pretend to have performed the separate human test.
       six-check report pass on Windows 11 x64.
 - [x] Shared workflow, strict transfer/upload gates, permissions and version rules
       implemented; existing macOS runtime scope preserved.
-- [ ] Owner performs the intended first versioned merge to `main`. This task does
-      **not** authorize the agent to do that merge or create a public version tag.
+- [x] Owner explicitly authorizes PR #1's first versioned merge to `main`; both
+      required checks pass and the merge starts the automatic release run.
 - [ ] Both hosted builders and the combined verification pass. The first combined
-      execution remains unverified until this main run; previous private Windows
-      execution does not claim that the whole shared workflow ran.
+      Windows and input transfer pass on the first main run; macOS bootstrap
+      repair and successful combined verification remain open.
 - [ ] Download `verified-desktop-candidate`, verify `desktop-SHA256SUMS.txt` and
       test the exact DMG using [the Mac checklist](macos-clean-mac-test.md) and the
       exact setup using [the six Windows checks](windows-installed-test.md).

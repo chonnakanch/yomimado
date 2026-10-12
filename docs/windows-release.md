@@ -331,8 +331,11 @@ explicit. macOS's fresh-Mac waiver does not imply Windows testing passed.
 
 Prepared 2026-10-11 after the current Windows candidate's automated gates and
 hash-confirmed local six-check report pass. See [the shared flow](desktop-release.md).
-The workflow remains on `develop`; no merge, public tag or publication is performed.
-The first main run and protected reviews of its new installers remain required:
+The owner subsequently authorized PR #1's main merge (`ffd1acc`): run
+`38157096085` passes private seed transfer and the full Windows suite in 43m 6s.
+Its macOS bootstrap failed; the CI interpreter repair and combined run remain
+open. No public tag or publication is performed. Protected reviews of both
+new exact installers remain required:
 
 - [x] Add a Windows build/verification job with pinned actions/tools and private
       candidate artifacts. Builders stay read-only; private seed access has an

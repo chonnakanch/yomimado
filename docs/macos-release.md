@@ -331,6 +331,14 @@ Keep all private keys/passwords out of chat, source control and command history.
 
 ## Release on merge to main
 
+First hosted execution — 2026-10-12: authorized PR #1 merged at `ffd1acc`.
+Run `38157096085` passes plan/input transfer and the Windows builder, but macOS
+setup fails because GitHub's manifest has no 3.11.17 Darwin arm64 archive.
+The CI-only verification interpreter is now pinned to available 3.11.9 arm64.
+The app retains the reviewed, source-built 3.11.17 frozen seed runtime; this
+repair neither rebuilds it nor changes its clearance. Repaired execution and
+both exact new installer confirmations remain open; publication is skipped.
+
 The maintainer chose this release policy on 2026-10-06: merge a feature into
 `main`, build that exact merged commit, then create its version tag and GitHub
 release after verification and installer confirmation. As of 2026-10-11, the
