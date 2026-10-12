@@ -10,10 +10,6 @@ name: Desktop release from main
 permissions:
   contents: read
 
-concurrency:
-  group: desktop-main-release
-  cancel-in-progress: false
-
 env:
   SOURCE_REVISION: ${{ github.sha }}
 
@@ -487,6 +483,11 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     environment: macos-release
+    # Pending installer review must not hold later main builds. Serialize only
+    # the publisher, and never cancel an upload after its version tag is created.
+    concurrency:
+      group: desktop-main-publish
+      cancel-in-progress: false
     permissions:
       contents: write
       actions: read

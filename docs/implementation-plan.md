@@ -8,6 +8,12 @@ Build a small vertical slice first. Do not implement future features before the 
 
 ## Current status
 
+Prepared CI follow-up (2026-10-12): move shared concurrency from the whole
+workflow to the protected publisher only. Pending human installer approval must
+not queue later main builds; tag creation/uploads remain serial and cannot be
+cancelled by a later main push. App/runtime inputs stay unchanged. This follow-up
+is not covered by the owner's PR #2-only authorization and remains on develop.
+
 CI repair rollout (2026-10-12): the owner authorizes PR #2 only, merged at
 `99b1312`. Main gate checks pass (`38196721793`); joint run `38196721752` passes
 planning, automatic private input transfer and repaired macOS Python setup.

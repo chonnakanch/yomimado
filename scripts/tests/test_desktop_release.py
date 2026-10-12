@@ -543,6 +543,12 @@ class PublisherRehearsalTests(unittest.TestCase):
         inputs = workflow.split("\n  seed-inputs:\n", 1)[1].split("\n  build:\n", 1)[0]
         self.assertNotIn("environment:", inputs)
         self.assertEqual(workflow.count("environment: macos-release"), 1)
+        # An owner review can stay pending while a later main build starts.
+        # Publication alone must serialize tag creation and uploads.
+        self.assertNotIn("concurrency:", workflow.split("\njobs:\n", 1)[0])
+        publisher = workflow.split("\n  publish:\n", 1)[1]
+        self.assertIn("group: desktop-main-publish", publisher)
+        self.assertIn("cancel-in-progress: false", publisher)
         checks = (ROOT / ".github/workflows/desktop-release-checks.yml").read_text()
         self.assertIn("branches: [develop, main]", checks)
         self.assertIn("pull_request:\n    branches: [main]", checks)

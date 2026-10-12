@@ -29,6 +29,12 @@ the new exact-installer human tests are still pending. Subsequent repair merges
 are not authorized by this PR #2 confirmation. Publication approval remains
 reserved to the owner.
 
+Follow-up prepared on `develop`: serialize only the **publish** job, rather
+than the whole workflow. A pending installer review must not queue subsequent
+main builds. Publisher uploads remain non-cancellable and serial; current-main
+and absent-tag checks still reject stale candidates and collisions. This repair
+does not change app/runtime inputs and needs separate merge authorization.
+
 The existing [workflow file](../.github/workflows/macos-prerelease.yml) is now named
 **Desktop release from main**. Keeping the file replaces the previous macOS-only
 publisher rather than introducing a second tag creator. `Windows private
@@ -71,6 +77,9 @@ candidate` remains the separate development-only installer workflow.
    uploaded asset's GitHub SHA-256 and state must match before publication; main
    is checked again after the upload. A failed platform/check or an advanced main
    prevents publication. Tags and existing assets are never overwritten.
+   Publisher-only concurrency keeps tag creation/uploads serial without holding
+   later builds behind a pending human review. Uploads are never cancelled by a
+   later main push. The first-main workflow has not yet received this follow-up.
 
 The environment keeps its historical `macos-release` name to preserve its already
 configured reviewer, exact `main` branch rule and disabled administrator bypass.
