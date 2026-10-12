@@ -8,14 +8,24 @@ Build a small vertical slice first. Do not implement future features before the 
 
 ## Current status
 
+First shared main execution (2026-10-12): the owner authorized PR #1, merged at
+`ffd1acc`. Run `38157096085` passes planning, automatic private seed transfer and
+the entire Windows suite in 43 minutes 6 seconds. macOS fails before app build:
+GitHub has no Python 3.11.17 Darwin arm64 bootstrap. The workflow now pins the
+verification interpreter to available 3.11.9 arm64, while preserving the exact
+reviewed frozen 3.11.17 runtime. Repaired hosted execution, combined artifacts
+and owner review of both new exact installers remain pending. No version tag or
+public release is created. See [the shared checklist](desktop-release.md).
+
 Release automation update (2026-10-11): version-only titles such as
 `YomiMado v0.1.0`; private input transfer and both builds run without manual
 approval on protected `main`. Active ruleset `24885215` requires pull requests,
 resolved comments and current-base GitHub Actions `gates`; deletion and force
 pushes are blocked with no bypass actors. Effective rules are checked before
 private inputs and publication. Final owner review of both exact new installers
-remains required. The first combined main execution remains pending the intended
-merge; no merge, version tag or public release is performed here.
+remains required. The first main merge was subsequently authorized; its partial
+hosted result and bootstrap repair are recorded above. No version tag or public
+release is performed here.
 
 Current Windows component-terms setup (2026-10-11): source `f8396cc`,
 [run `38142782743`, attempt 4](https://github.com/chonnakanch/yomimado/actions/runs/38142782743),
