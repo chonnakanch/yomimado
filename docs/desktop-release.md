@@ -19,7 +19,15 @@ Combined verification and publication are skipped. The repair pins verification
 tools to the available **3.11.9 arm64** entry in
 [GitHub's Python manifest](https://raw.githubusercontent.com/actions/python-versions/main/versions-manifest.json);
 the exact reviewed **3.11.17 frozen runtime** still comes from the hash-pinned seed.
-The repaired hosted execution remains pending.
+Repair rollout — the owner explicitly authorizes **PR #2 only**, merged at
+`99b13124424901f425a49de7ed87557eee6230a9`. Main gate checks pass in
+[run `38196721793`](https://github.com/chonnakanch/yomimado/actions/runs/38196721793).
+The automatic joint [run `38196721752`](https://github.com/chonnakanch/yomimado/actions/runs/38196721752)
+passes plan, private input transfer and the repaired macOS Python setup. Both
+builders start without approval; full builder results, combined delivery and
+the new exact-installer human tests are still pending. Subsequent repair merges
+are not authorized by this PR #2 confirmation. Publication approval remains
+reserved to the owner.
 
 The existing [workflow file](../.github/workflows/macos-prerelease.yml) is now named
 **Desktop release from main**. Keeping the file replaces the previous macOS-only
