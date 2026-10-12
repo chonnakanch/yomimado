@@ -11,12 +11,14 @@ Build a small vertical slice first. Do not implement future features before the 
 CI follow-up merged (2026-10-12): the owner separately authorizes PR #3,
 merged at `5159473`. Publisher-only concurrency is deployed; pending installer
 approval no longer queues later main builds. Main gate checks pass in run
-`38201230971`; joint build `38201230907` passes planning/private input transfer
-and both builders run automatically. The older
-`99b1312` candidate is superseded and cannot publish after main advances.
-Fresh build results, hashes and both exact-installer local checks remain
-pending. The Windows PC is available later; owner publication approval stays
-open. App/runtime inputs are unchanged.
+`38201230971`; joint build `38201230907` passes Windows in 36 minutes 18 seconds,
+macOS in 12 minutes 16 seconds and combined verification in 1 minute 34 seconds.
+Private combined artifact `11726850805` contains all 17 verified files; exact
+installer/ZIP hashes are recorded in [the shared checklist](desktop-release.md).
+The older `99b1312` candidate is superseded. Both new exact-installer local
+checks and independent local download verification remain pending. The Windows
+PC is available later; the protected owner publisher is waiting and has not
+executed. App/runtime inputs are unchanged.
 
 CI repair rollout (2026-10-12): the owner authorizes PR #2 only, merged at
 `99b1312`. Main gate checks pass (`38196721793`); joint run `38196721752` passes

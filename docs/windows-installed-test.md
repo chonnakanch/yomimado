@@ -1,12 +1,22 @@
 # Windows candidate test record
 
-Latest rebuild — 2026-10-12: owner-authorized PR #3 merges at `5159473`.
+Latest verified main candidate — 2026-10-12: owner-authorized PR #3 merges at
+`5159473da21c952f1a4dc87c457bba82edf5edde`.
 [Joint run `38201230907`](https://github.com/chonnakanch/yomimado/actions/runs/38201230907)
-passes planning/private input transfer; both builders run automatically and
-main's lightweight gate checks pass. Its fresh artifacts,
-hashes and local exact-installer reports are pending. The `99b1312` candidate
-below is superseded and must not receive publication approval. Keep the new
-candidate private while the Windows PC is available later.
+passes the Windows build in **36 minutes 18 seconds**, with installed terms/model/UI/
+shortcuts/native/source/OCR/learning/persistence checks. Exact setup SHA-256:
+`a8275246dc07a30f84a2109530bd68c3c0cceeed2556ce27fb09681d3a404602`.
+The six Windows 11 local checks remain pending for these new bytes; the PC is
+available later. Confirmed x64 hardware coverage for older setups does not prove
+this exact setup was tested.
+Both builders and combined verification pass. The private
+[verified-desktop-candidate](https://github.com/chonnakanch/yomimado/actions/runs/38201230907/artifacts/11726850805)
+is retained for 14 days. GitHub artifact ZIP SHA-256:
+`a6eec1b72e614ba45d30e9fe0651bb079b6266df0db5a4871e55bc896a5be91a`.
+GitHub summary/transfer hashes are verified; independent local download/checksum
+verification remains pending. The protected publisher is waiting and has not
+executed. Keep the candidate private and do not approve the superseded
+`99b1312` run. Prior passing reports remain bound to their older installer hashes.
 
 Superseded shared main candidate — 2026-10-12: [run `38196721752`](https://github.com/chonnakanch/yomimado/actions/runs/38196721752)
 at `99b13124424901f425a49de7ed87557eee6230a9` passes all automatic Windows
@@ -54,7 +64,7 @@ macOS and Windows exact-installer tests before approving the publish job in
 `macos-release`. Builds and private seed transfer run automatically on protected
 `main`; only publication requires the separate exact-installer approval.
 
-Reusable six-check checklist — pending for `e57ef7e9…`; all six reported passed
+Reusable six-check checklist — pending for `a8275246…`; all six reported passed
 for the historical `756b7dc6…` candidate:
 
 1. Browser download with Defender/SmartScreen enabled; terms initially unchecked;

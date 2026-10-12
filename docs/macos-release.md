@@ -1,12 +1,20 @@
 # First macOS pre-release gate
 
-Latest rebuild — 2026-10-12: owner-authorized PR #3 merges at `5159473`.
+Latest verified main candidate — 2026-10-12: owner-authorized PR #3 merges at
+`5159473da21c952f1a4dc87c457bba82edf5edde`.
 [Joint run `38201230907`](https://github.com/chonnakanch/yomimado/actions/runs/38201230907)
-passes planning/private input transfer; both builders run automatically and
-main's lightweight gate checks pass. Its fresh artifacts,
-hashes and local exact-installer reports are pending. The `99b1312` candidate
-below is superseded and must not receive publication approval. Keep the new
-candidate private while the Windows PC is available later.
+passes the macOS build in **12 minutes 16 seconds**, with mounted native/source/signature
+and frozen offline OCR/learning/persistence checks. The exact DMG SHA-256 is
+`9d2999ae49b1756d23e62e6b703284e1d5c87898dc187757dfa3d881b8b28977`.
+This DMG's existing-Mac checklist remains pending; fresh-Mac testing is waived.
+Both builders and combined verification pass. The private
+[verified-desktop-candidate](https://github.com/chonnakanch/yomimado/actions/runs/38201230907/artifacts/11726850805)
+is retained for 14 days. GitHub artifact ZIP SHA-256:
+`a6eec1b72e614ba45d30e9fe0651bb079b6266df0db5a4871e55bc896a5be91a`.
+GitHub summary/transfer hashes are verified; independent local download/checksum
+verification remains pending. The protected publisher is waiting and has not
+executed. Keep the candidate private and do not approve the superseded
+`99b1312` run. Prior passing reports remain bound to their older installer hashes.
 
 Distribution: a downloadable **Apple Silicon DMG on GitHub Releases**, for
 macOS **14 or later**, outside the Mac App Store.

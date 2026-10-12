@@ -4,13 +4,35 @@ Latest rollout — 2026-10-12: the owner explicitly authorizes [PR #3](https://g
 merged at `5159473da21c952f1a4dc87c457bba82edf5edde`. Both required PR checks
 pass; the new main [gate run `38201230971`](https://github.com/chonnakanch/yomimado/actions/runs/38201230971)
 passes. [Joint build `38201230907`](https://github.com/chonnakanch/yomimado/actions/runs/38201230907)
-passes planning and automatic private input transfer; both platform builders
-are running without approval. Publisher-only concurrency is now deployed, so the older
-waiting review does not hold later builds. Main has advanced: candidate
-`99b1312` is superseded and its publication job must not be approved. Fresh
-artifact hashes, automatic build results and both exact-installer local tests
-remain pending. The Windows PC is available later; keep candidates private and
-leave the protected owner publication review open.
+passes all automatic jobs: **Windows 36 minutes 18 seconds**, **macOS 12 minutes
+16 seconds**, combined verification **1 minute 34 seconds**. The protected
+publisher is waiting for the owner; it has not executed. Publisher-only
+concurrency is deployed, so the older waiting review does not hold later builds.
+Main has advanced: candidate `99b1312` is superseded and its publication job must
+not be approved. Both new exact-installer local tests remain pending. The
+Windows PC is available later; keep the candidate private and leave protected
+publication review open.
+
+Current delivery — [verified-desktop-candidate](https://github.com/chonnakanch/yomimado/actions/runs/38201230907/artifacts/11726850805),
+artifact `11726850805` (4.06 GB), retained for 14 days from this run. GitHub's
+artifact ZIP SHA-256:
+`a6eec1b72e614ba45d30e9fe0651bb079b6266df0db5a4871e55bc896a5be91a`.
+The hosted gate verifies all 17 combined files, source
+`5159473da21c952f1a4dc87c457bba82edf5edde`, version `0.1.0` and pre-release
+classification. Exact installer hashes:
+
+| Installer                      | SHA-256                                                            |
+| ------------------------------ | ------------------------------------------------------------------ |
+| `YomiMado_0.1.0_x64-setup.exe` | `a8275246dc07a30f84a2109530bd68c3c0cceeed2556ce27fb09681d3a404602` |
+| `YomiMado_0.1.0_aarch64.dmg`   | `9d2999ae49b1756d23e62e6b703284e1d5c87898dc187757dfa3d881b8b28977` |
+
+GitHub summary/transfer hashes are verified; an independent local download and
+`desktop-SHA256SUMS.txt` check are not yet complete. Download this artifact before
+its retention expires. Previous hash-bound passes do not apply to these setup
+bytes. Complete [the six Windows checks](windows-installed-test.md) and
+[the existing-Mac checklist](macos-clean-mac-test.md) for these exact installers
+before approving **this run's** publisher. Fresh-Mac testing remains waived.
+No public version tag or release has been created.
 
 Historical preparation — 2026-10-11 on `develop`. The maintainer confirms the private Windows
 setup SHA-256 `756b7dc6003af202e4df95e946edcbc7fe409c41cfd0d2fc3be4062f758b4a1b`
@@ -141,8 +163,8 @@ pretend to have performed the separate human test.
       implemented; existing macOS runtime scope preserved.
 - [x] Owner explicitly authorizes PR #1's first versioned merge to `main`; both
       required checks pass and the merge starts the automatic release run.
-- [x] Both hosted builders and combined verification pass at `99b1312` in run
-      `38196721752`; protected publication is waiting for the owner.
+- [x] Both hosted builders and combined verification pass at current main
+      `5159473` in run `38201230907`; protected publication is waiting for the owner.
 - [ ] Download `verified-desktop-candidate`, verify `desktop-SHA256SUMS.txt` and
       test the exact DMG using [the Mac checklist](macos-clean-mac-test.md) and the
       exact setup using [the six Windows checks](windows-installed-test.md).
