@@ -75,6 +75,9 @@ See [Windows](windows-installed-test.md) and [macOS](macos-clean-mac-test.md) re
       recipe archive, combined notices/records archive, checksums and provenance.
       Preserve every original input and verify nested hashes, member safety and size.
 - [x] Remove superseded documentation drafts/timelines/workflow copies and fix references.
+- [x] Review script dependencies, remove one-time recovery/private experiment tools
+      and retire unused develop-only staging/download commands; preserve live
+      runtime, build, source/notice and native replacement helpers.
 - [ ] Merge the prepared maintenance changes through protected main when authorized.
 - [ ] For the next app version, verify its real delivery and exact new installers
       before the owner approves publication. Current v0.1.0 needs no new retest.

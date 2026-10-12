@@ -12,12 +12,12 @@ import os
 import shutil
 import subprocess
 import tarfile
+import tomllib
 import zipfile
 from pathlib import Path, PurePosixPath
 from urllib.parse import urlsplit
 from urllib.request import urlopen
 
-import tomllib
 from windows_release import BUILD, RESOURCES, ROOT, digest, fetch, read_json, write_json
 
 DESKTOP = ROOT / "apps/desktop"

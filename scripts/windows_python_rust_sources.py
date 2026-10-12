@@ -5,9 +5,9 @@ from __future__ import annotations
 import hashlib
 import json
 import tarfile
+import tomllib
 from pathlib import Path, PurePosixPath
 
-import tomllib
 from windows_release import (
     BUILD,
     RESOURCES,
