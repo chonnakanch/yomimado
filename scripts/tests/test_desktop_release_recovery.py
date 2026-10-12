@@ -11,7 +11,14 @@ from unittest.mock import patch
 sys.path.insert(0, str(Path(__file__).parents[1]))
 import desktop_release as release
 import desktop_release_recovery as recovery
-from test_desktop_release import ENVIRONMENT, MAIN_RULES, POLICIES, REVISION, fixtures
+from test_desktop_release import (
+    ENVIRONMENT,
+    MAIN_RULES,
+    POLICIES,
+    REVISION,
+    fixtures,
+    legacy_combined,
+)
 
 REPAIR_SHA = "b" * 40
 
@@ -22,8 +29,8 @@ class RecoveryTests(unittest.TestCase):
         self.addCleanup(self.temp.cleanup)
         root = Path(self.temp.name)
         with patch.dict(os.environ, {"GITHUB_SHA": REVISION}):
-            mac, win, mr, wr = fixtures(root)
-            self.record = release.combine(mac, win, root / "candidate", mr, wr)
+            mac, win, mr, _ = fixtures(root)
+            self.record = legacy_combined(mac, win, root / "candidate", mr)
         self.directory = root / "candidate"
         self.report = {
             "id": 123,

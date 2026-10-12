@@ -453,7 +453,7 @@ jobs:
         with:
           name: windows-candidate-for-transfer
           path: windows-candidate
-      - name: Verify both platforms and bind one combined release
+      - name: Verify both platforms and package six public release files
         id: combine
         env:
           MACOS_RECORD: ${{ needs.build.outputs.record }}
@@ -466,6 +466,7 @@ jobs:
           {
             echo '### Review BOTH exact installers before approving publish'
             echo "Source commit: $GITHUB_SHA"
+            echo 'Six public files: two installers, combined sources, combined notices, checksums and provenance. All original platform sources/data/notices/records are retained inside the archives.'
             cat candidate/desktop-SHA256SUMS.txt
             echo 'Download verified-desktop-candidate. Run the macOS and Windows local checklists; retain the fresh-Mac waiver and explicitly untested Windows hardware cases.'
             echo 'Builds and private input transfer run automatically on protected main; publication requires this separate installer review.'

@@ -8,11 +8,15 @@ the shared version tag and release. Build records never claim human approval.
 from __future__ import annotations
 
 import argparse
+import gzip
+import hashlib
 import importlib.util
+import io
 import json
 import os
 import re
 import shutil
+import tarfile
 from pathlib import Path
 from urllib.request import Request, build_opener
 
@@ -43,6 +47,8 @@ INPUTS = {
         },
     },
 }
+ASSET_LIMIT = 2 * 1024**3
+LAYOUT = "consolidated-v1"
 
 
 def main_scope() -> None:
@@ -243,6 +249,131 @@ def verify_windows(directory: Path, expected: dict) -> None:
         raise ValueError("Windows release artifact provenance/digests differ")
 
 
+def public_names(version: str) -> set[str]:
+    return {
+        f"YomiMado_{version}{suffix}"
+        for suffix in (
+            "_aarch64.dmg",
+            "_x64-setup.exe",
+            "_sources.tar.gz",
+            "_notices.tar.gz",
+        )
+    }
+
+
+def bundle_members(version: str, kind: str) -> dict[str, str]:
+    """Retain every verified platform input except the two direct installers."""
+    sources = {
+        f"macos/YomiMado_{version}_sources.tar.gz",
+        "windows/project-sources.tar.gz",
+        "windows/windows-source-preparation.tar.gz",
+        "windows/windows-dictionary-snapshots.tar.gz",
+    }
+    members = {
+        f"{platform}/{name}": name
+        for platform, names in (
+            ("macos", macos_names(version)),
+            ("windows", windows_names(version)),
+        )
+        for name in names
+        if not name.endswith((".dmg", ".exe"))
+        and ((f"{platform}/{name}" in sources) == (kind == "sources"))
+    }
+    return dict(sorted(members.items()))
+
+
+def bundle_guide(version: str, kind: str) -> bytes:
+    if kind == "sources":
+        text = f"""YomiMado {version} — corresponding sources and rebuild inputs
+
+Extract this archive, then extract the original archives under macos/ and
+windows/. Their bytes and internal paths are preserved from the verified
+platform deliveries; platform-specific build recipes remain inside them.
+
+macos/YomiMado_{version}_sources.tar.gz: reviewed macOS dependency/project
+sources, notices, BUILD.md, REVIEW.md and original source coverage records.
+windows/project-sources.tar.gz: the matching project, scripts and documentation.
+windows/windows-source-preparation.tar.gz: Windows dependency sources and recipes.
+windows/windows-dictionary-snapshots.tar.gz: exact original dictionary data.
+
+Consult the build/review documents for platform-specific dependencies and terms.
+A full source-only rebuild of the complete delivery remains unverified.
+Detector ONNX weights are user-installed and excluded from this delivery.
+"""
+    else:
+        text = f"""YomiMado {version} — notices and original verification records
+
+Extract the platform notice archives under macos/ and windows/ to read the
+original licences, copyright notices, source credits and component terms.
+The other files retain the original platform candidate records, native input
+inventory and checksums. No approval flags in these records have been rewritten.
+Human installed-app tests and publication approval are recorded separately.
+
+desktop-release-candidate.json binds both installers and these combined archives.
+desktop-SHA256SUMS.txt checks all five other downloadable release files.
+"""
+    return text.encode("utf-8")
+
+
+def write_bundle(
+    target: Path, directories: dict[str, Path], version: str, kind: str
+) -> None:
+    # Inputs are already compressed. A stored gzip stream avoids a slow second
+    # compression pass; fixed headers make packaging independent of runner mtimes.
+    with (
+        target.open("xb") as stream,
+        gzip.GzipFile(
+            fileobj=stream, mode="wb", filename="", mtime=0, compresslevel=0
+        ) as zipped,
+        tarfile.open(fileobj=zipped, mode="w|", format=tarfile.USTAR_FORMAT) as archive,
+    ):
+        guide = bundle_guide(version, kind)
+        member = tarfile.TarInfo("README.txt")
+        member.size = len(guide)
+        member.mode = 0o644
+        archive.addfile(member, io.BytesIO(guide))
+        for name, filename in bundle_members(version, kind).items():
+            path = directories[name.split("/")[0]] / filename
+            member = tarfile.TarInfo(name)
+            member.size = path.stat().st_size
+            member.mode = 0o644
+            with path.open("rb") as source:
+                archive.addfile(member, source)
+    if target.stat().st_size >= ASSET_LIMIT:
+        raise ValueError(
+            f"Combined {kind} archive exceeds the upload limit; preserve all inputs "
+            "and revise packaging before building another release"
+        )
+
+
+def verify_bundle(path: Path, version: str, kind: str, inputs: dict) -> None:
+    members = bundle_members(version, kind)
+    guide = bundle_guide(version, kind)
+    hashes = {
+        **{name: inputs[filename] for name, filename in members.items()},
+        "README.txt": hashlib.sha256(guide).hexdigest(),
+    }
+    seen = set()
+    with tarfile.open(path, "r|gz") as archive:
+        for member in archive:
+            if (
+                member.name not in hashes
+                or member.name in seen
+                or not member.isfile()
+                or member.size >= ASSET_LIMIT
+            ):
+                raise ValueError(
+                    "Unexpected, duplicate or unsafe combined archive member"
+                )
+            seen.add(member.name)
+            with archive.extractfile(member) as stream:
+                sha = hashlib.file_digest(stream, "sha256").hexdigest()
+            if sha != hashes[member.name]:
+                raise ValueError("Combined archive input hash differs: " + member.name)
+    if seen != set(hashes):
+        raise ValueError("Missing combined archive input")
+
+
 def combine(
     mac_directory: Path,
     win_directory: Path,
@@ -264,16 +395,32 @@ def combine(
     if mac_record["sourceRevision"] != os.environ["GITHUB_SHA"]:
         raise ValueError("Combined artifacts do not belong to this main commit")
     output.mkdir(parents=True, exist_ok=False)
-    for source in (mac_directory, win_directory):
-        for path in source.iterdir():
-            shutil.copyfile(path, output / path.name)
+    version = mac_record["version"]
+    directories = {"macos": mac_directory, "windows": win_directory}
+    inputs = {
+        p.name: digest(p)
+        for source in directories.values()
+        for p in sorted(source.iterdir())
+    }
+    for source, name in (
+        (mac_directory, f"YomiMado_{version}_aarch64.dmg"),
+        (win_directory, f"YomiMado_{version}_x64-setup.exe"),
+    ):
+        shutil.copyfile(source / name, output / name)
+    for kind in ("sources", "notices"):
+        write_bundle(
+            output / f"YomiMado_{version}_{kind}.tar.gz", directories, version, kind
+        )
     record = {
+        "layout": LAYOUT,
         "sourceRevision": mac_record["sourceRevision"],
         "version": mac_record["version"],
         "tag": mac_record["tag"],
         "prerelease": mac_record["prerelease"],
         "platforms": ["macos-aarch64", "windows-x64"],
         "installedAppVerified": False,
+        "platformCandidates": {"macos": mac_record, "windows": win_record},
+        "inputs": inputs,
         "assets": {p.name: digest(p) for p in sorted(output.iterdir())},
     }
     write_json(output / "desktop-release-candidate.json", record)
@@ -294,7 +441,15 @@ def verify_combined(
     directory: Path, expected: dict, *, source_revision: str | None = None
 ) -> None:
     version = macos.version()
-    names = macos_names(version) | windows_names(version)
+    layout = expected.get("layout")
+    if layout not in (None, LAYOUT):
+        raise ValueError("Unknown combined release layout")
+    # Keep the original 17-file v0.1.0 record readable without repackaging it.
+    names = (
+        public_names(version)
+        if layout == LAYOUT
+        else macos_names(version) | windows_names(version)
+    )
     if (
         expected.get("sourceRevision") != (source_revision or os.environ["GITHUB_SHA"])
         or not re.fullmatch(r"[0-9a-f]{40}", expected["sourceRevision"])
@@ -313,7 +468,7 @@ def verify_combined(
         if (
             path.is_symlink()
             or not path.is_file()
-            or path.stat().st_size >= 2 * 1024**3
+            or path.stat().st_size >= ASSET_LIMIT
         ):
             raise ValueError(
                 "Release files must be regular and within the upload limit"
@@ -333,6 +488,52 @@ def verify_combined(
         f"{sha}  {name}\n" for name, sha in sums.items()
     ):
         raise ValueError("Combined checksums differ")
+    if layout == LAYOUT:
+        inputs = expected.get("inputs", {})
+        if set(inputs) != macos_names(version) | windows_names(version) or any(
+            not re.fullmatch(r"[0-9a-f]{64}", sha) for sha in inputs.values()
+        ):
+            raise ValueError("Invalid combined input coverage")
+        candidates = expected.get("platformCandidates", {})
+        if set(candidates) != {"macos", "windows"}:
+            raise ValueError("Missing platform candidate provenance")
+        mac_json = (json.dumps(candidates["macos"], indent=2) + "\n").encode("utf-8")
+        if hashlib.sha256(mac_json).hexdigest() != inputs["release-candidate.json"]:
+            raise ValueError("Original macOS candidate record differs")
+        for platform, candidate in candidates.items():
+            if any(
+                candidate.get(field) != expected[field]
+                for field in (
+                    "sourceRevision",
+                    "version",
+                    "tag",
+                    "prerelease",
+                    "installedAppVerified",
+                )
+            ):
+                raise ValueError("Platform candidate identity differs")
+            candidate_names = (
+                {
+                    f"YomiMado_{version}{suffix}"
+                    for suffix in ("_aarch64.dmg", "_sources.tar.gz", "_notices.tar.gz")
+                }
+                if platform == "macos"
+                else windows_names(version)
+            )
+            if candidate.get("assets") != {
+                name: inputs[name] for name in candidate_names
+            }:
+                raise ValueError("Platform candidate input hashes differ")
+        for name in (
+            f"YomiMado_{version}_aarch64.dmg",
+            f"YomiMado_{version}_x64-setup.exe",
+        ):
+            if inputs[name] != expected["assets"][name]:
+                raise ValueError("Combined installer bytes differ from platform inputs")
+        for kind in ("sources", "notices"):
+            verify_bundle(
+                directory / f"YomiMado_{version}_{kind}.tar.gz", version, kind, inputs
+            )
 
 
 def select_uploaded_release(pages: list[list[dict]], expected: dict) -> int:

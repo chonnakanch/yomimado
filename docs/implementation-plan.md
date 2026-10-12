@@ -30,6 +30,15 @@ The first desktop pre-release milestone is complete. Future versions must bump
 the app version and pass fresh exact-installer gates; this milestone adds no
 new product features. Post-release UI/design discussion remains separate.
 
+Future release packaging — the shared transfer/publisher path now prepares six
+public files: the two installers, combined source/data/recipe and notice/record
+archives, one checksum file and one provenance file. It retains all verified
+platform inputs byte-for-byte, checks nested archive contents and the upload
+limit, and preserves legacy v0.1.0 verification. Installer/runtime bytes and
+owner publication protection are unchanged. The focused change is prepared on
+`develop` for a future authorized main merge; no version bump, rebuild or new
+current-release PC test is required. See the [future asset checklist](desktop-release.md#future-release-asset-layout).
+
 Publication recovery prepared (2026-10-12): the owner-approved publisher for
 `5159473` creates `v0.1.0` and uploads all 17 files, then fails with HTTP 404
 on its unpublished-draft by-tag lookup. The release stays private; the tag and

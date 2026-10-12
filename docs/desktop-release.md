@@ -157,6 +157,59 @@ The existing [workflow file](../.github/workflows/macos-prerelease.yml) is now n
 publisher rather than introducing a second tag creator. `Windows private
 candidate` remains the separate development-only installer workflow.
 
+## Future release asset layout
+
+Future shared releases package **six uploaded files**:
+
+| File                                | Contents                                                                                                     |
+| ----------------------------------- | ------------------------------------------------------------------------------------------------------------ |
+| `YomiMado_<version>_aarch64.dmg`    | Direct macOS installer download                                                                              |
+| `YomiMado_<version>_x64-setup.exe`  | Direct Windows installer download                                                                            |
+| `YomiMado_<version>_sources.tar.gz` | Original macOS source delivery, Windows dependency sources/recipes, project sources and dictionary snapshots |
+| `YomiMado_<version>_notices.tar.gz` | Original platform notice archives, native input inventory, platform records and checksum sidecars            |
+| `desktop-SHA256SUMS.txt`            | Hashes of the five other uploaded files                                                                      |
+| `desktop-release-candidate.json`    | Shared identity, public file hashes, original input hashes and both platform candidate records               |
+
+The builders retain their existing platform outputs and verification. The shared
+transfer job verifies those outputs before consolidation. Each combined archive
+contains a `README.txt` and `macos/` or `windows/` files; extract the outer archive,
+then the original platform archives to obtain their unchanged internal paths and
+build recipes. All 15 original platform files are retained, either as direct
+installers or inside the archives. No source/data/notice content is dropped, and
+private/human approval flags in the original records are never rewritten.
+
+The combined archives wrap already compressed inputs without a costly second
+compression pass. Fixed outer headers make their bytes independent of runner
+file timestamps and permissions. Every nested file hash and expected member is
+verified; missing/extra/duplicate members, links, traversal paths, altered bytes
+and files reaching the 2 GiB upload limit stop publication. The source archive is
+close to that limit with current inputs; future growth may require a separately
+reviewed packaging change rather than omitting source content.
+
+The original **v0.1.0** release remains at its 17-file layout. Legacy verification
+and its pinned recovery record remain supported. GitHub's two automatic repository
+source downloads are additional links and do not replace dependency source delivery.
+This change is prepared on `develop`; it takes effect after a future authorized
+merge into protected `main`. It neither bumps the version nor rebuilds v0.1.0.
+
+Local verification — **240 release-tool tests pass**, including six-file
+publication rehearsals for pre-release and stable versions, unchanged legacy
+recovery, complete nested input preservation, deterministic packaging, tampering,
+unsafe/missing/duplicate members and upload-size rejection. Python lint/format,
+document/workflow formatting and actionlint pass. Real candidate packaging runs
+with the next version; the current installers do not need another local test.
+
+Future packaging checklist:
+
+- [x] Keep both installer bytes and all original source/data/notice/record inputs.
+- [x] Publish one combined source archive and one combined notice archive.
+- [x] Retain one checksum file and one public provenance file.
+- [x] Verify nested input hashes, exact file sets, archive safety and upload size.
+- [x] Preserve legacy v0.1.0 verification and the protected owner publication gate.
+- [ ] Merge the focused change through protected main's required checks when authorized.
+- [ ] Verify the next version's real six-file candidate before publication; no new
+      installed-app test is requested for the unchanged current v0.1.0 release.
+
 ## Flow and permissions
 
 1. **Plan** runs only on this repository's `main`, checks matching Tauri/npm/Cargo
@@ -182,14 +235,16 @@ candidate` remains the separate development-only installer workflow.
    downloads no daily replacement dictionary and does not stage a draft release.
 4. **verify-transfer** requires both successful builders. It verifies their exact
    file sets, hashes, source commit, version and classification, then creates
-   `verified-desktop-candidate` with both installers, sources, dictionaries,
-   notices, component input records and provenance. `desktop-SHA256SUMS.txt`
-   covers the combined delivery; per-platform records/checksums remain unchanged.
+   `verified-desktop-candidate` with the six-file layout above. Original sources,
+   dictionaries, notices, component input records and per-platform checksums are
+   preserved inside the archives. `desktop-SHA256SUMS.txt` covers the public
+   delivery, and provenance binds every retained platform input.
    Diagnostic `windows-main-evidence` is separate from published assets. Detector
    weights and test screenshots never enter the delivery.
 5. **publish** waits for a new review in `macos-release` after the combined artifact
    exists. The owner must test **both exact new installers** first. It verifies
-   all 17 combined files, protection, current main, classification and absent tag,
+   all six public files and their retained inputs, protection, current main,
+   classification and absent tag,
    creates one `v<version>` at that commit and uploads one private draft. Every
    uploaded asset's GitHub SHA-256 and state must match before publication; main
    is checked again after the upload. A failed platform/check or an advanced main

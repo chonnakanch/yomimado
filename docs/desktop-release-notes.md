@@ -21,3 +21,14 @@ Corresponding project/dependency sources, build recipes, licences, data notices
 and checksums accompany both installers. Source-only rebuilding of the complete
 delivery remains unverified. Hardware coverage and fresh-machine limitations are
 disclosed below; a successful hosted build is separate from installed-app testing.
+
+Only the installer for your platform is needed to run YomiMado. The combined
+`YomiMado_VERSION_sources.tar.gz` contains the original macOS and Windows source
+archives, Windows project sources, build recipes and exact dictionary snapshots.
+Extract it, then extract the platform archives inside it; each retains its
+original paths. `YomiMado_VERSION_notices.tar.gz` contains the platform notices,
+native input inventory and original verification records. The single
+`desktop-SHA256SUMS.txt` checks both installers, both combined archives and
+`desktop-release-candidate.json`, which records provenance and original input
+hashes. GitHub's automatic repository source downloads do not contain all bundled
+dependency sources.
