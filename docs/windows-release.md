@@ -1,6 +1,18 @@
 # First Windows pre-release plan
 
-Current private candidate — 2026-10-11: [run `38142782743`, attempt 4](https://github.com/chonnakanch/yomimado/actions/runs/38142782743)
+Current shared main candidate — 2026-10-12: [run `38196721752`](https://github.com/chonnakanch/yomimado/actions/runs/38196721752)
+at `99b13124424901f425a49de7ed87557eee6230a9` passes all automatic Windows
+build/install/UI/OCR/learning/persistence/source checks in **39 minutes 17 seconds**.
+Combined macOS/Windows verification also passes. The private
+[verified-desktop-candidate](https://github.com/chonnakanch/yomimado/actions/runs/38196721752/artifacts/11724359701)
+contains `YomiMado_0.1.0_x64-setup.exe` with SHA-256
+`e57ef7e9282023afcff540af86c48d4fb1a97ca42f6ee8932495a534bdfaa8cd`.
+Hosted checks and GitHub summary hashes are verified; local download verification
+and [the six Windows 11 checks](windows-installed-test.md) are **pending** for these new bytes.
+The maintainer reports the PC is available later. Keep the candidate private;
+previous exact-hash passes do not apply. Protected publication remains waiting.
+
+Previous locally verified private candidate — 2026-10-11: [run `38142782743`, attempt 4](https://github.com/chonnakanch/yomimado/actions/runs/38142782743)
 at `f8396ccd5e7352a62e526c68438cc7f3c9cedc60` passes every automated gate in
 **46 minutes 19 seconds**. The [private draft](https://github.com/chonnakanch/yomimado/releases/tag/untagged-5d4b6531f87bae7fb27f)
 contains eight verified assets. Setup SHA-256:
@@ -16,8 +28,8 @@ The owner's licensed-copy confirmation is complete. The maintainer confirms
 this exact hash and **all six local checks pass**, including the component terms,
 100%/125%/150% alignment/clicking and upgrade/uninstall/reinstall. See
 [the installed report](windows-installed-test.md). Protected publication approval
-remains open. The shared main workflow is prepared on `develop`, with one
-publisher/tag for both platforms; it is not yet deployed/executed on `main`.
+remains open. The shared main workflow subsequently ran on protected `main`; its new
+exact-installer checklists and protected publication review remain pending.
 
 Previous locally verified private candidate — 2026-10-11: [run `38133593809`, attempt 2](https://github.com/chonnakanch/yomimado/actions/runs/38133593809)
 at `8c46366d04e96d5356c250605e7ea936db209eb3` passes the complete
