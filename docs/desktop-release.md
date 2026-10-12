@@ -19,8 +19,11 @@ PR #4 and recovery dispatch; it merges at
 `a30d0ba2b931ab9443b656b64ed55ba7a1d9ffc0`. Only the nine explicit release
 repair files differ from the tested source. Recovery
 [run `38257468295`](https://github.com/chonnakanch/yomimado/actions/runs/38257468295)
-starts on protected main; automatic verification and its new owner publication
-review remain pending. Do not rerun the old publisher or delete/move the tag or draft.
+passes its read-only automatic gate in **6 minutes 10 seconds**, including the
+original ZIP/record/17-file hashes, existing tag, original successful builders,
+current main/environment protection and unchanged app/runtime scope. Its
+protected publisher is waiting for the owner's new review. Installer bytes and
+local passes are unchanged; no rebuild or PC retest is required. Do not rerun the old publisher or delete/move the tag or draft.
 
 Latest rollout — 2026-10-12: the owner explicitly authorizes [PR #3](https://github.com/chonnakanch/yomimado/pull/3),
 merged at `5159473da21c952f1a4dc87c457bba82edf5edde`. Both required PR checks
@@ -217,8 +220,9 @@ pretend to have performed the separate human test.
       primary monitors and a clean machine missing WebView2 explicitly untested.
 - [x] Separately authorize and merge focused PR #4 at `a30d0ba`; dispatch
       pinned recovery `38257468295` on protected main without rebuilding.
-- [ ] Pass the recovery's automatic exact-candidate gate and receive its new
-      protected owner publication review.
+- [x] Recovery `38257468295` passes the automatic exact-candidate gate in 6m 10s.
+- [ ] Owner supplies the new protected recovery publication review; its publisher
+      then verifies the unique uploaded draft by ID before publication.
 - [ ] Check the resulting public release contains both installers and every source,
       notice and checksum asset with the intended classification and commit.
 

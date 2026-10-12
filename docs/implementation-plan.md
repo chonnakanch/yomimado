@@ -17,8 +17,11 @@ unchanged draft after a new owner review. All 233 develop and 231 isolated-main
 tests, lint/format, actionlint and Mac runtime scope checks pass. The owner
 separately authorizes PR #4 and recovery dispatch. PR #4 merges at `a30d0ba`,
 with only nine explicit repair files changed; unrelated develop cleanup is
-excluded. Recovery `38257468295` starts on protected main; automatic verification
-and a new owner deployment review remain pending. See
+excluded. Recovery `38257468295` passes its automatic read-only gate in 6m 10s:
+original artifact/record/all 17 file hashes, existing tag, successful original
+builders, current protection and unchanged app/runtime scope verify. Its
+protected publisher waits for a new owner deployment review. Both tested
+installer bytes are preserved; no rebuild or PC retest is needed. See
 [the recovery record](desktop-release-recovery.md).
 
 CI follow-up merged (2026-10-12): the owner separately authorizes PR #3,
