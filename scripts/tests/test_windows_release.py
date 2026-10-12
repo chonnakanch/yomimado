@@ -17,7 +17,7 @@ spec = importlib.util.spec_from_file_location(
 )
 release = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(release)
-import windows_private_draft as draft
+import release_api as draft
 
 smoke_spec = importlib.util.spec_from_file_location(
     "windows_smoke", Path(__file__).parents[1] / "smoke-windows-install.py"
@@ -490,7 +490,7 @@ class WindowsReleaseTests(unittest.TestCase):
                 if e["path"].startswith(("manga-ocr-base/", "opus-mt-ja-en/"))
             },
             "exporterSha256": release.digest(
-                release.ROOT / "scripts/export_onnx_probe.py"
+                release.ROOT / "scripts/export_onnx_models.py"
             ),
             "outputs": {name: release.digest(exported / name) for name in names},
         }

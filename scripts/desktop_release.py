@@ -20,8 +20,8 @@ import tarfile
 from pathlib import Path
 from urllib.request import Request, build_opener
 
-from windows_dictionary_seed import NAMES, SafeRedirect, restore
-from windows_private_draft import API, REPOSITORY, candidate_files, request
+from release_api import API, REPOSITORY, candidate_files, request
+from release_dictionaries import NAMES, SafeRedirect, restore
 from windows_release import BUILD, RESOURCES, SERVICE, digest, read_json, write_json
 
 spec = importlib.util.spec_from_file_location(

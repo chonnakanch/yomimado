@@ -1,4 +1,4 @@
-"""Export the existing hash-pinned OCR/translation models for an isolated probe.
+"""Export hash-pinned recognition/translation models into CPU ONNX graphs.
 
 Uses installed prebuilt Torch for conversion only. Never exports or copies the
 user-installed detector weights. This is not a release packaging command.

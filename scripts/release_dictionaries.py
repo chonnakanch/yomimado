@@ -1,4 +1,4 @@
-"""Shared safe redirects and hash-checked restoration of dictionary originals."""
+"""Safe release-asset redirects and hash-checked dictionary restoration."""
 
 from __future__ import annotations
 

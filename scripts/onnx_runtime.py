@@ -1,4 +1,4 @@
-"""Torch-free inference adapters for the Windows backend feasibility experiment."""
+"""Torch-free CPU ONNX recognition and translation for the Windows service."""
 
 from __future__ import annotations
 

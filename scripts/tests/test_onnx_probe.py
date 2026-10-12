@@ -13,9 +13,9 @@ from unittest.mock import patch
 import numpy as np
 
 sys.path.insert(0, str(Path(__file__).parents[1]))
-from check_onnx_probe import failure_annotation
-from onnx_detector_probe import non_max_suppression
+from onnx_detector import non_max_suppression
 from onnx_generation import Policy, beam_search, generation_scores
+from verify_onnx_models import failure_annotation
 
 
 class NmsTests(unittest.TestCase):
@@ -130,7 +130,7 @@ class TranslationInputTests(unittest.TestCase):
     def test_windows_int32_tokenizer_inputs_obey_int64_graph_contract(self):
         # The baseline test environment need not install the inference wheel.
         # Test the real adapter using a session that enforces the ONNX graph ABI.
-        path = Path(__file__).parents[1] / "onnx_runtime_probe.py"
+        path = Path(__file__).parents[1] / "onnx_runtime.py"
         spec = importlib.util.spec_from_file_location("runtime_under_test", path)
         module = importlib.util.module_from_spec(spec)
         with patch.dict(sys.modules, {"onnxruntime": types.ModuleType("onnxruntime")}):

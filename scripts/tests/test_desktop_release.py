@@ -534,8 +534,8 @@ class PublisherRehearsalTests(unittest.TestCase):
             for name in (
                 "desktop_release.py",
                 "macos-ci-release.py",
-                "windows_dictionary_seed.py",
-                "windows_private_draft.py",
+                "release_dictionaries.py",
+                "release_api.py",
                 "windows_release.py",
             ):
                 shutil.copyfile(ROOT / "scripts" / name, scripts / name)

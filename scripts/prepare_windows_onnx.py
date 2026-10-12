@@ -1,7 +1,8 @@
-"""Prepare isolated Windows x64 prototype environments from exact prebuilt inputs.
+"""Prepare Windows x64 ONNX runtime and export/reference environments.
 
-No native compiler, freezer, installer, draft upload or release approval. The
-3.11.9 hosted bootstrap is explicitly not the final 3.11.17 release runtime.
+Creates both environments with the invoking Python. The release build invokes
+source-built CPython 3.11.17. Native compilation, freezing, installer assembly
+and publication are handled by separate scripts and workflow steps.
 """
 
 from __future__ import annotations
@@ -58,14 +59,14 @@ def run(command, **kwargs):
 
 def prepare(*, runtime: Path | None = None, baseline: Path | None = None) -> None:
     if sys.platform != "win32" or platform.machine().lower() not in {"amd64", "x86_64"}:
-        raise RuntimeError("Hosted prototype preparation requires Windows x64")
+        raise RuntimeError("ONNX environment preparation requires Windows x64")
     lock = read_json(ROOT / "services/ocr/windows-inputs.json")
     validate_lock(lock)
     additions = read_json(ROOT / "scripts/onnx-probe-inputs.json")
     packages = lock["packages"]
     BUILD.mkdir(parents=True, exist_ok=True)
     for entry in packages + additions:
-        print("Verifying prototype input " + entry["filename"], flush=True)
+        print("Verifying ONNX input " + entry["filename"], flush=True)
         fetch(entry, BUILD / "inputs" / entry["filename"])
     for name in ("baseline", "runtime"):
         venv = (runtime if name == "runtime" else baseline) or BUILD / name
@@ -173,9 +174,7 @@ def prepare(*, runtime: Path | None = None, baseline: Path | None = None) -> Non
                             data[offset : offset + 4] != b"PE\x00\x00"
                             or struct.unpack_from("<H", data, offset + 4)[0] != 0x8664
                         ):
-                            raise ValueError(
-                                "Native prototype input is not AMD64: " + name
-                            )
+                            raise ValueError("Native ONNX input is not AMD64: " + name)
                         native.append(
                             {
                                 "wheel": entry["filename"],

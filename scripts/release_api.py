@@ -1,7 +1,7 @@
-"""Shared GitHub API and hash validation for Windows transfer candidates.
+"""Shared GitHub API and hash validation for release transfer candidates.
 
-The historical module name is retained for current callers; private staging
-commands have retired. The protected shared workflow owns publication.
+The protected shared workflow owns publication; this module supplies its API
+requests and Windows candidate-file verification.
 """
 
 from __future__ import annotations

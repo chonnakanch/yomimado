@@ -10,7 +10,7 @@ from pathlib import Path
 from urllib.request import Request
 
 sys.path.insert(0, str(Path(__file__).parents[1]))
-import windows_dictionary_seed as seed
+import release_dictionaries as seed
 
 
 class DictionarySeedTests(unittest.TestCase):

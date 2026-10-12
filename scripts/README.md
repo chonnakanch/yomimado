@@ -15,9 +15,9 @@ one owner-approved publisher. Its script entrypoints are:
 - `verify-windows-installer-terms.ps1`, `verify-windows-install.ps1`,
   `verify-windows-ui.ps1` and `smoke-windows-install.py`: exact installed verification.
 
-`windows_private_draft.py` retains its historical filename, but is now a shared
-GitHub API/candidate validator module. Its retired private-draft staging CLI is
-removed. `windows_dictionary_seed.py` supplies safe redirects and hash-checked
+`release_api.py` supplies shared GitHub API requests and candidate-file validation.
+Its retired private-draft staging CLI is
+removed. `release_dictionaries.py` supplies safe redirects and hash-checked
 dictionary restoration; the old develop-only downloader is removed. Current
 private seed identities and download checks live in `desktop_release.py`.
 
@@ -28,12 +28,16 @@ NSIS, the source WebView loader, canonical VC inputs, export bindings, native
 preferred sources and full notices. Their manifests/locks remain under `docs/`.
 The C++ WebView adapter/probe and native probes are part of those build checks.
 
-Despite their original experiment names, `onnx_detector_probe.py`,
-`onnx_runtime_probe.py` and `onnx_generation.py` are imported by the packaged
-Windows service. `prepare_onnx_probe.py`, `export_onnx_probe.py` and
-`check_onnx_probe.py` perform its current preparation/export/parity checks.
+`onnx_detector.py`,
+`onnx_runtime.py` and `onnx_generation.py` are imported by the packaged
+Windows service. `prepare_windows_onnx.py`, `export_onnx_models.py` and
+`verify_onnx_models.py` perform its current preparation/export/parity checks.
 `onnx-probe-inputs.json` remains an exact input manifest. These are required code,
 not obsolete workflow tools. The two PNG fixtures are synthetic OCR tests.
+
+Preparation, export, parity and inference scripts now use names that describe
+their current functions. Backend imports, source recipes and exporter hash checks
+use those paths. The pinned input manifest retains its existing name.
 
 ## Manual rebuild and licence maintenance
 

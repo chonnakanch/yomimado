@@ -1,4 +1,4 @@
-"""GPL-3.0 detector adaptation experiment; original source must remain available.
+"""GPL-3.0 CPU ONNX detector adapter; original source must remain available.
 
 Loads only hash-pinned inference postprocessing from the existing detector source.
 The original TextDetector.__call__ is retained (minus its Torch decorator);

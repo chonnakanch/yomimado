@@ -1,4 +1,4 @@
-"""Compare offline CPU ONNX and existing Torch backends in separate processes.
+"""Verify offline CPU ONNX OCR/translation parity against the export reference.
 
 Textual reports only; no model weights/screenshots are published. Exit nonzero on
 any tested text/geometry difference. This is not installed-app or licence approval.
@@ -34,7 +34,7 @@ def reject_torch(event, arguments):
 
 def failure_annotation(message: str) -> None:
     # Only the fixed synthetic probe's text/logs reach this helper. No credentials
-    # or private fixture inputs are used by the read-only prototype workflow.
+    # or private fixture inputs are used by the release parity workers.
     print(message, file=sys.stderr)
     if os.environ.get("GITHUB_ACTIONS") == "true":
         escaped = message.replace("%", "%25").replace("\r", "%0D").replace("\n", "%0A")
@@ -49,8 +49,8 @@ def worker(args) -> dict:
     from app.translation import LocalMarianProvider, TranslationService
 
     if args.worker == "onnx":
-        from onnx_detector_probe import detector_class
-        from onnx_runtime_probe import OnnxRecognizer, OnnxTranslation
+        from onnx_detector import detector_class
+        from onnx_runtime import OnnxRecognizer, OnnxTranslation
 
         detector = detector_class(args.detector_repo)(str(args.detector_model))
         recognizer = OnnxRecognizer(args.ocr_model, args.exported)

@@ -78,6 +78,9 @@ See [Windows](windows-installed-test.md) and [macOS](macos-clean-mac-test.md) re
 - [x] Review script dependencies, remove one-time recovery/private experiment tools
       and retire unused develop-only staging/download commands; preserve live
       runtime, build, source/notice and native replacement helpers.
+- [x] Rename shared release API/dictionary helpers and Windows ONNX preparation,
+      export, verification and runtime scripts to describe their current functions;
+      update callers, imports, source recipes and exporter provenance checks.
 - [ ] Merge the prepared maintenance changes through protected main when authorized.
 - [ ] For the next app version, verify its real delivery and exact new installers
       before the owner approves publication. Current v0.1.0 needs no new retest.
