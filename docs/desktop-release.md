@@ -159,6 +159,14 @@ candidate` remains the separate development-only installer workflow.
 
 ## Future release asset layout
 
+Routine workflow cleanup — the five standalone Windows audit/probe workflows
+and the completed one-candidate v0.1.0 recovery are now
+[archived outside Actions discovery](workflow-history/README.md). The three
+routine definitions remain: **Desktop release from main**, **Desktop release
+gate checks** and **Windows private candidate**. Packaging scripts and historical
+source/licence/test evidence are preserved. Retirement is prepared on `develop`
+for a future authorized main merge; no release assets or run history are deleted.
+
 Future shared releases package **six uploaded files**:
 
 | File                                | Contents                                                                                                     |

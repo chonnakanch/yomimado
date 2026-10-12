@@ -1,5 +1,12 @@
 # Recover the tested v0.1.0 draft
 
+Completed — 2026-10-12: the owner-approved recovery
+[run `38257468295`](https://github.com/chonnakanch/yomimado/actions/runs/38257468295)
+publishes the unchanged tested v0.1.0 delivery. This document preserves the
+historical procedure below. The one-candidate workflow is now
+[archived](workflow-history/desktop-release-resume.yml) outside Actions discovery;
+its pinned old artifact/source scope is not a future-release recovery mechanism.
+
 On 2026-10-12 the owner approved publication in run `38201230907`. Its
 publisher verifies the exact combined files, main protection and environment,
 creates `v0.1.0` at `5159473da21c952f1a4dc87c457bba82edf5edde`, and uploads
@@ -46,7 +53,7 @@ digest/state verifies, its sole mutation is `PATCH /releases/<id>` with
 no protection or credentials. The final report confirms published identity and
 all digests. A failed verification cannot reach that mutation.
 
-## Owner steps after the repair PR is verified
+## Historical owner steps after the repair PR was verified
 
 1. Separately authorize the focused repair PR. Earlier merge authorization
    covers PR #3 only. The repair branch excludes unrelated develop cleanup and
@@ -72,4 +79,5 @@ pass**, including actual normal
 publisher shell rehearsals with draft-by-tag HTTP 404, stable/pre-release
 classification, and the recovery rejection/single-mutation tests. Ruff
 (Python 3.11), formatting and actionlint pass. Hosted recovery verification
-and the new owner deployment review remain pending.
+and the new owner deployment review subsequently passed; see the completed
+record above and the [shared release checklist](desktop-release.md).

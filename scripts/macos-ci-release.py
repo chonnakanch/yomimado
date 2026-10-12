@@ -107,6 +107,9 @@ def verify_reuse(root: Path = ROOT) -> None:
         "scripts/tests/",
     )
     allowed_files = {
+        # Retired workflow paths stay allowed so their removal relative to the
+        # reviewed seed does not invalidate its unchanged runtime. The archived
+        # definitions under docs/workflow-history are documentation only.
         "README.md",
         "AGENTS.md",
         ".gitignore",

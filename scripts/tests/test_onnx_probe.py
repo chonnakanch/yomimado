@@ -186,7 +186,8 @@ class WorkflowTests(unittest.TestCase):
 
     def test_evidence_upload_does_not_include_models_or_sources(self):
         workflow = (
-            Path(__file__).parents[2] / ".github/workflows/windows-onnx-prototype.yml"
+            Path(__file__).parents[2]
+            / "docs/workflow-history/windows-onnx-prototype.yml"
         ).read_text()
         artifact = workflow.split("name: windows-onnx-feasibility-evidence", 1)[1]
         paths = artifact.split("path: |", 1)[1].split("if-no-files-found", 1)[0]

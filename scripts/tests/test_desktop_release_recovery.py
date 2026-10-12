@@ -234,7 +234,7 @@ class RecoveryTests(unittest.TestCase):
 
     def test_workflow_keeps_owner_gate_and_no_build_or_tag_upload_path(self):
         workflow = (
-            recovery.ROOT / ".github/workflows/desktop-release-resume.yml"
+            recovery.ROOT / "docs/workflow-history/desktop-release-resume.yml"
         ).read_text()
         review, publisher = workflow.split("\n  publish:\n", 1)
         self.assertNotIn("contents: write", review)

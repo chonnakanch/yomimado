@@ -234,7 +234,7 @@ Do not substitute these builds into the macOS seed or shared development lock.
 ### Independent Windows OpenCV execution
 
 Prepared on 2026-10-09: **Windows OpenCV source audit**
-(`.github/workflows/windows-opencv-audit.yml`) builds the exact original
+([archived workflow](workflow-history/windows-opencv-audit.yml)) builds the exact original
 `opencv-python-4.11.0.86` source's OpenCV tree with source-built CPython 3.11.17,
 MSVC 14.44.35207, SDK 10.0.26100.0, CMake 3.31.6 and Ninja 1.11.1.4.
 [The input record](windows-opencv-build-inputs.json) binds the original source
@@ -315,7 +315,7 @@ and YAML/JSON/document formatting pass.
 ## GEOS source and library replacement
 
 Independent execution prepared on 2026-10-09: **Windows GEOS source audit**
-(`.github/workflows/windows-geos-audit.yml`) builds the pinned GEOS source with
+([archived workflow](workflow-history/windows-geos-audit.yml)) builds the pinned GEOS source with
 source-built CPython 3.11.17, MSVC 14.44.35207, SDK 10.0.26100.0,
 CMake 3.31.6 and Ninja 1.11.1.4. Original source/tool checksums and build-tool
 licence hashes are in [the input record](windows-geos-build-inputs.json).
