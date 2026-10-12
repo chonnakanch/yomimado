@@ -6,9 +6,12 @@ target/
 .venv/
 __pycache__/
 .pytest_cache/
+.ruff_cache/
+*.egg-info/
 *.py[cod]
 services/ocr/local-fixtures/
 services/ocr/local-models/
 services/ocr/local-dictionaries/
 services/ocr/build/
 apps/desktop/src-tauri/resources/ocr/
+apps/desktop/src-tauri/gen/schemas/

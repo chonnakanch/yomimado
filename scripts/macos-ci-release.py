@@ -14,9 +14,8 @@ import re
 import shutil
 import subprocess
 import tarfile
-from pathlib import Path
-
 import tomllib
+from pathlib import Path
 
 SEED_REVISION = "5120506bdf5cf5fa93e2780484985473038f2195"
 ROOT = Path(__file__).resolve().parent.parent
@@ -109,6 +108,8 @@ def verify_reuse(root: Path = ROOT) -> None:
     )
     allowed_files = {
         "README.md",
+        "AGENTS.md",
+        ".gitignore",
         ".github/workflows/macos-prerelease.yml",
         ".github/workflows/desktop-release-checks.yml",
         "scripts/macos-ci-release.py",
@@ -178,6 +179,14 @@ def verify_reuse(root: Path = ROOT) -> None:
         "services/ocr/tests/test_windows_packaged_main.py",
         "services/ocr/tests/test_windows_onnx_backend.py",
     }
+    # These generated files and unused icons are not runtime inputs. Permit
+    # their removal only; additions/modifications still require seed review.
+    removable_prefixes = (
+        "services/ocr/yomimado_ocr.egg-info/",
+        "apps/desktop/src-tauri/gen/schemas/",
+        "apps/desktop/src-tauri/icons/android/",
+    )
+    deleted = None
     changed = git("diff", "--name-only", SEED_REVISION, "HEAD", root=root).splitlines()
     for path in changed:
         if Path(path).suffix.lower() in {".onnx", ".pt", ".pth", ".safetensors"}:
@@ -189,6 +198,22 @@ def verify_reuse(root: Path = ROOT) -> None:
                 continue
         elif path in allowed_files or path.startswith(allowed_prefixes):
             continue
+        elif path == "apps/desktop/src-tauri/icons/placeholder.svg" or path.startswith(
+            removable_prefixes
+        ):
+            if deleted is None:
+                deleted = set(
+                    git(
+                        "diff",
+                        "--diff-filter=D",
+                        "--name-only",
+                        SEED_REVISION,
+                        "HEAD",
+                        root=root,
+                    ).splitlines()
+                )
+            if path in deleted:
+                continue
         raise ValueError(
             f"Reviewed runtime/source inputs changed: {path}; prepare and review a new seed"
         )

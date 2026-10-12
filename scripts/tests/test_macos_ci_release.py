@@ -175,6 +175,36 @@ class VersionTests(unittest.TestCase):
         ):
             ci.verify_reuse()
 
+    def test_repository_instructions_and_ignore_rules_are_source_only(self):
+        for path in ("AGENTS.md", ".gitignore"):
+            with self.subTest(path=path), patch.object(ci, "git", return_value=path):
+                ci.verify_reuse()
+
+    def test_cleanup_allows_only_deletion_of_generated_files_and_unused_icons(self):
+        paths = (
+            "services/ocr/yomimado_ocr.egg-info/SOURCES.txt",
+            "apps/desktop/src-tauri/gen/schemas/desktop-schema.json",
+            "apps/desktop/src-tauri/icons/android/mipmap-hdpi/ic_launcher.png",
+            "apps/desktop/src-tauri/icons/placeholder.svg",
+        )
+        changes = "\n".join(paths)
+        with patch.object(ci, "git", side_effect=[changes, changes]):
+            ci.verify_reuse()
+        for path in paths:
+            with (
+                self.subTest(path=path),
+                patch.object(ci, "git", side_effect=[path, ""]),
+                self.assertRaisesRegex(ValueError, "new seed"),
+            ):
+                ci.verify_reuse()
+        with (
+            patch.object(
+                ci, "git", return_value="apps/desktop/src-tauri/icons/icon.icns"
+            ),
+            self.assertRaisesRegex(ValueError, "new seed"),
+        ):
+            ci.verify_reuse()
+
 
 class ArtifactTests(unittest.TestCase):
     def setUp(self):

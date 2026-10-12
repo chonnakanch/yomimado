@@ -7,13 +7,13 @@ transparent padding around its rounded corners.
 
 The master artwork is `apps/desktop/src-tauri/icons/source-v1.png`, generated
 with the built-in imagegen tool on 2026-10-04. No font, third-party logo, manga
-image, or model asset was used as an input. `placeholder.svg` preserves the
-previous bootstrap icon and is not the source for the current exports.
+image, or model asset was used as an input. The obsolete bootstrap icon and
+generated Android icons have been removed.
 
 Tauri's existing CLI generated the PNG sizes, Windows ICO/Store assets, and
 macOS ICNS. The main Tauri configuration references the desktop icons; the
-macOS release configuration inherits them. No mobile assets were added or
-updated. Windows shell appearance still needs a native Windows check.
+macOS release configuration inherits them. Only desktop icon assets are kept
+in this repository.
 
 To regenerate the desktop exports from the master, run from `apps/desktop`:
 

@@ -418,8 +418,13 @@ After coding:
 
 ## Current milestone
 
-The initial implementation target is **Phase 1 + Phase 2** from `docs/implementation-plan.md`:
+The current milestone is **first desktop release preparation**, with Windows
+release verification still in progress. Follow `docs/implementation-plan.md`
+and the exact-candidate checks in `docs/desktop-release.md`.
 
-> Capture a user-selected screen region, run local OCR, return text geometry, and render an interactive transparent overlay aligned with the original screen coordinates.
+The capture → OCR → coordinate → overlay path and the initial learning features
+are implemented. Prioritize packaging, source/notices, installer verification,
+and release readiness over new features. Preserve candidate hashes and existing
+platform evidence; results apply only to the exact installer tested.
 
-Do not implement dictionary, translation, or kanji learning UI until the capture → OCR → coordinate → overlay path is working and tested.
+Do not publish or approve an installer without the owner's explicit authorization.
