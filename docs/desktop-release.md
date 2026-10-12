@@ -1,6 +1,24 @@
 # Shared desktop release checklist
 
-Publication failure — 2026-10-12: after protected owner review, run
+Published — 2026-10-12: [YomiMado v0.1.0](https://github.com/chonnakanch/yomimado/releases/tag/v0.1.0)
+is a public **pre-release** for macOS Apple Silicon and Windows 11 x64 CPU.
+The owner approves recovery [run `38257468295`](https://github.com/chonnakanch/yomimado/actions/runs/38257468295)
+at repair executor `a30d0ba`; its read-only gate passes in 6m 10s and protected
+publisher passes in 1m 9s. It publishes the existing exact draft by ID after
+all uploaded hashes verify. The tag remains at the tested application source
+`5159473da21c952f1a4dc87c457bba82edf5edde`; no installer/tag/assets are rebuilt,
+replaced or moved. Both exact-hash local installer reports pass.
+
+Independent public API verification confirms title, pre-release classification,
+original source target and all **17 uploaded asset names/states/SHA-256 digests**
+match the original CI candidate. Publicly downloaded combined provenance and
+checksum bytes match their pinned hashes. The two GitHub-generated source links
+bring the web page's Assets count to 19; the verified uploaded delivery is 17.
+Fresh-Mac waiver, untested Windows hardware and the unverified full source-only
+rebuild remain disclosed. Archived build flags are unchanged; the protected
+owner reviews record human approval separately.
+
+Historical publication failure — 2026-10-12: after protected owner review, run
 `38201230907` creates `v0.1.0` at the tested `5159473` source and uploads the
 17 delivery files to a private **YomiMado v0.1.0** pre-release draft. The next
 `GET /releases/tags/v0.1.0` request fails with HTTP 404 because the draft is
@@ -22,8 +40,8 @@ repair files differ from the tested source. Recovery
 passes its read-only automatic gate in **6 minutes 10 seconds**, including the
 original ZIP/record/17-file hashes, existing tag, original successful builders,
 current main/environment protection and unchanged app/runtime scope. Its
-protected publisher is waiting for the owner's new review. Installer bytes and
-local passes are unchanged; no rebuild or PC retest is required. Do not rerun the old publisher or delete/move the tag or draft.
+protected publisher subsequently passes in 1m 9s after the owner's new review.
+Installer bytes and local passes are unchanged; recovery is complete. Do not rerun the old publisher or delete/move the tag or draft.
 
 Latest rollout — 2026-10-12: the owner explicitly authorizes [PR #3](https://github.com/chonnakanch/yomimado/pull/3),
 merged at `5159473da21c952f1a4dc87c457bba82edf5edde`. Both required PR checks
@@ -43,7 +61,7 @@ complete. The release remains private after the original protected publication
 review and failed lookup. The repair needs separate merge authorization and
 new protected recovery review; it proposes no installer rebuild or retest.
 
-Current delivery — [verified-desktop-candidate](https://github.com/chonnakanch/yomimado/actions/runs/38201230907/artifacts/11726850805),
+Original build delivery — [verified-desktop-candidate](https://github.com/chonnakanch/yomimado/actions/runs/38201230907/artifacts/11726850805),
 artifact `11726850805` (4.06 GB), retained for 14 days from this run. GitHub's
 artifact ZIP SHA-256:
 `a6eec1b72e614ba45d30e9fe0651bb079b6266df0db5a4871e55bc896a5be91a`.
@@ -221,10 +239,11 @@ pretend to have performed the separate human test.
 - [x] Separately authorize and merge focused PR #4 at `a30d0ba`; dispatch
       pinned recovery `38257468295` on protected main without rebuilding.
 - [x] Recovery `38257468295` passes the automatic exact-candidate gate in 6m 10s.
-- [ ] Owner supplies the new protected recovery publication review; its publisher
-      then verifies the unique uploaded draft by ID before publication.
-- [ ] Check the resulting public release contains both installers and every source,
-      notice and checksum asset with the intended classification and commit.
+- [x] Owner supplies the new protected recovery review; its publisher verifies
+      the unique uploaded draft by ID and publishes it successfully.
+- [x] Public release contains both installers and all 17 uploaded source/notice/
+      checksum/provenance assets; public API identity/digests and downloaded
+      combined record/checksum bytes verify against the tested candidate.
 
 Any upload failure leaves the draft private. A created partial tag/draft requires
 owner investigation before an intentional rerun or version change; the workflow

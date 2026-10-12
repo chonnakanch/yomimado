@@ -1,5 +1,14 @@
 # Windows candidate test record
 
+Published — 2026-10-12: [YomiMado v0.1.0](https://github.com/chonnakanch/yomimado/releases/tag/v0.1.0)
+is public as a pre-release. Both exact-hash local installer gates pass. The owner
+approves protected recovery `38257468295`; verification and publication succeed
+without changing the tested `5159473` source, tag or installer bytes. Independent
+public API checks verify all 17 uploaded asset hashes/states and classification;
+publicly downloaded combined provenance/checksum bytes also verify. Retain the
+existing platform waivers, untested hardware and source-only rebuild limitation.
+The historical preparation/open-gate statements below describe earlier stages.
+
 Latest verified main candidate — 2026-10-12: owner-authorized PR #3 merges at
 `5159473da21c952f1a4dc87c457bba82edf5edde`.
 [Joint run `38201230907`](https://github.com/chonnakanch/yomimado/actions/runs/38201230907)

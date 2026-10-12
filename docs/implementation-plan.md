@@ -8,6 +8,28 @@ Build a small vertical slice first. Do not implement future features before the 
 
 ## Current status
 
+Published — 2026-10-12: [YomiMado v0.1.0](https://github.com/chonnakanch/yomimado/releases/tag/v0.1.0)
+is a public **pre-release** for macOS Apple Silicon and Windows 11 x64 CPU.
+The owner approves recovery [run `38257468295`](https://github.com/chonnakanch/yomimado/actions/runs/38257468295)
+at repair executor `a30d0ba`; its read-only gate passes in 6m 10s and protected
+publisher passes in 1m 9s. It publishes the existing exact draft by ID after
+all uploaded hashes verify. The tag remains at the tested application source
+`5159473da21c952f1a4dc87c457bba82edf5edde`; no installer/tag/assets are rebuilt,
+replaced or moved. Both exact-hash local installer reports pass.
+
+Independent public API verification confirms title, pre-release classification,
+original source target and all **17 uploaded asset names/states/SHA-256 digests**
+match the original CI candidate. Publicly downloaded combined provenance and
+checksum bytes match their pinned hashes. The two GitHub-generated source links
+bring the web page's Assets count to 19; the verified uploaded delivery is 17.
+Fresh-Mac waiver, untested Windows hardware and the unverified full source-only
+rebuild remain disclosed. Archived build flags are unchanged; the protected
+owner reviews record human approval separately.
+
+The first desktop pre-release milestone is complete. Future versions must bump
+the app version and pass fresh exact-installer gates; this milestone adds no
+new product features. Post-release UI/design discussion remains separate.
+
 Publication recovery prepared (2026-10-12): the owner-approved publisher for
 `5159473` creates `v0.1.0` and uploads all 17 files, then fails with HTTP 404
 on its unpublished-draft by-tag lookup. The release stays private; the tag and
@@ -20,8 +42,8 @@ with only nine explicit repair files changed; unrelated develop cleanup is
 excluded. Recovery `38257468295` passes its automatic read-only gate in 6m 10s:
 original artifact/record/all 17 file hashes, existing tag, successful original
 builders, current protection and unchanged app/runtime scope verify. Its
-protected publisher waits for a new owner deployment review. Both tested
-installer bytes are preserved; no rebuild or PC retest is needed. See
+protected publisher subsequently passes after the owner review and publishes
+v0.1.0. Both tested installer bytes are preserved; recovery is complete. See
 [the recovery record](desktop-release-recovery.md).
 
 CI follow-up merged (2026-10-12): the owner separately authorizes PR #3,
