@@ -172,6 +172,7 @@ class ArtifactTests(unittest.TestCase):
         report = {
             "draft": True,
             "tag_name": "v0.1.0",
+            "target_commitish": REVISION,
             "prerelease": True,
             "assets": [
                 {
@@ -187,6 +188,7 @@ class ArtifactTests(unittest.TestCase):
             ("draft", False),
             ("prerelease", False),
             ("tag_name", "v0.2.0"),
+            ("target_commitish", "b" * 40),
         ):
             with (
                 self.subTest(field=field),
@@ -208,6 +210,31 @@ class ArtifactTests(unittest.TestCase):
                 self.assertRaisesRegex(ValueError, "unpublished"),
             ):
                 release.verify_uploaded(self.out, record, changed)
+
+    def test_draft_listing_rejects_ambiguity_and_wrong_identity(self):
+        record = self.combine()
+        draft = {
+            "id": 123,
+            "name": "YomiMado v0.1.0",
+            "tag_name": record["tag"],
+            "target_commitish": REVISION,
+            "draft": True,
+            "prerelease": True,
+        }
+        self.assertEqual(release.select_uploaded_release([[draft]], record), 123)
+        for pages in ([], [[]], [[draft, draft]], [[draft] * 100], [[]] * 21):
+            with self.subTest(pages=pages), self.assertRaises(ValueError):
+                release.select_uploaded_release(pages, record)
+        for field, wrong in (
+            ("id", True),
+            ("id", 0),
+            ("draft", False),
+            ("prerelease", False),
+            ("target_commitish", "main"),
+            ("name", "Unrelated draft"),
+        ):
+            with self.subTest(field=field), self.assertRaises(ValueError):
+                release.select_uploaded_release([[{**draft, field: wrong}]], record)
 
 
 class PrivateInputTests(unittest.TestCase):
@@ -435,11 +462,22 @@ class PublisherRehearsalTests(unittest.TestCase):
                 import hashlib,json,os,sys
                 from pathlib import Path
                 args=sys.argv[1:]; root=Path(os.environ['RUNNER_TEMP']); scenario=os.environ['SCENARIO']
+                def report(draft=True):
+                    record=json.loads(os.environ['EXPECTED_RECORD'])
+                    assets=[{'name':p.name,'digest':'sha256:'+hashlib.sha256(p.read_bytes()).hexdigest(),'state':'uploaded'} for p in (root/'candidate').iterdir()]
+                    if scenario=='upload-tamper': assets[0]['digest']='sha256:'+'0'*64
+                    return {'id':123,'name':'YomiMado '+record['tag'],'draft':draft,'target_commitish':record['sourceRevision'],'tag_name':record['tag'],'prerelease':record['prerelease'],'assets':assets}
                 with (root/'calls.txt').open('a') as stream: stream.write(' '.join(args)+'\\n')
                 if args[0]=='api':
                     endpoint=next(a for a in args[1:] if a.startswith('repos/'))
                     if '--method' in args:
-                        (root/'tag.txt').write_text(os.environ['GITHUB_SHA']); print('{}')
+                        method=args[args.index('--method')+1]
+                        if method=='POST':
+                            (root/'tag.txt').write_text(os.environ['GITHUB_SHA']); print('{}')
+                        elif method=='PATCH' and endpoint.endswith('/releases/123'):
+                            assert '-F' in args and 'draft=false' in args
+                            (root/'published.txt').write_text('published'); print(json.dumps(report(False)))
+                        else: sys.exit(2)
                     elif '/rules/branches/main?' in endpoint:
                         print('[]' if scenario=='unprotected-main' else (root/'expected-main-rules.json').read_text())
                     elif endpoint.endswith('/deployment-branch-policies'): print((root/'policies.json').read_text())
@@ -450,15 +488,16 @@ class PublisherRehearsalTests(unittest.TestCase):
                     elif endpoint.endswith('/git/ref/heads/main'): print('b'*40 if (scenario=='stale' or (scenario=='advance-during-upload' and (root/'created.txt').exists())) else os.environ['GITHUB_SHA'])
                     elif '/git/ref/tags/' in endpoint: print((root/'tag.txt').read_text())
                     elif '/releases/tags/' in endpoint:
-                        record=json.loads(os.environ['EXPECTED_RECORD'])
-                        assets=[{'name':p.name,'digest':'sha256:'+hashlib.sha256(p.read_bytes()).hexdigest(),'state':'uploaded'} for p in (root/'candidate').iterdir()]
-                        if scenario=='upload-tamper': assets[0]['digest']='sha256:'+'0'*64
-                        print(json.dumps({'draft':True,'tag_name':record['tag'],'prerelease':record['prerelease'],'assets':assets}))
+                        print('Draft by-tag lookup returns HTTP 404',file=sys.stderr); sys.exit(1)
+                    elif '/releases?per_page=100' in endpoint:
+                        reports=[report()]
+                        if scenario=='duplicate-draft': reports.append(report())
+                        elif scenario=='wrong-draft-target': reports[0]['target_commitish']='b'*40
+                        print(json.dumps([reports]))
+                    elif endpoint.endswith('/releases/123'): print(json.dumps(report()))
                     else: print('develop' if scenario=='default-branch' else 'main')
                 elif args[:2]==['release','create']:
                     (root/'created.txt').write_text(' '.join(args))
-                elif args[:2]==['release','edit']:
-                    (root/'published.txt').write_text('published')
                 else: sys.exit(2)
                 """)
             )
@@ -503,7 +542,12 @@ class PublisherRehearsalTests(unittest.TestCase):
             else:
                 self.assertNotEqual(result.returncode, 0)
                 self.assertFalse((root / "published.txt").exists())
-                if scenario not in {"upload-tamper", "advance-during-upload"}:
+                if scenario not in {
+                    "upload-tamper",
+                    "advance-during-upload",
+                    "duplicate-draft",
+                    "wrong-draft-target",
+                }:
                     self.assertFalse((root / "created.txt").exists())
 
     def test_actual_publisher_prerelease_and_stable_paths(self):
@@ -520,6 +564,8 @@ class PublisherRehearsalTests(unittest.TestCase):
             "tag-collision",
             "upload-tamper",
             "advance-during-upload",
+            "duplicate-draft",
+            "wrong-draft-target",
         ):
             with self.subTest(scenario=scenario):
                 self.rehearsal("0.1.0", scenario)
@@ -538,7 +584,8 @@ class PublisherRehearsalTests(unittest.TestCase):
             self.assertNotIn("gh release", block)
         self.assertIn("needs: [build, windows-build]", workflow)
         self.assertEqual(workflow.count("gh release create"), 1)
-        self.assertEqual(workflow.count("gh release edit"), 1)
+        self.assertNotIn("gh release edit", workflow)
+        self.assertEqual(workflow.count("gh api --method PATCH"), 1)
         self.assertIn("name: Desktop release from main", workflow)
         inputs = workflow.split("\n  seed-inputs:\n", 1)[1].split("\n  build:\n", 1)[0]
         self.assertNotIn("environment:", inputs)

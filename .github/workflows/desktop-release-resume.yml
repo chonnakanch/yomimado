@@ -1,0 +1,67 @@
+name: Desktop release resume verified draft
+
+# One-candidate recovery for the uploaded, tested v0.1.0 draft. No builds,
+# new tags, uploads, overwrites, personal tokens or protection changes.
+"on":
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  verify-existing-candidate:
+    if: github.repository == 'chonnakanch/yomimado' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: verified-desktop-candidate
+          run-id: 38201230907
+          github-token: ${{ github.token }}
+          path: candidate
+      - name: Verify unchanged app scope and exact tested files
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python3 scripts/desktop_release_recovery.py review --directory candidate
+
+  publish:
+    needs: verify-existing-candidate
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment: macos-release
+    concurrency:
+      group: desktop-main-publish
+      cancel-in-progress: false
+    permissions:
+      contents: write
+      actions: read
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: verified-desktop-candidate
+          run-id: 38201230907
+          github-token: ${{ github.token }}
+          path: candidate
+      - name: Recheck and publish only the existing exact draft by ID
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python3 scripts/desktop_release_recovery.py publish-existing --directory candidate
+      - name: Retain final GitHub asset verification
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: recovered-release-verification
+          path: ${{ runner.temp }}/recovered-release.json
+          if-no-files-found: error
+          retention-days: 14

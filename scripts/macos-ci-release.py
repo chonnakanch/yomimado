@@ -112,6 +112,8 @@ def verify_reuse(root: Path = ROOT) -> None:
         ".gitignore",
         ".github/workflows/macos-prerelease.yml",
         ".github/workflows/desktop-release-checks.yml",
+        ".github/workflows/desktop-release-resume.yml",
+        "scripts/desktop_release_recovery.py",
         "scripts/macos-ci-release.py",
         "scripts/desktop_release.py",
         # These inputs are used only by the independent Windows candidate path.
