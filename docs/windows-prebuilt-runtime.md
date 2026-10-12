@@ -40,9 +40,10 @@ a name containing `MKLDNN` alone does not prove proprietary MKL.
 
 The retired Windows Torch source-audit workflow and its exclusive tools,
 manifests and tests are removed. Their history is recoverable at Git revision
-`ee1b7f5`. The active **Windows private candidate** exports and compares models
-using prebuilt reference packages, then freezes and tests the separate Torch-free
-ONNX runtime. It does not compile Torch. The reviewed candidate completed in
+`ee1b7f5`. The historical **Windows private candidate** exported and compared models
+using prebuilt reference packages, then froze and tested the separate Torch-free
+ONNX runtime. The shared [Release workflow](../.github/workflows/release.yml) now
+uses this recipe directly; it does not compile Torch. The reviewed candidate completed in
 46 minutes 8 seconds; future run duration is not guaranteed.
 
 The maintainer cancelled the earlier source run and separately authorized

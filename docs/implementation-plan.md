@@ -30,11 +30,12 @@ The first desktop pre-release milestone is complete. Future versions must bump
 the app version and pass fresh exact-installer gates; this milestone adds no
 new product features. Post-release UI/design discussion remains separate.
 
-Workflow retirement — the five standalone Windows audit/probe definitions and
-the completed v0.1.0 recovery definition are moved out of Actions discovery to
-[historical records](workflow-history/README.md). Three routine workflows remain:
-the shared main release, required release gate checks and Windows private
-candidate. Their underlying scripts, source/licence evidence and existing
+Workflow retirement — the five standalone Windows audit/probe definitions,
+completed v0.1.0 recovery and separate Windows private candidate are moved out
+of Actions discovery to [historical records](workflow-history/README.md). Two
+routine workflows remain: **Release** (`release.yml`) builds both platforms and
+publishes after owner approval; **Checks** (`checks.yml`) retains main's required
+`gates` job. Underlying scripts, source/licence evidence and existing
 release assets are preserved. This focused cleanup is prepared on `develop`
 for an authorized protected-main merge; it requires no app rebuild or PC retest.
 

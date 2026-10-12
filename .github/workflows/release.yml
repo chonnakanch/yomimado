@@ -1,4 +1,4 @@
-name: Desktop release from main
+name: Release
 
 # Merge a versioned change into main. Build the merged commit, then wait for
 # both exact installer confirmations before one tag and public hobby release.

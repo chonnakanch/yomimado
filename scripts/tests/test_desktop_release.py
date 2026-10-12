@@ -646,7 +646,7 @@ class PublisherRehearsalTests(unittest.TestCase):
             )
             git.chmod(0o755)
             env["PATH"] = str(binary) + os.pathsep + env["PATH"]
-            workflow = (ROOT / ".github/workflows/macos-prerelease.yml").read_text()
+            workflow = (ROOT / ".github/workflows/release.yml").read_text()
             actual = workflow.split(
                 "      - name: Recheck files, protection, main and tag before publishing",
                 1,
@@ -707,7 +707,7 @@ class PublisherRehearsalTests(unittest.TestCase):
                 self.rehearsal("0.1.0", scenario)
 
     def test_builders_have_no_write_token_and_one_publisher_waits_for_both(self):
-        workflow = (ROOT / ".github/workflows/macos-prerelease.yml").read_text()
+        workflow = (ROOT / ".github/workflows/release.yml").read_text()
         for job, next_job in (
             ("build", "windows-build"),
             ("windows-build", "verify-transfer"),
@@ -722,7 +722,7 @@ class PublisherRehearsalTests(unittest.TestCase):
         self.assertEqual(workflow.count("gh release create"), 1)
         self.assertNotIn("gh release edit", workflow)
         self.assertEqual(workflow.count("gh api --method PATCH"), 1)
-        self.assertIn("name: Desktop release from main", workflow)
+        self.assertIn("name: Release", workflow)
         inputs = workflow.split("\n  seed-inputs:\n", 1)[1].split("\n  build:\n", 1)[0]
         self.assertNotIn("environment:", inputs)
         self.assertEqual(workflow.count("environment: macos-release"), 1)
@@ -732,7 +732,10 @@ class PublisherRehearsalTests(unittest.TestCase):
         publisher = workflow.split("\n  publish:\n", 1)[1]
         self.assertIn("group: desktop-main-publish", publisher)
         self.assertIn("cancel-in-progress: false", publisher)
-        checks = (ROOT / ".github/workflows/desktop-release-checks.yml").read_text()
+        checks = (ROOT / ".github/workflows/checks.yml").read_text()
+        self.assertIn(
+            "\n  gates:\n", checks
+        )  # Required main status context stays unchanged.
         self.assertIn("branches: [develop, main]", checks)
         self.assertIn("pull_request:\n    branches: [main]", checks)
         self.assertNotIn("paths:", checks)

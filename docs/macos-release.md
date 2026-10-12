@@ -385,9 +385,9 @@ both exact new installer confirmations remain open; publication is skipped.
 The maintainer chose this release policy on 2026-10-06: merge a feature into
 `main`, build that exact merged commit, then create its version tag and GitHub
 release after verification and installer confirmation. As of 2026-10-11, the
-workflow is named **Desktop release from main** and includes Windows under the
-same publisher/tag, preserving the macOS runtime path. The workflow file is
-[macos-prerelease.yml](../.github/workflows/macos-prerelease.yml). It runs on
+workflow became **Desktop release from main** and included Windows under the
+same publisher/tag, preserving the macOS runtime path. It is now named **Release**
+in [release.yml](../.github/workflows/release.yml). It runs on
 pushes to `main`, including merge, squash and rebase merges. A manual rerun is
 available on `main`; `develop`, pull requests and tag pushes cannot publish.
 

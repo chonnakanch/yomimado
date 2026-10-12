@@ -152,18 +152,19 @@ and absent-tag checks still reject stale candidates and collisions. This repair
 does not change app/runtime inputs. The owner supplied its separate merge
 authorization; protected publication approval remains separate.
 
-The existing [workflow file](../.github/workflows/macos-prerelease.yml) is now named
-**Desktop release from main**. Keeping the file replaces the previous macOS-only
-publisher rather than introducing a second tag creator. `Windows private
-candidate` remains the separate development-only installer workflow.
+Historically, `macos-prerelease.yml` was named **Desktop release from main** and
+replaced the macOS-only publisher with one shared publisher/tag. It is now
+[release.yml](../.github/workflows/release.yml), displayed as **Release**.
+The separate Windows development candidate is retired; both installers are
+built and verified by Release on protected main.
 
 ## Future release asset layout
 
-Routine workflow cleanup — the five standalone Windows audit/probe workflows
-and the completed one-candidate v0.1.0 recovery are now
-[archived outside Actions discovery](workflow-history/README.md). The three
-routine definitions remain: **Desktop release from main**, **Desktop release
-gate checks** and **Windows private candidate**. Packaging scripts and historical
+Routine workflow cleanup — the five standalone Windows audit/probe workflows,
+completed one-candidate v0.1.0 recovery and separate Windows private candidate are
+[archived outside Actions discovery](workflow-history/README.md). Two routine
+definitions remain: **Release** (`release.yml`) and **Checks** (`checks.yml`).
+The required main status context remains `gates`. Packaging scripts and historical
 source/licence/test evidence are preserved. Retirement is prepared on `develop`
 for a future authorized main merge; no release assets or run history are deleted.
 
@@ -320,7 +321,7 @@ publisher-shell rehearsals for `0.1.0`, `1.0.0-beta.1` and `1.0.0`. Unsafe
 default branch, stale/advanced main, missing effective main rules, unprotected environment, tag collision and
 tampered upload cannot publish. Workflow actionlint, Python lint/format and
 document formatting pass. The macOS seed comparison is preserved. The separate
-**Desktop release gate checks** workflow runs these lightweight publisher and
+**Checks** workflow runs these lightweight publisher and
 version tests on every `main` PR and `develop`/`main` push with read-only permission and local fake APIs; it
 neither builds an installer nor accesses private seeds.
 

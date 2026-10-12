@@ -140,8 +140,9 @@ retains code/recipes/licences with canonical metadata, excludes test models/medi
 and prebuilt binaries, and records each exclusion hash. This is source preparation,
 not exact-wheel build attestation or complete public source approval.
 
-**Windows private candidate** now selects this path, reruns complete offline
-parity before freezing, and verifies the exact installed learning/UI/runtime
+The historical **Windows private candidate** selected this path; the shared
+[Release workflow](../.github/workflows/release.yml) now reruns complete offline
+parity before freezing and verifies the exact installed learning/UI/runtime
 including ONNX DLL loading and absence of Torch/CUDA/MKL modules. This is a
 private diagnostic candidate until those checks and native-source review pass.
 A new exact setup hash and maintainer test record are required; older setup

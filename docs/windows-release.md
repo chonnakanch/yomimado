@@ -241,7 +241,9 @@ Concrete packaging gaps:
 - `requirements-macos-release.txt` and `build-macos-prerelease.sh` are specific
   to Apple Silicon: custom OpenCV, Accelerate NumPy, macOS native binaries and
   notices cannot be used as Windows runtime inputs.
-- `windows-candidate.yml` builds only `develop`; its job can stage an owner-only
+- Historical [windows-candidate.yml](workflow-history/windows-candidate.yml)
+  built only `develop`; it is now retired in favor of the shared
+  [Release workflow](../.github/workflows/release.yml). Its job could stage an owner-only
   draft but cannot approve the installer or publish a release. It prepares
   source-built Python, hash-pinned Windows wheels and
   CPU ONNX inference, freezes the service, builds per-user NSIS, installs it, checks

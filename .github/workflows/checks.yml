@@ -1,4 +1,4 @@
-name: Desktop release gate checks
+name: Checks
 
 "on":
   push:
