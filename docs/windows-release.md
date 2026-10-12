@@ -6,15 +6,19 @@ Latest verified main candidate — 2026-10-12: owner-authorized PR #3 merges at
 passes the Windows build in **36 minutes 18 seconds**, with installed terms/model/UI/
 shortcuts/native/source/OCR/learning/persistence checks. Exact setup SHA-256:
 `a8275246dc07a30f84a2109530bd68c3c0cceeed2556ce27fb09681d3a404602`.
-The six Windows 11 local checks remain pending for these new bytes; the PC is
-available later. Confirmed x64 hardware coverage for older setups does not prove
-this exact setup was tested.
+The maintainer reports all six Windows checks pass and explicitly confirms the
+tested download matches this SHA-256. The current setup's Windows 11 x64 local
+gate is complete; see [the exact-installer report](windows-installed-test.md).
+AMD, additional/mixed-scale/left-of-primary monitors, missing-WebView2 clean
+machines and unreported detailed subcases remain untested.
 Both builders and combined verification pass. The private
 [verified-desktop-candidate](https://github.com/chonnakanch/yomimado/actions/runs/38201230907/artifacts/11726850805)
 is retained for 14 days. GitHub artifact ZIP SHA-256:
 `a6eec1b72e614ba45d30e9fe0651bb079b6266df0db5a4871e55bc896a5be91a`.
-GitHub summary/transfer hashes are verified; independent local download/checksum
-verification remains pending. The protected publisher is waiting and has not
+The full delivery passes hosted source/notice/hash verification, and the
+maintainer confirms the downloaded setup hash. Independent agent inspection of
+the Windows/combined ZIP has not been performed locally. Actions and the
+protected publisher verify all exact files; this limitation is retained. The protected publisher is waiting and has not
 executed. Keep the candidate private and do not approve the superseded
 `99b1312` run. Prior passing reports remain bound to their older installer hashes.
 

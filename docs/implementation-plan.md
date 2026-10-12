@@ -18,10 +18,15 @@ installer/ZIP hashes are recorded in [the shared checklist](desktop-release.md).
 The older `99b1312` candidate is superseded. All seven downloaded Mac files
 verify independently; the maintainer confirms the exact DMG's listed functional
 checks pass, closing the existing-Mac installed gate. Fresh-Mac testing remains
-waived and unreported detailed subcases stay untested. The latest Windows setup's
-PC report and Windows/combined local download verification remain pending. The
-protected owner publisher is waiting and has not executed. App/runtime inputs
-are unchanged.
+waived and unreported detailed subcases stay untested. The maintainer confirms
+all six Windows checks pass and the setup hash matches `a8275246…`, closing the
+latest exact setup's local gate on the previously confirmed Windows 11 x64 PC.
+The full delivery passes hosted exact-file/source/notice/hash verification;
+independent agent inspection of the Windows/combined ZIP is not performed
+locally. The protected owner publisher is waiting and has not executed; its
+exact-file and uploaded-asset verification remain enforced. Both platform
+installer gates pass, with documented waivers/untested hardware retained.
+App/runtime inputs are unchanged; separate owner publication approval is open.
 
 CI repair rollout (2026-10-12): the owner authorizes PR #2 only, merged at
 `99b1312`. Main gate checks pass (`38196721793`); joint run `38196721752` passes

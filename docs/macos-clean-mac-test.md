@@ -21,9 +21,10 @@ testing remains waived. Missing-model first launch, cancel/wrong-model retests,
 shortcut-specific permission denial, left-of-primary/multiple displays and
 other unreported detailed subcases are not added by this confirmation. Retain
 those limitations. No global security setting or detailed Gatekeeper action is
-inferred from the broad pass. Protected publication remains open, and the latest
-Windows exact setup still needs its own PC report. The historical record below
-covers a different DMG.
+inferred from the broad pass. The latest Windows exact setup subsequently has a
+hash-confirmed six-check PC pass recorded in [its report](windows-installed-test.md).
+Both installed gates are complete; protected publication remains open. The
+historical record below covers a different DMG.
 
 Fresh-macOS installation test: **skipped at the maintainer's request on
 2026-10-05** because no clean Mac is available. This waiver is not evidence of

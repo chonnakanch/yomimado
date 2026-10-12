@@ -11,8 +11,10 @@ concurrency is deployed, so the older waiting review does not hold later builds.
 Main has advanced: candidate `99b1312` is superseded and its publication job must
 not be approved. The latest exact DMG passes the existing-Mac installed gate
 with explicit maintainer confirmation and independently verified download
-hashes. The Windows PC report for the latest exact setup remains pending;
-keep the candidate private and leave protected publication review open.
+hashes. The maintainer reports all six Windows checks pass and explicitly
+confirms setup SHA-256 `a8275246…`. Both current exact-installer local gates are
+complete. Keep the candidate private until the owner's separate protected
+publication review. No new build or main merge is needed for these test records.
 
 Current delivery — [verified-desktop-candidate](https://github.com/chonnakanch/yomimado/actions/runs/38201230907/artifacts/11726850805),
 artifact `11726850805` (4.06 GB), retained for 14 days from this run. GitHub's
@@ -33,12 +35,19 @@ maintainer reports the expected unnotarized-app Gatekeeper warning, then
 confirms working launch and every explicitly listed Mac functional check:
 OCR/page scan, shortcut, dictionary/kanji, new offline translation and saved
 data/model persistence after restart/reboot. The existing-Mac gate passes;
-fresh-Mac and unreported detailed subcases remain untested. Windows/combined local
-download and `desktop-SHA256SUMS.txt` verification are not yet complete. Download this artifact before
-its retention expires. Previous hash-bound passes do not apply to these setup
-bytes. Complete [the six Windows checks](windows-installed-test.md) and
-[the existing-Mac checklist](macos-clean-mac-test.md) for these exact installers
-before approving **this run's** publisher. Fresh-Mac testing remains waived.
+fresh-Mac and unreported detailed subcases remain untested. The maintainer also
+confirms the Windows setup download hash and all six local checklist groups.
+Independent agent inspection of the Windows/combined ZIP has not been performed
+locally. The hosted transfer gate verifies all 17 files, source/notice bindings,
+version/classification and hashes; the protected publisher rechecks the exact
+files and GitHub upload digests before publication. That local-copy limitation
+does not replace or weaken these enforced verification gates.
+
+Both [the six Windows checks](windows-installed-test.md) and
+[the existing-Mac installed gate](macos-clean-mac-test.md) pass for the current
+hashes. Fresh-Mac testing remains waived. Only the owner may approve
+**this run's** publisher after reviewing the exact candidate; do not approve the
+superseded run. Download before the artifact's retention expires.
 No public version tag or release has been created.
 
 Historical preparation — 2026-10-11 on `develop`. The maintainer confirms the private Windows
@@ -174,9 +183,11 @@ pretend to have performed the separate human test.
       `5159473` in run `38201230907`; protected publication is waiting for the owner.
 - [x] Verify all seven downloaded Mac files and confirm the exact DMG's
       existing-Mac installed gate with the maintainer; fresh-Mac waiver retained.
-- [ ] Download/verify the Windows or combined delivery and test the exact setup
-      using [the six Windows checks](windows-installed-test.md). Combined
-      `desktop-SHA256SUMS.txt` local verification remains pending.
+- [x] Maintainer confirms the exact Windows setup hash and all six local checks
+      pass on the confirmed Windows 11 x64 PC; untested hardware cases retained.
+- [x] Hosted transfer verifies all 17 exact files and source/version/hash bindings.
+      Independent agent inspection of the Windows/combined ZIP is not performed
+      locally; protected publication rechecks files and uploaded asset digests.
 - [ ] Owner approves **publish** only after both new exact-installer tests pass.
       Keep fresh-Mac testing waived and Windows AMD, additional/mixed-scale/left-of-
       primary monitors and a clean machine missing WebView2 explicitly untested.
