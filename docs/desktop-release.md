@@ -26,8 +26,11 @@ classification. Exact installer hashes:
 | `YomiMado_0.1.0_x64-setup.exe` | `a8275246dc07a30f84a2109530bd68c3c0cceeed2556ce27fb09681d3a404602` |
 | `YomiMado_0.1.0_aarch64.dmg`   | `9d2999ae49b1756d23e62e6b703284e1d5c87898dc187757dfa3d881b8b28977` |
 
-GitHub summary/transfer hashes are verified; an independent local download and
-`desktop-SHA256SUMS.txt` check are not yet complete. Download this artifact before
+GitHub summary/transfer hashes are verified. All seven downloaded Mac candidate
+files independently verify against the CI-bound provenance and hashes. The
+maintainer reports the expected unnotarized-app Gatekeeper warning; per-app
+opening and the installed checklist remain pending. Windows/combined local
+download and `desktop-SHA256SUMS.txt` verification are not yet complete. Download this artifact before
 its retention expires. Previous hash-bound passes do not apply to these setup
 bytes. Complete [the six Windows checks](windows-installed-test.md) and
 [the existing-Mac checklist](macos-clean-mac-test.md) for these exact installers

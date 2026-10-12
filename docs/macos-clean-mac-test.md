@@ -1,5 +1,22 @@
 # Apple Silicon installed-app release test
 
+Current main candidate — 2026-10-12: source
+`5159473da21c952f1a4dc87c457bba82edf5edde`, [run `38201230907`](https://github.com/chonnakanch/yomimado/actions/runs/38201230907).
+The downloaded `macos-candidate-for-transfer` folder passes the exact seven-file
+artifact verifier: provenance hash matches the hosted combined summary, source
+revision/classification match, and DMG/source/notices plus checksum files verify.
+DMG SHA-256:
+`9d2999ae49b1756d23e62e6b703284e1d5c87898dc187757dfa3d881b8b28977`.
+
+The maintainer reports Apple's **cannot verify that YomiMado is free of malware**
+warning on opening. This is the expected unnotarized-app Gatekeeper block; no
+successful opening, capture or learning test is inferred. Continue manually via
+System Settings → Privacy & Security → YomiMado's **Open Anyway**, retaining
+Gatekeeper and quarantine. This is separate from damaged-app or detected-malware
+warnings, which require investigation. The current exact-DMG installed checklist
+and protected publication remain **pending**. The historical pass below covers
+a different DMG.
+
 Fresh-macOS installation test: **skipped at the maintainer's request on
 2026-10-05** because no clean Mac is available. This waiver is not evidence of
 successful clean-machine installation. Keep that limitation in the pre-release

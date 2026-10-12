@@ -11,8 +11,10 @@ Both builders and combined verification pass. The private
 [verified-desktop-candidate](https://github.com/chonnakanch/yomimado/actions/runs/38201230907/artifacts/11726850805)
 is retained for 14 days. GitHub artifact ZIP SHA-256:
 `a6eec1b72e614ba45d30e9fe0651bb079b6266df0db5a4871e55bc896a5be91a`.
-GitHub summary/transfer hashes are verified; independent local download/checksum
-verification remains pending. The protected publisher is waiting and has not
+GitHub summary/transfer hashes and all seven downloaded Mac files verify against
+the hosted provenance. The maintainer observes the expected cannot-verify
+Gatekeeper warning; per-app opening and the installed checklist remain pending.
+Combined/Windows local download verification remains pending. The protected publisher is waiting and has not
 executed. Keep the candidate private and do not approve the superseded
 `99b1312` run. Prior passing reports remain bound to their older installer hashes.
 
