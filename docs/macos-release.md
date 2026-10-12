@@ -6,14 +6,19 @@ Latest verified main candidate — 2026-10-12: owner-authorized PR #3 merges at
 passes the macOS build in **12 minutes 16 seconds**, with mounted native/source/signature
 and frozen offline OCR/learning/persistence checks. The exact DMG SHA-256 is
 `9d2999ae49b1756d23e62e6b703284e1d5c87898dc187757dfa3d881b8b28977`.
-This DMG's existing-Mac checklist remains pending; fresh-Mac testing is waived.
+The maintainer confirms this locally hash-verified DMG works and explicitly
+passes OCR/page scan, shortcut, dictionary/kanji, new offline translation and
+saved data/model persistence after restart/reboot. The existing-Mac installed
+gate passes; fresh-Mac testing stays waived and unreported detailed subcases
+remain untested.
 Both builders and combined verification pass. The private
 [verified-desktop-candidate](https://github.com/chonnakanch/yomimado/actions/runs/38201230907/artifacts/11726850805)
 is retained for 14 days. GitHub artifact ZIP SHA-256:
 `a6eec1b72e614ba45d30e9fe0651bb079b6266df0db5a4871e55bc896a5be91a`.
 GitHub summary/transfer hashes and all seven downloaded Mac files verify against
 the hosted provenance. The maintainer observes the expected cannot-verify
-Gatekeeper warning; per-app opening and the installed checklist remain pending.
+Gatekeeper warning, then confirms working launch and the listed functional
+tests. See [the exact-DMG report](macos-clean-mac-test.md).
 Combined/Windows local download verification remains pending. The protected publisher is waiting and has not
 executed. Keep the candidate private and do not approve the superseded
 `99b1312` run. Prior passing reports remain bound to their older installer hashes.

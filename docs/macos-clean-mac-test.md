@@ -8,14 +8,22 @@ revision/classification match, and DMG/source/notices plus checksum files verify
 DMG SHA-256:
 `9d2999ae49b1756d23e62e6b703284e1d5c87898dc187757dfa3d881b8b28977`.
 
-The maintainer reports Apple's **cannot verify that YomiMado is free of malware**
-warning on opening. This is the expected unnotarized-app Gatekeeper block; no
-successful opening, capture or learning test is inferred. Continue manually via
-System Settings → Privacy & Security → YomiMado's **Open Anyway**, retaining
-Gatekeeper and quarantine. This is separate from damaged-app or detected-malware
-warnings, which require investigation. The current exact-DMG installed checklist
-and protected publication remain **pending**. The historical pass below covers
-a different DMG.
+The maintainer reports Apple's expected **cannot verify that YomiMado is free
+of malware** warning, then confirms the current DMG is working. In response to
+the explicit checklist question, the maintainer confirms **“All listed checks
+pass”**: OCR/page scan, Cmd+Shift+O, dictionary/kanji, a new offline translation,
+and saved data/imported-model persistence after restart and reboot. These are
+**maintainer-reported passes** for this locally hash-verified DMG; they are not
+independent live UI tests. The downloaded seven-file verification is independent.
+
+The existing-Mac installed-app gate is **passed for this exact DMG**. Fresh-Mac
+testing remains waived. Missing-model first launch, cancel/wrong-model retests,
+shortcut-specific permission denial, left-of-primary/multiple displays and
+other unreported detailed subcases are not added by this confirmation. Retain
+those limitations. No global security setting or detailed Gatekeeper action is
+inferred from the broad pass. Protected publication remains open, and the latest
+Windows exact setup still needs its own PC report. The historical record below
+covers a different DMG.
 
 Fresh-macOS installation test: **skipped at the maintainer's request on
 2026-10-05** because no clean Mac is available. This waiver is not evidence of

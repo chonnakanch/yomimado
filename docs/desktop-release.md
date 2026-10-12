@@ -9,9 +9,10 @@ passes all automatic jobs: **Windows 36 minutes 18 seconds**, **macOS 12 minutes
 publisher is waiting for the owner; it has not executed. Publisher-only
 concurrency is deployed, so the older waiting review does not hold later builds.
 Main has advanced: candidate `99b1312` is superseded and its publication job must
-not be approved. Both new exact-installer local tests remain pending. The
-Windows PC is available later; keep the candidate private and leave protected
-publication review open.
+not be approved. The latest exact DMG passes the existing-Mac installed gate
+with explicit maintainer confirmation and independently verified download
+hashes. The Windows PC report for the latest exact setup remains pending;
+keep the candidate private and leave protected publication review open.
 
 Current delivery — [verified-desktop-candidate](https://github.com/chonnakanch/yomimado/actions/runs/38201230907/artifacts/11726850805),
 artifact `11726850805` (4.06 GB), retained for 14 days from this run. GitHub's
@@ -28,8 +29,11 @@ classification. Exact installer hashes:
 
 GitHub summary/transfer hashes are verified. All seven downloaded Mac candidate
 files independently verify against the CI-bound provenance and hashes. The
-maintainer reports the expected unnotarized-app Gatekeeper warning; per-app
-opening and the installed checklist remain pending. Windows/combined local
+maintainer reports the expected unnotarized-app Gatekeeper warning, then
+confirms working launch and every explicitly listed Mac functional check:
+OCR/page scan, shortcut, dictionary/kanji, new offline translation and saved
+data/model persistence after restart/reboot. The existing-Mac gate passes;
+fresh-Mac and unreported detailed subcases remain untested. Windows/combined local
 download and `desktop-SHA256SUMS.txt` verification are not yet complete. Download this artifact before
 its retention expires. Previous hash-bound passes do not apply to these setup
 bytes. Complete [the six Windows checks](windows-installed-test.md) and
@@ -168,9 +172,11 @@ pretend to have performed the separate human test.
       required checks pass and the merge starts the automatic release run.
 - [x] Both hosted builders and combined verification pass at current main
       `5159473` in run `38201230907`; protected publication is waiting for the owner.
-- [ ] Download `verified-desktop-candidate`, verify `desktop-SHA256SUMS.txt` and
-      test the exact DMG using [the Mac checklist](macos-clean-mac-test.md) and the
-      exact setup using [the six Windows checks](windows-installed-test.md).
+- [x] Verify all seven downloaded Mac files and confirm the exact DMG's
+      existing-Mac installed gate with the maintainer; fresh-Mac waiver retained.
+- [ ] Download/verify the Windows or combined delivery and test the exact setup
+      using [the six Windows checks](windows-installed-test.md). Combined
+      `desktop-SHA256SUMS.txt` local verification remains pending.
 - [ ] Owner approves **publish** only after both new exact-installer tests pass.
       Keep fresh-Mac testing waived and Windows AMD, additional/mixed-scale/left-of-
       primary monitors and a clean machine missing WebView2 explicitly untested.

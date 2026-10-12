@@ -15,10 +15,13 @@ approval no longer queues later main builds. Main gate checks pass in run
 macOS in 12 minutes 16 seconds and combined verification in 1 minute 34 seconds.
 Private combined artifact `11726850805` contains all 17 verified files; exact
 installer/ZIP hashes are recorded in [the shared checklist](desktop-release.md).
-The older `99b1312` candidate is superseded. Both new exact-installer local
-checks and independent local download verification remain pending. The Windows
-PC is available later; the protected owner publisher is waiting and has not
-executed. App/runtime inputs are unchanged.
+The older `99b1312` candidate is superseded. All seven downloaded Mac files
+verify independently; the maintainer confirms the exact DMG's listed functional
+checks pass, closing the existing-Mac installed gate. Fresh-Mac testing remains
+waived and unreported detailed subcases stay untested. The latest Windows setup's
+PC report and Windows/combined local download verification remain pending. The
+protected owner publisher is waiting and has not executed. App/runtime inputs
+are unchanged.
 
 CI repair rollout (2026-10-12): the owner authorizes PR #2 only, merged at
 `99b1312`. Main gate checks pass (`38196721793`); joint run `38196721752` passes
