@@ -547,7 +547,12 @@ jobs:
           gh release create "$RELEASE_TAG" candidate/* --repo "$GITHUB_REPOSITORY" --verify-tag \
             --target "$GITHUB_SHA" --title "YomiMado $RELEASE_TAG" \
             --notes-file "$RUNNER_TEMP/release-notes.md" "${release_options[@]}"
-          gh api "repos/$GITHUB_REPOSITORY/releases/tags/$RELEASE_TAG" > "$RUNNER_TEMP/uploaded-release.json"
+          # GitHub's by-tag endpoint can return 404 for an unpublished draft.
+          # Resolve its unique exact identity from the listing, then use its ID.
+          gh api "repos/$GITHUB_REPOSITORY/releases?per_page=100" --paginate --slurp > "$RUNNER_TEMP/releases.json"
+          release_id="$(python3 scripts/desktop_release.py select-uploaded-release \
+            --directory candidate --expected "$EXPECTED_RECORD" --report "$RUNNER_TEMP/releases.json")"
+          gh api "repos/$GITHUB_REPOSITORY/releases/$release_id" > "$RUNNER_TEMP/uploaded-release.json"
           test "$(gh api "repos/$GITHUB_REPOSITORY/git/ref/tags/$RELEASE_TAG" --jq .object.sha)" = "$GITHUB_SHA"
           python3 scripts/desktop_release.py verify-uploaded --directory candidate --expected "$EXPECTED_RECORD" --report "$RUNNER_TEMP/uploaded-release.json"
           # main may advance while large assets upload. Recheck immediately
@@ -555,4 +560,7 @@ jobs:
           test "$(gh api "repos/$GITHUB_REPOSITORY/git/ref/heads/main" --jq .object.sha)" = "$GITHUB_SHA"
           gh api "repos/$GITHUB_REPOSITORY/rules/branches/main?per_page=100" > "$RUNNER_TEMP/main-rules.json"
           python3 scripts/desktop_release.py verify-main-rules --directory "$RUNNER_TEMP/main-rules.json"
-          gh release edit "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY" --draft=false
+          gh api --method PATCH "repos/$GITHUB_REPOSITORY/releases/$release_id" \
+            -F draft=false > "$RUNNER_TEMP/published-release.json"
+          python3 scripts/desktop_release.py verify-published --directory candidate \
+            --expected "$EXPECTED_RECORD" --report "$RUNNER_TEMP/published-release.json"
