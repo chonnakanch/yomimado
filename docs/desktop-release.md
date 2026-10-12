@@ -19,7 +19,42 @@ Combined verification and publication are skipped. The repair pins verification
 tools to the available **3.11.9 arm64** entry in
 [GitHub's Python manifest](https://raw.githubusercontent.com/actions/python-versions/main/versions-manifest.json);
 the exact reviewed **3.11.17 frozen runtime** still comes from the hash-pinned seed.
-The repaired hosted execution remains pending.
+Repair rollout — the owner explicitly authorizes **PR #2 only**, merged at
+`99b13124424901f425a49de7ed87557eee6230a9`. Main gate checks pass in
+[run `38196721793`](https://github.com/chonnakanch/yomimado/actions/runs/38196721793).
+The automatic joint [run `38196721752`](https://github.com/chonnakanch/yomimado/actions/runs/38196721752)
+passes every automatic job: macOS in **14 minutes 37 seconds**, Windows in
+**39 minutes 17 seconds**, and combined verification in **1 minute 21 seconds**.
+Both builders run without approval. The protected publisher is waiting; no
+public version tag or release has been created. Subsequent repair merges are
+not authorized by this PR #2 confirmation. Publication approval remains
+reserved to the owner.
+
+Current private delivery — [verified-desktop-candidate](https://github.com/chonnakanch/yomimado/actions/runs/38196721752/artifacts/11724359701),
+artifact `11724359701` (4.06 GB), retained for 14 days from this run. GitHub's
+artifact ZIP SHA-256 is
+`dbc7285933b3f02883e9a3d4b4081d6ea1545581fd7edd815c93439597599eb9`.
+The hosted combined gate verifies all 17 files against source
+`99b13124424901f425a49de7ed87557eee6230a9`, version `0.1.0` and pre-release
+classification. Its summary records these exact installers:
+
+| Installer                      | SHA-256                                                            |
+| ------------------------------ | ------------------------------------------------------------------ |
+| `YomiMado_0.1.0_x64-setup.exe` | `e57ef7e9282023afcff540af86c48d4fb1a97ca42f6ee8932495a534bdfaa8cd` |
+| `YomiMado_0.1.0_aarch64.dmg`   | `dda5ba255c21d70276d082551f73636628548fad85c8be5d8cd7c830e2726c98` |
+
+These are GitHub job-summary/transfer results, not an independent local download
+verification. Local artifact/checksum inspection and both exact-installer
+checklists remain pending. The maintainer reports the Windows PC is available
+later; keep this candidate private. Previous passing installers have different
+bytes. Download before artifact expiry; an expired artifact requires a new
+build and a new exact-hash report. Fresh-Mac testing remains waived.
+
+Follow-up prepared on `develop`: serialize only the **publish** job, rather
+than the whole workflow. A pending installer review must not queue subsequent
+main builds. Publisher uploads remain non-cancellable and serial; current-main
+and absent-tag checks still reject stale candidates and collisions. This repair
+does not change app/runtime inputs and needs separate merge authorization.
 
 The existing [workflow file](../.github/workflows/macos-prerelease.yml) is now named
 **Desktop release from main**. Keeping the file replaces the previous macOS-only
@@ -63,6 +98,9 @@ candidate` remains the separate development-only installer workflow.
    uploaded asset's GitHub SHA-256 and state must match before publication; main
    is checked again after the upload. A failed platform/check or an advanced main
    prevents publication. Tags and existing assets are never overwritten.
+   Publisher-only concurrency keeps tag creation/uploads serial without holding
+   later builds behind a pending human review. Uploads are never cancelled by a
+   later main push. The current main workflow has not yet received this follow-up.
 
 The environment keeps its historical `macos-release` name to preserve its already
 configured reviewer, exact `main` branch rule and disabled administrator bypass.
@@ -89,9 +127,8 @@ pretend to have performed the separate human test.
       implemented; existing macOS runtime scope preserved.
 - [x] Owner explicitly authorizes PR #1's first versioned merge to `main`; both
       required checks pass and the merge starts the automatic release run.
-- [ ] Both hosted builders and the combined verification pass. The first combined
-      Windows and input transfer pass on the first main run; macOS bootstrap
-      repair and successful combined verification remain open.
+- [x] Both hosted builders and combined verification pass at `99b1312` in run
+      `38196721752`; protected publication is waiting for the owner.
 - [ ] Download `verified-desktop-candidate`, verify `desktop-SHA256SUMS.txt` and
       test the exact DMG using [the Mac checklist](macos-clean-mac-test.md) and the
       exact setup using [the six Windows checks](windows-installed-test.md).

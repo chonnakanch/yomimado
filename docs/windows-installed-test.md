@@ -1,5 +1,17 @@
 # Windows candidate test record
 
+Current shared main candidate — 2026-10-12: [run `38196721752`](https://github.com/chonnakanch/yomimado/actions/runs/38196721752)
+at `99b13124424901f425a49de7ed87557eee6230a9` passes all automatic Windows
+build/install/UI/OCR/learning/persistence/source checks in **39 minutes 17 seconds**.
+Combined macOS/Windows verification also passes. The private
+[verified-desktop-candidate](https://github.com/chonnakanch/yomimado/actions/runs/38196721752/artifacts/11724359701)
+contains `YomiMado_0.1.0_x64-setup.exe` with SHA-256
+`e57ef7e9282023afcff540af86c48d4fb1a97ca42f6ee8932495a534bdfaa8cd`.
+Hosted checks and GitHub summary hashes are verified; local download verification
+and the six Windows 11 checks below are **pending** for these new bytes.
+The maintainer reports the PC is available later. Keep the candidate private;
+previous exact-hash passes do not apply. Protected publication remains waiting.
+
 Component-terms candidate — 2026-10-11: [run `38142782743`, attempt 4](https://github.com/chonnakanch/yomimado/actions/runs/38142782743)
 passes all automated gates in **46 minutes 19 seconds** at source
 `f8396ccd5e7352a62e526c68438cc7f3c9cedc60`. The
@@ -34,7 +46,8 @@ macOS and Windows exact-installer tests before approving the publish job in
 `macos-release`. Builds and private seed transfer run automatically on protected
 `main`; only publication requires the separate exact-installer approval.
 
-Reusable six-check checklist — all six reported passed for this candidate:
+Reusable six-check checklist — pending for `e57ef7e9…`; all six reported passed
+for the historical `756b7dc6…` candidate:
 
 1. Browser download with Defender/SmartScreen enabled; terms initially unchecked;
    cancel before installation, then review/accept and install or upgrade normally.

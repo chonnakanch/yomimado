@@ -16,6 +16,17 @@ explicit hobby candidate path, with source and exact-DMG checks. Neither path
 publishes anything automatically from the local build script. Do not upload a
 private build or an incomplete candidate.
 
+Current shared main candidate — 2026-10-12: [run `38196721752`](https://github.com/chonnakanch/yomimado/actions/runs/38196721752)
+at `99b13124424901f425a49de7ed87557eee6230a9` passes the repaired automatic
+macOS build in **14 minutes 37 seconds**, including mounted signature/native/
+source/offline runtime checks. Combined Windows/macOS verification passes.
+The private [verified-desktop-candidate](https://github.com/chonnakanch/yomimado/actions/runs/38196721752/artifacts/11724359701)
+contains `YomiMado_0.1.0_aarch64.dmg`, SHA-256
+`dda5ba255c21d70276d082551f73636628548fad85c8be5d8cd7c830e2726c98`.
+Local download/checksum verification and this exact DMG's existing-Mac installed
+checklist remain pending. Fresh-Mac testing stays waived. The protected shared
+publisher is waiting; no public tag or release is created.
+
 ## Status — 2026-10-07
 
 - [x] Private DMG builds and passes mounted-bundle OCR, dictionary, kanji,

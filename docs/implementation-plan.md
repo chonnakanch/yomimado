@@ -8,6 +8,22 @@ Build a small vertical slice first. Do not implement future features before the 
 
 ## Current status
 
+Prepared CI follow-up (2026-10-12): move shared concurrency from the whole
+workflow to the protected publisher only. Pending human installer approval must
+not queue later main builds; tag creation/uploads remain serial and cannot be
+cancelled by a later main push. App/runtime inputs stay unchanged. This follow-up
+is not covered by the owner's PR #2-only authorization and remains on develop.
+
+CI repair rollout (2026-10-12): the owner authorizes PR #2 only, merged at
+`99b1312`. Main gate checks pass (`38196721793`); joint run `38196721752` passes
+all automatic gates: macOS build 14 minutes 37 seconds, Windows build 39 minutes
+17 seconds and combined verification 1 minute 21 seconds. Both exact installers
+are in private artifact `11724359701`; hashes are recorded in
+[the shared checklist](desktop-release.md). Local download verification and
+both new exact-installer checklists remain pending; the Windows PC is available
+later. The owner retains protected publication approval. Any later repair merge
+needs separate authorization.
+
 First shared main execution (2026-10-12): the owner authorized PR #1, merged at
 `ffd1acc`. Run `38157096085` passes planning, automatic private seed transfer and
 the entire Windows suite in 43 minutes 6 seconds. macOS fails before app build:
