@@ -18,11 +18,10 @@ Screenshots stay local. Translation and saving require an explicit action.
 
 ## Release status
 
-The current milestone is **first desktop release preparation**. Windows release
-verification is still in progress. Candidates remain private until their exact
-installer checks and owner publication approval are complete. The
-[shared release checklist](docs/desktop-release.md) records the current candidate,
-hashes, platform results, and remaining gates.
+[YomiMado v0.1.0](https://github.com/chonnakanch/yomimado/releases/tag/v0.1.0)
+is available as the first desktop pre-release for macOS Apple Silicon and Windows
+11 x64. The [shared release checklist](docs/desktop-release.md) records the exact
+installer hashes, passing results, disclosed limitations and future release gates.
 
 | Target                           | First release format                                        |
 | -------------------------------- | ----------------------------------------------------------- |
@@ -31,7 +30,8 @@ hashes, platform results, and remaining gates.
 
 Detector weights are installed separately through **Select detector model file**.
 The app checks the supported file's checksum before importing it. See the
-[release notes](docs/desktop-release-notes.md) for installation details.
+[published release notes](https://github.com/chonnakanch/yomimado/releases/tag/v0.1.0)
+for installation details.
 
 ## Read a page
 
@@ -79,6 +79,7 @@ checklists.
 
 ## Project documentation
 
+- [Documentation index](docs/README.md)
 - [Implementation status and remaining work](docs/implementation-plan.md)
 - [Initial product and technical design](docs/initial-design.md)
 - [macOS release guide](docs/macos-release.md)

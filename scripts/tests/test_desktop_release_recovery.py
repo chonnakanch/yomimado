@@ -232,27 +232,6 @@ class RecoveryTests(unittest.TestCase):
             recovery.publish_existing(self.directory)
         self.assert_no_mutation()
 
-    def test_workflow_keeps_owner_gate_and_no_build_or_tag_upload_path(self):
-        workflow = (
-            recovery.ROOT / "docs/workflow-history/desktop-release-resume.yml"
-        ).read_text()
-        review, publisher = workflow.split("\n  publish:\n", 1)
-        self.assertNotIn("contents: write", review)
-        self.assertIn("needs: verify-existing-candidate", publisher)
-        self.assertIn("environment: macos-release", publisher)
-        self.assertIn("group: desktop-main-publish", publisher)
-        self.assertIn("cancel-in-progress: false", publisher)
-        self.assertEqual(workflow.count("run-id: 38201230907"), 2)
-        self.assertIn("refs/heads/main", review)
-        for forbidden in (
-            "gh release create",
-            "tauri build",
-            "gh release edit",
-            "workflow_run:",
-            "secrets.",
-        ):
-            self.assertNotIn(forbidden, workflow)
-
 
 if __name__ == "__main__":
     unittest.main()

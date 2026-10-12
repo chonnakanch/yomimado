@@ -108,8 +108,8 @@ def verify_reuse(root: Path = ROOT) -> None:
     )
     allowed_files = {
         # Retired workflow paths stay allowed so their removal relative to the
-        # reviewed seed does not invalidate its unchanged runtime. The archived
-        # definitions under docs/workflow-history are documentation only.
+        # reviewed seed does not invalidate its unchanged runtime. Their original
+        # definitions remain recoverable in Git history.
         "README.md",
         "AGENTS.md",
         ".gitignore",

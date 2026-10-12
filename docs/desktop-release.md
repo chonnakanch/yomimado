@@ -30,7 +30,7 @@ resolves drafts through the complete release listing
 and verifies/publishes by ID. A separately protected, one-candidate recovery
 preserves the existing tag/assets and the same passed installer bytes. Its
 strict repair scope rejects app/runtime changes and unrelated develop cleanup.
-See [the recovery checks and owner steps](desktop-release-recovery.md).
+The completed recovery's original procedure remains in Git at `2885586`.
 All 233 develop tests and 231 isolated-main release-tool tests, lint/format,
 actionlint and Mac runtime scope checks pass. The owner separately authorizes
 PR #4 and recovery dispatch; it merges at
@@ -162,7 +162,7 @@ built and verified by Release on protected main.
 
 Routine workflow cleanup — the five standalone Windows audit/probe workflows,
 completed one-candidate v0.1.0 recovery and separate Windows private candidate are
-[archived outside Actions discovery](workflow-history/README.md). Two routine
+[retired from the current documentation](README.md). Two routine
 definitions remain: **Release** (`release.yml`) and **Checks** (`checks.yml`).
 The required main status context remains `gates`. Packaging scripts and historical
 source/licence/test evidence are preserved. Retirement is prepared on `develop`

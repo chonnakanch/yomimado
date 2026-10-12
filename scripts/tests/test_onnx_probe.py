@@ -172,7 +172,7 @@ class TranslationInputTests(unittest.TestCase):
         np.testing.assert_array_equal(feeds[0]["input_ids"], [[1, 2]])
 
 
-class WorkflowTests(unittest.TestCase):
+class DiagnosticsAndInputTests(unittest.TestCase):
     def test_failure_details_escape_github_annotation_control_characters(self):
         stdout, stderr = io.StringIO(), io.StringIO()
         with (
@@ -184,18 +184,7 @@ class WorkflowTests(unittest.TestCase):
         self.assertIn("25%25%0D%0Anext line", stdout.getvalue())
         self.assertIn("synthetic failure", stderr.getvalue())
 
-    def test_evidence_upload_does_not_include_models_or_sources(self):
-        workflow = (
-            Path(__file__).parents[2]
-            / "docs/workflow-history/windows-onnx-prototype.yml"
-        ).read_text()
-        artifact = workflow.split("name: windows-onnx-feasibility-evidence", 1)[1]
-        paths = artifact.split("path: |", 1)[1].split("if-no-files-found", 1)[0]
-        for line in paths.splitlines():
-            if line.strip():
-                self.assertTrue(line.strip().endswith((".log", ".json")))
-        self.assertNotIn("contents: write", workflow)
-        self.assertNotIn("actions: write", workflow)
+    def test_prebuilt_inputs_are_hash_pinned_wheels(self):
         pins = json.loads(
             (Path(__file__).parents[1] / "onnx-probe-inputs.json").read_text()
         )

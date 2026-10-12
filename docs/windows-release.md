@@ -189,8 +189,8 @@ and PC results above remain bound to their original setup hashes.
 The active candidate builds the minimal OpenCV runtime from pinned sources with
 IPP, video and GPU backends disabled. Generated `/MD` compiler commands, native
 imports, frozen detector probes and exact installed OCR pass. The standalone
-OpenCV audit remains available for diagnosis; it is not another required installer
-build. See [the native worksheet](windows-native-rebuild.md).
+OpenCV audit workflow is retired; its build/probe scripts remain part of the
+current installer recipe. See [the actual source review](windows-source-review.md).
 
 ## Target and scope
 
@@ -241,7 +241,7 @@ Concrete packaging gaps:
 - `requirements-macos-release.txt` and `build-macos-prerelease.sh` are specific
   to Apple Silicon: custom OpenCV, Accelerate NumPy, macOS native binaries and
   notices cannot be used as Windows runtime inputs.
-- Historical [windows-candidate.yml](workflow-history/windows-candidate.yml)
+- Historical `windows-candidate.yml` (recoverable in Git at `2885586`)
   built only `develop`; it is now retired in favor of the shared
   [Release workflow](../.github/workflows/release.yml). Its job could stage an owner-only
   draft but cannot approve the installer or publish a release. It prepares
@@ -407,16 +407,15 @@ new exact installers remain required:
 
 ## Next action and current limitations
 
-Next action: keep setup `7ff298c597de…` private, establish the
-maintainer's Microsoft redistribution entitlement by obtaining the licensed
-Community 2022 copy after their reported terms acceptance, and review the
-[component-only text draft](windows-microsoft-component-terms.draft.txt) and
-acceptance requirement using [the prepared review](windows-microsoft-distribution-notice.draft.md).
-The corrected overlay and listed local checks already pass on the confirmed
-Windows 11 x64 PC with its downloaded hash recorded. Protected human approval
-and joint release integration wait for distribution clearance. Actual installed input/source
-bindings and downloaded source/notices checks pass; independent full source-only
-rebuilding is unverified and public approval flags remain false.
+The first Windows pre-release is published. Owner licensed-copy confirmation,
+the final [component-only terms](../THIRD_PARTY_LICENSES/windows-microsoft-components.txt),
+installed acceptance/rejection checks, exact-hash PC tests and protected joint
+publication are recorded in the retained reviews and installer report. Superseded
+terms drafts are removed; their historical contents remain in Git at `2885586`.
+Future versions use the [shared release checklist](desktop-release.md), current
+input/source/notices verification and their own exact-installer confirmation.
+Independent full source-only rebuilding remains unverified; original private
+record approval flags are preserved rather than rewritten.
 The selected compiler/SDK fail closed if absent
 from the hosted image. Dictionary downloads also fail if the daily snapshot
 moves; supply the pinned snapshot or deliberately rebuild with new hashes. Candidate CI may assist development before publication CI is enabled.

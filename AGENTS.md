@@ -418,13 +418,16 @@ After coding:
 
 ## Current milestone
 
-The current milestone is **first desktop release preparation**, with Windows
-release verification still in progress. Follow `docs/implementation-plan.md`
-and the exact-candidate checks in `docs/desktop-release.md`.
+The **first desktop pre-release milestone is complete**: v0.1.0 is published
+for macOS Apple Silicon and Windows 11 x64. Current work is release-workflow and
+documentation maintenance. Follow `docs/implementation-plan.md` and the
+exact-candidate checks in `docs/desktop-release.md` for future versions.
 
 The capture → OCR → coordinate → overlay path and the initial learning features
 are implemented. Prioritize packaging, source/notices, installer verification,
 and release readiness over new features. Preserve candidate hashes and existing
-platform evidence; results apply only to the exact installer tested.
+platform evidence; results apply only to the exact installer tested. The owner
+is satisfied with v0.1.0; do not request more current-release testing or implement
+the optional UI redesign without a new request.
 
 Do not publish or approve an installer without the owner's explicit authorization.

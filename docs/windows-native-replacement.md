@@ -41,7 +41,8 @@ PE imports and rejects non-x64 inputs.
 The historical exact-installed replacement test `38021809403` passed both OCR
 orientations, dictionary/translation/persistence and loaded replacement DLL hash
 checks, then restored every original installed file. Its setup identity and
-limitations are recorded in `windows-native-rebuild.md`. It does not approve a
+setup SHA-256 was `51b0091103c10c03ecd3748039bd4db0631381fb43885fe7163b889821fba207`;
+the original worksheet remains in Git at `2885586`. It does not approve a
 different setup. The historical installed-test script has fixed old setup hashes;
 do not run it against a new setup without deliberately updating those bindings.
 
