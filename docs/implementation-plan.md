@@ -2,6 +2,9 @@
 
 ## Current status
 
+Updated **2026-10-13**. Current work is post-release maintenance on tracked
+`develop`; the app version remains `0.1.0`.
+
 The **first desktop pre-release milestone is complete**.
 [YomiMado v0.1.0](https://github.com/chonnakanch/yomimado/releases/tag/v0.1.0)
 was published on 2026-10-12 for macOS Apple Silicon and Windows 11 x64 CPU.
@@ -11,10 +14,16 @@ UI implementation is requested.
 
 The tag remains at tested app source
 `5159473da21c952f1a4dc87c457bba82edf5edde`. Recovery executor
-`a30d0ba2b931ab9443b656b64ed55ba7a1d9ffc0` publishes the existing delivery after
+`a30d0ba2b931ab9443b656b64ed55ba7a1d9ffc0` published the existing delivery after
 owner approval, without rebuilding or replacing installers or moving the tag.
 The [shared release record](desktop-release.md) retains build/recovery URLs,
 original delivery identities, uploaded-hash verification and owner reports.
+
+The workflow/script cleanup, version updater, code-quality fixes (`973c721`) and
+security fixes (`8c8ef02`) are committed on `develop`. They have not been delivered
+to v0.1.0 users. The next release requires updated runtime inputs and a newly
+reviewed macOS seed; the original frozen runtime cannot include these shared
+Python changes. Keep the existing seed-reuse rejection checks in place.
 
 | Published installer     | SHA-256                                                            |
 | ----------------------- | ------------------------------------------------------------------ |
@@ -64,13 +73,14 @@ The DMG is unnotarized/ad-hoc signed and Windows setup is unsigned hobby distrib
 Full source-only rebuilding of the complete delivery remains unverified.
 See [Windows](windows-installed-test.md) and [macOS](macos-clean-mac-test.md) reports.
 
-## Current maintenance work
+## Completed post-release maintenance
 
 - [x] Simplify active workflows to [Checks](../.github/workflows/checks.yml) and
       [Release](../.github/workflows/release.yml). Checks retains the required `gates`
       job; Release builds both platforms and waits for protected owner approval.
 - [x] Retire standalone audits, the separate Windows private candidate and one-time
-      recovery workflow. Their scripts and required source/licence evidence remain.
+      recovery workflow. Remove obsolete experiment/recovery tools while retaining
+      live build helpers and required source/licence evidence.
 - [x] Prepare six-file future release delivery: both installers, combined source/data/
       recipe archive, combined notices/records archive, checksums and provenance.
       Preserve every original input and verify nested hashes, member safety and size.
@@ -83,6 +93,8 @@ See [Windows](windows-installed-test.md) and [macOS](macos-clean-mac-test.md) re
       update callers, imports, source recipes and exporter provenance checks.
 - [x] Add a documented version-update command for npm/Tauri/Cargo metadata and
       app lock entries, with preview, input validation and dependency preservation.
+      [Usage](../scripts/README.md#update-the-app-version) covers all five files;
+      Checks now also runs the updater's regression tests.
 - [x] Complete a focused [code quality review](code-review-2026-10-13.md): share
       frontend transport/token validation, validate OCR responses, remove repeated
       popup resets and fix stale translation responses/cache cleanup. Shared Python
@@ -91,18 +103,68 @@ See [Windows](windows-installed-test.md) and [macOS](macos-clean-mac-test.md) re
       hostile browser requests, bound uploads/decoded dimensions, narrow frontend
       environment exposure and update vulnerable npm development tooling. Record
       remaining frozen-runtime advisories without changing tested v0.1.0 inputs.
-- [ ] Resolve the recorded Python runtime advisories with updated exact inputs,
-      reviewed licenses/native notices and a new macOS seed before a future release.
-- [ ] Merge the prepared maintenance changes through protected main when authorized.
-- [ ] For the next app version, verify its real delivery and exact new installers
-      before the owner approves publication. Current v0.1.0 needs no new retest.
 
-These changes are prepared on tracked `develop`. There is no version bump or
-publication in this maintenance task. A released version is skipped by the main
-workflow. Future `0.x.x` and `alpha.N`/`beta.N`/`rc.N` versions are pre-releases;
-`1.0.0` and later without a suffix are stable. The protected installer gate applies
-to both classifications. App/runtime changes still need relevant tests and build
-checks; source/notices changes must preserve the corresponding distribution obligations.
+Recorded local verification for the latest source changes: 100 frontend tests,
+TypeScript and production build; 78 OCR service tests across the applicable
+Python interpreters; 36 Rust tests and a macOS debug build. The three required
+release/version suites pass 51 tests. See the dated reviews for exact interpreter
+coverage and limitations. These checks do not establish installed acceptance of
+the new code; no new Windows installer was built for those reviews.
+
+## Next milestone: refreshed runtimes and next release
+
+The remaining release prerequisite is the runtime refresh recorded in the
+[security review](security-review-2026-10-13.md). Its dated advisory snapshot
+matches 13 distinct Python package names across the macOS/Windows inventories.
+Installed inference, export/reference packages and build tools need separate
+reachability and licensing review. Prioritize Starlette and python-multipart's
+request/form parsing paths; the new origin/size guards do not patch dependencies.
+
+Proceed in this order when continuing release preparation:
+
+1. [ ] Extend required [Checks](../.github/workflows/checks.yml) to run frontend
+       and OCR service regression tests, plus their lint/type/format checks. Use Python
+       3.11 or later for Windows graph-checksum tests; currently only the three
+       release/version suites run in this workflow.
+2. [ ] Triage the recorded Python advisories and choose compatible patched exact
+       inputs for both platforms. Update locks, hashes, preferred sources, recipes
+       and licence/native notices together; preserve historical delivery records.
+3. [ ] Build and verify refreshed runtimes containing the shared translation and
+       security fixes. Prepare and review a new macOS seed, then update its pinned
+       identity and source bindings. Verify the Windows CPU ONNX path, hidden-console
+       lifecycle and model exclusion with the updated inputs. Keep long Torch source
+       builds out of the normal release flow.
+4. [ ] Choose the next app version and apply it with
+       [update_version.py](../scripts/update_version.py). Review the five-file diff
+       and run relevant app/native/service/release checks before an authorized PR
+       merge through protected `main`.
+5. [ ] Let [Release](../.github/workflows/release.yml) build both new installers
+       and verify the real six-file candidate: source/data/recipe and notice archives,
+       nested hashes, provenance, architecture, native dependencies and upload size.
+       Confirm that the renamed Windows backend modules are collected by the freezer.
+6. [ ] Record local acceptance for both exact new installer hashes, including
+       Windows 100%/125%/150% scaling, offline learning, persistence and upgrade/
+       uninstall. Retain untested hardware cases and any explicit macOS waiver.
+       The owner supplies protected publication approval after these gates pass.
+
+There is no version bump, main merge or publication in this plan update. The
+published v0.1.0 needs no further testing. A released version is skipped by the
+main workflow. Future `0.x.x` and `alpha.N`/`beta.N`/`rc.N` versions are pre-releases;
+`1.0.0` and later without a suffix are stable. Both classifications retain the
+same exact-installer publication gate.
+
+## Deferred maintenance
+
+These review follow-ups are recorded separately from completed fixes:
+
+- [ ] Decide whether to add per-launch local service authentication and an
+      inference admission/concurrency limit. The current client header guards
+      browser requests; other native processes can still supply it.
+- [ ] Track the Rust maintenance advisories and supported-platform reachability
+      recorded in the security review; update reviewed inputs when applicable.
+- [ ] Consider the code review's native capture helpers, shared smoke-request
+      helper and smaller popup/pipeline functions when changing those areas.
+      Preserve coordinate behavior and platform verification.
 
 ## Optional post-release UI discussion
 
