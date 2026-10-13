@@ -1,9 +1,10 @@
 # YomiMado UI/UX redesign plan
 
-Status: **Proposed — awaiting owner approval before application changes.**
+Status: **Approved by the owner on 2026-10-13. Phase 1 implemented for review.**
 Prepared 2026-10-13 against `develop` at `4f8a395` (app version `0.1.0`).
-This document and [the design system](design-system.md) complete the requested
-analysis/planning phase. They do not authorize implementation or publication.
+The owner approved this plan and [the design system](design-system.md), then
+authorized Phase 1: design tokens and the floating toolbar. Later phases require
+approval of this result. No installer publication is authorized.
 
 ## 1. Goal, scope and reference interpretation
 
@@ -460,11 +461,49 @@ remain aligned; the popup opens sentence-first, supports word/kanji exploration
 and explicit copying/saving; and existing offline learning/persistence works.
 Collections/settings must retain their error states, attribution and model checks.
 
-The present deliverable is **two reviewable documents only**. Source inspection
-and reference-image review support this analysis; they do not establish native
-runtime or installed acceptance of the proposed design. Next action is owner
-review/approval before step 2 introduces application changes.
+### Phase 1 implementation — awaiting result approval
 
-Planning verification: both documents pass Prettier and local document-link
-checks. The unchanged frontend baseline passes all 100 tests in 18 files and
-TypeScript typechecking. No redesigned app or new installer was built/tested.
+Implemented the semantic tokens and small control/focus primitives, a standalone
+520 × 56 logical px toolbar (112 × 48 collapsed), drag/keyboard movement,
+Selected Area/Whole Screen, fresh-pixel Rescan, reversible overlay visibility,
+status/error/cancel controls, and access to existing collections/settings/notices
+and Quit. Native window bounds follow content, including overflow/status rows.
+The secondary main window starts hidden; closing it keeps the toolbar/service
+alive. Global O selects an area; global S now scans the whole pointer monitor.
+Toolbar buttons use its monitor; Rescan retains the original successful target.
+
+The supporting native session rejects overlapping scans, stale completions and
+changed monitor layouts. Capture hides utility windows and the native selector;
+processing restores the toolbar without leaving a full-screen input blocker.
+Whole Screen uses full physical monitor bounds, independent of selector/menu-bar
+insets; selection and repeat captures reuse the existing coordinate/capture path.
+Results and saved-data/service formats are preserved. The existing developer
+capture preview remains available on recognition errors.
+The native OCR window is reused on Rescan; each generation stays hidden until
+its current polygons mount, avoiding window-label destruction races and old
+geometry flashing at the new position. Failure retains the previous result.
+
+The legacy main window's page/area controls and learning UI remain available in
+this phase. Model import is accessed through Settings, using the existing verified
+import UI. Full settings/library layout, overlay visuals/native hit routing,
+region keyboard navigation and dictionary-popup refactoring are not implemented
+or authorized by this phase. No new dependency/font/model, service behavior,
+version number or release record was changed.
+
+Verification and limits are recorded in the
+[implementation status](implementation-plan.md#ui-redesign--phase-1-review).
+The running macOS debug toolbar passed startup, collapse/expand, drag, menu,
+secondary-window open/close/reopen and Quit smoke checks. The temporary debug
+bundle has no Screen Recording grant; the existing permission failure is shown
+in the toolbar and settings remain usable afterward. No OS permission was changed.
+Successful native capture/Rescan/hide-show and Windows/mixed-monitor runtime
+acceptance remain unverified; automated geometry/session/frontend tests cover
+those source paths. These results are not installer acceptance.
+
+### Planning verification retained
+
+The original two-document planning deliverable passed Prettier and local link
+checks, and the then-unchanged frontend baseline passed 100 tests in 18 files
+and TypeScript. That historical planning pass does not certify redesigned UI.
+
+Next action: owner review of Phase 1 before any next-phase implementation.

@@ -111,6 +111,68 @@ it("loads a text-heavy OCR result from native state instead of the URL", async (
   );
 });
 
+it("mounts the current polygons before revealing a reused native overlay", async () => {
+  vi.mocked(invoke).mockImplementation(async (command) => {
+    if (command === "reveal_ocr_overlay") {
+      expect(container.querySelectorAll("polygon")).toHaveLength(1);
+      expect(container.querySelector("polygon title")?.textContent).toContain(
+        "今日",
+      );
+      return {
+        windowWidth: 1000,
+        windowHeight: 800,
+        contentLeft: 0,
+        contentTop: 0,
+        contentWidth: 1000,
+        contentHeight: 800,
+        toolbarTop: 0,
+        toolbarHeight: 32,
+      };
+    }
+    return {
+      sessionId: 90,
+      metadata: {
+        displayId: "display",
+        displayName: "Display",
+        screenPhysicalBounds: { x: 0, y: 0, width: 1000, height: 800 },
+        selectionPhysicalBounds: { x: 0, y: 0, width: 1000, height: 800 },
+        selectionLogicalBounds: { x: 0, y: 0, width: 1000, height: 800 },
+        imageWidth: 1000,
+        imageHeight: 800,
+        scaleFactor: 1,
+      },
+      regions: [
+        {
+          id: "current",
+          text: "今日",
+          polygon: [
+            { x: 1, y: 1 },
+            { x: 20, y: 1 },
+            { x: 20, y: 40 },
+          ],
+          orientation: "vertical",
+          confidence: 0,
+          type: "other",
+          tokens: [],
+        },
+      ],
+      engine: "manga",
+      layout: {
+        windowWidth: 1000,
+        windowHeight: 800,
+        contentLeft: 0,
+        contentTop: 0,
+        contentWidth: 1000,
+        contentHeight: 800,
+        toolbarTop: 0,
+        toolbarHeight: 32,
+      },
+    };
+  });
+  await act(async () => root.render(<OcrOverlay />));
+  expect(invoke).toHaveBeenCalledWith("reveal_ocr_overlay", { sessionId: 90 });
+});
+
 it("steps through estimated scan order and opens the selected region", async () => {
   const metadata = {
     displayId: "display",

@@ -17,7 +17,23 @@
         "title": "YomiMado",
         "width": 700,
         "height": 480,
-        "resizable": true
+        "resizable": true,
+        "visible": false
+      },
+      {
+        "label": "toolbar",
+        "title": "YomiMado toolbar",
+        "url": "index.html?mode=toolbar",
+        "width": 560,
+        "height": 56,
+        "resizable": false,
+        "decorations": false,
+        "transparent": true,
+        "alwaysOnTop": true,
+        "skipTaskbar": true,
+        "focus": false,
+        "x": 24,
+        "y": 80
       }
     ],
     "security": { "csp": null }

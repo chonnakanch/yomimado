@@ -11,7 +11,7 @@ const MODEL_NAME: &str = "comictextdetector.pt.onnx";
 const MODEL_SHA256: &str = "1a86ace74961413cbd650002e7bb4dcec4980ffa21b2f19b86933372071d718f";
 const MAX_MODEL_BYTES: u64 = 256 * 1024 * 1024;
 
-#[derive(Serialize)]
+#[derive(Clone, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct DetectorModelStatus {
     required: bool,

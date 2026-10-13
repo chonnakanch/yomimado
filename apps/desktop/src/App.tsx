@@ -163,6 +163,16 @@ export function App() {
     }
   };
 
+  useEffect(() => {
+    const view = new URLSearchParams(window.location.search).get("view");
+    if (view === "words") void loadSavedWords();
+    if (view === "sentences") void loadSavedSentences();
+    if (view === "sources") setShowSources(true);
+    if (view === "settings") {
+      document.getElementById("scan-ocr-settings")?.scrollIntoView?.();
+    }
+  }, []);
+
   return (
     <main className="main-window">
       <h1>
@@ -170,8 +180,12 @@ export function App() {
       </h1>
       <p>Read beyond the page.</p>
       {detectorModel?.required && (
-        <section className="model-setup" aria-label="Detector model setup">
-          <h2>Detector model</h2>
+        <section
+          className="model-setup"
+          aria-label="Detector model setup"
+          id="scan-ocr-settings"
+        >
+          <h2>Scan & OCR · Detector model</h2>
           {detectorModel.installed ? (
             <p>Installed on this computer. Manga scanning is ready.</p>
           ) : (
@@ -253,7 +267,8 @@ export function App() {
       <p className="status">{message}</p>
       <p className="hint">
         Shortcuts: Cmd/Ctrl + Shift + O for manual selection; Cmd/Ctrl + Shift +
-        S to scan the manga page.
+        S for Whole Screen. The toolbar is the primary reading control; closing
+        this window keeps YomiMado running.
       </p>
       <section className="main-settings" aria-label="Reading settings">
         <h2>Reading settings</h2>

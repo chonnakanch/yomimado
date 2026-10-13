@@ -1,0 +1,97 @@
+:root[data-mode="toolbar"] body {
+  overflow: hidden;
+}
+.floating-toolbar {
+  box-sizing: border-box;
+  color: var(--color-text-primary);
+  font-family: var(--font-ui);
+  position: relative;
+  width: 520px;
+}
+.floating-toolbar-row {
+  align-items: center;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-window);
+  box-sizing: border-box;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+  min-height: 56px;
+  padding: var(--space-2);
+}
+.toolbar-brand {
+  align-items: center;
+  color: var(--color-accent);
+  display: flex;
+  flex: none;
+  padding: 0 var(--space-1);
+}
+.toolbar-brand svg {
+  height: 24px;
+  width: 24px;
+}
+.toolbar-drag {
+  color: var(--color-text-muted);
+  cursor: grab;
+  width: 20px;
+}
+.floating-toolbar.collapsed {
+  width: 112px;
+}
+.floating-toolbar.collapsed .floating-toolbar-row {
+  min-height: 48px;
+  padding: var(--space-1) var(--space-2);
+}
+.toolbar-status {
+  align-items: center;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-control);
+  box-sizing: border-box;
+  color: var(--color-text-secondary);
+  display: flex;
+  flex-wrap: wrap;
+  font-size: var(--font-size-metadata);
+  gap: var(--space-2);
+  line-height: 1.5;
+  margin-top: var(--space-1);
+  overflow-wrap: anywhere;
+  padding: var(--space-2) var(--space-3);
+}
+.toolbar-status[role="alert"] {
+  color: var(--color-status-error);
+}
+.toolbar-status-action {
+  background: var(--color-surface-elevated);
+  color: var(--color-text-primary);
+  font-size: var(--font-size-metadata);
+  padding: var(--space-1) var(--space-2);
+}
+.toolbar-menu {
+  background: var(--color-surface-elevated);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-control);
+  box-sizing: border-box;
+  display: grid;
+  gap: var(--space-1);
+  margin-left: auto;
+  margin-top: var(--space-1);
+  padding: var(--space-2);
+  width: 224px;
+}
+.toolbar-menu button {
+  background: transparent;
+  color: var(--color-text-primary);
+  font-size: var(--font-size-label);
+  font-weight: 400;
+  padding: var(--space-2);
+  text-align: left;
+}
+.toolbar-menu button:hover:not(:disabled) {
+  background: var(--color-surface);
+}
+.toolbar-menu button:disabled {
+  color: var(--color-text-muted);
+  opacity: 1;
+}

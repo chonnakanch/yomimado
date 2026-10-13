@@ -62,6 +62,7 @@ afterEach(async () => {
   window.history.replaceState({}, "", "/");
   delete document.documentElement.dataset.capturing;
   vi.unstubAllGlobals();
+  vi.unstubAllEnvs();
   vi.mocked(invoke).mockReset();
   vi.mocked(requestOcr).mockReset();
   vi.useRealTimers();
@@ -256,4 +257,146 @@ it("does not turn an unavailable OCR demo into a scan-area click target", async 
     "show_ocr_overlay",
     expect.anything(),
   );
+});
+
+it("captures the whole monitor without invoking automatic page cropping", async () => {
+  window.history.replaceState({}, "", "/?mode=capture&scan=whole&session=12");
+  vi.mocked(invoke).mockResolvedValue(captured);
+  vi.mocked(requestOcr).mockResolvedValue({ engine: "manga", regions: [] });
+  await act(async () => root.render(<CaptureSelector />));
+  await act(async () => {
+    await new Promise<void>((resolve) => setTimeout(resolve, 0));
+  });
+  expect(invoke).toHaveBeenCalledWith("capture_whole_screen", {
+    sessionId: 12,
+  });
+  expect(invoke).not.toHaveBeenCalledWith(
+    "capture_auto_page",
+    expect.anything(),
+  );
+  expect(invoke).toHaveBeenCalledWith("finish_scan", {
+    sessionId: 12,
+    message: expect.stringContaining("No text"),
+    noText: true,
+  });
+});
+
+it("Rescan captures new pixels and retains its session ID through OCR publication", async () => {
+  window.history.replaceState({}, "", "/?mode=capture&scan=repeat&session=15");
+  vi.mocked(invoke).mockResolvedValue(captured);
+  vi.mocked(requestOcr).mockResolvedValue({
+    engine: "manga",
+    regions: [
+      {
+        id: "one",
+        text: "今日",
+        polygon: [
+          { x: 1, y: 1 },
+          { x: 20, y: 1 },
+          { x: 20, y: 40 },
+        ],
+        orientation: "vertical",
+        confidence: 0,
+        type: "other",
+        tokens: [],
+      },
+    ],
+  });
+  await act(async () => root.render(<CaptureSelector />));
+  await act(async () => {
+    await new Promise<void>((resolve) => setTimeout(resolve, 0));
+  });
+  expect(invoke).toHaveBeenCalledWith("capture_repeat_scan", { sessionId: 15 });
+  expect(requestOcr).toHaveBeenCalledOnce();
+  expect(invoke).toHaveBeenCalledWith("hide_finished_selector", {
+    sessionId: 15,
+  });
+  expect(invoke).toHaveBeenCalledWith(
+    "show_ocr_overlay",
+    expect.objectContaining({
+      sessionId: 15,
+      metadata: captured.metadata,
+      regions: [expect.objectContaining({ text: "今日" })],
+    }),
+  );
+});
+
+it("retains optional estimated navigation when repeating a page or Whole Screen scan", async () => {
+  window.history.replaceState(
+    {},
+    "",
+    "/?mode=capture&scan=repeat&order=1&session=16",
+  );
+  vi.mocked(invoke).mockResolvedValue(captured);
+  vi.mocked(requestOcr).mockResolvedValue({
+    engine: "manga",
+    regions: [
+      {
+        id: "one",
+        text: "今日",
+        polygon: [
+          { x: 1, y: 1 },
+          { x: 20, y: 1 },
+          { x: 20, y: 40 },
+        ],
+        orientation: "vertical",
+        confidence: 0,
+        type: "other",
+        tokens: [],
+      },
+    ],
+  });
+  await act(async () => root.render(<CaptureSelector />));
+  await act(async () => {
+    await new Promise<void>((resolve) => setTimeout(resolve, 0));
+  });
+  expect(invoke).toHaveBeenCalledWith(
+    "show_ocr_overlay",
+    expect.objectContaining({ estimatedReadingOrder: true, sessionId: 16 }),
+  );
+});
+
+it("reports a failed capture to the toolbar instead of leaving a hidden selector busy", async () => {
+  window.history.replaceState({}, "", "/?mode=capture&scan=whole&session=21");
+  vi.mocked(invoke).mockImplementation(async (command) => {
+    if (command === "capture_whole_screen")
+      throw new Error("display disconnected");
+    return undefined;
+  });
+  await act(async () => root.render(<CaptureSelector />));
+  await act(async () => {
+    await new Promise<void>((resolve) => setTimeout(resolve, 0));
+  });
+  expect(requestOcr).not.toHaveBeenCalled();
+  expect(invoke).toHaveBeenCalledWith("finish_scan", {
+    sessionId: 21,
+    message: expect.stringContaining("display disconnected"),
+  });
+});
+
+it("keeps the developer capture preview accessible when OCR fails", async () => {
+  vi.stubEnv("VITE_CAPTURE_DEBUG", "1");
+  vi.stubGlobal(
+    "ResizeObserver",
+    class {
+      observe() {}
+      disconnect() {}
+    },
+  );
+  window.history.replaceState({}, "", "/?mode=capture&scan=whole&session=24");
+  vi.mocked(invoke).mockResolvedValue(captured);
+  vi.mocked(requestOcr).mockRejectedValue(
+    new Error("local models unavailable"),
+  );
+  await act(async () => root.render(<CaptureSelector />));
+  await act(async () => {
+    await new Promise<void>((resolve) => setTimeout(resolve, 0));
+  });
+  expect(container.querySelector(".capture-debug")).not.toBeNull();
+  expect(container.textContent).toContain("local models unavailable");
+  expect(invoke).toHaveBeenCalledWith("resume_capture_selection", {
+    sessionId: 24,
+    debug: true,
+  });
+  expect(invoke).not.toHaveBeenCalledWith("finish_scan", expect.anything());
 });

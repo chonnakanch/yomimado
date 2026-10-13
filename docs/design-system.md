@@ -1,9 +1,9 @@
 # YomiMado design system
 
-Status: **Proposed — awaiting owner approval.** Prepared 2026-10-13.
+Status: **Approved by the owner on 2026-10-13.** Prepared 2026-10-13.
 Companion architecture and rollout: [UI redesign plan](ui-redesign-plan.md).
-This specifies future implementation; no application CSS/components are changed
-by this document.
+Phase 1 implements the tokens and floating-toolbar controls. Other component
+specifications remain planned until the owner approves the next phase.
 
 ## 1. Visual direction and boundaries
 
@@ -25,7 +25,7 @@ service exposes every Jisho field.
 ## 2. Semantic color tokens
 
 Declare tokens centrally in `apps/desktop/src/styles/tokens.css`; component
-styles consume roles, never repeat hex values. All values below are proposed.
+styles consume roles, never repeat hex values. The palette below is implemented in Phase 1.
 
 | CSS token                      | Value                       | Role                                                    |
 | ------------------------------ | --------------------------- | ------------------------------------------------------- |
@@ -282,5 +282,6 @@ During implementation, verify:
 
 Use synthetic Japanese text/regions for public screenshots and tests. Local
 reference manga images guide composition only; do not redistribute them as app
-assets or golden test snapshots. Design approval is the next gate; application
-implementation and exact-installer acceptance remain future work.
+assets or golden test snapshots. The owner approved the design and limited initial implementation to tokens
+and toolbar. Review of that result gates further work; exact-installer acceptance
+remains separate future work.

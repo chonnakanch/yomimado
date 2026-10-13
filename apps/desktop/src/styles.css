@@ -1,8 +1,13 @@
+@import "./styles/tokens.css";
+@import "./styles/primitives.css";
+
 :root {
-  font-family: system-ui, sans-serif;
-  color: #f8f6f1;
-  background: #25211e;
+  font-family: var(--font-ui);
+  color: var(--color-text-primary);
+  background: var(--color-background);
 }
+:root[data-mode="toolbar"],
+:root[data-mode="toolbar"] body,
 :root[data-mode="capture"],
 :root[data-mode="overlay"],
 :root[data-mode="translation"],
@@ -16,9 +21,9 @@ body {
 }
 button {
   border: 0;
-  border-radius: 8px;
-  background: #df8259;
-  color: #201512;
+  border-radius: var(--radius-control);
+  background: var(--color-accent);
+  color: var(--color-on-accent);
   cursor: pointer;
   font: inherit;
   font-weight: 700;

@@ -9,6 +9,7 @@ import {
 } from "../../lib/reading-order-setting";
 
 interface OverlayState {
+  sessionId?: number;
   metadata: CaptureMetadata;
   regions: TextRegion[];
   engine: "demo" | "manga";
@@ -43,6 +44,7 @@ export function OcrOverlay() {
     readReadingOrderEnabled,
   );
   const [popupError, setPopupError] = useState<string | null>(null);
+  const [revealed, setRevealed] = useState(false);
   const [viewport, setViewport] = useState({
     width: window.innerWidth,
     height: window.innerHeight,
@@ -88,6 +90,28 @@ export function OcrOverlay() {
       window.removeEventListener("resize", handleResize);
     };
   }, []);
+
+  useEffect(() => {
+    if (state?.sessionId === undefined) return;
+    let mounted = true;
+    void invoke<OverlayState["layout"] | null>("reveal_ocr_overlay", {
+      sessionId: state.sessionId,
+    })
+      .then((layout) => {
+        if (mounted && layout) {
+          setState((current) => (current ? { ...current, layout } : current));
+          setViewport({ width: window.innerWidth, height: window.innerHeight });
+          setRevealed(true);
+        }
+      })
+      .catch((error) => {
+        if (mounted)
+          setLoadError(`Could not display OCR overlay: ${String(error)}`);
+      });
+    return () => {
+      mounted = false;
+    };
+  }, [state?.sessionId]);
 
   if (loadError) return <div className="overlay-error">{loadError}</div>;
   if (!state) return null;
@@ -202,6 +226,8 @@ export function OcrOverlay() {
           top: state.layout.contentTop * scaleY,
           width: contentWidth,
           height: contentHeight,
+          visibility:
+            state.sessionId !== undefined && !revealed ? "hidden" : undefined,
         }}
         aria-label="OCR regions"
       >

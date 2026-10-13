@@ -2,15 +2,16 @@
 
 ## Current status
 
-Updated **2026-10-13**. Current work is post-release maintenance on tracked
+Updated **2026-10-13**. Current work includes the approved UI redesign Phase 1 on tracked
 `develop`; the app version remains `0.1.0`.
 
 The **first desktop pre-release milestone is complete**.
 [YomiMado v0.1.0](https://github.com/chonnakanch/yomimado/releases/tag/v0.1.0)
 was published on 2026-10-12 for macOS Apple Silicon and Windows 11 x64 CPU.
 Both exact-hash local installer reports and protected owner publication pass.
-The maintainer is satisfied with the current app; no further v0.1.0 testing or
-UI implementation is requested.
+The maintainer is satisfied with the published app; no further v0.1.0 testing
+is requested. The new UI redesign approval below applies to source development
+for future delivery and does not alter historical installer acceptance.
 
 Availability update — 2026-10-13: after deleting the original tag, the owner
 merged [PR #6](https://github.com/chonnakanch/yomimado/pull/6) at
@@ -214,17 +215,42 @@ These review follow-ups are recorded separately from completed fixes:
       helper and smaller popup/pipeline functions when changing those areas.
       Preserve coordinate behavior and platform verification.
 
-## Optional post-release UI discussion
+## UI redesign — Phase 1 review
 
-The earlier redesign idea remains a discussion only. The maintainer currently
-wants to keep the app as it is. If requested later:
+The owner approved [the redesign plan](ui-redesign-plan.md) and
+[design system](design-system.md) on 2026-10-13, and authorized design tokens and
+the floating toolbar only. **Phase 1 is implemented for source/result review;
+next-phase work waits for explicit approval.**
 
-1. Review the main window, capture flow, overlay and learning popups together.
-2. Agree goals and visual direction before mockups or implementation.
-3. Discuss a Jisho-inspired popup with prominent word/reading, grouped meanings
-   and compact kanji meanings/on/kun details; use inspiration rather than an exact copy.
-4. Support smaller screens with stacked sections and scrolling; omit Wikipedia.
-5. Consider common-word/JLPT tags only with suitable attributed data; never invent levels.
+- [x] Semantic CSS palette, typography/spacing/shape tokens, readable controls,
+      focus indicators, offline native font fallback and transparent utility roots.
+- [x] Separate always-on-top draggable toolbar; collapsed native bounds, saved
+      collapse preference, keyboard movement and accessible overflow navigation.
+- [x] Selected Area, Whole Screen, fresh-pixel Rescan and reversible result visibility.
+      Monitor-bound session state, busy/cancel/errors and stale-response protection.
+- [x] Keep secondary main window hidden on startup and alive after close; existing
+      saved collections, detector import, sources/notices and Quit remain accessible.
+- [x] Preserve local OCR/dictionary/tokenization/translation/persistence and developer
+      capture diagnostics. No service/dependency/data/license/version changes.
+- [ ] Owner approval of this Phase 1 result.
+- [ ] Later phases: native selective hit routing/overlay visuals, dictionary popup,
+      saved-collection layouts and full settings redesign. Do not start these yet.
+
+Local verification: 113 frontend tests in 19 files, TypeScript, Prettier and
+production Vite build; 44 native Rust tests, Rust formatting and macOS debug
+build; all 78 service cases under pinned Python 3.11.17. Token text/action/focus
+contrast pairs were measured. The older Python 3.9 environment initially passes
+77 cases and fails the existing `hashlib.file_digest` Windows graph case; the
+pinned CI interpreter passes all cases without service changes.
+
+macOS debug UI smoke checks: toolbar-only startup, 520 × 56 / 112 × 48 logical
+window bounds, collapse/expand, drag, menu access, secondary-window close/reopen,
+permission-error recovery and Quit. The temporary debug bundle lacks Screen
+Recording permission; no OS settings were changed. Successful native capture,
+Rescan and hide/show, Windows UI behavior and mixed-DPI/multiple-monitor runtime
+checks remain unverified. Geometry/admission/cancellation tests pass, but do not
+substitute for those native interactions. This is not installed-app acceptance;
+no installer/tag/publication or historical v0.1.0 evidence was changed.
 
 Older per-attempt plans and abandoned experiments remain recoverable in Git at
 `2885586`. Current build inputs, software/data terms, exact release records and

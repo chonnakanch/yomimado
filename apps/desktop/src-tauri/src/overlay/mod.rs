@@ -32,7 +32,7 @@ impl OverlayStore {
     }
 }
 
-#[derive(Serialize)]
+#[derive(Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 struct OverlayLayout {
     window_x: i32,
@@ -45,6 +45,52 @@ struct OverlayLayout {
     content_height: f64,
     toolbar_top: f64,
     toolbar_height: f64,
+}
+
+fn measured_layout(
+    metadata: &CaptureMetadata,
+    mut layout: OverlayLayout,
+    position: PhysicalPosition<i32>,
+    size: PhysicalSize<u32>,
+) -> OverlayLayout {
+    let scale = metadata.scale_factor;
+    let toolbar_screen_top = f64::from(layout.window_y) + layout.toolbar_top * scale;
+    layout.window_x = position.x;
+    layout.window_y = position.y;
+    layout.window_width = size.width;
+    layout.window_height = size.height;
+    layout.content_left = (metadata.selection_physical_bounds.x - f64::from(position.x)) / scale;
+    layout.content_top = (metadata.selection_physical_bounds.y - f64::from(position.y)) / scale;
+    layout.toolbar_top = ((toolbar_screen_top - f64::from(position.y)) / scale).clamp(
+        0.0,
+        (f64::from(size.height) / scale - layout.toolbar_height).max(0.0),
+    );
+    layout
+}
+
+pub fn reveal_overlay(app: &AppHandle, store: &OverlayStore) -> Result<serde_json::Value, String> {
+    let window = app
+        .get_webview_window("ocr-overlay")
+        .ok_or("OCR overlay is unavailable")?;
+    window.show().map_err(|e| e.to_string())?;
+    let mut state = store.get()?;
+    let metadata: CaptureMetadata =
+        serde_json::from_value(state["metadata"].clone()).map_err(|e| e.to_string())?;
+    let planned: OverlayLayout =
+        serde_json::from_value(state["layout"].clone()).map_err(|e| e.to_string())?;
+    // Measure after showing: macOS may shift a borderless window below its
+    // menu bar. Keep image pixels at their physical origin, even when that
+    // requires a negative content offset inside the visible native window.
+    let actual = measured_layout(
+        &metadata,
+        planned,
+        window.inner_position().map_err(|e| e.to_string())?,
+        window.inner_size().map_err(|e| e.to_string())?,
+    );
+    let actual = serde_json::to_value(actual).map_err(|e| e.to_string())?;
+    state["layout"] = actual.clone();
+    store.set(state)?;
+    Ok(actual)
 }
 
 #[derive(Clone, Copy, Deserialize)]
@@ -231,50 +277,72 @@ pub fn show_overlay(
     regions: serde_json::Value,
     engine: &str,
     estimated_reading_order: bool,
+    session_id: u64,
 ) -> Result<(), String> {
-    if let Some(window) = app.get_webview_window("translation-popup") {
-        let _ = window.close();
-    }
-    if let Some(window) = app.get_webview_window("ocr-overlay") {
-        let _ = window.close();
-    }
+    let previous = store.get().ok();
     let layout = layout(metadata);
     let state = serde_json::json!({
-        "metadata": metadata,
-        "regions": regions,
-        "engine": engine,
-        "layout": layout,
-        "estimatedReadingOrder": estimated_reading_order,
+        "metadata": metadata, "regions": regions, "engine": engine,
+        "layout": layout, "estimatedReadingOrder": estimated_reading_order,
+        "sessionId": session_id,
     });
-    store.set(state)?;
-    let builder =
-        WebviewWindowBuilder::new(app, "ocr-overlay", WebviewUrl::App(OVERLAY_URL.into()))
-            .transparent(true)
-            .decorations(false)
-            .always_on_top(true)
-            .accept_first_mouse(true)
-            .skip_taskbar(true)
-            .visible(false);
-    // Tao adds client-area insets to undecorated Windows windows with shadows.
-    // OCR uses the requested screen origin, so that frame would shift polygons.
-    #[cfg(target_os = "windows")]
-    let builder = builder.shadow(false);
-    let window = builder.build().map_err(|error| {
-        let _ = store.clear();
-        error.to_string()
-    })?;
-    let result = (|| {
+    if let Some(popup) = app.get_webview_window("translation-popup") {
+        popup.hide().map_err(|e| e.to_string())?;
+    }
+    // Reuse the overlay just like the learning popup: closing and immediately
+    // rebuilding the same label races asynchronous native destruction on Rescan.
+    let existing = app.get_webview_window("ocr-overlay");
+    let previous_frame = existing.as_ref().and_then(|window| {
+        Some((
+            window.inner_position().ok()?,
+            window.inner_size().ok()?,
+            window.url().ok()?,
+        ))
+    });
+    let window = if let Some(window) = existing {
+        window.hide().map_err(|e| e.to_string())?;
+        window
+    } else {
+        let builder =
+            WebviewWindowBuilder::new(app, "ocr-overlay", WebviewUrl::App(OVERLAY_URL.into()))
+                .transparent(true)
+                .decorations(false)
+                .always_on_top(true)
+                .focused(false)
+                .accept_first_mouse(true)
+                .skip_taskbar(true)
+                .visible(false);
+        // Windows shadows add client-area insets and shift image polygons.
+        #[cfg(target_os = "windows")]
+        let builder = builder.shadow(false);
+        builder.build().map_err(|e| e.to_string())?
+    };
+    let result: Result<(), String> = (|| {
         window
             .set_position(PhysicalPosition::new(layout.window_x, layout.window_y))
-            .map_err(|error| error.to_string())?;
+            .map_err(|e| e.to_string())?;
         window
             .set_size(PhysicalSize::new(layout.window_width, layout.window_height))
-            .map_err(|error| error.to_string())?;
-        window.show().map_err(|error| error.to_string())
+            .map_err(|e| e.to_string())?;
+        store.set(state)?;
+        let mut url = window.url().map_err(|e| e.to_string())?;
+        url.set_query(Some(&format!("mode=overlay&session={session_id}")));
+        window.navigate(url).map_err(|e| e.to_string())?;
+        // The React root reveals this generation after mounting its polygons.
+        // Repositioning a visible old DOM would briefly show incorrect geometry.
+        Ok(())
     })();
     if result.is_err() {
-        let _ = window.close();
-        let _ = store.clear();
+        if let Some(previous) = previous {
+            let _ = store.set(previous);
+        } else {
+            let _ = store.clear();
+        }
+        if let Some((position, size, url)) = previous_frame {
+            let _ = window.set_position(position);
+            let _ = window.set_size(size);
+            let _ = window.navigate(url);
+        }
     }
     result
 }
@@ -363,6 +431,48 @@ pub fn resize_translation_popup(
 mod tests {
     use super::*;
     use crate::capture::Rectangle;
+
+    #[test]
+    fn measured_window_origin_keeps_whole_screen_pixels_aligned_below_menu_bar() {
+        let bounds = Rectangle {
+            x: 0.0,
+            y: 0.0,
+            width: 2940.0,
+            height: 1912.0,
+        };
+        let metadata = CaptureMetadata {
+            display_id: "retina".into(),
+            display_name: "Retina".into(),
+            screen_physical_bounds: bounds,
+            selection_physical_bounds: bounds,
+            selection_logical_bounds: Rectangle {
+                x: 0.0,
+                y: 0.0,
+                width: 1470.0,
+                height: 956.0,
+            },
+            image_width: 2940,
+            image_height: 1912,
+            scale_factor: 2.0,
+        };
+        let measured = measured_layout(
+            &metadata,
+            layout(&metadata),
+            PhysicalPosition::new(0, 66),
+            PhysicalSize::new(2940, 1912),
+        );
+        assert_eq!(measured.content_top, -33.0);
+        assert_eq!(measured.content_height, 956.0);
+        assert_eq!(
+            f64::from(measured.window_y) + measured.content_top * 2.0,
+            0.0
+        );
+        // An image-space point at physical y=666 lands at screen y=666.
+        assert_eq!(
+            f64::from(measured.window_y) + (measured.content_top + 333.0) * 2.0,
+            666.0
+        );
+    }
 
     #[test]
     fn large_ocr_state_is_kept_out_of_the_webview_url() {

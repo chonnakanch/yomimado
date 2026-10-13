@@ -224,3 +224,15 @@ it("shows saved sentences and removes one only after confirmation", async () => 
   });
   expect(container.textContent).toContain("No saved sentences yet");
 });
+
+it("opens the existing saved-word view when requested by the toolbar", async () => {
+  window.history.replaceState({}, "", "/?view=words");
+  vi.stubGlobal(
+    "fetch",
+    vi.fn().mockResolvedValue(new Response(JSON.stringify({ words: [] }))),
+  );
+  await act(async () => root.render(<App />));
+  expect(container.querySelector('[aria-label="Saved words"]')).not.toBeNull();
+  expect(container.textContent).toContain("No saved words yet");
+  window.history.replaceState({}, "", "/");
+});

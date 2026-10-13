@@ -1,5 +1,32 @@
 # Reading with YomiMado
 
+## Phase 1 toolbar (development source)
+
+YomiMado now starts with a compact always-on-top toolbar. Drag its handle, or
+focus the handle and use arrow keys, to move it. Collapse leaves Rescan and an
+Expand control; the native window shrinks too. The overflow menu opens the
+existing saved words/sentences, Settings (including detector import), sources
+and Quit. Closing the secondary main window keeps the app running.
+
+**Selected Area** scans a dragged region; **Whole Screen** scans the toolbar's
+monitor without automatic page cropping. **Rescan** takes a new screenshot of
+the last successful area/monitor; it is disabled until there is a successful scan.
+Changed monitor layout/scaling requires a new scan selection. Hide/Show preserves
+results without OCR; rescan if the underlying page changes. The toolbar shows
+scan/cancel/error status; screenshots still stay local.
+
+`Cmd/Ctrl+Shift+O` selects an area on the monitor under the pointer.
+`Cmd/Ctrl+Shift+S` now means Whole Screen on that monitor. This changes the older
+page-scan shortcut described in the published v0.1.0 guide below. Toolbar buttons
+use the toolbar's monitor; Rescan uses its recorded original monitor.
+
+This source redesign is awaiting Phase 1 result approval. The learning popup,
+legacy main-window controls and saved-data format remain unchanged. Full
+settings/library/popup/overlay redesigns are deferred; published v0.1.0 installers
+retain the following older interaction.
+
+## Published v0.1.0 reading flow
+
 Use the capture and learning flow below:
 
 1. Press `Cmd+Shift+O` on macOS or `Ctrl+Shift+O` on Windows (or use **Select
