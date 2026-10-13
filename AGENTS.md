@@ -420,7 +420,10 @@ After coding:
 
 The **first desktop pre-release milestone is complete**: v0.1.0 passed acceptance
 and was published for macOS Apple Silicon and Windows 11 x64. The owner removed
-its tag on 2026-10-13; public downloads are currently unavailable. Preserve the
+its original tag on 2026-10-13, then merged PR #6 and completed the shared release
+workflow. Public v0.1.0 downloads are available again at source `b188b05`, with
+new installer hashes and six uploaded assets. Automated gates and publication
+pass; local acceptance for these new hashes is not recorded. Preserve the
 historical evidence. Current work is release-workflow and
 documentation maintenance. Follow `docs/implementation-plan.md` and the
 exact-candidate checks in `docs/desktop-release.md` for future versions.

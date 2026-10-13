@@ -19,8 +19,8 @@
 - [Release notes template](desktop-release-notes.md): generated notes for future versions.
 - [macOS release guide](macos-release.md) and [Windows release guide](windows-release.md):
   platform packaging and retained preparation evidence.
-- [Prepared macOS runtime seed](macos-runtime-seed.md): private input hashes,
-  source-only approval, exact frozen-service verification and the upload blocker.
+- [Verified macOS runtime seed](macos-runtime-seed.md): private input hashes,
+  source-only approval, exact frozen-service verification and completed input recovery.
 - [macOS installed-app record](macos-clean-mac-test.md) and
   [Windows installed-app record](windows-installed-test.md): exact tested hashes,
   owner reports, waivers and untested hardware.

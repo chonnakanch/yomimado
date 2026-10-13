@@ -18,8 +18,9 @@ does not affect these completed uploads.
 The Windows dictionary draft has also been restored through the owner-run API
 uploader. Its uploaded digest matches the repacked archive below, and both
 original dictionary files remain byte-identical. All four input pins are now
-activated on `develop`. Integration through protected main is still pending;
-neither input is published.
+integrated through protected main in [PR #6](https://github.com/chonnakanch/yomimado/pull/6)
+at `b188b05`. Release `38378686892` passes private input transfer and both builds;
+the public installers have separate new hashes. Neither input draft is published.
 
 | Input                                   | SHA-256                                                            |
 | --------------------------------------- | ------------------------------------------------------------------ |
@@ -55,7 +56,8 @@ Verified for this exact seed:
 - [x] Runtime-reuse preflight, 44 shared-release/rule tests, lint/format and actionlint.
 - [x] Complete the private Windows dictionary upload and verify its new outer hash.
 - [x] Exact input membership/hash checks for both platforms; 46 release/rule/dictionary tests.
-- [ ] Integrate the verified inputs through protected main's required Checks.
+- [x] Integrate the verified inputs through protected main's required Checks.
+- [x] Main Release `38378686892`: private transfer, both builders, combined verification and publication.
 
 Private input recovery — 2026-10-13:
 
@@ -95,9 +97,9 @@ contains only `windows-dictionary-snapshots.tar.gz`, SHA-256
 `browser-verified-inputs.json` records the independent UI observations separately
 from the API success report. The Windows hash pin is now activated alongside the
 verified macOS revision, input label, three hashes and source archive paths.
-Both exact input directories and the macOS runtime-reuse preflight pass. Main
-still selects the old inputs until these changes are integrated through its
-required Checks; rerunning the old job cannot resolve it.
+Both exact input directories and the macOS runtime-reuse preflight pass. Main now
+selects these verified inputs. The old failed release job remains historical;
+the new successful run does not require another seed upload.
 
 Local evidence is retained under ignored
 `services/ocr/build/macos-runtime-refresh-42edd4e/`. The approved-source build uses

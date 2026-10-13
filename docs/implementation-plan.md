@@ -12,9 +12,15 @@ Both exact-hash local installer reports and protected owner publication pass.
 The maintainer is satisfied with the current app; no further v0.1.0 testing or
 UI implementation is requested.
 
-Availability update — 2026-10-13: the owner removed `v0.1.0`; the public release
-API no longer exposes its downloads. Retain the historical acceptance and hashes.
-No replacement release or version bump is authorized by the cleanup merge.
+Availability update — 2026-10-13: after deleting the original tag, the owner
+merged [PR #6](https://github.com/chonnakanch/yomimado/pull/6) at
+`b188b05dd42ac5553cfbc0c1188c9646e2ce29ca`. Main Checks and
+[Release `38378686892`](https://github.com/chonnakanch/yomimado/actions/runs/38378686892)
+pass, including both builds, combined verification and protected publication.
+Public v0.1.0 downloads are available again with six uploaded files and new
+installer bytes. Their public API hashes, exact tag/source and downloaded
+provenance/checksum records verify. Local acceptance for these new hashes is not
+recorded; the previous human passes are preserved for their original installers.
 
 The original tag pointed at tested app source
 `5159473da21c952f1a4dc87c457bba82edf5edde`. Recovery executor
@@ -24,16 +30,21 @@ The [shared release record](desktop-release.md) retains build/recovery URLs,
 original delivery identities, uploaded-hash verification and owner reports.
 
 The workflow/script cleanup, version updater, code-quality fixes (`973c721`) and
-security fixes (`8c8ef02`) are merged through PR #5. They have not been delivered
-to v0.1.0 users. The [refreshed macOS seed](macos-runtime-seed.md) now contains
+security fixes (`8c8ef02`) are merged through PR #5 and delivered by the October 13
+republication. The [refreshed macOS seed](macos-runtime-seed.md) now contains
 the shared Python fixes and has source-only owner approval; dependency versions
 are unchanged. Advisory triage and new exact-installer gates remain open.
 Keep the existing seed-reuse rejection checks in place.
 
-| Published installer     | SHA-256                                                            |
-| ----------------------- | ------------------------------------------------------------------ |
-| Windows x64 setup       | `a8275246dc07a30f84a2109530bd68c3c0cceeed2556ce27fb09681d3a404602` |
-| macOS Apple Silicon DMG | `9d2999ae49b1756d23e62e6b703284e1d5c87898dc187757dfa3d881b8b28977` |
+| Original October 12 installer | SHA-256                                                            |
+| ----------------------------- | ------------------------------------------------------------------ |
+| Windows x64 setup             | `a8275246dc07a30f84a2109530bd68c3c0cceeed2556ce27fb09681d3a404602` |
+| macOS Apple Silicon DMG       | `9d2999ae49b1756d23e62e6b703284e1d5c87898dc187757dfa3d881b8b28977` |
+
+| Current October 13 installer | SHA-256                                                            |
+| ---------------------------- | ------------------------------------------------------------------ |
+| Windows x64 setup            | `61bbd7aefa46d895c1afae9d549e0d357d364bc647341d32ef08fe0957f74b59` |
+| macOS Apple Silicon DMG      | `1d6cadbff7e454d09c790bc002b259ea0f8a2997392e6034bda8f9cb698df462` |
 
 ## Completed application scope
 
@@ -131,9 +142,9 @@ CI-tool notice hashes verify. Hosted
 passes every job, including Windows and macOS native tests/builds;
 this follow-up changes no frozen runtime or installed-app acceptance record.
 
-## Next milestone: refreshed runtimes and next release
+## Next maintenance: dependency refresh and future versions
 
-The remaining release prerequisite is the runtime refresh recorded in the
+The remaining dependency maintenance is recorded in the
 [security review](security-review-2026-10-13.md). Its dated advisory snapshot
 matches 13 distinct Python package names across the macOS/Windows inventories.
 Installed inference, export/reference packages and build tools need separate
@@ -149,7 +160,7 @@ Proceed in this order when continuing release preparation:
 2. [ ] Triage the recorded Python advisories and choose compatible patched exact
        inputs for both platforms. Update locks, hashes, preferred sources, recipes
        and licence/native notices together; preserve historical delivery records.
-3. [ ] Build and verify refreshed runtimes containing the shared translation and
+3. [x] Build and verify refreshed runtimes containing the shared translation and
        security fixes. Prepare and review a new macOS seed, then update its pinned
        identity and source bindings. Verify the Windows CPU ONNX path, hidden-console
        lifecycle and model exclusion with the updated inputs. Keep long Torch source
@@ -158,30 +169,34 @@ Proceed in this order when continuing release preparation:
        [update_version.py](../scripts/update_version.py). Review the five-file diff
        and run relevant app/native/service/release checks before an authorized PR
        merge through protected `main`.
-5. [ ] Let [Release](../.github/workflows/release.yml) build both new installers
+5. [x] Let [Release](../.github/workflows/release.yml) build both new installers
        and verify the real six-file candidate: source/data/recipe and notice archives,
        nested hashes, provenance, architecture, native dependencies and upload size.
        Confirm that the renamed Windows backend modules are collected by the freezer.
+       Run `38378686892` passes the real six-file candidate and publication.
 6. [ ] Record local acceptance for both exact new installer hashes, including
        Windows 100%/125%/150% scaling, offline learning, persistence and upgrade/
        uninstall. Retain untested hardware cases and any explicit macOS waiver.
-       The owner supplies protected publication approval after these gates pass.
+       Protected publication has completed, but no new local acceptance report
+       for the October 13 hashes has been received in this chat. The owner requests
+       no additional current-release testing; do not infer a pass or a new waiver.
 
-The owner now authorizes a cleanup PR and merge to protected main. There is no
-version bump or publication in that merge. The original v0.1.0 acceptance needs
+The owner merged the cleanup in PR #5 and the verified inputs in PR #6 through
+protected main. The app version remains unchanged; publication followed through
+the protected release job. The original October 12 v0.1.0 acceptance needs
 no further testing. A published version with its tag is skipped; a missing tag
 requires runtime compatibility before private downloads or builds. The new
 `42edd4e` seed passes the source/runtime gates.
 The owner has now uploaded all four private input files. The API uploader's
 success report and independent browser inspection confirm draft/source identity
 and every GitHub SHA-256. The repacked Windows archive retains the exact pinned
-dictionary gzip files. Both input pin sets are activated on `develop`; exact
+dictionary gzip files. Both input pin sets are integrated on protected main; exact
 membership/hash checks, dictionary restoration and macOS runtime-reuse preflight
 pass. Forty-six release/rule/dictionary tests, lint/format and actionlint pass.
-The web-upload blocker is resolved through the owner-run API recovery. Main still
-needs the verified pin updates integrated through required Checks. Neither seed
-is public, and no new installer acceptance or publication is approved. See the
-[verified seed record](macos-runtime-seed.md).
+The web-upload blocker is resolved through the owner-run API recovery. All 12
+PR #6 checks and the main Checks/Release jobs pass. Neither seed draft is public;
+the new public installers have separate hashes and no local acceptance record.
+See the [verified seed record](macos-runtime-seed.md).
 Future `0.x.x` and `alpha.N`/`beta.N`/`rc.N` versions are pre-releases;
 `1.0.0` and later without a suffix are stable. Both classifications retain the
 same exact-installer publication gate.

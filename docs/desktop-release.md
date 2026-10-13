@@ -1,7 +1,35 @@
 # Shared desktop release checklist
 
+Latest publication — **2026-10-13**: [PR #6](https://github.com/chonnakanch/yomimado/pull/6)
+is merged at `b188b05dd42ac5553cfbc0c1188c9646e2ce29ca` after all 12 PR checks pass.
+[Checks `38378686824`](https://github.com/chonnakanch/yomimado/actions/runs/38378686824)
+and [Release `38378686892`](https://github.com/chonnakanch/yomimado/actions/runs/38378686892)
+succeed on main. Planning, private input transfer, both installer builds, combined
+verification and the protected publisher all succeed. [YomiMado v0.1.0](https://github.com/chonnakanch/yomimado/releases/tag/v0.1.0)
+is public again, as a **pre-release**, at the new source commit.
+
+The release now contains the six-file layout below. Independent public API checks
+confirm the exact tag/source target, title/classification and all six uploaded
+asset names, states, sizes and SHA-256 digests. Downloaded public provenance and
+checksum bytes also verify and bind both platform records to this commit.
+The large installers and nested archives were not independently downloaded locally;
+their byte/content gates passed in Actions and were rechecked by the publisher.
+
+| Current published installer | SHA-256                                                            |
+| --------------------------- | ------------------------------------------------------------------ |
+| Windows x64 setup           | `61bbd7aefa46d895c1afae9d549e0d357d364bc647341d32ef08fe0957f74b59` |
+| macOS Apple Silicon DMG     | `1d6cadbff7e454d09c790bc002b259ea0f8a2997392e6034bda8f9cb698df462` |
+
+These installer bytes differ from the October 12 delivery. No new exact-hash local
+acceptance report has been received in this chat; previous human passes remain
+bound to their original hashes. Publication success does not supply that test
+evidence, and archived `installedAppVerified=false` flags remain unchanged.
+Existing hardware waivers and dependency-advisory/source-only-rebuild limitations
+remain disclosed. The owner is satisfied with v0.1.0; no additional test request
+is made here.
+
 Availability update — 2026-10-13: the owner removed `v0.1.0`; its public release
-and downloads are no longer exposed by GitHub. The publication and acceptance
+and downloads were temporarily unavailable before the new publication above. The publication and acceptance
 records below are historical evidence. The authorized cleanup merge does not
 restore a tag or publish a replacement. Release planning now rejects stale runtime
 reuse before seed downloads/builds when there is no published tag to skip.
@@ -11,9 +39,9 @@ contains the service fixes from merged source `42edd4e`, with exact mounted
 runtime/source verification and explicit source-only owner approval. New pins
 are activated on `develop` after verifying all three uploaded macOS hashes.
 The private Windows dictionary draft is restored with unchanged dictionary bytes
-and a verified new outer-archive hash. Both input pin sets are ready on `develop`;
-integration through protected main remains pending. Dependency advisory triage and new joint-installer
-acceptance/publication remain separate gates.
+and a verified new outer-archive hash. Both input pin sets are integrated through
+protected main in PR #6 and pass the hosted transfer/build gates. Dependency
+advisory triage and local acceptance for the new exact hashes remain separate records.
 
 Published — 2026-10-12: [YomiMado v0.1.0](https://github.com/chonnakanch/yomimado/releases/tag/v0.1.0)
 is a public **pre-release** for macOS Apple Silicon and Windows 11 x64 CPU.
@@ -210,7 +238,8 @@ and files reaching the 2 GiB upload limit stop publication. The source archive i
 close to that limit with current inputs; future growth may require a separately
 reviewed packaging change rather than omitting source content.
 
-The original **v0.1.0** release remains at its 17-file layout. Legacy verification
+The original October 12 **v0.1.0** delivery had the 17-file layout; the October 13
+republication uses six uploaded files. Legacy verification
 and its pinned recovery record remain supported. GitHub's two automatic repository
 source downloads are additional links and do not replace dependency source delivery.
 This change is prepared on `develop`; it takes effect after a future authorized
@@ -230,9 +259,10 @@ Future packaging checklist:
 - [x] Retain one checksum file and one public provenance file.
 - [x] Verify nested input hashes, exact file sets, archive safety and upload size.
 - [x] Preserve legacy v0.1.0 verification and the protected owner publication gate.
-- [ ] Merge the focused change through protected main's required checks when authorized.
-- [ ] Verify the next version's real six-file candidate before publication; no new
-      installed-app test is requested for the unchanged current v0.1.0 release.
+- [x] Merge the focused change through protected main's required checks.
+- [x] Verify the real six-file candidate in Release `38378686892` before publication.
+      Local acceptance for the new installer hashes is not recorded; no additional
+      current-release test is requested under the owner's direction.
 
 ## Flow and permissions
 
