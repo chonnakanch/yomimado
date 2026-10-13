@@ -525,6 +525,69 @@ class PrivateInputTests(unittest.TestCase):
             )
 
 
+class PlanRehearsalTests(unittest.TestCase):
+    def test_published_version_skips_but_missing_tag_checks_runtime_before_builds(self):
+        workflow = (ROOT / ".github/workflows/release.yml").read_text()
+        plan_step = workflow.split("id: plan\n", 1)[1].split("  seed-inputs:", 1)[0]
+        shell = textwrap.dedent(plan_step.split("run: |\n", 1)[1].split("\n  #", 1)[0])
+        for published in (True, False):
+            with (
+                self.subTest(published=published),
+                tempfile.TemporaryDirectory() as temp,
+            ):
+                root = Path(temp)
+                binary = root / "bin"
+                binary.mkdir()
+                for name, body in {
+                    "git": "sys.exit(0 if os.environ['PUBLISHED']=='true' else 1)",
+                    "gh": "print('{\"draft\": false}')",
+                    "python": (
+                        "if sys.argv[-1]=='plan':\n"
+                        '    print(\'{"version":"0.1.0","tag":"v0.1.0","prerelease":true}\')\n'
+                        "else:\n"
+                        "    print('Changed runtime requires a new seed', file=sys.stderr)\n"
+                        "    sys.exit(1)"
+                    ),
+                }.items():
+                    path = binary / name
+                    path.write_text(
+                        f"#!{sys.executable}\n"
+                        "import os,sys\n"
+                        "from pathlib import Path\n"
+                        "with (Path(os.environ['RUNNER_TEMP'])/'calls').open('a') as log:\n"
+                        f"    log.write({name!r}+' '+' '.join(sys.argv[1:])+'\\n')\n"
+                        + body
+                        + "\n"
+                    )
+                    path.chmod(0o755)
+                result = subprocess.run(
+                    ["bash", "-c", shell],
+                    env={
+                        **os.environ,
+                        "PATH": str(binary) + os.pathsep + os.environ["PATH"],
+                        "PUBLISHED": str(published).lower(),
+                        "RUNNER_TEMP": str(root),
+                        "GITHUB_OUTPUT": str(root / "outputs"),
+                        "GITHUB_REPOSITORY": release.REPOSITORY,
+                    },
+                    capture_output=True,
+                    text=True,
+                    check=False,
+                )
+                calls = (root / "calls").read_text()
+                outputs = (root / "outputs").read_text()
+                if published:
+                    self.assertEqual(result.returncode, 0, result.stderr)
+                    self.assertIn("release=false", outputs)
+                    self.assertNotIn("verify-reuse", calls)
+                else:
+                    self.assertNotEqual(result.returncode, 0)
+                    self.assertIn("requires a new seed", result.stderr)
+                    self.assertIn("verify-reuse", calls)
+                    self.assertNotIn("gh ", calls)
+                    self.assertNotIn("release=true", outputs.splitlines())
+
+
 class PublisherRehearsalTests(unittest.TestCase):
     def rehearsal(self, version, scenario="pass"):
         with tempfile.TemporaryDirectory() as temporary:

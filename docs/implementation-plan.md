@@ -12,7 +12,11 @@ Both exact-hash local installer reports and protected owner publication pass.
 The maintainer is satisfied with the current app; no further v0.1.0 testing or
 UI implementation is requested.
 
-The tag remains at tested app source
+Availability update — 2026-10-13: the owner removed `v0.1.0`; the public release
+API no longer exposes its downloads. Retain the historical acceptance and hashes.
+No replacement release or version bump is authorized by the cleanup merge.
+
+The original tag pointed at tested app source
 `5159473da21c952f1a4dc87c457bba82edf5edde`. Recovery executor
 `a30d0ba2b931ab9443b656b64ed55ba7a1d9ffc0` published the existing delivery after
 owner approval, without rebuilding or replacing installers or moving the tag.
@@ -121,7 +125,9 @@ service cases without skips and the 51 release/version cases. Frontend tests,
 type/format checks and production build pass; macOS native tests/build pass.
 The final gate rejects all 624 failing/cancelled/skipped/missing-result combinations
 and accepts the one all-success combination. Linux wheel resolution and original
-CI-tool notice hashes verify. Hosted Windows native verification runs after push;
+CI-tool notice hashes verify. Hosted
+[Checks run `38345712285`](https://github.com/chonnakanch/yomimado/actions/runs/38345712285)
+passes every job, including Windows and macOS native tests/builds;
 this follow-up changes no frozen runtime or installed-app acceptance record.
 
 ## Next milestone: refreshed runtimes and next release
@@ -160,9 +166,12 @@ Proceed in this order when continuing release preparation:
        uninstall. Retain untested hardware cases and any explicit macOS waiver.
        The owner supplies protected publication approval after these gates pass.
 
-There is no version bump, main merge or publication in this plan update. The
-published v0.1.0 needs no further testing. A released version is skipped by the
-main workflow. Future `0.x.x` and `alpha.N`/`beta.N`/`rc.N` versions are pre-releases;
+The owner now authorizes a cleanup PR and merge to protected main. There is no
+version bump or publication in that merge. The original v0.1.0 acceptance needs
+no further testing. A published version with its tag is skipped; a missing tag
+requires runtime compatibility before private downloads or builds. The current
+changed runtime fails that preflight until a new seed is reviewed.
+Future `0.x.x` and `alpha.N`/`beta.N`/`rc.N` versions are pre-releases;
 `1.0.0` and later without a suffix are stable. Both classifications retain the
 same exact-installer publication gate.
 

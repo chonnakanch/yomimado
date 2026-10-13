@@ -56,6 +56,8 @@ jobs:
             echo "Version $version is already released; bump the app version for another release."
             exit 0
           fi
+          # Reject stale frozen runtime inputs before private downloads or builds.
+          python scripts/macos-ci-release.py verify-reuse
           test "$(gh api "repos/$GITHUB_REPOSITORY" --jq .default_branch)" = main
           gh api "repos/$GITHUB_REPOSITORY/rules/branches/main?per_page=100" > "$RUNNER_TEMP/main-rules.json"
           python scripts/desktop_release.py verify-main-rules --directory "$RUNNER_TEMP/main-rules.json"

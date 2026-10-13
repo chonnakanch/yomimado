@@ -19,6 +19,14 @@ spec.loader.exec_module(ci)
 
 
 class VersionTests(unittest.TestCase):
+    def test_runtime_preflight_cli_propagates_stale_seed_rejection(self):
+        with (
+            patch("sys.argv", ["macos-ci-release.py", "verify-reuse"]),
+            patch.object(ci, "git", return_value="services/ocr/app/pipeline.py"),
+            self.assertRaisesRegex(ValueError, "new seed"),
+        ):
+            ci.main()
+
     @staticmethod
     def bumped(path, text, version):
         if path.endswith(".json"):

@@ -1,5 +1,11 @@
 # Shared desktop release checklist
 
+Availability update — 2026-10-13: the owner removed `v0.1.0`; its public release
+and downloads are no longer exposed by GitHub. The publication and acceptance
+records below are historical evidence. The authorized cleanup merge does not
+restore a tag or publish a replacement. Release planning now rejects stale runtime
+reuse before seed downloads/builds when there is no published tag to skip.
+
 Published — 2026-10-12: [YomiMado v0.1.0](https://github.com/chonnakanch/yomimado/releases/tag/v0.1.0)
 is a public **pre-release** for macOS Apple Silicon and Windows 11 x64 CPU.
 The owner approves recovery [run `38257468295`](https://github.com/chonnakanch/yomimado/actions/runs/38257468295)
@@ -223,7 +229,10 @@ Future packaging checklist:
 
 1. **Plan** runs only on this repository's `main`, checks matching Tauri/npm/Cargo
    versions, default branch and the existing `macos-release` protection. A released
-   version is skipped; an existing incomplete tag fails closed. `0.x.x` and
+   version with its tag is skipped; an existing incomplete tag fails closed.
+   For an absent tag, frozen-runtime reuse is checked before downloads/builds;
+   changed shared runtime/dependency inputs require a newly reviewed seed.
+   `0.x.x` and
    `alpha.N`/`beta.N`/`rc.N` versions are pre-releases; `1.0.0` and later without
    suffixes are stable.
    Release titles use only the version: **YomiMado v0.1.0**.

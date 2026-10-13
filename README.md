@@ -18,9 +18,10 @@ Screenshots stay local. Translation and saving require an explicit action.
 
 ## Release status
 
-[YomiMado v0.1.0](https://github.com/chonnakanch/yomimado/releases/tag/v0.1.0)
-is available as the first desktop pre-release for macOS Apple Silicon and Windows
-11 x64. The [shared release checklist](docs/desktop-release.md) records the exact
+The first desktop pre-release, v0.1.0, passed macOS Apple Silicon and Windows
+11 x64 acceptance and was published on 2026-10-12. On 2026-10-13 the owner removed
+its tag; the public release/downloads are currently unavailable. The
+[shared release checklist](docs/desktop-release.md) preserves the original exact
 installer hashes, passing results, disclosed limitations and future release gates.
 
 | Target                           | First release format                                        |
@@ -30,7 +31,7 @@ installer hashes, passing results, disclosed limitations and future release gate
 
 Detector weights are installed separately through **Select detector model file**.
 The app checks the supported file's checksum before importing it. See the
-[published release notes](https://github.com/chonnakanch/yomimado/releases/tag/v0.1.0)
+[installation guide](docs/usage.md)
 for installation details.
 
 ## Read a page

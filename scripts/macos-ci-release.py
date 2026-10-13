@@ -381,6 +381,7 @@ def main() -> None:
         "action",
         choices=(
             "plan",
+            "verify-reuse",
             "prepare-sources",
             "package",
             "verify-artifact",
@@ -404,6 +405,8 @@ def main() -> None:
                 }
             )
         )
+    elif args.action == "verify-reuse":
+        verify_reuse()
     elif args.action == "prepare-sources":
         prepare_sources(args.sources, args.notices, args.directory)
     elif args.action == "package":

@@ -418,8 +418,10 @@ After coding:
 
 ## Current milestone
 
-The **first desktop pre-release milestone is complete**: v0.1.0 is published
-for macOS Apple Silicon and Windows 11 x64. Current work is release-workflow and
+The **first desktop pre-release milestone is complete**: v0.1.0 passed acceptance
+and was published for macOS Apple Silicon and Windows 11 x64. The owner removed
+its tag on 2026-10-13; public downloads are currently unavailable. Preserve the
+historical evidence. Current work is release-workflow and
 documentation maintenance. Follow `docs/implementation-plan.md` and the
 exact-candidate checks in `docs/desktop-release.md` for future versions.
 
