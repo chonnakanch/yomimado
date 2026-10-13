@@ -95,6 +95,8 @@ See [Windows](windows-installed-test.md) and [macOS](macos-clean-mac-test.md) re
       app lock entries, with preview, input validation and dependency preservation.
       [Usage](../scripts/README.md#update-the-app-version) covers all five files;
       Checks now also runs the updater's regression tests.
+- [x] Rename the shared release-rule suite to `test_release_rules.py` and update
+      Checks and review references; retain its macOS runtime-reuse checks.
 - [x] Complete a focused [code quality review](code-review-2026-10-13.md): share
       frontend transport/token validation, validate OCR responses, remove repeated
       popup resets and fix stale translation responses/cache cleanup. Shared Python

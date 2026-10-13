@@ -1,4 +1,4 @@
-"""Exercise release version, reviewed-input and artifact rejection gates."""
+"""Exercise shared release rules and macOS reviewed-runtime/artifact gates."""
 
 import copy
 import importlib.util

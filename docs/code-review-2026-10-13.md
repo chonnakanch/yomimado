@@ -58,7 +58,7 @@ These are follow-up maintenance work, not additional confirmed application bugs:
 - Native: **36 Rust tests pass** and `cargo build --locked` passes on macOS.
   The build emits an Xcode SDK-discovery/cache warning, with no build errors.
 - Existing required release checks: **51 tests pass** across
-  `test_desktop_release.py`, `test_macos_ci_release.py` and `test_update_version.py`
+  `test_desktop_release.py`, `test_release_rules.py` and `test_update_version.py`
   on Python 3.13.15, using local fake APIs.
 - `git diff --check` passes. No installer was built or tested on Windows.
 
