@@ -81,6 +81,8 @@ See [Windows](windows-installed-test.md) and [macOS](macos-clean-mac-test.md) re
 - [x] Rename shared release API/dictionary helpers and Windows ONNX preparation,
       export, verification and runtime scripts to describe their current functions;
       update callers, imports, source recipes and exporter provenance checks.
+- [x] Add a documented version-update command for npm/Tauri/Cargo metadata and
+      app lock entries, with preview, input validation and dependency preservation.
 - [ ] Merge the prepared maintenance changes through protected main when authorized.
 - [ ] For the next app version, verify its real delivery and exact new installers
       before the owner approves publication. Current v0.1.0 needs no new retest.

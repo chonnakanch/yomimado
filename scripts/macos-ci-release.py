@@ -114,6 +114,7 @@ def verify_reuse(root: Path = ROOT) -> None:
         "AGENTS.md",
         ".gitignore",
         "scripts/README.md",
+        "scripts/update_version.py",
         ".github/workflows/release.yml",
         ".github/workflows/checks.yml",
         ".github/workflows/macos-prerelease.yml",

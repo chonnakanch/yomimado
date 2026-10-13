@@ -1,5 +1,26 @@
 # Script roles
 
+## Update the app version
+
+From the repository root, using Python 3.11 or later:
+
+```sh
+python3 scripts/update_version.py 0.2.0 --dry-run
+python3 scripts/update_version.py 0.2.0
+```
+
+On Windows, use `py -3.11` in place of `python3`. The script updates all five
+files: desktop `package.json`, both app entries in `package-lock.json`,
+`tauri.conf.json`, `Cargo.toml` and the local app entry in `Cargo.lock`. It preserves
+dependency versions, comments and formatting, and checks every input before writing.
+The existing versions must agree; mismatched or malformed inputs fail without edits.
+
+Accepted versions are `X.Y.Z` or `X.Y.Z-alpha.N`/`beta.N`/`rc.N`, without a `v`
+prefix or leading zeroes. `0.x.x` and suffixed versions are pre-releases;
+`1.0.0` and later without a suffix are stable. Review and commit the resulting
+diff, then use the normal protected main PR and release flow. This command makes
+local file edits; it does not commit, push, create tags, build or publish.
+
 ## Current release and checks
 
 [Checks](../.github/workflows/checks.yml) runs the shared release and macOS CI
