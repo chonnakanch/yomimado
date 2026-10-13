@@ -173,7 +173,12 @@ no further testing. A published version with its tag is skipped; a missing tag
 requires runtime compatibility before private downloads or builds. The new
 `42edd4e` seed passes the source/runtime gates, but GitHub browser uploads fail.
 The replacement pin patch is verified and retained locally; live pins remain
-unchanged until the three uploaded hashes can be checked. Main remains blocked
+unchanged until the uploaded hashes can be checked. The two old input drafts are
+also missing. Exact Windows dictionary files have been recovered and repacked;
+their outer archive needs a new hash pin after upload. A private-only API uploader
+and combined pin patch are prepared and verified locally. The remaining upload
+step needs the owner's repository-only credential entered in a hidden local
+prompt; authenticated upload has not run. Main remains blocked
 until that pin update is integrated through Checks. See the seed record's owner
 upload steps.
 Future `0.x.x` and `alpha.N`/`beta.N`/`rc.N` versions are pre-releases;

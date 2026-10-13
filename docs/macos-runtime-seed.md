@@ -6,7 +6,7 @@ Refreshed **2026-10-13** from clean source
 capture-bound fixes merged through PR #5. Its app metadata still says `0.1.0`;
 the output release version comes from the merged app metadata.
 
-Private draft: [Reviewed macOS runtime seed 42edd4e — CI input only](https://github.com/chonnakanch/yomimado/releases/tag/untagged-b133db5a1f927caf5893).
+Private draft: [Reviewed macOS runtime seed 42edd4e — CI input only](https://github.com/chonnakanch/yomimado/releases/tag/untagged-54d0249bb3cbf06646e4).
 Input label: `macos-reviewed-seed-42edd4e`. Keep it unpublished.
 
 **Activation is blocked by upload.** The isolated browser reports
@@ -14,6 +14,9 @@ Input label: `macos-reviewed-seed-42edd4e`. Keep it unpublished.
 The three-file upload and a separate notices-only retry both fail. The draft
 contains metadata but no assets. Existing live pins still select `5120506`;
 the verified replacement patch is retained locally as `seed-pin-update.patch`.
+The owner sees GitHub's generic error, “Something went really wrong, and we
+can't process that file.” The old macOS and Windows input drafts are also absent.
+The approved replacement's three local files remain intact.
 
 | Input                                   | SHA-256                                                            |
 | --------------------------------------- | ------------------------------------------------------------------ |
@@ -47,18 +50,52 @@ Verified for this exact seed:
 - [x] 78 service and 229 release-tool tests; Python lint/format and actionlint.
 - [ ] Verify the three uploaded GitHub hashes before committing the new pins.
 
-Owner upload steps:
+Private input recovery — 2026-10-13:
 
-1. Open the private draft's **Edit** page in your signed-in browser.
-2. Attach the three files from
-   `services/ocr/build/macos-runtime-refresh-42edd4e/seed/` and wait for completion.
-3. Choose **Save draft**. Keep it private; do not select **Publish release**.
+- The original `5120506` source and notice archives retain their exact hashes,
+  but its original DMG is unavailable locally. Its generated output was replaced
+  during the runtime refresh. Use this complete approved `42edd4e` seed rather
+  than mixing a different DMG with the old source manifest.
+- The exact Windows JMdict/KANJIDIC2 gzip files were recovered from retained
+  audit data. Both match `windows-assets.json` and pass dictionary restoration.
+  Their new outer archive SHA-256 is
+  `077d6b93a5691a17aee7d8847b832b7c844f45b11270614b2eca50a9b35c5654`;
+  it differs from the deleted outer archive. Dictionary bytes are unchanged.
+- A one-off uploader, instructions and recovery evidence are retained locally
+  under ignored `services/ocr/build/private-input-restoration-20261013/`.
+  All four input hashes and 13 private-creation, identity/hash rejection and
+  resume checks pass. The combined `pin-update.patch` passes 53 shared-release/version
+  tests, Python lint/format and actionlint; it is held until actual uploads verify.
 
-Then verify GitHub's three uploaded asset hashes against the table above, apply
-the prepared pin patch, rerun checks, commit/push and integrate through protected
-main. The patch updates the seed revision, label, three hashes and source archive
-paths together. Until then, main's old runtime-reuse preflight continues to reject
-the changed service; rerunning the old release job cannot resolve it.
+Owner API upload step, bypassing the failed browser upload:
+
+```sh
+cd /Users/chonnakan/Projects/yomimado
+rtk proxy services/ocr/build/release-venv/bin/python services/ocr/build/private-input-restoration-20261013/upload_private_inputs.py --upload
+```
+
+Run this in your own interactive terminal. At its hidden prompt, use a short-lived
+fine-grained GitHub token selecting only `chonnakanch/yomimado` with **Contents:
+read and write**; Workflows permission is unnecessary. The owner must create or
+change credentials personally. Keep the token out of chat and command arguments.
+The uploader never saves it, follows redirects, publishes, creates public tags,
+deletes or overwrites assets. It uses official GitHub API hosts, validates private
+draft identity, reuses matching completed uploads, and requires each uploaded
+asset's digest, size and state to match. Revoke a temporary token afterward.
+
+Authenticated upload remains untested because no local API credential is
+configured. GitHub's status page reported no current incident and both official
+API hosts passed credential-free TLS checks; neither proves that uploads will
+succeed. A matching existing repository-only token can be entered at the local
+prompt without changing permissions. Manual browser upload remains an alternative
+if its storage failure resolves; keep both inputs unpublished.
+
+Then verify `uploaded-inputs.json` and GitHub's four uploaded hashes, apply the
+combined prepared pin patch, rerun checks, commit/push and integrate through
+protected main. The patch updates the macOS seed revision, label, three hashes
+and source archive paths together, plus the repacked Windows outer hash. Until
+then, main's old runtime-reuse preflight continues to reject the changed service;
+rerunning the old release job cannot resolve it.
 
 Local evidence is retained under ignored
 `services/ocr/build/macos-runtime-refresh-42edd4e/`. The approved-source build uses
@@ -71,7 +108,7 @@ This refresh **does not patch dependency versions**. The
 Starlette/python-multipart, remains open. Full source-only rebuilding is unverified.
 Do not describe this seed as resolving those findings.
 
-Windows inputs and historical installer acceptance remain unchanged. New joint
+Windows dictionary bytes and historical installer acceptance remain unchanged. New joint
 installers require automated checks, exact-hash owner tests and protected
 publication approval. The runtime-reuse guard remains intact; changed frozen code,
 dependencies, native recipes or licence inputs require another reviewed seed.
