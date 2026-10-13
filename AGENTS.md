@@ -418,8 +418,18 @@ After coding:
 
 ## Current milestone
 
-The initial implementation target is **Phase 1 + Phase 2** from `docs/implementation-plan.md`:
+The **first desktop pre-release milestone is complete**: v0.1.0 passed acceptance
+and was published for macOS Apple Silicon and Windows 11 x64. The owner removed
+its tag on 2026-10-13; public downloads are currently unavailable. Preserve the
+historical evidence. Current work is release-workflow and
+documentation maintenance. Follow `docs/implementation-plan.md` and the
+exact-candidate checks in `docs/desktop-release.md` for future versions.
 
-> Capture a user-selected screen region, run local OCR, return text geometry, and render an interactive transparent overlay aligned with the original screen coordinates.
+The capture → OCR → coordinate → overlay path and the initial learning features
+are implemented. Prioritize packaging, source/notices, installer verification,
+and release readiness over new features. Preserve candidate hashes and existing
+platform evidence; results apply only to the exact installer tested. The owner
+is satisfied with v0.1.0; do not request more current-release testing or implement
+the optional UI redesign without a new request.
 
-Do not implement dictionary, translation, or kanji learning UI until the capture → OCR → coordinate → overlay path is working and tested.
+Do not publish or approve an installer without the owner's explicit authorization.

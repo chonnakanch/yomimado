@@ -2,7 +2,7 @@
 
 import unittest
 
-import prepare_onnx_probe as probe
+import prepare_windows_onnx as probe
 
 
 class OnnxInputTests(unittest.TestCase):

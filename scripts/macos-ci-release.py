@@ -107,11 +107,19 @@ def verify_reuse(root: Path = ROOT) -> None:
         "scripts/tests/",
     )
     allowed_files = {
+        # Retired workflow paths stay allowed so their removal relative to the
+        # reviewed seed does not invalidate its unchanged runtime. Their original
+        # definitions remain recoverable in Git history.
         "README.md",
+        "AGENTS.md",
+        ".gitignore",
+        "scripts/README.md",
+        "scripts/update_version.py",
+        ".github/workflows/release.yml",
+        ".github/workflows/checks.yml",
         ".github/workflows/macos-prerelease.yml",
         ".github/workflows/desktop-release-checks.yml",
         ".github/workflows/desktop-release-resume.yml",
-        "scripts/desktop_release_recovery.py",
         "scripts/macos-ci-release.py",
         "scripts/desktop_release.py",
         # These inputs are used only by the independent Windows candidate path.
@@ -120,7 +128,6 @@ def verify_reuse(root: Path = ROOT) -> None:
         ".github/workflows/windows-geos-audit.yml",
         "scripts/build-geos-windows.py",
         "scripts/geos-windows-probe.py",
-        "scripts/geos-installed-windows.py",
         ".github/workflows/windows-opencv-audit.yml",
         "scripts/build-opencv-windows.py",
         "scripts/opencv-windows-probe.py",
@@ -136,7 +143,6 @@ def verify_reuse(root: Path = ROOT) -> None:
         "scripts/verify-windows-installer-terms.ps1",
         "THIRD_PARTY_LICENSES/windows-microsoft-components.txt",
         ".github/workflows/windows-vc-provenance.yml",
-        "scripts/audit-vc-provenance.ps1",
         ".github/workflows/webview-loader-probe.yml",
         "scripts/probe_webview_loader.py",
         "scripts/probe-webview-loader.cpp",
@@ -144,11 +150,11 @@ def verify_reuse(root: Path = ROOT) -> None:
         ".github/workflows/windows-onnx-prototype.yml",
         "scripts/onnx-probe-inputs.json",
         "scripts/onnx_generation.py",
-        "scripts/onnx_detector_probe.py",
-        "scripts/onnx_runtime_probe.py",
-        "scripts/export_onnx_probe.py",
-        "scripts/check_onnx_probe.py",
-        "scripts/prepare_onnx_probe.py",
+        "scripts/onnx_detector.py",
+        "scripts/onnx_runtime.py",
+        "scripts/export_onnx_models.py",
+        "scripts/verify_onnx_models.py",
+        "scripts/prepare_windows_onnx.py",
         "THIRD_PARTY_LICENSES/windows-onnx-probe/coloredlogs/LICENSE.txt",
         "THIRD_PARTY_LICENSES/windows-onnx-probe/flatbuffers/LICENSE",
         "THIRD_PARTY_LICENSES/windows-onnx-probe/humanfriendly/LICENSE.txt",
@@ -162,9 +168,9 @@ def verify_reuse(root: Path = ROOT) -> None:
         "scripts/build-windows-prerelease.ps1",
         "scripts/verify-windows-install.ps1",
         "scripts/verify-windows-ui.ps1",
-        "scripts/windows_dictionary_seed.py",
+        "scripts/release_dictionaries.py",
         "scripts/windows_release.py",
-        "scripts/windows_private_draft.py",
+        "scripts/release_api.py",
         "scripts/windows_notices.py",
         "scripts/windows_python.py",
         "scripts/smoke-windows-install.py",
@@ -179,6 +185,14 @@ def verify_reuse(root: Path = ROOT) -> None:
         "services/ocr/tests/test_windows_packaged_main.py",
         "services/ocr/tests/test_windows_onnx_backend.py",
     }
+    # These generated files and unused icons are not runtime inputs. Permit
+    # their removal only; additions/modifications still require seed review.
+    removable_prefixes = (
+        "services/ocr/yomimado_ocr.egg-info/",
+        "apps/desktop/src-tauri/gen/schemas/",
+        "apps/desktop/src-tauri/icons/android/",
+    )
+    deleted = None
     changed = git("diff", "--name-only", SEED_REVISION, "HEAD", root=root).splitlines()
     for path in changed:
         if Path(path).suffix.lower() in {".onnx", ".pt", ".pth", ".safetensors"}:
@@ -190,6 +204,22 @@ def verify_reuse(root: Path = ROOT) -> None:
                 continue
         elif path in allowed_files or path.startswith(allowed_prefixes):
             continue
+        elif path == "apps/desktop/src-tauri/icons/placeholder.svg" or path.startswith(
+            removable_prefixes
+        ):
+            if deleted is None:
+                deleted = set(
+                    git(
+                        "diff",
+                        "--diff-filter=D",
+                        "--name-only",
+                        SEED_REVISION,
+                        "HEAD",
+                        root=root,
+                    ).splitlines()
+                )
+            if path in deleted:
+                continue
         raise ValueError(
             f"Reviewed runtime/source inputs changed: {path}; prepare and review a new seed"
         )
@@ -351,6 +381,7 @@ def main() -> None:
         "action",
         choices=(
             "plan",
+            "verify-reuse",
             "prepare-sources",
             "package",
             "verify-artifact",
@@ -374,6 +405,8 @@ def main() -> None:
                 }
             )
         )
+    elif args.action == "verify-reuse":
+        verify_reuse()
     elif args.action == "prepare-sources":
         prepare_sources(args.sources, args.notices, args.directory)
     elif args.action == "package":

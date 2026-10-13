@@ -13,6 +13,7 @@ from types import SimpleNamespace
 from typing import Any
 
 from app.models import OcrDebug, OcrDebugDetection, OcrResponse, Point, TextRegion
+from app.security import validate_capture_dimensions
 
 SMALL_SELECTION_MAX_SIDE = 320
 DETECTOR_INPUT_SIZE = 1024
@@ -345,11 +346,11 @@ def recognize_with_models(image_bytes: bytes, *, debug: bool = False) -> OcrResp
     except ImportError as error:
         raise ImportError("Install the detector requirements and yomimado-ocr[ocr]") from error
 
+    with Image.open(BytesIO(image_bytes), formats=["PNG"]) as source:
+        validate_capture_dimensions(*source.size)
+        image = source.convert("RGB")
     repo, detector_path, recognizer_path = _configured_paths()
     detector, recognizer = _models(repo, detector_path, recognizer_path)
-
-    with Image.open(BytesIO(image_bytes)) as source:
-        image = source.convert("RGB")
     bgr = cv2.cvtColor(np.asarray(image), cv2.COLOR_RGB2BGR)
     retry_tiles = _retry_tiles(image.width, image.height)
     regions: list[TextRegion] = []

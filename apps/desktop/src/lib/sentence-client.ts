@@ -1,3 +1,4 @@
+import { postServiceJson, requestService } from "./service-client";
 export interface SaveSentenceInput {
   sourceText: string;
   translatedText?: string;
@@ -8,15 +9,6 @@ export interface SavedSentence {
   sourceText: string;
   translatedText: string | null;
   createdAt: string;
-}
-
-const SERVICE_URL = import.meta.env.VITE_OCR_URL ?? "http://127.0.0.1:8765";
-
-async function errorMessage(response: Response): Promise<string> {
-  const body = (await response.json().catch(() => null)) as {
-    detail?: string;
-  } | null;
-  return body?.detail ?? `Sentence service returned ${response.status}`;
 }
 
 function isSavedSentence(value: unknown): value is SavedSentence {
@@ -36,21 +28,21 @@ function isSavedSentence(value: unknown): value is SavedSentence {
 export async function saveSentence(
   input: SaveSentenceInput,
 ): Promise<SavedSentence> {
-  const response = await fetch(`${SERVICE_URL}/api/v1/sentences`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(input),
-  });
-  if (!response.ok) throw new Error(await errorMessage(response));
-  const result: unknown = await response.json();
+  const result = await postServiceJson(
+    "/api/v1/sentences",
+    "Sentence service",
+    input,
+  );
   if (!isSavedSentence(result))
     throw new Error("Sentence service returned invalid data");
   return result;
 }
 
 export async function listSavedSentences(): Promise<SavedSentence[]> {
-  const response = await fetch(`${SERVICE_URL}/api/v1/sentences`);
-  if (!response.ok) throw new Error(await errorMessage(response));
+  const response = await requestService(
+    "/api/v1/sentences",
+    "Sentence service",
+  );
   const result: unknown = await response.json();
   if (
     !result ||
@@ -67,8 +59,7 @@ export async function listSavedSentences(): Promise<SavedSentence[]> {
 export async function deleteSavedSentence(id: number): Promise<void> {
   if (!Number.isSafeInteger(id) || id < 1)
     throw new Error("Invalid saved sentence ID");
-  const response = await fetch(`${SERVICE_URL}/api/v1/sentences/${id}`, {
+  await requestService(`/api/v1/sentences/${id}`, "Sentence service", {
     method: "DELETE",
   });
-  if (!response.ok) throw new Error(await errorMessage(response));
 }

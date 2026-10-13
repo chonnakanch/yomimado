@@ -31,8 +31,13 @@ it("saves, lists, and removes words through the local service", async () => {
   expect(JSON.parse(fetch.mock.calls[0][1]!.body as string)).toEqual(saved);
   expect(await listVocabularyWords()).toEqual([saved]);
   await deleteVocabularyWord(7);
-  expect(fetch.mock.calls[1][1]).toBeUndefined();
-  expect(fetch.mock.calls[2][1]).toEqual({ method: "DELETE" });
+  expect(fetch.mock.calls[1][1]).toEqual({
+    headers: { "x-yomimado-client": "desktop" },
+  });
+  expect(fetch.mock.calls[2][1]).toEqual({
+    method: "DELETE",
+    headers: { "x-yomimado-client": "desktop" },
+  });
 });
 
 it("rejects malformed vocabulary responses", async () => {
@@ -44,3 +49,18 @@ it("rejects malformed vocabulary responses", async () => {
   );
   await expect(listVocabularyWords()).rejects.toThrow("invalid data");
 });
+
+it.each([0, -1, 1.5])(
+  "rejects saved word IDs that cannot be deleted: %s",
+  async (id) => {
+    vi.stubGlobal(
+      "fetch",
+      vi
+        .fn()
+        .mockResolvedValue(
+          new Response(JSON.stringify({ words: [{ ...saved, id }] })),
+        ),
+    );
+    await expect(listVocabularyWords()).rejects.toThrow("invalid data");
+  },
+);

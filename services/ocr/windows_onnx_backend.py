@@ -37,8 +37,8 @@ def verified_exports(directory: Path) -> str:
 
 @lru_cache(maxsize=1)
 def cpu_models(repo: Path, detector_model: Path, recognizer_model: Path):
-    from onnx_detector_probe import detector_class
-    from onnx_runtime_probe import OnnxRecognizer
+    from onnx_detector import detector_class
+    from onnx_runtime import OnnxRecognizer
 
     exported = recognizer_model.parent / "onnx"
     verified_exports(exported)
@@ -50,7 +50,7 @@ def cpu_models(repo: Path, detector_model: Path, recognizer_model: Path):
 
 @lru_cache(maxsize=1)
 def translation_provider(model: Path, exported: Path):
-    from onnx_runtime_probe import OnnxTranslation
+    from onnx_runtime import OnnxTranslation
 
     verified_exports(exported)
     return OnnxTranslation(model, exported)

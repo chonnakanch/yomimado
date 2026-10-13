@@ -248,7 +248,8 @@ def derived_onnx_graphs(directory: Path) -> dict[Path, str]:
     }
     if (
         record.get("sourceInputs") != expected_sources
-        or record.get("exporterSha256") != digest(ROOT / "scripts/export_onnx_probe.py")
+        or record.get("exporterSha256")
+        != digest(ROOT / "scripts/export_onnx_models.py")
         or set(record.get("outputs", {})) != expected_files
     ):
         raise ValueError("Unbound Windows inference conversion provenance")
@@ -985,16 +986,16 @@ def package(installer: Path, output: Path, installed: Path) -> None:
             SERVICE / "windows-inputs.json",
             ROOT / "scripts/windows_python.py",
             ROOT / "scripts/windows_notices.py",
-            ROOT / "scripts/windows_dictionary_seed.py",
+            ROOT / "scripts/release_dictionaries.py",
         ):
             archive.add(path, arcname="recipes/" + path.name)
         if (installed / "ocr/assets/onnx/export.json").is_file():
             for name in (
-                "prepare_onnx_probe.py",
-                "export_onnx_probe.py",
-                "check_onnx_probe.py",
-                "onnx_runtime_probe.py",
-                "onnx_detector_probe.py",
+                "prepare_windows_onnx.py",
+                "export_onnx_models.py",
+                "verify_onnx_models.py",
+                "onnx_runtime.py",
+                "onnx_detector.py",
                 "onnx_generation.py",
                 "onnx-probe-inputs.json",
             ):

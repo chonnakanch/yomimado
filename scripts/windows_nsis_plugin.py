@@ -8,9 +8,9 @@ import re
 import shutil
 import subprocess
 import sys
+import tomllib
 from pathlib import Path
 
-import tomllib
 from windows_release import (
     BUILD,
     RESOURCES,

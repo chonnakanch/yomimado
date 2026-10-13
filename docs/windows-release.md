@@ -1,6 +1,37 @@
 # First Windows pre-release plan
 
-Current shared main candidate — 2026-10-12: [run `38196721752`](https://github.com/chonnakanch/yomimado/actions/runs/38196721752)
+Published — 2026-10-12: [YomiMado v0.1.0](https://github.com/chonnakanch/yomimado/releases/tag/v0.1.0)
+is public as a pre-release. Both exact-hash local installer gates pass. The owner
+approves protected recovery `38257468295`; verification and publication succeed
+without changing the tested `5159473` source, tag or installer bytes. Independent
+public API checks verify all 17 uploaded asset hashes/states and classification;
+publicly downloaded combined provenance/checksum bytes also verify. Retain the
+existing platform waivers, untested hardware and source-only rebuild limitation.
+The historical preparation/open-gate statements below describe earlier stages.
+
+Latest verified main candidate — 2026-10-12: owner-authorized PR #3 merges at
+`5159473da21c952f1a4dc87c457bba82edf5edde`.
+[Joint run `38201230907`](https://github.com/chonnakanch/yomimado/actions/runs/38201230907)
+passes the Windows build in **36 minutes 18 seconds**, with installed terms/model/UI/
+shortcuts/native/source/OCR/learning/persistence checks. Exact setup SHA-256:
+`a8275246dc07a30f84a2109530bd68c3c0cceeed2556ce27fb09681d3a404602`.
+The maintainer reports all six Windows checks pass and explicitly confirms the
+tested download matches this SHA-256. The current setup's Windows 11 x64 local
+gate is complete; see [the exact-installer report](windows-installed-test.md).
+AMD, additional/mixed-scale/left-of-primary monitors, missing-WebView2 clean
+machines and unreported detailed subcases remain untested.
+Both builders and combined verification pass. The private
+[verified-desktop-candidate](https://github.com/chonnakanch/yomimado/actions/runs/38201230907/artifacts/11726850805)
+is retained for 14 days. GitHub artifact ZIP SHA-256:
+`a6eec1b72e614ba45d30e9fe0651bb079b6266df0db5a4871e55bc896a5be91a`.
+The full delivery passes hosted source/notice/hash verification, and the
+maintainer confirms the downloaded setup hash. Independent agent inspection of
+the Windows/combined ZIP has not been performed locally. Actions and the
+protected publisher verify all exact files; this limitation is retained. The protected publisher is waiting and has not
+executed. Keep the candidate private and do not approve the superseded
+`99b1312` run. Prior passing reports remain bound to their older installer hashes.
+
+Superseded shared main candidate — 2026-10-12: [run `38196721752`](https://github.com/chonnakanch/yomimado/actions/runs/38196721752)
 at `99b13124424901f425a49de7ed87557eee6230a9` passes all automatic Windows
 build/install/UI/OCR/learning/persistence/source checks in **39 minutes 17 seconds**.
 Combined macOS/Windows verification also passes. The private
@@ -158,8 +189,8 @@ and PC results above remain bound to their original setup hashes.
 The active candidate builds the minimal OpenCV runtime from pinned sources with
 IPP, video and GPU backends disabled. Generated `/MD` compiler commands, native
 imports, frozen detector probes and exact installed OCR pass. The standalone
-OpenCV audit remains available for diagnosis; it is not another required installer
-build. See [the native worksheet](windows-native-rebuild.md).
+OpenCV audit workflow is retired; its build/probe scripts remain part of the
+current installer recipe. See [the actual source review](windows-source-review.md).
 
 ## Target and scope
 
@@ -210,7 +241,9 @@ Concrete packaging gaps:
 - `requirements-macos-release.txt` and `build-macos-prerelease.sh` are specific
   to Apple Silicon: custom OpenCV, Accelerate NumPy, macOS native binaries and
   notices cannot be used as Windows runtime inputs.
-- `windows-candidate.yml` builds only `develop`; its job can stage an owner-only
+- Historical `windows-candidate.yml` (recoverable in Git at `2885586`)
+  built only `develop`; it is now retired in favor of the shared
+  [Release workflow](../.github/workflows/release.yml). Its job could stage an owner-only
   draft but cannot approve the installer or publish a release. It prepares
   source-built Python, hash-pinned Windows wheels and
   CPU ONNX inference, freezes the service, builds per-user NSIS, installs it, checks
@@ -374,16 +407,15 @@ new exact installers remain required:
 
 ## Next action and current limitations
 
-Next action: keep setup `7ff298c597de…` private, establish the
-maintainer's Microsoft redistribution entitlement by obtaining the licensed
-Community 2022 copy after their reported terms acceptance, and review the
-[component-only text draft](windows-microsoft-component-terms.draft.txt) and
-acceptance requirement using [the prepared review](windows-microsoft-distribution-notice.draft.md).
-The corrected overlay and listed local checks already pass on the confirmed
-Windows 11 x64 PC with its downloaded hash recorded. Protected human approval
-and joint release integration wait for distribution clearance. Actual installed input/source
-bindings and downloaded source/notices checks pass; independent full source-only
-rebuilding is unverified and public approval flags remain false.
+The first Windows pre-release is published. Owner licensed-copy confirmation,
+the final [component-only terms](../THIRD_PARTY_LICENSES/windows-microsoft-components.txt),
+installed acceptance/rejection checks, exact-hash PC tests and protected joint
+publication are recorded in the retained reviews and installer report. Superseded
+terms drafts are removed; their historical contents remain in Git at `2885586`.
+Future versions use the [shared release checklist](desktop-release.md), current
+input/source/notices verification and their own exact-installer confirmation.
+Independent full source-only rebuilding remains unverified; original private
+record approval flags are preserved rather than rewritten.
 The selected compiler/SDK fail closed if absent
 from the hosted image. Dictionary downloads also fail if the daily snapshot
 moves; supply the pinned snapshot or deliberately rebuild with new hashes. Candidate CI may assist development before publication CI is enabled.

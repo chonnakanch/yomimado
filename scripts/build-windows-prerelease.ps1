@@ -39,7 +39,7 @@ if ($Prepare) {
     $RuntimePython = Join-Path $Build 'Python-3.11.17/PCbuild/amd64/python.exe'
     if ($Onnx) {
         # The baseline is export-only. No Torch package enters the frozen runtime.
-        Invoke-Checked $RuntimePython @('scripts/prepare_onnx_probe.py', '--runtime', (Join-Path $Build 'venv'), '--baseline', (Join-Path $Build 'onnx-baseline'))
+        Invoke-Checked $RuntimePython @('scripts/prepare_windows_onnx.py', '--runtime', (Join-Path $Build 'venv'), '--baseline', (Join-Path $Build 'onnx-baseline'))
         # Check the small installer plugin before the longer OCR native build.
         Invoke-Checked $Python @('scripts/windows_nsis_plugin.py')
         # Reuse the independently verified focused IPP-free build recipe.
@@ -74,8 +74,8 @@ if ($Onnx) {
     $Baseline = Join-Path $Build 'onnx-baseline/Scripts/python.exe'
     $Assets = Join-Path $Resources 'assets'
     $Graphs = Join-Path $Assets 'onnx'
-    Invoke-Checked $Baseline @('scripts/export_onnx_probe.py', '--ocr-model', (Join-Path $Assets 'manga-ocr-base'), '--translation-model', (Join-Path $Assets 'opus-mt-ja-en'), '--output', $Graphs)
-    Invoke-Checked $Baseline @('scripts/check_onnx_probe.py', '--ocr-model', (Join-Path $Assets 'manga-ocr-base'), '--translation-model', (Join-Path $Assets 'opus-mt-ja-en'), '--detector-repo', $Detector, '--detector-model', (Join-Path $Service 'build/onnx-prototype/smoke-detector.onnx'), '--exported', $Graphs, '--output', (Join-Path $Build 'onnx-comparison'), '--onnx-python', $Python, '--onnx-pythonpath', $Service)
+    Invoke-Checked $Baseline @('scripts/export_onnx_models.py', '--ocr-model', (Join-Path $Assets 'manga-ocr-base'), '--translation-model', (Join-Path $Assets 'opus-mt-ja-en'), '--output', $Graphs)
+    Invoke-Checked $Baseline @('scripts/verify_onnx_models.py', '--ocr-model', (Join-Path $Assets 'manga-ocr-base'), '--translation-model', (Join-Path $Assets 'opus-mt-ja-en'), '--detector-repo', $Detector, '--detector-model', (Join-Path $Service 'build/onnx-prototype/smoke-detector.onnx'), '--exported', $Graphs, '--output', (Join-Path $Build 'onnx-comparison'), '--onnx-python', $Python, '--onnx-pythonpath', $Service)
     Invoke-Checked $Python @('scripts/windows_export_inputs.py')
     # collect-all also copies vendor example ONNX models. Collect Python/native
     # runtime inputs and metadata without those unneeded datasets.

@@ -1,3 +1,4 @@
+import { postServiceJson } from "./service-client";
 import type { TextToken } from "./ocr-types";
 
 export interface WordEntry {
@@ -9,25 +10,12 @@ export interface WordEntry {
   common: boolean;
 }
 
-const SERVICE_URL = import.meta.env.VITE_OCR_URL ?? "http://127.0.0.1:8765";
-
 export async function requestWord(token: TextToken): Promise<WordEntry[]> {
-  const response = await fetch(`${SERVICE_URL}/api/v1/word`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      surface: token.surface,
-      dictionaryForm: token.dictionaryForm,
-      reading: token.reading,
-    }),
+  const result = await postServiceJson("/api/v1/word", "Word lookup", {
+    surface: token.surface,
+    dictionaryForm: token.dictionaryForm,
+    reading: token.reading,
   });
-  if (!response.ok) {
-    const body = (await response.json().catch(() => null)) as {
-      detail?: string;
-    } | null;
-    throw new Error(body?.detail ?? `Word lookup returned ${response.status}`);
-  }
-  const result: unknown = await response.json();
   if (
     !result ||
     typeof result !== "object" ||

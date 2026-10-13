@@ -1,6 +1,47 @@
 # Windows candidate test record
 
-Current shared main candidate — 2026-10-12: [run `38196721752`](https://github.com/chonnakanch/yomimado/actions/runs/38196721752)
+Published — 2026-10-12: [YomiMado v0.1.0](https://github.com/chonnakanch/yomimado/releases/tag/v0.1.0)
+is public as a pre-release. Both exact-hash local installer gates pass. The owner
+approves protected recovery `38257468295`; verification and publication succeed
+without changing the tested `5159473` source, tag or installer bytes. Independent
+public API checks verify all 17 uploaded asset hashes/states and classification;
+publicly downloaded combined provenance/checksum bytes also verify. Retain the
+existing platform waivers, untested hardware and source-only rebuild limitation.
+The historical preparation/open-gate statements below describe earlier stages.
+
+Latest verified main candidate — 2026-10-12: owner-authorized PR #3 merges at
+`5159473da21c952f1a4dc87c457bba82edf5edde`.
+[Joint run `38201230907`](https://github.com/chonnakanch/yomimado/actions/runs/38201230907)
+passes the Windows build in **36 minutes 18 seconds**, with installed terms/model/UI/
+shortcuts/native/source/OCR/learning/persistence checks. Exact setup SHA-256:
+`a8275246dc07a30f84a2109530bd68c3c0cceeed2556ce27fb09681d3a404602`.
+Latest local report — 2026-10-12: the maintainer reports **“six windows checks
+pass”**, then explicitly confirms **“Yes, hash matches”** for `a8275246…`.
+All six checklist groups are **maintainer-reported pass** for this exact setup:
+browser/security/install; model handling, buttons/shortcuts and cleanup; offline
+OCR/tokenization/dictionary/kanji/new translation and saving/viewing; model/data/
+cache persistence after restart/reboot; 100%/125%/150% alignment/clicks; and
+upgrade/uninstall/reinstall. The exact-installer local gate is complete; this is
+not an independent live-PC test or protected publication approval. No detailed
+uninstall data-retention outcome beyond the broad pass is inferred.
+
+The previously confirmed PC is Windows 11 Home 25H2 build 26200.9457, x64
+OS/x64 Intel Core i5-14500, 32 GB RAM and one 2560 × 1440 display. Use that
+confirmed test context; no new hardware specification is inferred. AMD,
+additional/mixed-scale monitors, left-of-primary layouts, missing-WebView2 clean
+machines and unreported detailed hover/edge-target cases remain untested.
+Both builders and combined verification pass. The private
+[verified-desktop-candidate](https://github.com/chonnakanch/yomimado/actions/runs/38201230907/artifacts/11726850805)
+is retained for 14 days. GitHub artifact ZIP SHA-256:
+`a6eec1b72e614ba45d30e9fe0651bb079b6266df0db5a4871e55bc896a5be91a`.
+GitHub summary/transfer verifies the full delivery, and the maintainer confirms
+the downloaded setup hash. Independent agent inspection of the Windows/combined
+ZIP has not been performed locally; Actions verifies the delivery and the
+protected publisher rechecks all 17 exact files before upload/publication. The protected publisher is waiting and has not
+executed. Keep the candidate private and do not approve the superseded
+`99b1312` run. Prior passing reports remain bound to their older installer hashes.
+
+Superseded shared main candidate — 2026-10-12: [run `38196721752`](https://github.com/chonnakanch/yomimado/actions/runs/38196721752)
 at `99b13124424901f425a49de7ed87557eee6230a9` passes all automatic Windows
 build/install/UI/OCR/learning/persistence/source checks in **39 minutes 17 seconds**.
 Combined macOS/Windows verification also passes. The private
@@ -25,7 +66,7 @@ OCR/learning and persistence pass. Downloaded evidence `11707076117` matches
 GitHub SHA-256 `56c7ee2b03767960651ab54196df5f21365d99f88eff1bc9cc8c563d5e45e31a`.
 These are hosted Windows Server results, separate from the maintainer's PC report.
 
-Latest local report — 2026-10-11: the maintainer confirms **“everything work”**
+Historical local report — 2026-10-11: the maintainer confirms **“everything work”**
 in response to this candidate's six-check handoff, then explicitly confirms
 **“Yes, hash matches”** for `756b7dc6…`. Record all six checks below as
 **maintainer-reported pass** for this exact setup, including the new terms page,
@@ -46,8 +87,8 @@ macOS and Windows exact-installer tests before approving the publish job in
 `macos-release`. Builds and private seed transfer run automatically on protected
 `main`; only publication requires the separate exact-installer approval.
 
-Reusable six-check checklist — pending for `e57ef7e9…`; all six reported passed
-for the historical `756b7dc6…` candidate:
+Reusable six-check checklist — all six maintainer-reported pass for current
+`a8275246…`. Historical `756b7dc6…` results remain bound to their own setup:
 
 1. Browser download with Defender/SmartScreen enabled; terms initially unchecked;
    cancel before installation, then review/accept and install or upgrade normally.

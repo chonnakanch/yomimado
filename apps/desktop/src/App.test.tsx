@@ -165,7 +165,10 @@ it("shows saved words and removes one only after confirmation", async () => {
       .querySelector<HTMLButtonElement>('[aria-label="Remove 今日"]')!
       .click();
   });
-  expect(fetch.mock.calls[1][1]).toEqual({ method: "DELETE" });
+  expect(fetch.mock.calls[1][1]).toEqual({
+    method: "DELETE",
+    headers: { "x-yomimado-client": "desktop" },
+  });
   expect(container.textContent).toContain("No saved words yet");
 });
 
@@ -215,6 +218,9 @@ it("shows saved sentences and removes one only after confirmation", async () => 
       )!
       .click();
   });
-  expect(fetch.mock.calls[1][1]).toEqual({ method: "DELETE" });
+  expect(fetch.mock.calls[1][1]).toEqual({
+    method: "DELETE",
+    headers: { "x-yomimado-client": "desktop" },
+  });
   expect(container.textContent).toContain("No saved sentences yet");
 });

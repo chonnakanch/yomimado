@@ -12,9 +12,9 @@ import shutil
 import subprocess
 import sys
 import tarfile
+import tomllib
 from pathlib import Path, PurePosixPath
 
-import tomllib
 from windows_release import (
     BUILD,
     RESOURCES,

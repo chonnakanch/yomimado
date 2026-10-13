@@ -1,0 +1,571 @@
+name: Release
+
+# Merge a versioned change into main. Build the merged commit, then wait for
+# both exact installer confirmations before one tag and public hobby release.
+"on":
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  SOURCE_REVISION: ${{ github.sha }}
+
+jobs:
+  plan:
+    if: github.repository == 'chonnakanch/yomimado' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      actions: read
+    outputs:
+      release: ${{ steps.plan.outputs.release }}
+      version: ${{ steps.plan.outputs.version }}
+      tag: ${{ steps.plan.outputs.tag }}
+      prerelease: ${{ steps.plan.outputs.prerelease }}
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
+        with:
+          python-version: "3.11.17"
+      - name: Select version and require installer review protection
+        id: plan
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          plan="$(python scripts/macos-ci-release.py plan)"
+          version="$(jq -er .version <<< "$plan")"
+          tag="$(jq -er .tag <<< "$plan")"
+          {
+            echo "version=$version"
+            echo "tag=$tag"
+            echo "prerelease=$(jq -r .prerelease <<< "$plan")"
+          } >> "$GITHUB_OUTPUT"
+          if git show-ref --verify --quiet "refs/tags/$tag"; then
+            gh api "repos/$GITHUB_REPOSITORY/releases/tags/$tag" > "$RUNNER_TEMP/existing-release.json"
+            jq -e '.draft == false' "$RUNNER_TEMP/existing-release.json" > /dev/null
+            echo "release=false" >> "$GITHUB_OUTPUT"
+            echo "Version $version is already released; bump the app version for another release."
+            exit 0
+          fi
+          # Reject stale frozen runtime inputs before private downloads or builds.
+          python scripts/macos-ci-release.py verify-reuse
+          test "$(gh api "repos/$GITHUB_REPOSITORY" --jq .default_branch)" = main
+          gh api "repos/$GITHUB_REPOSITORY/rules/branches/main?per_page=100" > "$RUNNER_TEMP/main-rules.json"
+          python scripts/desktop_release.py verify-main-rules --directory "$RUNNER_TEMP/main-rules.json"
+          gh api "repos/$GITHUB_REPOSITORY/environments/macos-release" > "$RUNNER_TEMP/release-environment.json"
+          gh api "repos/$GITHUB_REPOSITORY/environments/macos-release/deployment-branch-policies" > "$RUNNER_TEMP/release-policies.json"
+          python scripts/macos-ci-release.py verify-environment --directory "$RUNNER_TEMP/release-environment.json" --policies "$RUNNER_TEMP/release-policies.json"
+          echo "release=true" >> "$GITHUB_OUTPUT"
+
+  # Push access is required to read unpublished seeds. Keep it out of builders,
+  # run this GET-only job on protected main, with no personal token or build approval.
+  seed-inputs:
+    needs: plan
+    if: needs.plan.outputs.release == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
+        with:
+          python-version: "3.11.17"
+      - name: Read and hash private seeds without publishing or approving installers
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python scripts/desktop_release.py download-inputs --directory inputs
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: reviewed-macos-inputs
+          path: inputs/macos/
+          if-no-files-found: error
+          retention-days: 1
+          compression-level: 0
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: reviewed-windows-inputs
+          path: inputs/windows/
+          if-no-files-found: error
+          retention-days: 1
+          compression-level: 0
+
+  build:
+    name: Build macOS Apple Silicon
+    needs: [plan, seed-inputs]
+    if: needs.plan.outputs.release == 'true'
+    runs-on: macos-14
+    timeout-minutes: 90
+    outputs:
+      record: ${{ steps.package.outputs.record }}
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: "22.23.2"
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
+        with:
+          python-version: "3.11.9" # Verification tools only; reviewed frozen runtime stays 3.11.17.
+          architecture: arm64
+      - name: Check platform and prepare verification tools
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(uname -s)" = Darwin
+          test "$(uname -m)" = arm64
+          test "$(git rev-parse HEAD)" = "$SOURCE_REVISION"
+          test -z "$(git status --porcelain)"
+          rustup toolchain install 1.98.1 --profile minimal
+          rustup default 1.98.1
+          python -m pip install --disable-pip-version-check --only-binary=:all: --no-deps pillow==11.3.0 tomli==2.4.1 importlib-metadata==8.7.1 zipp==3.23.0
+          python -m unittest discover -s scripts/tests -p 'test_macos*.py'
+          python -m unittest discover -s scripts/tests -p test_opencv_release.py
+          python -m unittest discover -s scripts/tests -p test_desktop_release.py
+          npm ci --prefix apps/desktop
+          npm test --prefix apps/desktop
+          cargo test --manifest-path apps/desktop/src-tauri/Cargo.toml --locked
+          mkdir -p "$RUNNER_TEMP/yomimado-input" "$RUNNER_TEMP/yomimado-output"
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: reviewed-macos-inputs
+          path: ${{ runner.temp }}/yomimado-input
+      - name: Verify transferred reviewed macOS inputs
+        shell: bash
+        run: |
+          set -euo pipefail
+          python scripts/desktop_release.py verify-inputs --platform macos --directory "$RUNNER_TEMP/yomimado-input"
+          tar -xzf "$RUNNER_TEMP/yomimado-input/YomiMado_0.1.0_sources_5120506.tar.gz" -C "$RUNNER_TEMP/yomimado-input"
+          echo "YOMIMADO_SOURCE_DIR=$RUNNER_TEMP/yomimado-input/source-delivery-5120506" >> "$GITHUB_ENV"
+      - name: Install smoke-only detector from the original publisher
+        shell: bash
+        run: |
+          set -euo pipefail
+          model="$RUNNER_TEMP/comictextdetector.pt.onnx"
+          curl --fail --location --retry 3 --output "$model" \
+            https://github.com/zyddnys/manga-image-translator/releases/download/beta-0.2.1/comictextdetector.pt.onnx
+          echo "1a86ace74961413cbd650002e7bb4dcec4980ffa21b2f19b86933372071d718f  $model" | shasum -a 256 --check
+          echo "YOMIMADO_SMOKE_DETECTOR_MODEL=$model" >> "$GITHUB_ENV"
+      - name: Verify the seed DMG and copy its reviewed runtime
+        shell: bash
+        run: |
+          set -euo pipefail
+          seed="$RUNNER_TEMP/yomimado-input/YomiMado_0.1.0_aarch64.dmg"
+          bash scripts/verify-macos-dmg.sh "$seed" "$(command -v python)" --hobby-release
+          mount_dir="$(mktemp -d /private/tmp/yomimado-seed.XXXXXX)"
+          trap 'hdiutil detach "$mount_dir"; rmdir "$mount_dir"' EXIT
+          hdiutil attach -readonly -nobrowse -mountpoint "$mount_dir" "$seed"
+          mkdir -p apps/desktop/src-tauri/resources
+          ditto "$mount_dir/YomiMado.app/Contents/Resources/ocr" apps/desktop/src-tauri/resources/ocr
+          hdiutil detach "$mount_dir"
+          rmdir "$mount_dir"
+          trap - EXIT
+          rm "$seed"
+      - name: Bind matching project sources to the merged commit
+        shell: bash
+        run: |
+          set -euo pipefail
+          source_dir="$RUNNER_TEMP/yomimado-input/source-delivery-main"
+          notices=apps/desktop/src-tauri/resources/ocr/notices
+          python scripts/macos-ci-release.py prepare-sources \
+            --sources "$YOMIMADO_SOURCE_DIR" --notices "$notices" --directory "$source_dir"
+          python scripts/macos-release.py verify-sources "$notices" \
+            --source-dir "$source_dir" --revision "$SOURCE_REVISION"
+          echo "YOMIMADO_SOURCE_DIR=$source_dir" >> "$GITHUB_ENV"
+          rm -rf "$RUNNER_TEMP/yomimado-input/source-delivery-5120506"
+          rm "$RUNNER_TEMP/yomimado-input/YomiMado_0.1.0_sources_5120506.tar.gz"
+          rm "$RUNNER_TEMP/yomimado-input/YomiMado_0.1.0_notices_5120506.tar.gz"
+      - name: Build and verify the new hobby DMG
+        env:
+          APP_VERSION: ${{ needs.plan.outputs.version }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          env -u APPLE_CERTIFICATE -u APPLE_CERTIFICATE_PASSWORD \
+            -u APPLE_API_ISSUER -u APPLE_API_KEY -u APPLE_API_KEY_PATH \
+            -u APPLE_ID -u APPLE_PASSWORD -u APPLE_TEAM_ID \
+            APPLE_SIGNING_IDENTITY=- VITE_OCR_URL=http://127.0.0.1:8766 \
+            npm --prefix apps/desktop run tauri build -- \
+            --config src-tauri/tauri.release.conf.json --bundles dmg --ci -- --locked
+          dmg="apps/desktop/src-tauri/target/release/bundle/dmg/YomiMado_${APP_VERSION}_aarch64.dmg"
+          test -f "$dmg"
+          bash scripts/verify-macos-dmg.sh "$dmg" "$(command -v python)" --hobby-release
+          test "$(git rev-parse HEAD)" = "$SOURCE_REVISION"
+          test -z "$(git status --porcelain)"
+          mv "$dmg" "$RUNNER_TEMP/yomimado-output/"
+      - name: Assemble only release files and bind their digests
+        id: package
+        shell: bash
+        run: |
+          set -euo pipefail
+          record="$(python scripts/macos-ci-release.py package \
+            --directory "$RUNNER_TEMP/yomimado-output" --sources "$YOMIMADO_SOURCE_DIR" \
+            --notices apps/desktop/src-tauri/resources/ocr/notices)"
+          python scripts/macos-ci-release.py verify-artifact \
+            --directory "$RUNNER_TEMP/yomimado-output" --expected "$record"
+          echo "record=$record" >> "$GITHUB_OUTPUT"
+          {
+            echo "### Installer confirmation required"
+            echo "Merged commit: $SOURCE_REVISION"
+            echo "$record" | jq -r '.assets | to_entries[] | "- \(.key): \(.value)"'
+            echo "Download verified-desktop-candidate and test its exact DMG and the Windows setup before approving the publish job in macos-release."
+            echo "Fresh-Mac testing is waived; never describe it as passed."
+          } >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: macos-candidate-for-transfer
+          path: ${{ runner.temp }}/yomimado-output/
+          if-no-files-found: error
+          retention-days: 1
+          compression-level: 0
+      - name: Remove smoke-only model
+        if: always()
+        shell: bash
+        run: rm -f "$RUNNER_TEMP/comictextdetector.pt.onnx"
+
+  windows-build:
+    name: Build Windows 11 x64 CPU installer
+    needs: [plan, seed-inputs]
+    outputs:
+      record: ${{ steps.package.outputs.record }}
+    if: needs.plan.outputs.release == 'true'
+    runs-on: windows-2022
+    timeout-minutes: 120
+    defaults:
+      run:
+        shell: pwsh
+    steps:
+      - name: Preserve hash-pinned source and notice bytes
+        run: git config --global core.autocrlf false
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Check Windows PowerShell script syntax
+        run: |
+          foreach ($path in Get-ChildItem scripts/*windows*.ps1) {
+            $tokens = $null
+            $errors = $null
+            [System.Management.Automation.Language.Parser]::ParseFile($path.FullName, [ref]$tokens, [ref]$errors) | Out-Null
+            if ($errors.Count) { throw ($errors | Out-String) }
+          }
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: "22.23.2"
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
+        with:
+          python-version: "3.11.9" # Bootstrap only; frozen runtime is source-built 3.11.17.
+          architecture: x64
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: reviewed-windows-inputs
+          path: ${{ runner.temp }}/windows-input
+      - name: Restore transferred hash-pinned original dictionaries
+        run: python scripts/desktop_release.py restore-dictionaries --directory "$env:RUNNER_TEMP/windows-input"
+      - name: Select pinned native toolchain and record runner
+        run: |
+          $ErrorActionPreference = 'Stop'
+          rustup toolchain install 1.98.1 --profile minimal
+          if ($LASTEXITCODE) { throw 'Rust preparation failed' }
+          rustup default 1.98.1
+          $vswhere = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe"
+          $vs = & $vswhere -latest -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath
+          $bat = Join-Path $vs 'VC/Auxiliary/Build/vcvarsall.bat'
+          $vars = cmd /c "`"$bat`" x64 10.0.26100.0 -vcvars_ver=14.44.35207 >nul && set"
+          if ($LASTEXITCODE) { throw 'Pinned MSVC/SDK are unavailable' }
+          foreach ($line in $vars) {
+            if ($line -match '^(PATH|INCLUDE|LIB|LIBPATH|VCToolsVersion|VCToolsInstallDir|WindowsSDKVersion|WindowsSdkDir|VSINSTALLDIR)=(.*)$') {
+              [Environment]::SetEnvironmentVariable($Matches[1], $Matches[2])
+              "$($Matches[1])=$($Matches[2])" | Add-Content $env:GITHUB_ENV
+            }
+          }
+          if ($env:VCToolsVersion.TrimEnd('\') -ne '14.44.35207' -or $env:WindowsSDKVersion.TrimEnd('\') -ne '10.0.26100.0') { throw 'Native tools differ' }
+          "Windows candidate: $env:ImageOS $env:ImageVersion; MSVC $env:VCToolsVersion; SDK $env:WindowsSDKVersion" | Add-Content $env:GITHUB_STEP_SUMMARY
+      - name: Prepare, test, freeze, inventory and build NSIS
+        run: ./scripts/build-windows-prerelease.ps1 -Prepare -Onnx
+      - name: Verify installer component terms and rejection
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $setup = @(Get-ChildItem apps/desktop/src-tauri/target/x86_64-pc-windows-msvc/release/bundle/nsis/*-setup.exe)
+          if ($setup.Count -ne 1) { throw 'Expected one NSIS setup' }
+          $modules = $env:PSModulePath
+          Remove-Item Env:PSModulePath -ErrorAction SilentlyContinue
+          try {
+            & "$env:SystemRoot/System32/WindowsPowerShell/v1.0/powershell.exe" -NoProfile -File scripts/verify-windows-installer-terms.ps1 -Installer $setup[0].FullName
+            if ($LASTEXITCODE) { throw 'Installer component terms verification failed' }
+          } finally { $env:PSModulePath = $modules }
+      - name: Install exact setup and verify installed startup
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $setup = @(Get-ChildItem apps/desktop/src-tauri/target/x86_64-pc-windows-msvc/release/bundle/nsis/*-setup.exe)
+          if ($setup.Count -ne 1) { throw 'Expected one NSIS setup' }
+          $installed = Join-Path $env:LOCALAPPDATA 'YomiMado'
+          $terms = Get-Content docs/windows-microsoft-terms.json -Raw | ConvertFrom-Json
+          $p = Start-Process $setup[0].FullName -ArgumentList '/S', "/ACCEPTMSRUNTIME=$($terms.termsSha256)", "/D=$installed" -Wait -PassThru
+          if ($p.ExitCode) { throw 'NSIS setup failed' }
+          $registry = Get-ItemProperty 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Uninstall\YomiMado'
+          if ($registry.MicrosoftRuntimeTermsSHA256 -ne $terms.termsSha256) { throw 'Installed terms acceptance hash differs' }
+          $python = 'services/ocr/build/windows/venv/Scripts/python.exe'
+          & $python scripts/windows_release.py verify --resources "$installed/ocr"
+          if ($LASTEXITCODE) { throw 'Installed resource verification failed' }
+          ./scripts/verify-windows-install.ps1 -Installed $installed
+          & $python scripts/windows_release.py installer-inventory --installer $setup[0].FullName --installed $installed
+          if ($LASTEXITCODE) { throw 'Desktop/installer native input verification failed' }
+          "YOMIMADO_INSTALLED=$installed" | Add-Content $env:GITHUB_ENV
+          "YOMIMADO_INSTALLER=$($setup[0].FullName)" | Add-Content $env:GITHUB_ENV
+      - name: Obtain smoke-only detector
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $model = Join-Path $env:RUNNER_TEMP 'comictextdetector.pt.onnx'
+          Invoke-WebRequest 'https://github.com/zyddnys/manga-image-translator/releases/download/beta-0.2.1/comictextdetector.pt.onnx' -OutFile $model
+          if ((Get-FileHash $model -Algorithm SHA256).Hash.ToLower() -ne '1a86ace74961413cbd650002e7bb4dcec4980ffa21b2f19b86933372071d718f') { throw 'Smoke-only model hash differs' }
+          "YOMIMADO_SMOKE_DETECTOR=$model" | Add-Content $env:GITHUB_ENV
+      - name: Verify installed model setup, buttons and shortcuts
+        id: installed_ui
+        timeout-minutes: 8
+        run: |
+          $ErrorActionPreference = 'Stop'
+          # The Framework UI Automation assemblies run under Windows PowerShell.
+          # Do not inherit PowerShell 7's incompatible module discovery paths.
+          $modules = $env:PSModulePath
+          Remove-Item Env:PSModulePath -ErrorAction SilentlyContinue
+          try {
+            & "$env:SystemRoot/System32/WindowsPowerShell/v1.0/powershell.exe" -NoProfile -File scripts/verify-windows-ui.ps1 -Installed $env:YOMIMADO_INSTALLED -DetectorModel $env:YOMIMADO_SMOKE_DETECTOR
+            if ($LASTEXITCODE) { throw 'Installed Windows UI regression failed' }
+          } finally { $env:PSModulePath = $modules }
+      - name: Verify frozen installed learning and persistence
+        id: installed_learning
+        # Runtime learning is independent of the UI driver. Complete it even
+        # after a UI failure, while retaining the failed overall job status.
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $model = $env:YOMIMADO_SMOKE_DETECTOR
+          $log = 'services/ocr/build/windows/installed-smoke.log'
+          & services/ocr/build/windows/venv/Scripts/python.exe scripts/smoke-windows-install.py $env:YOMIMADO_INSTALLED --detector-model $model 2>&1 | Tee-Object -FilePath $log
+          if ($LASTEXITCODE) {
+            # Only synthetic test text; preserve the actual failure for diagnosis.
+            $tail = (Get-Content $log -Tail 25) -join "`n"
+            $encoded = $tail.Replace('%', '%25').Replace("`r", '%0D').Replace("`n", '%0A')
+            Write-Host "::error title=Installed Windows runtime failed::$encoded"
+            throw 'Installed frozen smoke failed'
+          }
+      - name: Export verified Windows candidate for shared release review
+        id: package
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $output = Join-Path $env:RUNNER_TEMP 'windows-candidate'
+          $python = 'services/ocr/build/windows/venv/Scripts/python.exe'
+          & $python scripts/windows_release.py package --installer $env:YOMIMADO_INSTALLER --installed $env:YOMIMADO_INSTALLED --output $output
+          if ($LASTEXITCODE) { throw 'Windows candidate export failed' }
+          $record = & $python scripts/desktop_release.py windows-record --directory $output
+          if ($LASTEXITCODE) { throw 'Windows candidate binding failed' }
+          "record=$record" | Add-Content $env:GITHUB_OUTPUT
+          Get-Content "$output/SHA256SUMS.txt" | Add-Content $env:GITHUB_STEP_SUMMARY
+          'Download verified-desktop-candidate and confirm BOTH exact installers before approving the protected publish job. Hosted checks do not prove Windows 11 hardware coverage.' | Add-Content $env:GITHUB_STEP_SUMMARY
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: windows-candidate-for-transfer
+          path: ${{ runner.temp }}/windows-candidate/
+          if-no-files-found: error
+          retention-days: 1
+          compression-level: 0
+      - name: Retain diagnostic evidence without detector weights
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: windows-main-evidence
+          path: |
+            services/ocr/build/windows/python-build.log
+            services/ocr/build/windows/build-last-command.log
+            services/ocr/build/windows/python-build.json
+            services/ocr/build/windows/dictionary-seed.json
+            services/ocr/build/windows/windows-inventory.json
+            services/ocr/build/windows/windows-native-configuration.json
+            services/ocr/build/windows/pyinstaller/warn-yomimado-ocr.txt
+            services/ocr/build/windows/installed-verification.json
+            services/ocr/build/windows/installed-smoke.json
+            services/ocr/build/windows/installed-smoke.log
+            services/ocr/build/windows/installed-ui.json
+            services/ocr/build/windows/installer-terms-verification.json
+            services/ocr/build/windows/SHA256SUMS.txt
+            services/ocr/build/windows/windows-candidate.json
+            services/ocr/build/windows/windows-desktop-sources.json
+            services/ocr/build/windows/windows-installer-inputs.json
+            services/ocr/build/windows/windows-generated-outputs.json
+            services/ocr/build/windows/onnx-comparison/*.json
+            services/ocr/build/windows/onnx-comparison/*.log
+            services/ocr/build/onnx-prototype/preparation.json
+            services/ocr/build/windows/windows-opencv-replacement.json
+            services/ocr/build/windows/sudachi/build-verification.json
+            services/ocr/build/windows/sudachi/compile.jsonl
+            services/ocr/build/windows/windows-vc-replacement.json
+            services/ocr/build/windows/windows-webview-loader.json
+            services/ocr/build/windows/nsis-plugin/build-verification.json
+            services/ocr/build/windows/nsis-plugin/build.log
+            services/ocr/build/windows/nsis-plugin/test.log
+            apps/desktop/src-tauri/resources/ocr/notices/windows-export-only-inputs.json
+            apps/desktop/src-tauri/resources/ocr/notices/windows-export-comparison.json
+            apps/desktop/src-tauri/resources/ocr/notices/python-rust/source-preparation.json
+            services/ocr/build/webview-loader-probe/verification.json
+            services/ocr/build/webview-loader-probe/compile.log
+            services/ocr/build/webview-loader-probe/library-compile.log
+            services/ocr/build/webview-loader-probe/probe.log
+            services/ocr/build/windows-opencv-audit/build-verification.json
+            services/ocr/build/windows-opencv-audit/*.log
+            apps/desktop/src-tauri/resources/ocr/notices/windows-native-sources/source-preparation.json
+            apps/desktop/src-tauri/resources/ocr/notices/onnx-native/source-preparation.json
+          if-no-files-found: ignore
+          retention-days: 14
+      - name: Remove smoke-only detector
+        if: always()
+        run: |
+          Remove-Item (Join-Path $env:RUNNER_TEMP 'comictextdetector.pt.onnx') -ErrorAction SilentlyContinue
+          Remove-Item 'services/ocr/build/onnx-prototype/smoke-detector.onnx' -ErrorAction SilentlyContinue
+
+  verify-transfer:
+    needs: [build, windows-build]
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    outputs:
+      record: ${{ steps.combine.outputs.record }}
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: macos-candidate-for-transfer
+          path: macos-candidate
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: windows-candidate-for-transfer
+          path: windows-candidate
+      - name: Verify both platforms and package six public release files
+        id: combine
+        env:
+          MACOS_RECORD: ${{ needs.build.outputs.record }}
+          WINDOWS_RECORD: ${{ needs.windows-build.outputs.record }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          record="$(python3 scripts/desktop_release.py combine --macos macos-candidate --windows windows-candidate --directory candidate --macos-record "$MACOS_RECORD" --windows-record "$WINDOWS_RECORD")"
+          echo "record=$record" >> "$GITHUB_OUTPUT"
+          {
+            echo '### Review BOTH exact installers before approving publish'
+            echo "Source commit: $GITHUB_SHA"
+            echo 'Six public files: two installers, combined sources, combined notices, checksums and provenance. All original platform sources/data/notices/records are retained inside the archives.'
+            cat candidate/desktop-SHA256SUMS.txt
+            echo 'Download verified-desktop-candidate. Run the macOS and Windows local checklists; retain the fresh-Mac waiver and explicitly untested Windows hardware cases.'
+            echo 'Builds and private input transfer run automatically on protected main; publication requires this separate installer review.'
+          } >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: verified-desktop-candidate
+          path: candidate/
+          if-no-files-found: error
+          retention-days: 14
+          compression-level: 0
+
+  publish:
+    needs: [plan, verify-transfer]
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    environment: macos-release
+    # Pending installer review must not hold later main builds. Serialize only
+    # the publisher, and never cancel an upload after its version tag is created.
+    concurrency:
+      group: desktop-main-publish
+      cancel-in-progress: false
+    permissions:
+      contents: write
+      actions: read
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: verified-desktop-candidate
+          path: candidate
+      - name: Recheck files, protection, main and tag before publishing
+        env:
+          GH_TOKEN: ${{ github.token }}
+          EXPECTED_RECORD: ${{ needs.verify-transfer.outputs.record }}
+          RELEASE_TAG: ${{ needs.plan.outputs.tag }}
+          RELEASE_PRERELEASE: ${{ needs.plan.outputs.prerelease }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 scripts/desktop_release.py verify-combined --directory candidate --expected "$EXPECTED_RECORD"
+          test "$(jq -r .tag <<< "$EXPECTED_RECORD")" = "$RELEASE_TAG"
+          test "$(jq -r .prerelease <<< "$EXPECTED_RECORD")" = "$RELEASE_PRERELEASE"
+          test "$(gh api "repos/$GITHUB_REPOSITORY" --jq .default_branch)" = main
+          gh api "repos/$GITHUB_REPOSITORY/rules/branches/main?per_page=100" > "$RUNNER_TEMP/main-rules.json"
+          python3 scripts/desktop_release.py verify-main-rules --directory "$RUNNER_TEMP/main-rules.json"
+          gh api "repos/$GITHUB_REPOSITORY/environments/macos-release" > "$RUNNER_TEMP/release-environment.json"
+          gh api "repos/$GITHUB_REPOSITORY/environments/macos-release/deployment-branch-policies" > "$RUNNER_TEMP/release-policies.json"
+          python3 scripts/macos-ci-release.py verify-environment --directory "$RUNNER_TEMP/release-environment.json" --policies "$RUNNER_TEMP/release-policies.json"
+          main_sha="$(gh api "repos/$GITHUB_REPOSITORY/git/ref/heads/main" --jq .object.sha)"
+          test "$main_sha" = "$GITHUB_SHA"
+          test -z "$(git ls-remote --tags origin "refs/tags/$RELEASE_TAG" "refs/tags/$RELEASE_TAG^{}")"
+          python3 - <<'PYNOTES'
+          import json, os
+          from pathlib import Path
+          record = json.loads(os.environ["EXPECTED_RECORD"])
+          notes = Path("docs/desktop-release-notes.md").read_text()
+          label = "pre-release" if record["prerelease"] else "release"
+          notes = notes.replace("VERSION", record["version"]).replace("CLASSIFICATION", label)
+          notes += "Source commit: `" + record["sourceRevision"] + "`.\n\n"
+          notes += "Both exact CI installers were confirmed by the maintainer through the protected release environment. Fresh-macOS testing remains waived. Windows AMD, mixed-monitor/left-of-primary layouts and missing-WebView2 hardware cases remain untested.\n\n"
+          for name, digest in record["assets"].items():
+              url = f'https://github.com/{os.environ["GITHUB_REPOSITORY"]}/releases/download/{record["tag"]}/{name}'
+              notes += f"- [{name}]({url}) — SHA-256 `{digest}`\n"
+          Path(os.environ["RUNNER_TEMP"], "release-notes.md").write_text(notes)
+          PYNOTES
+          # Create the version tag only after the main merge and installer
+          # approval. Failure during upload leaves the release unpublished.
+          gh api --method POST "repos/$GITHUB_REPOSITORY/git/refs" \
+            -f "ref=refs/tags/$RELEASE_TAG" -f "sha=$GITHUB_SHA" > /dev/null
+          release_options=(--draft)
+          if [ "$RELEASE_PRERELEASE" = true ]; then
+            release_options+=(--prerelease)
+          fi
+          gh release create "$RELEASE_TAG" candidate/* --repo "$GITHUB_REPOSITORY" --verify-tag \
+            --target "$GITHUB_SHA" --title "YomiMado $RELEASE_TAG" \
+            --notes-file "$RUNNER_TEMP/release-notes.md" "${release_options[@]}"
+          # GitHub's by-tag endpoint can return 404 for an unpublished draft.
+          # Resolve its unique exact identity from the listing, then use its ID.
+          gh api "repos/$GITHUB_REPOSITORY/releases?per_page=100" --paginate --slurp > "$RUNNER_TEMP/releases.json"
+          release_id="$(python3 scripts/desktop_release.py select-uploaded-release \
+            --directory candidate --expected "$EXPECTED_RECORD" --report "$RUNNER_TEMP/releases.json")"
+          gh api "repos/$GITHUB_REPOSITORY/releases/$release_id" > "$RUNNER_TEMP/uploaded-release.json"
+          test "$(gh api "repos/$GITHUB_REPOSITORY/git/ref/tags/$RELEASE_TAG" --jq .object.sha)" = "$GITHUB_SHA"
+          python3 scripts/desktop_release.py verify-uploaded --directory candidate --expected "$EXPECTED_RECORD" --report "$RUNNER_TEMP/uploaded-release.json"
+          # main may advance while large assets upload. Recheck immediately
+          # before making the verified draft public; never move its tag.
+          test "$(gh api "repos/$GITHUB_REPOSITORY/git/ref/heads/main" --jq .object.sha)" = "$GITHUB_SHA"
+          gh api "repos/$GITHUB_REPOSITORY/rules/branches/main?per_page=100" > "$RUNNER_TEMP/main-rules.json"
+          python3 scripts/desktop_release.py verify-main-rules --directory "$RUNNER_TEMP/main-rules.json"
+          gh api --method PATCH "repos/$GITHUB_REPOSITORY/releases/$release_id" \
+            -F draft=false > "$RUNNER_TEMP/published-release.json"
+          python3 scripts/desktop_release.py verify-published --directory candidate \
+            --expected "$EXPECTED_RECORD" --report "$RUNNER_TEMP/published-release.json"

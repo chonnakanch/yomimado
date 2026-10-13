@@ -9,10 +9,10 @@ import os
 import shutil
 import subprocess
 import tarfile
+import tomllib
 from pathlib import Path
 
 import probe_webview_loader as probe
-import tomllib
 from windows_release import (
     BUILD,
     RESOURCES,

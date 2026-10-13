@@ -1,6 +1,6 @@
 import type { OcrResponse } from "./ocr-types";
-
-const OCR_URL = import.meta.env.VITE_OCR_URL ?? "http://127.0.0.1:8765";
+import { parseOcrResponse } from "./ocr-response";
+import { requestService } from "./service-client";
 
 export async function requestOcr(
   imageSource: string | Blob,
@@ -31,15 +31,9 @@ export async function requestOcr(
   const form = new FormData();
   form.append("image", blob, "capture.png");
   if (options.debug) form.append("debug", "true");
-  const response = await fetch(`${OCR_URL}/api/v1/ocr`, {
+  const response = await requestService("/api/v1/ocr", "OCR service", {
     method: "POST",
     body: form,
   });
-  if (!response.ok) {
-    const errorBody = await response.text().catch(() => "");
-    throw new Error(
-      `OCR service returned ${response.status}${errorBody ? `: ${errorBody}` : ""}`,
-    );
-  }
-  return (await response.json()) as OcrResponse;
+  return parseOcrResponse(await response.json());
 }

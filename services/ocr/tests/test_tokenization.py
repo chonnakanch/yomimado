@@ -4,7 +4,7 @@ from fastapi.testclient import TestClient
 from app.main import app
 from app.tokenizer.sudachi import SudachiTokenizer, _offsets
 
-client = TestClient(app)
+client = TestClient(app, base_url="http://127.0.0.1", headers={"X-YomiMado-Client": "desktop"})
 
 
 def test_offsets_accept_original_character_and_utf8_byte_indices() -> None:

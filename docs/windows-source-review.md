@@ -1,9 +1,10 @@
-# Windows runtime/source review — private preparation
+# Windows runtime/source review
 
-Status: actual native-input, licence/source and notice inspection is complete
-for the exact component-terms candidate below; its local checklist also passes.
-Protected publication review remains open. This Windows evidence does not inherit
-macOS clearance, claim blanket legal approval or attest to an unrun rebuild/test.
+Current status: v0.1.0 is published after exact-installer checks and protected
+owner review; see the [shared release record](desktop-release.md). The dated
+inspections below retain their original component-terms candidate hashes and
+approval scope. This Windows evidence does not inherit macOS clearance, claim
+blanket legal approval or attest to an unrun rebuild/test.
 
 Component-terms candidate inspection — 2026-10-11: [run `38142782743`, attempt 4](https://github.com/chonnakanch/yomimado/actions/runs/38142782743)
 at `f8396ccd5e7352a62e526c68438cc7f3c9cedc60` passes all hosted installer,
@@ -172,6 +173,6 @@ and byte-identical reproduction remain unclaimed.
 The retired Torch source-build experiment and historical per-attempt reports
 remain recoverable from Git revision `ee1b7f5`; they are not the current runtime
 or a task still waiting to be completed. The [original GPL review](windows-gpl-compatibility.md)
-and [prebuilt investigation](windows-prebuilt-runtime.md) preserve why the
-old combined runtime was replaced. Required source/notices and active build,
+preserves why the old combined runtime was replaced. The superseded package
+investigation remains in Git at `2885586`. Required source/notices and active build,
 verification, export/parity and replacement recipes remain in the branch.

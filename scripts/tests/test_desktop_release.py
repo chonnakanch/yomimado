@@ -7,6 +7,7 @@ import os
 import shutil
 import subprocess
 import sys
+import tarfile
 import tempfile
 import textwrap
 import unittest
@@ -88,6 +89,43 @@ def fixtures(root, version="0.1.0"):
     return mac, win, mac_record, win_record
 
 
+def legacy_combined(mac, win, output, mac_record):
+    """Original v0.1.0 delivery, kept separate from the new packager."""
+    output.mkdir()
+    for directory in (mac, win):
+        for path in directory.iterdir():
+            shutil.copyfile(path, output / path.name)
+    record = {
+        **{
+            key: mac_record[key]
+            for key in (
+                "sourceRevision",
+                "version",
+                "tag",
+                "prerelease",
+                "installedAppVerified",
+            )
+        },
+        "platforms": ["macos-aarch64", "windows-x64"],
+        "assets": {p.name: release.digest(p) for p in sorted(output.iterdir())},
+    }
+    update_combined(output, record)
+    return record
+
+
+def update_combined(output, record):
+    release.write_json(output / "desktop-release-candidate.json", record)
+    sums = {
+        **record["assets"],
+        "desktop-release-candidate.json": release.digest(
+            output / "desktop-release-candidate.json"
+        ),
+    }
+    (output / "desktop-SHA256SUMS.txt").write_text(
+        "".join(f"{sha}  {name}\n" for name, sha in sums.items())
+    )
+
+
 class ArtifactTests(unittest.TestCase):
     def setUp(self):
         self.temp = tempfile.TemporaryDirectory()
@@ -106,11 +144,109 @@ class ArtifactTests(unittest.TestCase):
 
     def test_both_platforms_have_one_identity_and_all_files(self):
         record = self.combine()
-        self.assertEqual(len(record["assets"]), 15)
-        self.assertEqual(len(list(self.out.iterdir())), 17)
+        self.assertEqual(len(record["assets"]), 4)
+        self.assertEqual(len(list(self.out.iterdir())), 6)
         self.assertIs(record["installedAppVerified"], False)
         self.assertEqual(record["platforms"], ["macos-aarch64", "windows-x64"])
         release.verify_combined(self.out, record)
+
+    def test_all_original_sources_data_notices_and_records_are_preserved(self):
+        record = self.combine()
+        retained = {}
+        for kind in ("sources", "notices"):
+            with tarfile.open(self.out / f"YomiMado_0.1.0_{kind}.tar.gz") as archive:
+                for member in archive:
+                    data = archive.extractfile(member).read()
+                    if member.name == "README.txt":
+                        self.assertEqual(data, release.bundle_guide("0.1.0", kind))
+                    else:
+                        platform, name = member.name.split("/")
+                        original = (
+                            self.mac if platform == "macos" else self.win
+                        ) / name
+                        self.assertEqual(data, original.read_bytes())
+                        retained[name] = release.digest(original)
+        for name in record["assets"]:
+            if name.endswith((".dmg", ".exe")):
+                retained[name] = release.digest(self.out / name)
+        self.assertEqual(retained, record["inputs"])
+        self.assertEqual(len(retained), 15)
+
+    def test_packaging_is_deterministic_and_does_not_change_installer_bytes(self):
+        first = self.combine()
+        for directory in (self.mac, self.win):
+            for path in directory.iterdir():
+                os.utime(path, (123456789, 123456789))
+                path.chmod(0o600)
+        second = release.combine(
+            self.mac, self.win, self.root / "second", self.mac_record, self.win_record
+        )
+        self.assertEqual(first, second)
+
+    def test_existing_17_file_delivery_remains_verifiable(self):
+        record = legacy_combined(self.mac, self.win, self.out, self.mac_record)
+        self.assertEqual(len(list(self.out.iterdir())), 17)
+        release.verify_combined(self.out, record)
+
+    def test_unknown_layout_and_missing_input_or_platform_provenance_fail_closed(self):
+        record = self.combine()
+        for field, wrong in (
+            ("layout", "unreviewed"),
+            ("inputs", {}),
+            ("platformCandidates", {}),
+        ):
+            changed = {**record, field: wrong}
+            update_combined(self.out, changed)
+            with self.subTest(field=field), self.assertRaises(ValueError):
+                release.verify_combined(self.out, changed)
+
+    def test_combined_installer_stays_bound_to_original_platform_record(self):
+        record = self.combine()
+        name = "YomiMado_0.1.0_x64-setup.exe"
+        (self.out / name).write_bytes(b"replacement")
+        record["assets"][name] = release.digest(self.out / name)
+        update_combined(self.out, record)
+        with self.assertRaisesRegex(ValueError, "installer bytes"):
+            release.verify_combined(self.out, record)
+
+    def test_missing_altered_duplicate_or_unsafe_archived_inputs_are_rejected(self):
+        record = self.combine()
+        path = self.out / "YomiMado_0.1.0_sources.tar.gz"
+        with tarfile.open(path) as archive:
+            entries = [(m.name, archive.extractfile(m).read()) for m in archive]
+        for scenario in ("missing", "altered", "duplicate", "traversal", "symlink"):
+            modified = list(entries)
+            if scenario == "missing":
+                modified.pop()
+            elif scenario == "altered":
+                name, data = modified[-1]
+                modified[-1] = (name, data + b"tampered")
+            elif scenario == "duplicate":
+                modified.append(modified[-1])
+            elif scenario == "traversal":
+                modified[-1] = ("../outside", modified[-1][1])
+            with tarfile.open(path, "w:gz") as archive:
+                for name, data in modified:
+                    member = tarfile.TarInfo(name)
+                    member.size = len(data)
+                    if scenario == "symlink" and name == modified[-1][0]:
+                        member.type = tarfile.SYMTYPE
+                        member.linkname = "../../outside"
+                        member.size = 0
+                        archive.addfile(member)
+                    else:
+                        archive.addfile(member, io.BytesIO(data))
+            record["assets"][path.name] = release.digest(path)
+            update_combined(self.out, record)
+            with self.subTest(scenario=scenario), self.assertRaises(ValueError):
+                release.verify_combined(self.out, record)
+
+    def test_oversized_combined_sources_stop_before_publication(self):
+        with (
+            patch.object(release, "ASSET_LIMIT", 1024),
+            self.assertRaisesRegex(ValueError, "exceeds the upload limit"),
+        ):
+            self.combine()
 
     def test_windows_tamper_and_wrong_source_block_combination(self):
         path = self.win / "YomiMado_0.1.0_x64-setup.exe"
@@ -161,9 +297,9 @@ class ArtifactTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "checksums"):
             release.verify_combined(self.out, record)
         path.write_text(sums)
-        target = self.out / "project-sources.tar.gz"
+        target = self.out / "YomiMado_0.1.0_sources.tar.gz"
         target.unlink()
-        target.symlink_to(self.win / target.name)
+        target.symlink_to(self.mac / target.name)
         with self.assertRaisesRegex(ValueError, "regular"):
             release.verify_combined(self.out, record)
 
@@ -389,6 +525,69 @@ class PrivateInputTests(unittest.TestCase):
             )
 
 
+class PlanRehearsalTests(unittest.TestCase):
+    def test_published_version_skips_but_missing_tag_checks_runtime_before_builds(self):
+        workflow = (ROOT / ".github/workflows/release.yml").read_text()
+        plan_step = workflow.split("id: plan\n", 1)[1].split("  seed-inputs:", 1)[0]
+        shell = textwrap.dedent(plan_step.split("run: |\n", 1)[1].split("\n  #", 1)[0])
+        for published in (True, False):
+            with (
+                self.subTest(published=published),
+                tempfile.TemporaryDirectory() as temp,
+            ):
+                root = Path(temp)
+                binary = root / "bin"
+                binary.mkdir()
+                for name, body in {
+                    "git": "sys.exit(0 if os.environ['PUBLISHED']=='true' else 1)",
+                    "gh": "print('{\"draft\": false}')",
+                    "python": (
+                        "if sys.argv[-1]=='plan':\n"
+                        '    print(\'{"version":"0.1.0","tag":"v0.1.0","prerelease":true}\')\n'
+                        "else:\n"
+                        "    print('Changed runtime requires a new seed', file=sys.stderr)\n"
+                        "    sys.exit(1)"
+                    ),
+                }.items():
+                    path = binary / name
+                    path.write_text(
+                        f"#!{sys.executable}\n"
+                        "import os,sys\n"
+                        "from pathlib import Path\n"
+                        "with (Path(os.environ['RUNNER_TEMP'])/'calls').open('a') as log:\n"
+                        f"    log.write({name!r}+' '+' '.join(sys.argv[1:])+'\\n')\n"
+                        + body
+                        + "\n"
+                    )
+                    path.chmod(0o755)
+                result = subprocess.run(
+                    ["bash", "-c", shell],
+                    env={
+                        **os.environ,
+                        "PATH": str(binary) + os.pathsep + os.environ["PATH"],
+                        "PUBLISHED": str(published).lower(),
+                        "RUNNER_TEMP": str(root),
+                        "GITHUB_OUTPUT": str(root / "outputs"),
+                        "GITHUB_REPOSITORY": release.REPOSITORY,
+                    },
+                    capture_output=True,
+                    text=True,
+                    check=False,
+                )
+                calls = (root / "calls").read_text()
+                outputs = (root / "outputs").read_text()
+                if published:
+                    self.assertEqual(result.returncode, 0, result.stderr)
+                    self.assertIn("release=false", outputs)
+                    self.assertNotIn("verify-reuse", calls)
+                else:
+                    self.assertNotEqual(result.returncode, 0)
+                    self.assertIn("requires a new seed", result.stderr)
+                    self.assertIn("verify-reuse", calls)
+                    self.assertNotIn("gh ", calls)
+                    self.assertNotIn("release=true", outputs.splitlines())
+
+
 class PublisherRehearsalTests(unittest.TestCase):
     def rehearsal(self, version, scenario="pass"):
         with tempfile.TemporaryDirectory() as temporary:
@@ -398,8 +597,8 @@ class PublisherRehearsalTests(unittest.TestCase):
             for name in (
                 "desktop_release.py",
                 "macos-ci-release.py",
-                "windows_dictionary_seed.py",
-                "windows_private_draft.py",
+                "release_dictionaries.py",
+                "release_api.py",
                 "windows_release.py",
             ):
                 shutil.copyfile(ROOT / "scripts" / name, scripts / name)
@@ -510,7 +709,7 @@ class PublisherRehearsalTests(unittest.TestCase):
             )
             git.chmod(0o755)
             env["PATH"] = str(binary) + os.pathsep + env["PATH"]
-            workflow = (ROOT / ".github/workflows/macos-prerelease.yml").read_text()
+            workflow = (ROOT / ".github/workflows/release.yml").read_text()
             actual = workflow.split(
                 "      - name: Recheck files, protection, main and tag before publishing",
                 1,
@@ -571,7 +770,7 @@ class PublisherRehearsalTests(unittest.TestCase):
                 self.rehearsal("0.1.0", scenario)
 
     def test_builders_have_no_write_token_and_one_publisher_waits_for_both(self):
-        workflow = (ROOT / ".github/workflows/macos-prerelease.yml").read_text()
+        workflow = (ROOT / ".github/workflows/release.yml").read_text()
         for job, next_job in (
             ("build", "windows-build"),
             ("windows-build", "verify-transfer"),
@@ -586,7 +785,7 @@ class PublisherRehearsalTests(unittest.TestCase):
         self.assertEqual(workflow.count("gh release create"), 1)
         self.assertNotIn("gh release edit", workflow)
         self.assertEqual(workflow.count("gh api --method PATCH"), 1)
-        self.assertIn("name: Desktop release from main", workflow)
+        self.assertIn("name: Release", workflow)
         inputs = workflow.split("\n  seed-inputs:\n", 1)[1].split("\n  build:\n", 1)[0]
         self.assertNotIn("environment:", inputs)
         self.assertEqual(workflow.count("environment: macos-release"), 1)
@@ -596,7 +795,10 @@ class PublisherRehearsalTests(unittest.TestCase):
         publisher = workflow.split("\n  publish:\n", 1)[1]
         self.assertIn("group: desktop-main-publish", publisher)
         self.assertIn("cancel-in-progress: false", publisher)
-        checks = (ROOT / ".github/workflows/desktop-release-checks.yml").read_text()
+        checks = (ROOT / ".github/workflows/checks.yml").read_text()
+        self.assertIn(
+            "\n  gates:\n", checks
+        )  # Required main status context stays unchanged.
         self.assertIn("branches: [develop, main]", checks)
         self.assertIn("pull_request:\n    branches: [main]", checks)
         self.assertNotIn("paths:", checks)

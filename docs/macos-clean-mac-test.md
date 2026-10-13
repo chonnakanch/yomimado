@@ -1,5 +1,40 @@
 # Apple Silicon installed-app release test
 
+Published — 2026-10-12: [YomiMado v0.1.0](https://github.com/chonnakanch/yomimado/releases/tag/v0.1.0)
+is public as a pre-release. Both exact-hash local installer gates pass. The owner
+approves protected recovery `38257468295`; verification and publication succeed
+without changing the tested `5159473` source, tag or installer bytes. Independent
+public API checks verify all 17 uploaded asset hashes/states and classification;
+publicly downloaded combined provenance/checksum bytes also verify. Retain the
+existing platform waivers, untested hardware and source-only rebuild limitation.
+The historical preparation/open-gate statements below describe earlier stages.
+
+Current main candidate — 2026-10-12: source
+`5159473da21c952f1a4dc87c457bba82edf5edde`, [run `38201230907`](https://github.com/chonnakanch/yomimado/actions/runs/38201230907).
+The downloaded `macos-candidate-for-transfer` folder passes the exact seven-file
+artifact verifier: provenance hash matches the hosted combined summary, source
+revision/classification match, and DMG/source/notices plus checksum files verify.
+DMG SHA-256:
+`9d2999ae49b1756d23e62e6b703284e1d5c87898dc187757dfa3d881b8b28977`.
+
+The maintainer reports Apple's expected **cannot verify that YomiMado is free
+of malware** warning, then confirms the current DMG is working. In response to
+the explicit checklist question, the maintainer confirms **“All listed checks
+pass”**: OCR/page scan, Cmd+Shift+O, dictionary/kanji, a new offline translation,
+and saved data/imported-model persistence after restart and reboot. These are
+**maintainer-reported passes** for this locally hash-verified DMG; they are not
+independent live UI tests. The downloaded seven-file verification is independent.
+
+The existing-Mac installed-app gate is **passed for this exact DMG**. Fresh-Mac
+testing remains waived. Missing-model first launch, cancel/wrong-model retests,
+shortcut-specific permission denial, left-of-primary/multiple displays and
+other unreported detailed subcases are not added by this confirmation. Retain
+those limitations. No global security setting or detailed Gatekeeper action is
+inferred from the broad pass. The latest Windows exact setup subsequently has a
+hash-confirmed six-check PC pass recorded in [its report](windows-installed-test.md).
+Both installed gates are complete; protected publication remains open. The
+historical record below covers a different DMG.
+
 Fresh-macOS installation test: **skipped at the maintainer's request on
 2026-10-05** because no clean Mac is available. This waiver is not evidence of
 successful clean-machine installation. Keep that limitation in the pre-release

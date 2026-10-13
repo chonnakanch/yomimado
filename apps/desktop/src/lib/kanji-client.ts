@@ -1,3 +1,4 @@
+import { postServiceJson } from "./service-client";
 export interface KanjiEntry {
   character: string;
   onReadings: string[];
@@ -11,8 +12,6 @@ export interface KanjiExample {
   meanings: string[];
 }
 
-const SERVICE_URL = import.meta.env.VITE_OCR_URL ?? "http://127.0.0.1:8765";
-
 function validateCharacter(character: string) {
   if (
     Array.from(character).length !== 1 ||
@@ -24,18 +23,9 @@ function validateCharacter(character: string) {
 
 export async function requestKanji(character: string): Promise<KanjiEntry> {
   validateCharacter(character);
-  const response = await fetch(`${SERVICE_URL}/api/v1/kanji`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ character }),
+  const result = await postServiceJson("/api/v1/kanji", "Kanji lookup", {
+    character,
   });
-  if (!response.ok) {
-    const body = (await response.json().catch(() => null)) as {
-      detail?: string;
-    } | null;
-    throw new Error(body?.detail ?? `Kanji lookup returned ${response.status}`);
-  }
-  const result: unknown = await response.json();
   if (
     !result ||
     typeof result !== "object" ||
@@ -61,20 +51,11 @@ export async function requestKanjiExamples(
   excludeWord: string,
 ): Promise<KanjiExample[]> {
   validateCharacter(character);
-  const response = await fetch(`${SERVICE_URL}/api/v1/kanji/examples`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ character, excludeWord }),
-  });
-  if (!response.ok) {
-    const body = (await response.json().catch(() => null)) as {
-      detail?: string;
-    } | null;
-    throw new Error(
-      body?.detail ?? `Kanji examples returned ${response.status}`,
-    );
-  }
-  const result: unknown = await response.json();
+  const result = await postServiceJson(
+    "/api/v1/kanji/examples",
+    "Kanji examples",
+    { character, excludeWord },
+  );
   if (
     !result ||
     typeof result !== "object" ||

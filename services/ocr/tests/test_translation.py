@@ -1,3 +1,4 @@
+import sqlite3
 from pathlib import Path
 
 import pytest
@@ -26,7 +27,7 @@ def test_translation_is_explicit_and_cached(tmp_path: Path, monkeypatch) -> None
         "service",
         TranslationService(provider, tmp_path / "translations.sqlite3"),
     )
-    client = TestClient(app)
+    client = TestClient(app, base_url="http://127.0.0.1", headers={"X-YomiMado-Client": "desktop"})
     assert provider.calls == []
 
     first = client.post("/api/v1/translate", json={"text": " 学校に行く。 "})
@@ -44,7 +45,9 @@ def test_translation_is_explicit_and_cached(tmp_path: Path, monkeypatch) -> None
 
 
 def test_translation_rejects_blank_text() -> None:
-    response = TestClient(app).post("/api/v1/translate", json={"text": "  "})
+    response = TestClient(
+        app, base_url="http://127.0.0.1", headers={"X-YomiMado-Client": "desktop"}
+    ).post("/api/v1/translate", json={"text": "  "})
     assert response.status_code == 422
 
 
@@ -55,14 +58,68 @@ def test_translation_reports_missing_local_model(monkeypatch, tmp_path: Path) ->
         "service",
         TranslationService(translation_api.LocalMarianProvider(), tmp_path / "cache.sqlite3"),
     )
-    response = TestClient(app).post("/api/v1/translate", json={"text": "学校"})
+    response = TestClient(
+        app, base_url="http://127.0.0.1", headers={"X-YomiMado-Client": "desktop"}
+    ).post("/api/v1/translate", json={"text": "学校"})
     assert response.status_code == 503
     assert "YOMIMADO_TRANSLATION_MODEL" in response.json()["detail"]
 
 
+def test_translation_reports_corrupt_cache_as_service_error(monkeypatch, tmp_path: Path) -> None:
+    cache = tmp_path / "cache.sqlite3"
+    cache.write_bytes(b"not a SQLite database")
+    provider = FakeProvider()
+    monkeypatch.setattr(translation_api, "service", TranslationService(provider, cache))
+
+    response = TestClient(
+        app, base_url="http://127.0.0.1", headers={"X-YomiMado-Client": "desktop"}
+    ).post("/api/v1/translate", json={"text": "学校"})
+
+    assert response.status_code == 503
+    assert "database" in response.json()["detail"]
+    assert provider.calls == []
+
+
+@pytest.mark.parametrize("corrupt_cache", [False, True])
+def test_translation_closes_cache_connections(monkeypatch, tmp_path: Path, corrupt_cache) -> None:
+    connections = []
+
+    class TrackedConnection(sqlite3.Connection):
+        closed = False
+
+        def close(self):
+            super().close()
+            self.closed = True
+
+    connect = sqlite3.connect
+
+    def tracked_connect(path):
+        connection = connect(path, factory=TrackedConnection)
+        connections.append(connection)
+        return connection
+
+    monkeypatch.setattr(sqlite3, "connect", tracked_connect)
+    cache = tmp_path / "cache.sqlite3"
+    provider = FakeProvider()
+    service = TranslationService(provider, cache)
+    if corrupt_cache:
+        cache.write_bytes(b"not a SQLite database")
+        with pytest.raises(sqlite3.DatabaseError):
+            service.translate("学校")
+        assert len(connections) == 1
+    else:
+        assert service.translate("学校").cached is False
+        assert len(connections) == 2
+        assert all(connection.closed for connection in connections)
+        assert service.translate("学校").cached is True
+        assert len(connections) == 3
+        assert provider.calls == ["学校"]
+    assert all(connection.closed for connection in connections)
+
+
 @pytest.mark.parametrize("origin", ["tauri://localhost", "http://tauri.localhost"])
 def test_translation_cors_allows_app_but_not_other_sites(origin: str) -> None:
-    client = TestClient(app)
+    client = TestClient(app, base_url="http://127.0.0.1", headers={"X-YomiMado-Client": "desktop"})
     allowed = client.options(
         "/api/v1/translate",
         headers={

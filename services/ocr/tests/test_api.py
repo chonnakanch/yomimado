@@ -16,7 +16,7 @@ from app.pipeline.real_ocr import (
     _text_filter_reason,
 )
 
-client = TestClient(app)
+client = TestClient(app, base_url="http://127.0.0.1", headers={"X-YomiMado-Client": "desktop"})
 PNG = b"\x89PNG\r\n\x1a\n" + b"\x00\x00\x00\x0dIHDR" + pack(">II", 200, 300)
 
 

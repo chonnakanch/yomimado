@@ -1,0 +1,1156 @@
+{
+  "reviewDate": "2026-10-13",
+  "scope": "Version matches in checked-in inventories, not a claim of exploitable installed binaries. PyPI local version suffixes are stripped for OSV queries. Duplicate PYSEC/GHSA aliases are retained in packageAlerts.",
+  "inputSha256": {
+    "apps/desktop/src-tauri/Cargo.lock": "e947624462f3373aa4d1cc3e91b9aed00efc32eac63a9b6dacd5cd4009bd38e7",
+    "services/ocr/requirements-macos-release.txt": "38eb0fb66c16e282534a8c531bdedffb9eead910df7a87451efd413dcdf7d35b",
+    "services/ocr/requirements-windows-release.txt": "cbb7dea43280ceecb5a452f4bce5b40cdfc3caf1bf3774a46d4060646edd9f98",
+    "apps/desktop/package-lock.json": "9b6fbcff1f44398fe8c37719464f1a970e3a9fcd028a553c259120387b89a502"
+  },
+  "osvQueryCount": 733,
+  "queriesByInventory": {
+    "macos": 84,
+    "windows": 80,
+    "rust-lock": 569
+  },
+  "npmBefore": {
+    "info": 0,
+    "low": 0,
+    "moderate": 1,
+    "high": 1,
+    "critical": 2,
+    "total": 4
+  },
+  "npmAfter": {
+    "info": 0,
+    "low": 0,
+    "moderate": 0,
+    "high": 0,
+    "critical": 0,
+    "total": 0
+  },
+  "packageAlerts": [
+    {
+      "platform": "macos",
+      "name": "anyio",
+      "version": "4.12.1",
+      "advisoryIds": [
+        "GHSA-5p39-cfhj-2xmp",
+        "GHSA-82r6-8w77-94w6",
+        "PYSEC-2026-4024",
+        "PYSEC-2026-4025"
+      ]
+    },
+    {
+      "platform": "macos",
+      "name": "filelock",
+      "version": "3.19.1",
+      "advisoryIds": [
+        "GHSA-qmgc-5h2g-mvrw",
+        "GHSA-w853-jp5j-5j7f",
+        "PYSEC-2026-1374",
+        "PYSEC-2026-1375"
+      ]
+    },
+    {
+      "platform": "macos",
+      "name": "fsspec",
+      "version": "2025.10.0",
+      "advisoryIds": ["GHSA-27vj-qcqg-25rc"]
+    },
+    {
+      "platform": "macos",
+      "name": "pillow",
+      "version": "11.3.0",
+      "advisoryIds": [
+        "GHSA-45hq-cxwh-f6vc",
+        "GHSA-4x4j-2g7c-83w6",
+        "GHSA-5x94-69rx-g8h2",
+        "GHSA-5xmw-vc9v-4wf2",
+        "GHSA-62p4-gmf7-7g93",
+        "GHSA-6r8x-57c9-28j4",
+        "GHSA-8v84-f9pq-wr9x",
+        "GHSA-9hw9-ch79-4vh6",
+        "GHSA-cfh3-3jmp-rvhc",
+        "GHSA-fj7v-r99m-22gq",
+        "GHSA-jjj6-mw9f-p565",
+        "GHSA-phj9-mv4w-65pm",
+        "GHSA-pwv6-vv43-88gr",
+        "GHSA-r73j-pqj5-w3x7",
+        "GHSA-vjc4-5qp5-m44j",
+        "GHSA-whj4-6x5x-4v2j",
+        "GHSA-wjx4-4jcj-g98j",
+        "GHSA-xj96-63gp-2gmr",
+        "PYSEC-2026-165",
+        "PYSEC-2026-2249",
+        "PYSEC-2026-2250",
+        "PYSEC-2026-2251",
+        "PYSEC-2026-2252",
+        "PYSEC-2026-2253",
+        "PYSEC-2026-2254",
+        "PYSEC-2026-2255",
+        "PYSEC-2026-2256",
+        "PYSEC-2026-2257",
+        "PYSEC-2026-2874",
+        "PYSEC-2026-3451",
+        "PYSEC-2026-3453",
+        "PYSEC-2026-3454",
+        "PYSEC-2026-3493",
+        "PYSEC-2026-3494",
+        "PYSEC-2026-3495",
+        "PYSEC-2026-3496"
+      ]
+    },
+    {
+      "platform": "macos",
+      "name": "pytest",
+      "version": "8.4.2",
+      "advisoryIds": ["GHSA-6w46-j5rx-g56g", "PYSEC-2026-1845"]
+    },
+    {
+      "platform": "macos",
+      "name": "python-dotenv",
+      "version": "1.2.1",
+      "advisoryIds": ["GHSA-mf9w-mj56-hr94", "PYSEC-2026-2270"]
+    },
+    {
+      "platform": "macos",
+      "name": "python-multipart",
+      "version": "0.0.20",
+      "advisoryIds": [
+        "GHSA-5rvq-cxj2-64vf",
+        "GHSA-6jv3-5f52-599m",
+        "GHSA-mj87-hwqh-73pj",
+        "GHSA-pp6c-gr5w-3c5g",
+        "GHSA-v9pg-7xvm-68hf",
+        "GHSA-vffw-93wf-4j4q",
+        "GHSA-wp53-j4wj-2cfg",
+        "PYSEC-2026-1852",
+        "PYSEC-2026-3036",
+        "PYSEC-2026-3037",
+        "PYSEC-2026-3038",
+        "PYSEC-2026-3039",
+        "PYSEC-2026-3040",
+        "PYSEC-2026-3041"
+      ]
+    },
+    {
+      "platform": "macos",
+      "name": "requests",
+      "version": "2.32.5",
+      "advisoryIds": ["GHSA-gc5v-m9x4-r6x2", "PYSEC-2026-2275"]
+    },
+    {
+      "platform": "macos",
+      "name": "setuptools",
+      "version": "80.9.0",
+      "advisoryIds": ["GHSA-h35f-9h28-mq5c", "PYSEC-2026-3447"]
+    },
+    {
+      "platform": "macos",
+      "name": "starlette",
+      "version": "0.49.3",
+      "advisoryIds": [
+        "GHSA-82w8-qh3p-5jfq",
+        "GHSA-86qp-5c8j-p5mr",
+        "GHSA-jp82-jpqv-5vv3",
+        "GHSA-wqp7-x3pw-xc5r",
+        "GHSA-x746-7m8f-x49c",
+        "PYSEC-2026-161",
+        "PYSEC-2026-2280",
+        "PYSEC-2026-2281",
+        "PYSEC-2026-248",
+        "PYSEC-2026-249"
+      ]
+    },
+    {
+      "platform": "macos",
+      "name": "torch",
+      "version": "2.8.0",
+      "advisoryIds": [
+        "GHSA-qfhq-4f3w-5fph",
+        "GHSA-rrmf-rvhw-rf47",
+        "GHSA-vgrw-7cvw-pwgx",
+        "PYSEC-2025-203",
+        "PYSEC-2025-204",
+        "PYSEC-2025-206",
+        "PYSEC-2026-139",
+        "PYSEC-2026-2286"
+      ]
+    },
+    {
+      "platform": "macos",
+      "name": "transformers",
+      "version": "4.57.3",
+      "advisoryIds": [
+        "GHSA-29pf-2h5f-8g72",
+        "GHSA-69w3-r845-3855",
+        "GHSA-fgcw-684q-jj6r",
+        "GHSA-x9r9-c232-4q39",
+        "GHSA-xrqw-3rrv-vx5w",
+        "PYSEC-2025-217",
+        "PYSEC-2026-2288",
+        "PYSEC-2026-2289",
+        "PYSEC-2026-2290",
+        "PYSEC-2026-3929",
+        "PYSEC-2026-4174"
+      ]
+    },
+    {
+      "platform": "macos",
+      "name": "urllib3",
+      "version": "2.6.3",
+      "advisoryIds": [
+        "GHSA-8988-9cw3-xx77",
+        "GHSA-gh4c-6fx4-qh6g",
+        "GHSA-mf9v-mfxr-j63j",
+        "GHSA-qccp-gfcp-xxvc",
+        "GHSA-vxq7-64xx-v4gw",
+        "PYSEC-2026-141",
+        "PYSEC-2026-142",
+        "PYSEC-2026-4175",
+        "PYSEC-2026-4176",
+        "PYSEC-2026-4177"
+      ]
+    },
+    {
+      "platform": "windows",
+      "name": "anyio",
+      "version": "4.12.1",
+      "advisoryIds": [
+        "GHSA-5p39-cfhj-2xmp",
+        "GHSA-82r6-8w77-94w6",
+        "PYSEC-2026-4024",
+        "PYSEC-2026-4025"
+      ]
+    },
+    {
+      "platform": "windows",
+      "name": "filelock",
+      "version": "3.19.1",
+      "advisoryIds": [
+        "GHSA-qmgc-5h2g-mvrw",
+        "GHSA-w853-jp5j-5j7f",
+        "PYSEC-2026-1374",
+        "PYSEC-2026-1375"
+      ]
+    },
+    {
+      "platform": "windows",
+      "name": "fsspec",
+      "version": "2025.10.0",
+      "advisoryIds": ["GHSA-27vj-qcqg-25rc"]
+    },
+    {
+      "platform": "windows",
+      "name": "pillow",
+      "version": "11.3.0",
+      "advisoryIds": [
+        "GHSA-45hq-cxwh-f6vc",
+        "GHSA-4x4j-2g7c-83w6",
+        "GHSA-5x94-69rx-g8h2",
+        "GHSA-5xmw-vc9v-4wf2",
+        "GHSA-62p4-gmf7-7g93",
+        "GHSA-6r8x-57c9-28j4",
+        "GHSA-8v84-f9pq-wr9x",
+        "GHSA-9hw9-ch79-4vh6",
+        "GHSA-cfh3-3jmp-rvhc",
+        "GHSA-fj7v-r99m-22gq",
+        "GHSA-jjj6-mw9f-p565",
+        "GHSA-phj9-mv4w-65pm",
+        "GHSA-pwv6-vv43-88gr",
+        "GHSA-r73j-pqj5-w3x7",
+        "GHSA-vjc4-5qp5-m44j",
+        "GHSA-whj4-6x5x-4v2j",
+        "GHSA-wjx4-4jcj-g98j",
+        "GHSA-xj96-63gp-2gmr",
+        "PYSEC-2026-165",
+        "PYSEC-2026-2249",
+        "PYSEC-2026-2250",
+        "PYSEC-2026-2251",
+        "PYSEC-2026-2252",
+        "PYSEC-2026-2253",
+        "PYSEC-2026-2254",
+        "PYSEC-2026-2255",
+        "PYSEC-2026-2256",
+        "PYSEC-2026-2257",
+        "PYSEC-2026-2874",
+        "PYSEC-2026-3451",
+        "PYSEC-2026-3453",
+        "PYSEC-2026-3454",
+        "PYSEC-2026-3493",
+        "PYSEC-2026-3494",
+        "PYSEC-2026-3495",
+        "PYSEC-2026-3496"
+      ]
+    },
+    {
+      "platform": "windows",
+      "name": "pytest",
+      "version": "8.4.2",
+      "advisoryIds": ["GHSA-6w46-j5rx-g56g", "PYSEC-2026-1845"]
+    },
+    {
+      "platform": "windows",
+      "name": "python-dotenv",
+      "version": "1.2.1",
+      "advisoryIds": ["GHSA-mf9w-mj56-hr94", "PYSEC-2026-2270"]
+    },
+    {
+      "platform": "windows",
+      "name": "python-multipart",
+      "version": "0.0.20",
+      "advisoryIds": [
+        "GHSA-5rvq-cxj2-64vf",
+        "GHSA-6jv3-5f52-599m",
+        "GHSA-mj87-hwqh-73pj",
+        "GHSA-pp6c-gr5w-3c5g",
+        "GHSA-v9pg-7xvm-68hf",
+        "GHSA-vffw-93wf-4j4q",
+        "GHSA-wp53-j4wj-2cfg",
+        "PYSEC-2026-1852",
+        "PYSEC-2026-3036",
+        "PYSEC-2026-3037",
+        "PYSEC-2026-3038",
+        "PYSEC-2026-3039",
+        "PYSEC-2026-3040",
+        "PYSEC-2026-3041"
+      ]
+    },
+    {
+      "platform": "windows",
+      "name": "requests",
+      "version": "2.32.5",
+      "advisoryIds": ["GHSA-gc5v-m9x4-r6x2", "PYSEC-2026-2275"]
+    },
+    {
+      "platform": "windows",
+      "name": "setuptools",
+      "version": "80.9.0",
+      "advisoryIds": ["GHSA-h35f-9h28-mq5c", "PYSEC-2026-3447"]
+    },
+    {
+      "platform": "windows",
+      "name": "starlette",
+      "version": "0.49.3",
+      "advisoryIds": [
+        "GHSA-82w8-qh3p-5jfq",
+        "GHSA-86qp-5c8j-p5mr",
+        "GHSA-jp82-jpqv-5vv3",
+        "GHSA-wqp7-x3pw-xc5r",
+        "GHSA-x746-7m8f-x49c",
+        "PYSEC-2026-161",
+        "PYSEC-2026-2280",
+        "PYSEC-2026-2281",
+        "PYSEC-2026-248",
+        "PYSEC-2026-249"
+      ]
+    },
+    {
+      "platform": "windows",
+      "name": "torch",
+      "version": "2.8.0+cpu",
+      "advisoryIds": [
+        "GHSA-qfhq-4f3w-5fph",
+        "GHSA-rrmf-rvhw-rf47",
+        "GHSA-vgrw-7cvw-pwgx",
+        "PYSEC-2025-203",
+        "PYSEC-2025-204",
+        "PYSEC-2025-206",
+        "PYSEC-2026-139",
+        "PYSEC-2026-2286"
+      ]
+    },
+    {
+      "platform": "windows",
+      "name": "transformers",
+      "version": "4.57.3",
+      "advisoryIds": [
+        "GHSA-29pf-2h5f-8g72",
+        "GHSA-69w3-r845-3855",
+        "GHSA-fgcw-684q-jj6r",
+        "GHSA-x9r9-c232-4q39",
+        "GHSA-xrqw-3rrv-vx5w",
+        "PYSEC-2025-217",
+        "PYSEC-2026-2288",
+        "PYSEC-2026-2289",
+        "PYSEC-2026-2290",
+        "PYSEC-2026-3929",
+        "PYSEC-2026-4174"
+      ]
+    },
+    {
+      "platform": "windows",
+      "name": "urllib3",
+      "version": "2.6.3",
+      "advisoryIds": [
+        "GHSA-8988-9cw3-xx77",
+        "GHSA-gh4c-6fx4-qh6g",
+        "GHSA-mf9v-mfxr-j63j",
+        "GHSA-qccp-gfcp-xxvc",
+        "GHSA-vxq7-64xx-v4gw",
+        "PYSEC-2026-141",
+        "PYSEC-2026-142",
+        "PYSEC-2026-4175",
+        "PYSEC-2026-4176",
+        "PYSEC-2026-4177"
+      ]
+    },
+    {
+      "platform": "rust-lock",
+      "name": "glib",
+      "version": "0.18.5",
+      "advisoryIds": ["GHSA-wrw7-89jp-8q8g", "RUSTSEC-2024-0429"]
+    },
+    {
+      "platform": "rust-lock",
+      "name": "proc-macro-error",
+      "version": "1.0.4",
+      "advisoryIds": ["RUSTSEC-2024-0370"]
+    },
+    {
+      "platform": "rust-lock",
+      "name": "unic-char-property",
+      "version": "0.9.0",
+      "advisoryIds": ["RUSTSEC-2025-0081"]
+    },
+    {
+      "platform": "rust-lock",
+      "name": "unic-char-range",
+      "version": "0.9.0",
+      "advisoryIds": ["RUSTSEC-2025-0075"]
+    },
+    {
+      "platform": "rust-lock",
+      "name": "unic-common",
+      "version": "0.9.0",
+      "advisoryIds": ["RUSTSEC-2025-0080"]
+    },
+    {
+      "platform": "rust-lock",
+      "name": "unic-ucd-ident",
+      "version": "0.9.0",
+      "advisoryIds": ["RUSTSEC-2025-0100"]
+    },
+    {
+      "platform": "rust-lock",
+      "name": "unic-ucd-version",
+      "version": "0.9.0",
+      "advisoryIds": ["RUSTSEC-2025-0098"]
+    }
+  ],
+  "advisories": [
+    {
+      "id": "GHSA-27vj-qcqg-25rc",
+      "aliases": ["CVE-2026-104851"],
+      "summary": "fsspec: Server-Side Template Injection in ReferenceFileSystem leads to Remote Code Execution",
+      "published": "2026-10-05T22:53:22Z",
+      "modified": "2026-10-05T23:00:06.213351946Z",
+      "withdrawn": null,
+      "classification": null,
+      "severity": "HIGH",
+      "fixVersions": ["2026.6.0"],
+      "reference": "https://github.com/advisories/GHSA-27vj-qcqg-25rc"
+    },
+    {
+      "id": "GHSA-29pf-2h5f-8g72",
+      "aliases": ["CVE-2026-4372", "PYSEC-2026-2289"],
+      "summary": "HuggingFace transformers vulnerable to remote code execution",
+      "published": "2026-05-26T13:30:33Z",
+      "modified": "2026-09-10T03:50:45.254378086Z",
+      "withdrawn": null,
+      "classification": null,
+      "severity": "HIGH",
+      "fixVersions": ["5.3.0"],
+      "reference": "https://github.com/advisories/GHSA-29pf-2h5f-8g72"
+    },
+    {
+      "id": "GHSA-45hq-cxwh-f6vc",
+      "aliases": ["BIT-pillow-2026-55379", "CVE-2026-55379", "PYSEC-2026-2255"],
+      "summary": "Pillow `BdfFontFile`: `Image.new()` called without `_decompression_bomb_check()` \u2014 bomb protection bypass via font loading",
+      "published": "2026-07-20T21:13:18Z",
+      "modified": "2026-09-10T03:50:51.372929814Z",
+      "withdrawn": null,
+      "classification": null,
+      "severity": "HIGH",
+      "fixVersions": ["12.3.0"],
+      "reference": "https://github.com/advisories/GHSA-45hq-cxwh-f6vc"
+    },
+    {
+      "id": "GHSA-4x4j-2g7c-83w6",
+      "aliases": ["BIT-pillow-2026-55798", "CVE-2026-55798", "PYSEC-2026-2257"],
+      "summary": "Pillow: WindowsViewer.get_command() OS command injection via unescaped shell path",
+      "published": "2026-07-20T21:14:14Z",
+      "modified": "2026-09-10T03:51:10.324377232Z",
+      "withdrawn": null,
+      "classification": null,
+      "severity": "MODERATE",
+      "fixVersions": ["12.3.0"],
+      "reference": "https://github.com/advisories/GHSA-4x4j-2g7c-83w6"
+    },
+    {
+      "id": "GHSA-5p39-cfhj-2xmp",
+      "aliases": ["CVE-2026-64847", "PYSEC-2026-4024"],
+      "summary": "AnyIO process-pool workers can block indefinitely on undrained stderr",
+      "published": "2026-09-18T17:17:10Z",
+      "modified": "2026-10-01T17:55:57.336188727Z",
+      "withdrawn": null,
+      "classification": null,
+      "severity": "MODERATE",
+      "fixVersions": ["4.14.2"],
+      "reference": "https://github.com/advisories/GHSA-5p39-cfhj-2xmp"
+    },
+    {
+      "id": "GHSA-5rvq-cxj2-64vf",
+      "aliases": ["CVE-2026-53539", "PYSEC-2026-3036"],
+      "summary": "python-multipart: Quadratic-time querystring parsing with semicolon separators causes CPU denial of service",
+      "published": "2026-06-15T20:24:09Z",
+      "modified": "2026-09-10T03:50:48.426087467Z",
+      "withdrawn": null,
+      "classification": null,
+      "severity": "HIGH",
+      "fixVersions": ["0.0.30"],
+      "reference": "https://github.com/advisories/GHSA-5rvq-cxj2-64vf"
+    },
+    {
+      "id": "GHSA-5x94-69rx-g8h2",
+      "aliases": ["BIT-pillow-2026-54060", "CVE-2026-54060", "PYSEC-2026-2254"],
+      "summary": "Pillow: `FontFile.compile()`: `Image.new()` called without `_decompression_bomb_check()`",
+      "published": "2026-07-20T21:08:40Z",
+      "modified": "2026-09-10T03:51:10.514604451Z",
+      "withdrawn": null,
+      "classification": null,
+      "severity": "HIGH",
+      "fixVersions": ["12.3.0"],
+      "reference": "https://github.com/advisories/GHSA-5x94-69rx-g8h2"
+    },
+    {
+      "id": "GHSA-5xmw-vc9v-4wf2",
+      "aliases": ["BIT-pillow-2026-42309", "CVE-2026-42309", "PYSEC-2026-2251"],
+      "summary": "Pillow has a heap buffer overflow with nested list coordinates",
+      "published": "2026-05-04T20:18:27Z",
+      "modified": "2026-09-10T03:51:04.701007027Z",
+      "withdrawn": null,
+      "classification": null,
+      "severity": "MODERATE",
+      "fixVersions": ["12.2.0"],
+      "reference": "https://github.com/advisories/GHSA-5xmw-vc9v-4wf2"
+    },
+    {
+      "id": "GHSA-62p4-gmf7-7g93",
+      "aliases": ["BIT-pillow-2026-54058", "CVE-2026-54058", "PYSEC-2026-3493"],
+      "summary": "Pillow: Out-of-bounds read via attacker-controlled row stride on Pillow's mmap path (McIdas AREA files)",
+      "published": "2026-07-20T21:08:13Z",
+      "modified": "2026-09-10T03:51:10.632149522Z",
+      "withdrawn": null,
+      "classification": null,
+      "severity": "HIGH",
+      "fixVersions": ["12.3.0"],
+      "reference": "https://github.com/advisories/GHSA-62p4-gmf7-7g93"
+    },
+    {
+      "id": "GHSA-69w3-r845-3855",
+      "aliases": ["CVE-2026-1839", "PYSEC-2026-2288"],
+      "summary": "HuggingFace Transformers allows for arbitrary code execution in the `Trainer` class",
+      "published": "2026-04-07T06:30:28Z",
+      "modified": "2026-09-10T03:50:43.300048881Z",
+      "withdrawn": null,
+      "classification": null,
+      "severity": "MODERATE",
+      "fixVersions": ["5.0.0rc3"],
+      "reference": "https://github.com/advisories/GHSA-69w3-r845-3855"
+    },
+    {
+      "id": "GHSA-6jv3-5f52-599m",
+      "aliases": ["CVE-2026-53538", "PYSEC-2026-3037"],
+      "summary": "python-multipart: Semicolon treated as querystring field separator enables parameter smuggling",
+      "published": "2026-06-15T20:22:25Z",
+      "modified": "2026-09-10T03:51:07.925895532Z",
+      "withdrawn": null,
+      "classification": null,
+      "severity": "LOW",
+      "fixVersions": ["0.0.30"],
+      "reference": "https://github.com/advisories/GHSA-6jv3-5f52-599m"
+    },
+    {
+      "id": "GHSA-6r8x-57c9-28j4",
+      "aliases": ["BIT-pillow-2026-59199", "CVE-2026-59199", "PYSEC-2026-3451"],
+      "summary": "Pillow: Heap out-of-bounds write `Image.paste()` / `Image.crop()` via signed coordinate overflow",
+      "published": "2026-07-20T23:09:53Z",
+      "modified": "2026-09-10T03:51:10.822199342Z",
+      "withdrawn": null,
+      "classification": null,
+      "severity": "HIGH",
+      "fixVersions": ["12.3.0"],
+      "reference": "https://github.com/advisories/GHSA-6r8x-57c9-28j4"
+    },
+    {
+      "id": "GHSA-6w46-j5rx-g56g",
+      "aliases": ["CVE-2025-71176", "PYSEC-2026-1845"],
+      "summary": "pytest has vulnerable tmpdir handling",
+      "published": "2026-01-22T06:30:29Z",
+      "modified": "2026-09-10T03:50:32.768043789Z",
+      "withdrawn": null,
+      "classification": null,
+      "severity": "MODERATE",
+      "fixVersions": ["9.0.3"],
+      "reference": "https://github.com/advisories/GHSA-6w46-j5rx-g56g"
+    },
+    {
+      "id": "GHSA-82r6-8w77-94w6",
+      "aliases": ["CVE-2026-63374", "PYSEC-2026-4025"],
+      "summary": "AnyIO: TLSStream IDNA 2003 host name encoding enables potential TLS certificate spoofing",
+      "published": "2026-09-18T17:17:18Z",
+      "modified": "2026-10-01T17:56:11.058322399Z",
+      "withdrawn": null,
+      "classification": null,
+      "severity": "CRITICAL",
+      "fixVersions": ["4.14.2"],
+      "reference": "https://github.com/advisories/GHSA-82r6-8w77-94w6"
+    },
+    {
+      "id": "GHSA-82w8-qh3p-5jfq",
+      "aliases": ["CVE-2026-54283", "PYSEC-2026-249"],
+      "summary": "Starlette: request.form() limits silently ignored for application/x-www-form-urlencoded enable DoS",
+      "published": "2026-06-15T20:39:53Z",
+      "modified": "2026-09-10T03:51:08.156199030Z",
+      "withdrawn": null,
+      "classification": null,
+      "severity": "HIGH",
+      "fixVersions": ["1.3.1"],
+      "reference": "https://github.com/advisories/GHSA-82w8-qh3p-5jfq"
+    },
+    {
+      "id": "GHSA-86qp-5c8j-p5mr",
+      "aliases": ["CVE-2026-48710", "PYSEC-2026-161", "X41-2026-002"],
+      "summary": "Starlette has missing Host header validation that poisons request.url.path, bypassing path-based security checks",
+      "published": "2026-06-04T13:15:17Z",
+      "modified": "2026-09-10T03:51:08.121685407Z",
+      "withdrawn": null,
+      "classification": null,
+      "severity": "MODERATE",
+      "fixVersions": ["1.0.1"],
+      "reference": "https://github.com/advisories/GHSA-86qp-5c8j-p5mr"
+    },
+    {
+      "id": "GHSA-8988-9cw3-xx77",
+      "aliases": ["CVE-2026-97687", "PYSEC-2026-4175"],
+      "summary": "urllib3: HTTPS proxy TLS configuration may be ignored or overridden",
+      "published": "2026-09-30T14:46:04Z",
+      "modified": "2026-10-01T17:55:53.793608550Z",
+      "withdrawn": null,
+      "classification": null,
+      "severity": "HIGH",
+      "fixVersions": ["2.8.0"],
+      "reference": "https://github.com/advisories/GHSA-8988-9cw3-xx77"
+    },
+    {
+      "id": "GHSA-8v84-f9pq-wr9x",
+      "aliases": ["BIT-pillow-2026-54059", "CVE-2026-54059", "PYSEC-2026-2253"],
+      "summary": "Pillow `PcfFontFile._load_bitmaps()`: `Image.frombytes()` called without `_decompression_bomb_check()` \u2014 bomb protection bypass via PCF font loading",
+      "published": "2026-07-20T21:08:27Z",
+      "modified": "2026-09-10T03:51:11.229114807Z",
+      "withdrawn": null,
+      "classification": null,
+      "severity": "HIGH",
+      "fixVersions": ["12.3.0"],
+      "reference": "https://github.com/advisories/GHSA-8v84-f9pq-wr9x"
+    },
+    {
+      "id": "GHSA-9hw9-ch79-4vh6",
+      "aliases": ["BIT-pillow-2026-59205", "CVE-2026-59205", "PYSEC-2026-3453"],
+      "summary": "Pillow: Controlled heap out-of-bounds write in Pillow `ImageCmsTransform.apply()` via output mode mismatch",
+      "published": "2026-07-20T23:19:00Z",
+      "modified": "2026-09-10T03:51:11.334365483Z",
+      "withdrawn": null,
+      "classification": null,
+      "severity": "HIGH",
+      "fixVersions": ["12.3.0"],
+      "reference": "https://github.com/advisories/GHSA-9hw9-ch79-4vh6"
+    },
+    {
+      "id": "GHSA-cfh3-3jmp-rvhc",
+      "aliases": ["BIT-pillow-2026-25990", "CVE-2026-25990", "PYSEC-2026-2249"],
+      "summary": "Pillow affected by out-of-bounds write when loading PSD images",
+      "published": "2026-02-11T14:22:50Z",
+      "modified": "2026-09-10T03:50:59.393816085Z",
+      "withdrawn": null,
+      "classification": null,
+      "severity": "HIGH",
+      "fixVersions": ["12.1.1"],
+      "reference": "https://github.com/advisories/GHSA-cfh3-3jmp-rvhc"
+    },
+    {
+      "id": "GHSA-fgcw-684q-jj6r",
+      "aliases": ["CVE-2026-5241", "PYSEC-2026-2290"],
+      "summary": "huggingface/transformers: Arbitrary Code Execution During Model Initialization in the LightGlue Model Loading Path",
+      "published": "2026-06-03T15:30:43Z",
+      "modified": "2026-09-10T03:50:49.345942449Z",
+      "withdrawn": null,
+      "classification": null,
+      "severity": "HIGH",
+      "fixVersions": ["5.5.0"],
+      "reference": "https://github.com/advisories/GHSA-fgcw-684q-jj6r"
+    },
+    {
+      "id": "GHSA-fj7v-r99m-22gq",
+      "aliases": ["BIT-pillow-2026-59198", "CVE-2026-59198", "PYSEC-2026-3494"],
+      "summary": "Pillow TGA RLE encoder can serialize up to ~57 KB of adjacent heap data into generated images",
+      "published": "2026-07-20T23:09:36Z",
+      "modified": "2026-09-10T03:50:51.891240357Z",
+      "withdrawn": null,
+      "classification": null,
+      "severity": "MODERATE",
+      "fixVersions": ["12.3.0"],
+      "reference": "https://github.com/advisories/GHSA-fj7v-r99m-22gq"
+    },
+    {
+      "id": "GHSA-gc5v-m9x4-r6x2",
+      "aliases": ["CVE-2026-25645", "PYSEC-2026-2275"],
+      "summary": "Requests has Insecure Temp File Reuse in its extract_zipped_paths() utility function",
+      "published": "2026-03-25T16:56:28Z",
+      "modified": "2026-09-10T03:50:39.207922076Z",
+      "withdrawn": null,
+      "classification": null,
+      "severity": "MODERATE",
+      "fixVersions": ["2.33.0"],
+      "reference": "https://github.com/advisories/GHSA-gc5v-m9x4-r6x2"
+    },
+    {
+      "id": "GHSA-gh4c-6fx4-qh6g",
+      "aliases": ["CVE-2026-97688", "PYSEC-2026-4176"],
+      "summary": "urllib3: Chunked Deflate streaming can enter an infinite loop",
+      "published": "2026-09-30T15:00:38Z",
+      "modified": "2026-10-01T17:55:40.608255720Z",
+      "withdrawn": null,
+      "classification": null,
+      "severity": "MODERATE",
+      "fixVersions": ["2.8.0"],
+      "reference": "https://github.com/advisories/GHSA-gh4c-6fx4-qh6g"
+    },
+    {
+      "id": "GHSA-h35f-9h28-mq5c",
+      "aliases": [
+        "BIT-setuptools-2026-59890",
+        "CVE-2026-59890",
+        "PYSEC-2026-3447"
+      ],
+      "summary": "setuptools: MANIFEST.in exclusion bypass in sdist via Unicode normalization collision (NFC/NFD) on macOS APFS/HFS+",
+      "published": "2026-07-21T19:09:21Z",
+      "modified": "2026-09-10T03:50:52.323347787Z",
+      "withdrawn": null,
+      "classification": null,
+      "severity": "MODERATE",
+      "fixVersions": ["83.0.0"],
+      "reference": "https://github.com/advisories/GHSA-h35f-9h28-mq5c"
+    },
+    {
+      "id": "GHSA-jjj6-mw9f-p565",
+      "aliases": ["BIT-pillow-2026-59200", "CVE-2026-59200", "PYSEC-2026-3495"],
+      "summary": "Pillow: Decompression Bomb DoS via PdfParser.PdfStream.decode()",
+      "published": "2026-07-20T23:11:29Z",
+      "modified": "2026-09-10T03:50:12.341825852Z",
+      "withdrawn": null,
+      "classification": null,
+      "severity": "HIGH",
+      "fixVersions": ["12.3.0"],
+      "reference": "https://github.com/advisories/GHSA-jjj6-mw9f-p565"
+    },
+    {
+      "id": "GHSA-jp82-jpqv-5vv3",
+      "aliases": ["CVE-2026-54282", "PYSEC-2026-248"],
+      "summary": "Starlette: Unvalidated request path concatenated into authority poisons request.url.hostname",
+      "published": "2026-06-15T20:38:08Z",
+      "modified": "2026-09-10T03:50:50.050800090Z",
+      "withdrawn": null,
+      "classification": null,
+      "severity": "LOW",
+      "fixVersions": ["1.3.0"],
+      "reference": "https://github.com/advisories/GHSA-jp82-jpqv-5vv3"
+    },
+    {
+      "id": "GHSA-mf9v-mfxr-j63j",
+      "aliases": ["CVE-2026-44432", "PYSEC-2026-142"],
+      "summary": "urllib3: Decompression-bomb safeguards bypassed in parts of the streaming API",
+      "published": "2026-05-11T14:51:45Z",
+      "modified": "2026-09-10T03:51:06.409994465Z",
+      "withdrawn": null,
+      "classification": null,
+      "severity": "HIGH",
+      "fixVersions": ["2.7.0"],
+      "reference": "https://github.com/advisories/GHSA-mf9v-mfxr-j63j"
+    },
+    {
+      "id": "GHSA-mf9w-mj56-hr94",
+      "aliases": ["CVE-2026-28684", "PYSEC-2026-2270"],
+      "summary": "python-dotenv: Symlink following in set_key allows arbitrary file overwrite via cross-device rename fallback",
+      "published": "2026-04-21T14:38:57Z",
+      "modified": "2026-09-10T03:51:02.363430883Z",
+      "withdrawn": null,
+      "classification": null,
+      "severity": "MODERATE",
+      "fixVersions": ["1.2.2"],
+      "reference": "https://github.com/advisories/GHSA-mf9w-mj56-hr94"
+    },
+    {
+      "id": "GHSA-mj87-hwqh-73pj",
+      "aliases": ["CVE-2026-40347", "PYSEC-2026-3038"],
+      "summary": "python-multipart affected by Denial of Service via large multipart preamble or epilogue data",
+      "published": "2026-04-15T19:45:44Z",
+      "modified": "2026-09-10T03:51:02.322677211Z",
+      "withdrawn": null,
+      "classification": null,
+      "severity": "MODERATE",
+      "fixVersions": ["0.0.26"],
+      "reference": "https://github.com/advisories/GHSA-mj87-hwqh-73pj"
+    },
+    {
+      "id": "GHSA-phj9-mv4w-65pm",
+      "aliases": ["BIT-pillow-2026-55380", "CVE-2026-55380", "PYSEC-2026-2256"],
+      "summary": "Pillow `GdImageFile._open()`: image dimensions accepted without `_decompression_bomb_check()`",
+      "published": "2026-07-20T21:13:35Z",
+      "modified": "2026-09-10T03:51:11.734605509Z",
+      "withdrawn": null,
+      "classification": null,
+      "severity": "HIGH",
+      "fixVersions": ["12.3.0"],
+      "reference": "https://github.com/advisories/GHSA-phj9-mv4w-65pm"
+    },
+    {
+      "id": "GHSA-pp6c-gr5w-3c5g",
+      "aliases": ["CVE-2026-42561", "PYSEC-2026-3039"],
+      "summary": "python-multipart has Denial of Service via unbounded multipart part headers",
+      "published": "2026-05-06T21:56:14Z",
+      "modified": "2026-09-10T03:50:47.215892833Z",
+      "withdrawn": null,
+      "classification": null,
+      "severity": "HIGH",
+      "fixVersions": ["0.0.27"],
+      "reference": "https://github.com/advisories/GHSA-pp6c-gr5w-3c5g"
+    },
+    {
+      "id": "GHSA-pwv6-vv43-88gr",
+      "aliases": ["BIT-pillow-2026-42311", "CVE-2026-42311", "PYSEC-2026-2252"],
+      "summary": "Pillow has an OOB Write with Invalid PSD Tile Extents (Integer Overflow)",
+      "published": "2026-05-04T20:20:31Z",
+      "modified": "2026-09-10T03:50:47.242104143Z",
+      "withdrawn": null,
+      "classification": null,
+      "severity": "HIGH",
+      "fixVersions": ["12.2.0"],
+      "reference": "https://github.com/advisories/GHSA-pwv6-vv43-88gr"
+    },
+    {
+      "id": "GHSA-qccp-gfcp-xxvc",
+      "aliases": ["CVE-2026-44431", "PYSEC-2026-141"],
+      "summary": "urllib3: Sensitive headers forwarded across origins in proxied low-level redirects",
+      "published": "2026-05-11T14:51:20Z",
+      "modified": "2026-09-10T03:50:47.272765640Z",
+      "withdrawn": null,
+      "classification": null,
+      "severity": "HIGH",
+      "fixVersions": ["2.7.0"],
+      "reference": "https://github.com/advisories/GHSA-qccp-gfcp-xxvc"
+    },
+    {
+      "id": "GHSA-qfhq-4f3w-5fph",
+      "aliases": ["BIT-pytorch-2025-3001", "CVE-2025-3001", "PYSEC-2025-195"],
+      "summary": "PyTorch is vulnerable to memory corruption through its torch.lstm_cell function",
+      "published": "2025-03-31T18:31:08Z",
+      "modified": "2026-06-10T18:26:26.736808954Z",
+      "withdrawn": null,
+      "classification": null,
+      "severity": "LOW",
+      "fixVersions": ["2.10.0"],
+      "reference": "https://github.com/advisories/GHSA-qfhq-4f3w-5fph"
+    },
+    {
+      "id": "GHSA-qmgc-5h2g-mvrw",
+      "aliases": ["CVE-2026-22701", "PYSEC-2026-1374"],
+      "summary": "filelock Time-of-Check-Time-of-Use (TOCTOU) Symlink Vulnerability in SoftFileLock",
+      "published": "2026-01-13T18:44:55Z",
+      "modified": "2026-09-10T03:50:33.702580779Z",
+      "withdrawn": null,
+      "classification": null,
+      "severity": "MODERATE",
+      "fixVersions": ["3.20.3"],
+      "reference": "https://github.com/advisories/GHSA-qmgc-5h2g-mvrw"
+    },
+    {
+      "id": "GHSA-r73j-pqj5-w3x7",
+      "aliases": ["BIT-pillow-2026-42310", "CVE-2026-42310", "PYSEC-2026-2874"],
+      "summary": "Pillow has a PDF Parsing Trailer Infinite Loop (DoS)",
+      "published": "2026-05-04T20:19:30Z",
+      "modified": "2026-09-10T03:50:55.309086884Z",
+      "withdrawn": null,
+      "classification": null,
+      "severity": "MODERATE",
+      "fixVersions": ["12.2.0"],
+      "reference": "https://github.com/advisories/GHSA-r73j-pqj5-w3x7"
+    },
+    {
+      "id": "GHSA-rrmf-rvhw-rf47",
+      "aliases": ["BIT-pytorch-2025-3000", "CVE-2025-3000", "PYSEC-2025-194"],
+      "summary": "PyTorch is vulnerable to memory corruption through its torch.jit.script function",
+      "published": "2025-03-31T15:30:48Z",
+      "modified": "2026-09-10T03:49:48.419046410Z",
+      "withdrawn": null,
+      "classification": null,
+      "severity": "LOW",
+      "fixVersions": ["2.13.0"],
+      "reference": "https://github.com/advisories/GHSA-rrmf-rvhw-rf47"
+    },
+    {
+      "id": "GHSA-v9pg-7xvm-68hf",
+      "aliases": ["CVE-2026-53540", "PYSEC-2026-3040"],
+      "summary": "python-multipart: Negative Content-Length in parse_form buffers the entire body in memory",
+      "published": "2026-06-15T20:23:45Z",
+      "modified": "2026-09-10T03:50:50.590441047Z",
+      "withdrawn": null,
+      "classification": null,
+      "severity": "LOW",
+      "fixVersions": ["0.0.31"],
+      "reference": "https://github.com/advisories/GHSA-v9pg-7xvm-68hf"
+    },
+    {
+      "id": "GHSA-vffw-93wf-4j4q",
+      "aliases": ["CVE-2026-53537", "PYSEC-2026-3041"],
+      "summary": "python-multipart: Content-Disposition parameter smuggling via RFC 2231/5987 extended parameters",
+      "published": "2026-06-15T20:20:51Z",
+      "modified": "2026-09-10T03:50:50.585695996Z",
+      "withdrawn": null,
+      "classification": null,
+      "severity": "LOW",
+      "fixVersions": ["0.0.30"],
+      "reference": "https://github.com/advisories/GHSA-vffw-93wf-4j4q"
+    },
+    {
+      "id": "GHSA-vgrw-7cvw-pwgx",
+      "aliases": ["BIT-pytorch-2025-2999", "CVE-2025-2999", "PYSEC-2025-193"],
+      "summary": "PyTorch is vulnerable to memory corruption through its unpack_sequence function",
+      "published": "2025-03-31T15:30:48Z",
+      "modified": "2026-06-10T17:41:15.774477397Z",
+      "withdrawn": null,
+      "classification": null,
+      "severity": "MODERATE",
+      "fixVersions": ["2.9.1"],
+      "reference": "https://github.com/advisories/GHSA-vgrw-7cvw-pwgx"
+    },
+    {
+      "id": "GHSA-vjc4-5qp5-m44j",
+      "aliases": ["BIT-pillow-2026-59204", "CVE-2026-59204", "PYSEC-2026-3496"],
+      "summary": "Pillow JPEG2000 tiled decode retains a growing scratch buffer and can be used for denial of service",
+      "published": "2026-07-20T23:18:32Z",
+      "modified": "2026-09-10T03:50:53.107920034Z",
+      "withdrawn": null,
+      "classification": null,
+      "severity": "HIGH",
+      "fixVersions": ["12.3.0"],
+      "reference": "https://github.com/advisories/GHSA-vjc4-5qp5-m44j"
+    },
+    {
+      "id": "GHSA-vxq7-64xx-v4gw",
+      "aliases": ["CVE-2026-97689", "PYSEC-2026-4177"],
+      "summary": "urllib3: HTTPResponse.stream()/read_chunked() buffers an unbounded chunk-size line into memory",
+      "published": "2026-09-30T14:46:18Z",
+      "modified": "2026-10-01T17:55:57.514829071Z",
+      "withdrawn": null,
+      "classification": null,
+      "severity": "HIGH",
+      "fixVersions": ["2.8.0"],
+      "reference": "https://github.com/advisories/GHSA-vxq7-64xx-v4gw"
+    },
+    {
+      "id": "GHSA-w853-jp5j-5j7f",
+      "aliases": ["CVE-2025-68146", "PYSEC-2026-1375"],
+      "summary": "filelock has a TOCTOU race condition which allows symlink attacks during lock file creation",
+      "published": "2025-12-16T20:52:55Z",
+      "modified": "2026-09-10T03:50:32.252960082Z",
+      "withdrawn": null,
+      "classification": null,
+      "severity": "MODERATE",
+      "fixVersions": ["3.20.1"],
+      "reference": "https://github.com/advisories/GHSA-w853-jp5j-5j7f"
+    },
+    {
+      "id": "GHSA-whj4-6x5x-4v2j",
+      "aliases": ["BIT-pillow-2026-40192", "CVE-2026-40192", "PYSEC-2026-2250"],
+      "summary": "FITS GZIP decompression bomb in Pillow",
+      "published": "2026-04-13T19:22:35Z",
+      "modified": "2026-09-10T03:51:03.847830288Z",
+      "withdrawn": null,
+      "classification": null,
+      "severity": "HIGH",
+      "fixVersions": ["12.2.0"],
+      "reference": "https://github.com/advisories/GHSA-whj4-6x5x-4v2j"
+    },
+    {
+      "id": "GHSA-wjx4-4jcj-g98j",
+      "aliases": ["BIT-pillow-2026-42308", "CVE-2026-42308", "PYSEC-2026-165"],
+      "summary": "Pillow has an integer overflow when processing fonts",
+      "published": "2026-05-04T20:18:45Z",
+      "modified": "2026-09-10T03:50:47.950262681Z",
+      "withdrawn": null,
+      "classification": null,
+      "severity": "MODERATE",
+      "fixVersions": ["12.2.0"],
+      "reference": "https://github.com/advisories/GHSA-wjx4-4jcj-g98j"
+    },
+    {
+      "id": "GHSA-wp53-j4wj-2cfg",
+      "aliases": ["CVE-2026-24486", "PYSEC-2026-1852"],
+      "summary": "Python-Multipart has Arbitrary File Write via Non-Default Configuration",
+      "published": "2026-01-26T23:28:05Z",
+      "modified": "2026-09-10T03:50:59.359593372Z",
+      "withdrawn": null,
+      "classification": null,
+      "severity": "HIGH",
+      "fixVersions": ["0.0.22"],
+      "reference": "https://github.com/advisories/GHSA-wp53-j4wj-2cfg"
+    },
+    {
+      "id": "GHSA-wqp7-x3pw-xc5r",
+      "aliases": ["CVE-2026-48818", "PYSEC-2026-2281"],
+      "summary": "Starlette: SSRF and NTLM credential theft via UNC paths in StaticFiles on Windows",
+      "published": "2026-06-15T20:16:30Z",
+      "modified": "2026-09-10T03:50:51.079936646Z",
+      "withdrawn": null,
+      "classification": null,
+      "severity": "HIGH",
+      "fixVersions": ["1.1.0"],
+      "reference": "https://github.com/advisories/GHSA-wqp7-x3pw-xc5r"
+    },
+    {
+      "id": "GHSA-wrw7-89jp-8q8g",
+      "aliases": ["RUSTSEC-2024-0429"],
+      "summary": "Unsoundness in `Iterator` and `DoubleEndedIterator` impls for `glib::VariantStrIter`",
+      "published": "2024-12-23T20:19:24Z",
+      "modified": "2025-10-28T06:29:26.473225Z",
+      "withdrawn": null,
+      "classification": null,
+      "severity": "MODERATE",
+      "fixVersions": ["0.20.0"],
+      "reference": "https://github.com/advisories/GHSA-wrw7-89jp-8q8g"
+    },
+    {
+      "id": "GHSA-x746-7m8f-x49c",
+      "aliases": ["CVE-2026-48817", "PYSEC-2026-2280"],
+      "summary": "Starlette: Arbitrary HTTP method dispatched to `HTTPEndpoint` attributes via `getattr`",
+      "published": "2026-06-15T20:16:05Z",
+      "modified": "2026-09-10T03:50:12.272722043Z",
+      "withdrawn": null,
+      "classification": null,
+      "severity": "MODERATE",
+      "fixVersions": ["1.1.0"],
+      "reference": "https://github.com/advisories/GHSA-x746-7m8f-x49c"
+    },
+    {
+      "id": "GHSA-x9r9-c232-4q39",
+      "aliases": ["CVE-2026-80047", "PYSEC-2026-4174"],
+      "summary": "Hugging Face Transformers downloads custom generation code before trust consent",
+      "published": "2026-09-01T15:31:13Z",
+      "modified": "2026-10-01T17:55:55.397425521Z",
+      "withdrawn": null,
+      "classification": null,
+      "severity": "HIGH",
+      "fixVersions": [],
+      "reference": "https://github.com/advisories/GHSA-x9r9-c232-4q39"
+    },
+    {
+      "id": "GHSA-xj96-63gp-2gmr",
+      "aliases": ["BIT-pillow-2026-59197", "CVE-2026-59197", "PYSEC-2026-3454"],
+      "summary": "Pillow: Heap out-of-bounds write in `ImageFilter.RankFilter` via integer overflow in `ImagingExpand`",
+      "published": "2026-07-20T23:08:58Z",
+      "modified": "2026-09-10T03:50:53.192759645Z",
+      "withdrawn": null,
+      "classification": null,
+      "severity": "HIGH",
+      "fixVersions": ["12.3.0"],
+      "reference": "https://github.com/advisories/GHSA-xj96-63gp-2gmr"
+    },
+    {
+      "id": "GHSA-xrqw-3rrv-vx5w",
+      "aliases": ["CVE-2026-9856", "PYSEC-2026-3929"],
+      "summary": "Transformers save_pretrained path traversal allows arbitrary file writes through chat template names",
+      "published": "2026-08-02T18:30:20Z",
+      "modified": "2026-09-10T12:25:36.528730268Z",
+      "withdrawn": null,
+      "classification": null,
+      "severity": "HIGH",
+      "fixVersions": ["5.10.0"],
+      "reference": "https://github.com/advisories/GHSA-xrqw-3rrv-vx5w"
+    },
+    {
+      "id": "RUSTSEC-2024-0370",
+      "aliases": [],
+      "summary": "proc-macro-error is unmaintained",
+      "published": "2024-09-01T12:00:00Z",
+      "modified": "2026-06-07T20:00:03.923932350Z",
+      "withdrawn": null,
+      "classification": null,
+      "severity": null,
+      "fixVersions": [],
+      "reference": "https://rustsec.org/advisories/RUSTSEC-2024-0370.html"
+    },
+    {
+      "id": "RUSTSEC-2025-0075",
+      "aliases": [],
+      "summary": "`unic-char-range` is unmaintained",
+      "published": "2025-10-18T12:00:00Z",
+      "modified": "2025-10-22T14:41:04Z",
+      "withdrawn": null,
+      "classification": null,
+      "severity": null,
+      "fixVersions": [],
+      "reference": "https://rustsec.org/advisories/RUSTSEC-2025-0075.html"
+    },
+    {
+      "id": "RUSTSEC-2025-0080",
+      "aliases": [],
+      "summary": "`unic-common` is unmaintained",
+      "published": "2025-10-18T12:00:00Z",
+      "modified": "2025-10-21T11:12:59Z",
+      "withdrawn": null,
+      "classification": null,
+      "severity": null,
+      "fixVersions": [],
+      "reference": "https://rustsec.org/advisories/RUSTSEC-2025-0080.html"
+    },
+    {
+      "id": "RUSTSEC-2025-0081",
+      "aliases": [],
+      "summary": "`unic-char-property` is unmaintained",
+      "published": "2025-10-18T12:00:00Z",
+      "modified": "2025-10-21T11:12:59Z",
+      "withdrawn": null,
+      "classification": null,
+      "severity": null,
+      "fixVersions": [],
+      "reference": "https://rustsec.org/advisories/RUSTSEC-2025-0081.html"
+    },
+    {
+      "id": "RUSTSEC-2025-0098",
+      "aliases": [],
+      "summary": "`unic-ucd-version` is unmaintained",
+      "published": "2025-10-18T12:00:00Z",
+      "modified": "2025-10-21T11:12:59Z",
+      "withdrawn": null,
+      "classification": null,
+      "severity": null,
+      "fixVersions": [],
+      "reference": "https://rustsec.org/advisories/RUSTSEC-2025-0098.html"
+    },
+    {
+      "id": "RUSTSEC-2025-0100",
+      "aliases": [],
+      "summary": "`unic-ucd-ident` is unmaintained",
+      "published": "2025-10-18T12:00:00Z",
+      "modified": "2025-10-21T11:12:59Z",
+      "withdrawn": null,
+      "classification": null,
+      "severity": null,
+      "fixVersions": [],
+      "reference": "https://rustsec.org/advisories/RUSTSEC-2025-0100.html"
+    }
+  ]
+}

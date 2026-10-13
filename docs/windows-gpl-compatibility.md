@@ -111,9 +111,10 @@ detector. No such grant is present in the reviewed pinned detector material.
 
 Rebuilding was the initial selected resolution, not a universal requirement for
 Windows software. On 2026-10-10 the maintainer chooses to avoid long source builds;
-the [prebuilt-package investigation](windows-prebuilt-runtime.md) records the
-checked alternatives and remaining blocker. A permitted prebuilt replacement
-could avoid compiling Torch; none is cleared by this review.
+the historical package investigation remains in Git at `2885586`. The current
+published runtime uses CPU ONNX and IPP-free OpenCV; see the separate
+[actual source/runtime review](windows-source-review.md). This original review
+does not approve different installer bytes or any current Torch-based runtime.
 Research downloads and full original notices remain in the ignored local directory
 `services/ocr/build/windows-licence-review-20261010/`; no installer, model weights,
 credentials or manga screenshots were added to the repository.

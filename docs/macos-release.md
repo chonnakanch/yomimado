@@ -1,5 +1,37 @@
 # First macOS pre-release gate
 
+Published — 2026-10-12: [YomiMado v0.1.0](https://github.com/chonnakanch/yomimado/releases/tag/v0.1.0)
+is public as a pre-release. Both exact-hash local installer gates pass. The owner
+approves protected recovery `38257468295`; verification and publication succeed
+without changing the tested `5159473` source, tag or installer bytes. Independent
+public API checks verify all 17 uploaded asset hashes/states and classification;
+publicly downloaded combined provenance/checksum bytes also verify. Retain the
+existing platform waivers, untested hardware and source-only rebuild limitation.
+The historical preparation/open-gate statements below describe earlier stages.
+
+Latest verified main candidate — 2026-10-12: owner-authorized PR #3 merges at
+`5159473da21c952f1a4dc87c457bba82edf5edde`.
+[Joint run `38201230907`](https://github.com/chonnakanch/yomimado/actions/runs/38201230907)
+passes the macOS build in **12 minutes 16 seconds**, with mounted native/source/signature
+and frozen offline OCR/learning/persistence checks. The exact DMG SHA-256 is
+`9d2999ae49b1756d23e62e6b703284e1d5c87898dc187757dfa3d881b8b28977`.
+The maintainer confirms this locally hash-verified DMG works and explicitly
+passes OCR/page scan, shortcut, dictionary/kanji, new offline translation and
+saved data/model persistence after restart/reboot. The existing-Mac installed
+gate passes; fresh-Mac testing stays waived and unreported detailed subcases
+remain untested.
+Both builders and combined verification pass. The private
+[verified-desktop-candidate](https://github.com/chonnakanch/yomimado/actions/runs/38201230907/artifacts/11726850805)
+is retained for 14 days. GitHub artifact ZIP SHA-256:
+`a6eec1b72e614ba45d30e9fe0651bb079b6266df0db5a4871e55bc896a5be91a`.
+GitHub summary/transfer hashes and all seven downloaded Mac files verify against
+the hosted provenance. The maintainer observes the expected cannot-verify
+Gatekeeper warning, then confirms working launch and the listed functional
+tests. See [the exact-DMG report](macos-clean-mac-test.md).
+Combined/Windows local download verification remains pending. The protected publisher is waiting and has not
+executed. Keep the candidate private and do not approve the superseded
+`99b1312` run. Prior passing reports remain bound to their older installer hashes.
+
 Distribution: a downloadable **Apple Silicon DMG on GitHub Releases**, for
 macOS **14 or later**, outside the Mac App Store.
 
@@ -16,7 +48,7 @@ explicit hobby candidate path, with source and exact-DMG checks. Neither path
 publishes anything automatically from the local build script. Do not upload a
 private build or an incomplete candidate.
 
-Current shared main candidate — 2026-10-12: [run `38196721752`](https://github.com/chonnakanch/yomimado/actions/runs/38196721752)
+Superseded shared main candidate — 2026-10-12: [run `38196721752`](https://github.com/chonnakanch/yomimado/actions/runs/38196721752)
 at `99b13124424901f425a49de7ed87557eee6230a9` passes the repaired automatic
 macOS build in **14 minutes 37 seconds**, including mounted signature/native/
 source/offline runtime checks. Combined Windows/macOS verification passes.
@@ -84,7 +116,7 @@ publisher is waiting; no public tag or release is created.
       offline capture/lookup, the shortcut after reboot and saved-entry
       persistence after relaunch. Page scan, uncached translation and removal
       of the two synthetic entries also pass with maintainer confirmation.
-- [x] Draft [pre-release notes](macos-prerelease-notes.md) with installation,
+- [x] Prepare [shared release notes](desktop-release-notes.md) with installation,
       detector import, permissions, data credits and known limitations.
 - [ ] Finalize release notes with unnotarized status, install steps, fresh-Mac
       limitation, source commit, dictionary dates, download links and hashes.
@@ -353,9 +385,9 @@ both exact new installer confirmations remain open; publication is skipped.
 The maintainer chose this release policy on 2026-10-06: merge a feature into
 `main`, build that exact merged commit, then create its version tag and GitHub
 release after verification and installer confirmation. As of 2026-10-11, the
-workflow is named **Desktop release from main** and includes Windows under the
-same publisher/tag, preserving the macOS runtime path. The workflow file is
-[macos-prerelease.yml](../.github/workflows/macos-prerelease.yml). It runs on
+workflow became **Desktop release from main** and included Windows under the
+same publisher/tag, preserving the macOS runtime path. It is now named **Release**
+in [release.yml](../.github/workflows/release.yml). It runs on
 pushes to `main`, including merge, squash and rebase merges. A manual rerun is
 available on `main`; `develop`, pull requests and tag pushes cannot publish.
 

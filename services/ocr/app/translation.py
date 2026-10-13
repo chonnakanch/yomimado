@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import sqlite3
+from contextlib import closing
 from functools import lru_cache
 from os import environ
 from pathlib import Path
@@ -79,7 +80,7 @@ class TranslationService:
             raise ValueError("Select or enter Japanese text before translating")
         provider_id = self.provider.identity
         self.cache_path.parent.mkdir(parents=True, exist_ok=True)
-        with sqlite3.connect(self.cache_path) as connection:
+        with closing(sqlite3.connect(self.cache_path)) as connection, connection:
             connection.execute(
                 """CREATE TABLE IF NOT EXISTS translations (
                     provider TEXT NOT NULL,
@@ -97,7 +98,7 @@ class TranslationService:
                     sourceText=source, translatedText=row[0], provider=provider_id, cached=True
                 )
         translated = self.provider.translate(source)
-        with sqlite3.connect(self.cache_path) as connection:
+        with closing(sqlite3.connect(self.cache_path)) as connection, connection:
             connection.execute(
                 "INSERT OR REPLACE INTO translations VALUES (?, ?, ?)",
                 (provider_id, source, translated),

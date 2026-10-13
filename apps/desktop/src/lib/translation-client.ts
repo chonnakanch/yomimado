@@ -1,3 +1,4 @@
+import { postServiceJson } from "./service-client";
 export interface TranslationResult {
   sourceText: string;
   translatedText: string;
@@ -5,28 +6,17 @@ export interface TranslationResult {
   cached: boolean;
 }
 
-const SERVICE_URL = import.meta.env.VITE_OCR_URL ?? "http://127.0.0.1:8765";
-
 export async function requestTranslation(
   text: string,
 ): Promise<TranslationResult> {
   const source = text.trim();
   if (!source) throw new Error("Enter Japanese text before translating.");
 
-  const response = await fetch(`${SERVICE_URL}/api/v1/translate`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ text: source }),
-  });
-  if (!response.ok) {
-    const body = (await response.json().catch(() => null)) as {
-      detail?: string;
-    } | null;
-    throw new Error(
-      body?.detail ?? `Translation service returned ${response.status}`,
-    );
-  }
-  const result: unknown = await response.json();
+  const result = await postServiceJson(
+    "/api/v1/translate",
+    "Translation service",
+    { text: source },
+  );
   if (
     typeof result !== "object" ||
     result === null ||

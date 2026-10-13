@@ -1,3 +1,5 @@
+import sqlite3
+
 from fastapi import APIRouter, HTTPException
 
 from app.models import TranslationRequest, TranslationResponse
@@ -13,5 +15,5 @@ def translate(request: TranslationRequest) -> TranslationResponse:
         return service.translate(request.text)
     except ValueError as error:
         raise HTTPException(status_code=422, detail=str(error)) from error
-    except (OSError, ImportError, RuntimeError) as error:
+    except (OSError, ImportError, RuntimeError, sqlite3.DatabaseError) as error:
         raise HTTPException(status_code=503, detail=str(error)) from error

@@ -13,9 +13,9 @@ from unittest.mock import patch
 import numpy as np
 
 sys.path.insert(0, str(Path(__file__).parents[1]))
-from check_onnx_probe import failure_annotation
-from onnx_detector_probe import non_max_suppression
+from onnx_detector import non_max_suppression
 from onnx_generation import Policy, beam_search, generation_scores
+from verify_onnx_models import failure_annotation
 
 
 class NmsTests(unittest.TestCase):
@@ -130,7 +130,7 @@ class TranslationInputTests(unittest.TestCase):
     def test_windows_int32_tokenizer_inputs_obey_int64_graph_contract(self):
         # The baseline test environment need not install the inference wheel.
         # Test the real adapter using a session that enforces the ONNX graph ABI.
-        path = Path(__file__).parents[1] / "onnx_runtime_probe.py"
+        path = Path(__file__).parents[1] / "onnx_runtime.py"
         spec = importlib.util.spec_from_file_location("runtime_under_test", path)
         module = importlib.util.module_from_spec(spec)
         with patch.dict(sys.modules, {"onnxruntime": types.ModuleType("onnxruntime")}):
@@ -172,7 +172,7 @@ class TranslationInputTests(unittest.TestCase):
         np.testing.assert_array_equal(feeds[0]["input_ids"], [[1, 2]])
 
 
-class WorkflowTests(unittest.TestCase):
+class DiagnosticsAndInputTests(unittest.TestCase):
     def test_failure_details_escape_github_annotation_control_characters(self):
         stdout, stderr = io.StringIO(), io.StringIO()
         with (
@@ -184,17 +184,7 @@ class WorkflowTests(unittest.TestCase):
         self.assertIn("25%25%0D%0Anext line", stdout.getvalue())
         self.assertIn("synthetic failure", stderr.getvalue())
 
-    def test_evidence_upload_does_not_include_models_or_sources(self):
-        workflow = (
-            Path(__file__).parents[2] / ".github/workflows/windows-onnx-prototype.yml"
-        ).read_text()
-        artifact = workflow.split("name: windows-onnx-feasibility-evidence", 1)[1]
-        paths = artifact.split("path: |", 1)[1].split("if-no-files-found", 1)[0]
-        for line in paths.splitlines():
-            if line.strip():
-                self.assertTrue(line.strip().endswith((".log", ".json")))
-        self.assertNotIn("contents: write", workflow)
-        self.assertNotIn("actions: write", workflow)
+    def test_prebuilt_inputs_are_hash_pinned_wheels(self):
         pins = json.loads(
             (Path(__file__).parents[1] / "onnx-probe-inputs.json").read_text()
         )

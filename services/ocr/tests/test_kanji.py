@@ -5,7 +5,7 @@ from fastapi.testclient import TestClient
 from app.dictionary.kanjidic import _load
 from app.main import app
 
-client = TestClient(app)
+client = TestClient(app, base_url="http://127.0.0.1", headers={"X-YomiMado-Client": "desktop"})
 FIXTURE = """<?xml version="1.0" encoding="UTF-8"?>
 <kanjidic2><header><file_version>4</file_version></header>
 <character><literal>学</literal><reading_meaning><rmgroup>

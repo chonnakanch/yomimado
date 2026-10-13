@@ -62,6 +62,7 @@ export function TranslationPopup() {
   const [result, setResult] = useState<TranslationResult | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const translationRequestId = useRef(0);
   const [savingSentence, setSavingSentence] = useState(false);
   const [sentenceSaved, setSentenceSaved] = useState(false);
   const [sentenceSaveError, setSentenceSaveError] = useState<string | null>(
@@ -92,6 +93,25 @@ export function TranslationPopup() {
     null,
   );
   const [exampleError, setExampleError] = useState<string | null>(null);
+
+  const resetWordSelection = () => {
+    setSelectedTokenIndex(null);
+    wordRequestId.current++;
+    setWordEntries(null);
+    setWordError(null);
+    setWordLoading(false);
+    saveRequestId.current++;
+    setSavingWord(false);
+    setSavedEntryIndex(null);
+    setSaveError(null);
+    kanjiRequestId.current++;
+    setSelectedKanji(null);
+    setKanjiEntry(null);
+    setKanjiError(null);
+    setKanjiLoading(false);
+    setKanjiExamples(null);
+    setExampleError(null);
+  };
 
   const selectWord = async (tokenIndex: number) => {
     const token = tokens?.[tokenIndex];
@@ -213,16 +233,21 @@ export function TranslationPopup() {
   if (!state) return null;
 
   const translate = async () => {
+    const requestId = ++translationRequestId.current;
     setLoading(true);
     setError(null);
     setResult(null);
     try {
-      setResult(await requestTranslation(source));
-      setSentenceSaved(false);
+      const nextResult = await requestTranslation(source);
+      if (requestId === translationRequestId.current) {
+        setResult(nextResult);
+        setSentenceSaved(false);
+      }
     } catch (requestError) {
-      setError(String(requestError).replace(/^Error: /, ""));
+      if (requestId === translationRequestId.current)
+        setError(String(requestError).replace(/^Error: /, ""));
     } finally {
-      setLoading(false);
+      if (requestId === translationRequestId.current) setLoading(false);
     }
   };
 
@@ -274,21 +299,7 @@ export function TranslationPopup() {
     const requestId = ++tokenRequestId.current;
     setTokenLoading(true);
     setTokens(null);
-    setSelectedTokenIndex(null);
-    wordRequestId.current++;
-    setWordEntries(null);
-    setWordError(null);
-    setWordLoading(false);
-    saveRequestId.current++;
-    setSavingWord(false);
-    setSavedEntryIndex(null);
-    setSaveError(null);
-    kanjiRequestId.current++;
-    setSelectedKanji(null);
-    setKanjiEntry(null);
-    setKanjiError(null);
-    setKanjiExamples(null);
-    setExampleError(null);
+    resetWordSelection();
     setTokenError(null);
     try {
       const nextTokens = await requestTokenization(source);
@@ -326,6 +337,8 @@ export function TranslationPopup() {
           onChange={(event) => {
             tokenRequestId.current++;
             setSource(event.target.value);
+            translationRequestId.current++;
+            setLoading(false);
             setResult(null);
             setError(null);
             sentenceSaveRequestId.current++;
@@ -333,22 +346,7 @@ export function TranslationPopup() {
             setSentenceSaved(false);
             setSentenceSaveError(null);
             setTokens(null);
-            setSelectedTokenIndex(null);
-            wordRequestId.current++;
-            setWordEntries(null);
-            setWordError(null);
-            setWordLoading(false);
-            saveRequestId.current++;
-            setSavingWord(false);
-            setSavedEntryIndex(null);
-            setSaveError(null);
-            kanjiRequestId.current++;
-            setSelectedKanji(null);
-            setKanjiEntry(null);
-            setKanjiError(null);
-            setKanjiLoading(false);
-            setKanjiExamples(null);
-            setExampleError(null);
+            resetWordSelection();
             setTokenError(null);
             setTokenLoading(false);
           }}
