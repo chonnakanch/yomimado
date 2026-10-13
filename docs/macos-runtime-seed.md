@@ -73,40 +73,37 @@ Private input recovery — 2026-10-13:
   tests, Python lint/format and actionlint. The macOS part is now activated after
   upload verification; `windows-pin-update.patch` remains held separately.
 
-Remaining owner upload step:
-
-1. Open the [private Windows dictionary draft](https://github.com/chonnakanch/yomimado/releases/edit/untagged-a3752f5e03405f7d7a99)
-   in the same signed-in browser that successfully uploaded the macOS files.
-2. Remove the entry marked **Upload failed**, then attach
-   `services/ocr/build/private-input-restoration-20261013/windows-dictionary-snapshots.tar.gz`
-   (12,074,818 bytes). The agent left the failed entry for owner handling; no
-   completed asset was deleted or overwritten.
-3. Wait for upload completion and choose **Save draft**. Keep it unpublished.
-   Verify GitHub's asset digest against `077d6b93…35c5654` above before activating
-   the held Windows pin.
-
-Alternative owner API uploader, retained locally:
+The [private Windows dictionary draft](https://github.com/chonnakanch/yomimado/releases/edit/untagged-a3752f5e03405f7d7a99)
+contains a failed upload entry. The owner also reports that manual web upload
+still fails. Use the prepared owner API uploader in an interactive Mac terminal
+to bypass that route:
 
 ```sh
 cd /Users/chonnakan/Projects/yomimado
-rtk proxy services/ocr/build/release-venv/bin/python services/ocr/build/private-input-restoration-20261013/upload_private_inputs.py --upload
+rtk proxy services/ocr/build/release-venv/bin/python services/ocr/build/private-input-restoration-20261013/upload_private_inputs.py --upload --remove-empty-failed-upload
 ```
 
 Run this in your own interactive terminal. At its hidden prompt, use a short-lived
 fine-grained GitHub token selecting only `chonnakanch/yomimado` with **Contents:
 read and write**; Workflows permission is unnecessary. The owner must create or
 change credentials personally. Keep the token out of chat and command arguments.
-The uploader never saves it, follows redirects, publishes, creates public tags,
-deletes or overwrites assets. It uses official GitHub API hosts, validates private
-draft identity, reuses matching completed uploads, and requires each uploaded
-asset's digest, size and state to match. Revoke a temporary token afterward.
+The uploader never saves it, follows redirects, publishes, creates public tags or
+overwrites completed assets. The explicit `--remove-empty-failed-upload` option
+allows removal only of a zero-byte `starter` entry named
+`windows-dictionary-snapshots.tar.gz` in inspected draft ID `411484685`. Fresh
+release/asset reads must confirm the private label, source commit, membership,
+zero size and absent digest; all other cases stop. GitHub documents these
+[empty failed uploads](https://docs.github.com/en/rest/releases/assets#upload-a-release-asset).
+Seventeen cleanup/recovery checks pass, including opt-in, completed-file and
+changed-draft rejection, altered membership, a race to completed data and safe
+resume. It reuses the three matching macOS assets and requires the uploaded
+Windows digest, size and state to match. Revoke a temporary token afterward.
 
 Authenticated API upload remains untested because no local API credential is
-configured. The failed Windows asset entry must be removed by the owner first;
-the uploader deliberately rejects incomplete or altered existing assets. A
+configured. Without the explicit cleanup option, the uploader rejects the failed
+entry. Nonempty or altered existing assets are always rejected. A
 matching existing repository-only token can be entered at the local prompt
-without changing permissions. The token is unnecessary for a successful manual
-browser upload; keep both inputs unpublished.
+without changing permissions. Keep both inputs unpublished.
 
 Local `browser-verified-inputs.json` records the observed draft IDs, source targets,
 three verified macOS hashes and Windows upload failure. It is separate from the

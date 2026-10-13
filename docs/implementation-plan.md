@@ -176,10 +176,12 @@ The owner has now uploaded all three macOS files; GitHub's hashes and saved
 draft/source identity match. The replacement macOS pins are activated on
 `develop`, and the runtime-reuse preflight passes. Exact Windows dictionary files
 have been recovered and repacked; their recreated private draft's upload still
-fails in the isolated browser. The remaining owner step is to remove its failed
-upload entry and attach the 12 MB archive using the browser that succeeded for
-macOS. The Windows outer hash remains held until verification. An optional
-private-only API uploader is retained locally; authenticated API upload has not
+fails in both the isolated browser and the owner's web upload. The remaining
+owner step is to run the prepared private API uploader with their token at its
+hidden local prompt. Its explicit empty-upload cleanup option is limited to the
+inspected Windows draft's zero-byte `starter` entry; completed files are rejected.
+The Windows outer hash remains held until verification. Seventeen cleanup/recovery
+checks pass; authenticated API upload has not
 run. Main remains blocked until the verified pin updates are integrated through
 Checks. See the seed record's owner upload steps.
 Future `0.x.x` and `alpha.N`/`beta.N`/`rc.N` versions are pre-releases;
