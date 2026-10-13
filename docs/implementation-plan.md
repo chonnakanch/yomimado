@@ -24,10 +24,11 @@ The [shared release record](desktop-release.md) retains build/recovery URLs,
 original delivery identities, uploaded-hash verification and owner reports.
 
 The workflow/script cleanup, version updater, code-quality fixes (`973c721`) and
-security fixes (`8c8ef02`) are committed on `develop`. They have not been delivered
-to v0.1.0 users. The next release requires updated runtime inputs and a newly
-reviewed macOS seed; the original frozen runtime cannot include these shared
-Python changes. Keep the existing seed-reuse rejection checks in place.
+security fixes (`8c8ef02`) are merged through PR #5. They have not been delivered
+to v0.1.0 users. The [refreshed macOS seed](macos-runtime-seed.md) now contains
+the shared Python fixes and has source-only owner approval; dependency versions
+are unchanged. Advisory triage and new exact-installer gates remain open.
+Keep the existing seed-reuse rejection checks in place.
 
 | Published installer     | SHA-256                                                            |
 | ----------------------- | ------------------------------------------------------------------ |
@@ -169,8 +170,12 @@ Proceed in this order when continuing release preparation:
 The owner now authorizes a cleanup PR and merge to protected main. There is no
 version bump or publication in that merge. The original v0.1.0 acceptance needs
 no further testing. A published version with its tag is skipped; a missing tag
-requires runtime compatibility before private downloads or builds. The current
-changed runtime fails that preflight until a new seed is reviewed.
+requires runtime compatibility before private downloads or builds. The new
+`42edd4e` seed passes the source/runtime gates, but GitHub browser uploads fail.
+The replacement pin patch is verified and retained locally; live pins remain
+unchanged until the three uploaded hashes can be checked. Main remains blocked
+until that pin update is integrated through Checks. See the seed record's owner
+upload steps.
 Future `0.x.x` and `alpha.N`/`beta.N`/`rc.N` versions are pre-releases;
 `1.0.0` and later without a suffix are stable. Both classifications retain the
 same exact-installer publication gate.
