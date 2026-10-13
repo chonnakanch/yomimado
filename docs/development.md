@@ -122,8 +122,18 @@ available. Successful translations are cached locally in
 `~/.cache/yomimado/translation.sqlite3` (override with
 `YOMIMADO_TRANSLATION_CACHE`). Only the selected Japanese text is sent from
 the desktop window to this loopback service; screenshots are not submitted for
-translation. The service configures a CORS origin allowlist for the Tauri app and
-the development frontend. This is not request authentication.
+translation. The service rejects non-loopback Host headers and untrusted browser
+origins. All `/api/` requests require `X-YomiMado-Client: desktop`, which the
+frontend and packaged smoke clients send automatically. This forces browser
+preflight for uploads and saved-data access; it is not a secret or authentication
+against other local processes. Manual API clients must send this header too.
+
+Requests are capped before JSON/multipart parsing: 32 MiB for the complete OCR
+upload including multipart overhead, and 1 MiB for other requests. PNG captures
+are limited to 40 million pixels and 16,384 pixels per side before decoding or
+model loading. If a capture exceeds these limits, select a smaller area. Full
+Retina and 8K dimensions fit the pixel limits, although a poorly compressing PNG
+can still exceed the upload byte limit.
 
 ## Japanese tokenization
 

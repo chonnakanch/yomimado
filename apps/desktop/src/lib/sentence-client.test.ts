@@ -30,8 +30,13 @@ it("saves, lists, and removes sentences through the local service", async () => 
   expect(JSON.parse(fetch.mock.calls[0][1]!.body as string)).toEqual(saved);
   expect(await listSavedSentences()).toEqual([saved]);
   await deleteSavedSentence(7);
-  expect(fetch.mock.calls[1][1]).toBeUndefined();
-  expect(fetch.mock.calls[2][1]).toEqual({ method: "DELETE" });
+  expect(fetch.mock.calls[1][1]).toEqual({
+    headers: { "x-yomimado-client": "desktop" },
+  });
+  expect(fetch.mock.calls[2][1]).toEqual({
+    method: "DELETE",
+    headers: { "x-yomimado-client": "desktop" },
+  });
 });
 
 it("rejects malformed sentence responses", async () => {

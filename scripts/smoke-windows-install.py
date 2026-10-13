@@ -137,7 +137,7 @@ def main() -> None:
             req = Request(
                 f"http://127.0.0.1:{port}{path}",
                 data=body,
-                headers={"Content-Type": content_type},
+                headers={"Content-Type": content_type, "X-YomiMado-Client": "desktop"},
             )
             try:
                 with urlopen(req, timeout=240) as response:

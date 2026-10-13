@@ -19,7 +19,7 @@ def test_vocabulary_database_uses_app_data_not_cache(tmp_path: Path, monkeypatch
 def test_save_list_update_and_delete_word(tmp_path: Path, monkeypatch) -> None:
     database = tmp_path / "vocabulary.sqlite3"
     monkeypatch.setattr(vocabulary_api, "store", VocabularyStore(database))
-    client = TestClient(app)
+    client = TestClient(app, base_url="http://127.0.0.1", headers={"X-YomiMado-Client": "desktop"})
     payload = {
         "surface": "今日",
         "reading": "キョウ",
@@ -52,7 +52,7 @@ def test_save_list_update_and_delete_word(tmp_path: Path, monkeypatch) -> None:
 
 def test_same_word_can_keep_distinct_source_sentences(tmp_path: Path, monkeypatch) -> None:
     monkeypatch.setattr(vocabulary_api, "store", VocabularyStore(tmp_path / "words.sqlite3"))
-    client = TestClient(app)
+    client = TestClient(app, base_url="http://127.0.0.1", headers={"X-YomiMado-Client": "desktop"})
     base = {
         "surface": "学校",
         "reading": "ガッコウ",
@@ -68,7 +68,7 @@ def test_same_word_can_keep_distinct_source_sentences(tmp_path: Path, monkeypatc
 
 def test_rejects_blank_words_and_oversized_meanings(tmp_path: Path, monkeypatch) -> None:
     monkeypatch.setattr(vocabulary_api, "store", VocabularyStore(tmp_path / "words.sqlite3"))
-    client = TestClient(app)
+    client = TestClient(app, base_url="http://127.0.0.1", headers={"X-YomiMado-Client": "desktop"})
     payload = {
         "surface": "   ",
         "reading": "",
@@ -87,7 +87,7 @@ def test_rejects_blank_words_and_oversized_meanings(tmp_path: Path, monkeypatch)
 
 
 def test_vocabulary_cors_allows_app_origin() -> None:
-    client = TestClient(app)
+    client = TestClient(app, base_url="http://127.0.0.1", headers={"X-YomiMado-Client": "desktop"})
     for method in ("GET", "DELETE"):
         response = client.options(
             "/api/v1/vocabulary",
@@ -103,7 +103,7 @@ def test_vocabulary_cors_allows_app_origin() -> None:
 def test_save_list_update_and_delete_sentence(tmp_path: Path, monkeypatch) -> None:
     database = tmp_path / "vocabulary.sqlite3"
     monkeypatch.setattr(vocabulary_api, "store", VocabularyStore(database))
-    client = TestClient(app)
+    client = TestClient(app, base_url="http://127.0.0.1", headers={"X-YomiMado-Client": "desktop"})
     assert client.get("/api/v1/sentences").json() == {"sentences": []}
 
     saved = client.post("/api/v1/sentences", json={"sourceText": "  今日はいい日だ。  "})
@@ -134,7 +134,7 @@ def test_save_list_update_and_delete_sentence(tmp_path: Path, monkeypatch) -> No
 
 def test_rejects_blank_or_oversized_sentence(tmp_path: Path, monkeypatch) -> None:
     monkeypatch.setattr(vocabulary_api, "store", VocabularyStore(tmp_path / "words.sqlite3"))
-    client = TestClient(app)
+    client = TestClient(app, base_url="http://127.0.0.1", headers={"X-YomiMado-Client": "desktop"})
     for payload in (
         {"sourceText": "   "},
         {"sourceText": "今日はいい日だ。", "translatedText": "   "},
@@ -146,7 +146,7 @@ def test_rejects_blank_or_oversized_sentence(tmp_path: Path, monkeypatch) -> Non
 
 
 def test_sentence_cors_allows_app_origin() -> None:
-    client = TestClient(app)
+    client = TestClient(app, base_url="http://127.0.0.1", headers={"X-YomiMado-Client": "desktop"})
     for method in ("GET", "POST", "DELETE"):
         response = client.options(
             "/api/v1/sentences",

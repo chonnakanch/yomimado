@@ -5,6 +5,7 @@ from dataclasses import dataclass
 from os import environ
 
 from app.models import OcrResponse, Point, TextRegion
+from app.security import MAX_OCR_REQUEST_BYTES, validate_capture_dimensions
 
 
 @dataclass(frozen=True)
@@ -34,10 +35,13 @@ class OcrPipeline:
     def recognize(self, input_image: OcrInput) -> OcrResponse:
         if not input_image.image_bytes:
             raise ValueError("The uploaded image is empty")
+        if len(input_image.image_bytes) > MAX_OCR_REQUEST_BYTES:
+            raise ValueError("Capture exceeds the size limit; select a smaller area")
 
         dimensions = _parse_png_dimensions(input_image.image_bytes)
         if not dimensions or dimensions[0] <= 0 or dimensions[1] <= 0:
             raise ValueError("Upload a valid PNG capture")
+        validate_capture_dimensions(*dimensions)
 
         if self.engine == "manga":
             from app.pipeline.real_ocr import recognize_with_models

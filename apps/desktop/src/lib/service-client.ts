@@ -6,7 +6,13 @@ export async function requestService(
   service: string,
   options?: RequestInit,
 ): Promise<Response> {
-  const response = await fetch(`${SERVICE_URL}${path}`, options);
+  const headers = new Headers(options?.headers);
+  // Forces browser preflight even for multipart uploads and read-only APIs.
+  headers.set("X-YomiMado-Client", "desktop");
+  const response = await fetch(`${SERVICE_URL}${path}`, {
+    ...options,
+    headers: Object.fromEntries(headers.entries()),
+  });
   if (!response.ok) {
     const body: unknown = await response.json().catch(() => null);
     const detail =

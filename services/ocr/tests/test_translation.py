@@ -27,7 +27,7 @@ def test_translation_is_explicit_and_cached(tmp_path: Path, monkeypatch) -> None
         "service",
         TranslationService(provider, tmp_path / "translations.sqlite3"),
     )
-    client = TestClient(app)
+    client = TestClient(app, base_url="http://127.0.0.1", headers={"X-YomiMado-Client": "desktop"})
     assert provider.calls == []
 
     first = client.post("/api/v1/translate", json={"text": " 学校に行く。 "})
@@ -45,7 +45,9 @@ def test_translation_is_explicit_and_cached(tmp_path: Path, monkeypatch) -> None
 
 
 def test_translation_rejects_blank_text() -> None:
-    response = TestClient(app).post("/api/v1/translate", json={"text": "  "})
+    response = TestClient(
+        app, base_url="http://127.0.0.1", headers={"X-YomiMado-Client": "desktop"}
+    ).post("/api/v1/translate", json={"text": "  "})
     assert response.status_code == 422
 
 
@@ -56,7 +58,9 @@ def test_translation_reports_missing_local_model(monkeypatch, tmp_path: Path) ->
         "service",
         TranslationService(translation_api.LocalMarianProvider(), tmp_path / "cache.sqlite3"),
     )
-    response = TestClient(app).post("/api/v1/translate", json={"text": "学校"})
+    response = TestClient(
+        app, base_url="http://127.0.0.1", headers={"X-YomiMado-Client": "desktop"}
+    ).post("/api/v1/translate", json={"text": "学校"})
     assert response.status_code == 503
     assert "YOMIMADO_TRANSLATION_MODEL" in response.json()["detail"]
 
@@ -67,7 +71,9 @@ def test_translation_reports_corrupt_cache_as_service_error(monkeypatch, tmp_pat
     provider = FakeProvider()
     monkeypatch.setattr(translation_api, "service", TranslationService(provider, cache))
 
-    response = TestClient(app).post("/api/v1/translate", json={"text": "学校"})
+    response = TestClient(
+        app, base_url="http://127.0.0.1", headers={"X-YomiMado-Client": "desktop"}
+    ).post("/api/v1/translate", json={"text": "学校"})
 
     assert response.status_code == 503
     assert "database" in response.json()["detail"]
@@ -113,7 +119,7 @@ def test_translation_closes_cache_connections(monkeypatch, tmp_path: Path, corru
 
 @pytest.mark.parametrize("origin", ["tauri://localhost", "http://tauri.localhost"])
 def test_translation_cors_allows_app_but_not_other_sites(origin: str) -> None:
-    client = TestClient(app)
+    client = TestClient(app, base_url="http://127.0.0.1", headers={"X-YomiMado-Client": "desktop"})
     allowed = client.options(
         "/api/v1/translate",
         headers={

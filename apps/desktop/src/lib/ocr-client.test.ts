@@ -18,6 +18,9 @@ it("requests detector diagnostics only in capture debug mode", async () => {
   const debugForm = fetch.mock.calls[0][1].body as FormData;
   expect(debugForm.get("debug")).toBe("true");
   expect(debugForm.get("image")).toBeInstanceOf(Blob);
+  expect(fetch.mock.calls[0][1].headers).toEqual({
+    "x-yomimado-client": "desktop",
+  });
 
   await requestOcr(image);
   const normalForm = fetch.mock.calls[1][1].body as FormData;

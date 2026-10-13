@@ -13,7 +13,10 @@ it("sends JSON to the local service and returns untrusted data for endpoint vali
   ).resolves.toEqual({ entries: [] });
   expect(fetch).toHaveBeenCalledWith("http://127.0.0.1:8765/api/v1/word", {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: {
+      "content-type": "application/json",
+      "x-yomimado-client": "desktop",
+    },
     body: JSON.stringify({ surface: "学校" }),
   });
 });
@@ -68,4 +71,19 @@ it("does not parse a successful empty DELETE response", async () => {
   );
   expect(response.status).toBe(204);
   expect(response.bodyUsed).toBe(false);
+});
+
+it("preserves supplied headers and sets the application marker", async () => {
+  const fetch = vi.fn().mockResolvedValue(new Response("{}"));
+  vi.stubGlobal("fetch", fetch);
+  await requestService("/api/v1/vocabulary", "Vocabulary service", {
+    headers: new Headers({
+      Accept: "application/json",
+      "X-YomiMado-Client": "wrong",
+    }),
+  });
+  expect(fetch.mock.calls[0][1].headers).toEqual({
+    accept: "application/json",
+    "x-yomimado-client": "desktop",
+  });
 });
