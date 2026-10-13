@@ -10,8 +10,9 @@ Runtime refresh — 2026-10-13: the [new private macOS seed](macos-runtime-seed.
 contains the service fixes from merged source `42edd4e`, with exact mounted
 runtime/source verification and explicit source-only owner approval. New pins
 are activated on `develop` after verifying all three uploaded macOS hashes.
-The recreated private Windows dictionary draft still needs its repacked archive
-uploaded and hash-verified. Dependency advisory triage and new joint-installer
+The private Windows dictionary draft is restored with unchanged dictionary bytes
+and a verified new outer-archive hash. Both input pin sets are ready on `develop`;
+integration through protected main remains pending. Dependency advisory triage and new joint-installer
 acceptance/publication remain separate gates.
 
 Published — 2026-10-12: [YomiMado v0.1.0](https://github.com/chonnakanch/yomimado/releases/tag/v0.1.0)

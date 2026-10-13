@@ -172,18 +172,16 @@ version bump or publication in that merge. The original v0.1.0 acceptance needs
 no further testing. A published version with its tag is skipped; a missing tag
 requires runtime compatibility before private downloads or builds. The new
 `42edd4e` seed passes the source/runtime gates.
-The owner has now uploaded all three macOS files; GitHub's hashes and saved
-draft/source identity match. The replacement macOS pins are activated on
-`develop`, and the runtime-reuse preflight passes. Exact Windows dictionary files
-have been recovered and repacked; their recreated private draft's upload still
-fails in both the isolated browser and the owner's web upload. The remaining
-owner step is to run the prepared private API uploader with their token at its
-hidden local prompt. Its explicit empty-upload cleanup option is limited to the
-inspected Windows draft's zero-byte `starter` entry; completed files are rejected.
-The Windows outer hash remains held until verification. Seventeen cleanup/recovery
-checks pass; authenticated API upload has not
-run. Main remains blocked until the verified pin updates are integrated through
-Checks. See the seed record's owner upload steps.
+The owner has now uploaded all four private input files. The API uploader's
+success report and independent browser inspection confirm draft/source identity
+and every GitHub SHA-256. The repacked Windows archive retains the exact pinned
+dictionary gzip files. Both input pin sets are activated on `develop`; exact
+membership/hash checks, dictionary restoration and macOS runtime-reuse preflight
+pass. Forty-six release/rule/dictionary tests, lint/format and actionlint pass.
+The web-upload blocker is resolved through the owner-run API recovery. Main still
+needs the verified pin updates integrated through required Checks. Neither seed
+is public, and no new installer acceptance or publication is approved. See the
+[verified seed record](macos-runtime-seed.md).
 Future `0.x.x` and `alpha.N`/`beta.N`/`rc.N` versions are pre-releases;
 `1.0.0` and later without a suffix are stable. Both classifications retain the
 same exact-installer publication gate.

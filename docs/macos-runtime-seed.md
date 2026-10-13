@@ -1,4 +1,4 @@
-# Prepared macOS runtime seed
+# Verified macOS runtime seed
 
 Refreshed **2026-10-13** from clean source
 `42edd4e3d05af293d53d9e0036a81e9586b2bfd8`. This prepared private CI input replaces the
@@ -15,9 +15,10 @@ SHA-256 hashes below; the saved draft label and full source target match. The
 runtime-reuse preflight now passes. The isolated browser's earlier storage error
 does not affect these completed uploads.
 
-The Windows dictionary draft has been recreated, but its upload failed in the
-isolated browser. The Windows outer-archive hash remains unchanged until that
-asset can be verified. Integration through protected main is still pending;
+The Windows dictionary draft has also been restored through the owner-run API
+uploader. Its uploaded digest matches the repacked archive below, and both
+original dictionary files remain byte-identical. All four input pins are now
+activated on `develop`. Integration through protected main is still pending;
 neither input is published.
 
 | Input                                   | SHA-256                                                            |
@@ -52,7 +53,8 @@ Verified for this exact seed:
 - [x] 78 service and 229 release-tool tests; Python lint/format and actionlint.
 - [x] Verify the three uploaded GitHub hashes and activate the matching macOS pins.
 - [x] Runtime-reuse preflight, 44 shared-release/rule tests, lint/format and actionlint.
-- [ ] Complete the private Windows dictionary upload and verify its new outer hash.
+- [x] Complete the private Windows dictionary upload and verify its new outer hash.
+- [x] Exact input membership/hash checks for both platforms; 46 release/rule/dictionary tests.
 - [ ] Integrate the verified inputs through protected main's required Checks.
 
 Private input recovery — 2026-10-13:
@@ -66,51 +68,36 @@ Private input recovery — 2026-10-13:
   Their new outer archive SHA-256 is
   `077d6b93a5691a17aee7d8847b832b7c844f45b11270614b2eca50a9b35c5654`;
   it differs from the deleted outer archive. Dictionary bytes are unchanged.
-- A one-off uploader, instructions and recovery evidence are retained locally
-  under ignored `services/ocr/build/private-input-restoration-20261013/`.
-  All four input hashes and 13 private-creation, identity/hash rejection and
-  resume checks pass. The combined `pin-update.patch` passes 53 shared-release/version
-  tests, Python lint/format and actionlint. The macOS part is now activated after
-  upload verification; `windows-pin-update.patch` remains held separately.
+- A one-off uploader and recovery evidence are retained locally under ignored
+  `services/ocr/build/private-input-restoration-20261013/`. Its 13 initial recovery
+  checks and 17 empty-upload cleanup/resume checks pass. All four local file hashes
+  and exact original dictionary restoration verify.
 
-The [private Windows dictionary draft](https://github.com/chonnakanch/yomimado/releases/edit/untagged-a3752f5e03405f7d7a99)
-contains a failed upload entry. The owner also reports that manual web upload
-still fails. Use the prepared owner API uploader in an interactive Mac terminal
-to bypass that route:
+Upload recovery completed — 2026-10-13:
 
-```sh
-cd /Users/chonnakan/Projects/yomimado
-rtk proxy services/ocr/build/release-venv/bin/python services/ocr/build/private-input-restoration-20261013/upload_private_inputs.py --upload --remove-empty-failed-upload
-```
+The owner uploaded the three macOS files through their browser. The Windows web
+upload failed in both browser sessions, leaving an empty failed-upload entry. The
+owner then ran the API uploader with its explicit empty-only cleanup option. It
+verified both private draft identities and all four uploaded digests, sizes,
+states and final memberships, then wrote `uploaded-inputs.json`. Completed macOS
+assets were reused. No public tag, publication or completed-asset replacement was
+performed. The uploader did not save the token; the owner should revoke a
+short-lived upload token after success.
 
-Run this in your own interactive terminal. At its hidden prompt, use a short-lived
-fine-grained GitHub token selecting only `chonnakanch/yomimado` with **Contents:
-read and write**; Workflows permission is unnecessary. The owner must create or
-change credentials personally. Keep the token out of chat and command arguments.
-The uploader never saves it, follows redirects, publishes, creates public tags or
-overwrites completed assets. The explicit `--remove-empty-failed-upload` option
-allows removal only of a zero-byte `starter` entry named
-`windows-dictionary-snapshots.tar.gz` in inspected draft ID `411484685`. Fresh
-release/asset reads must confirm the private label, source commit, membership,
-zero size and absent digest; all other cases stop. GitHub documents these
-[empty failed uploads](https://docs.github.com/en/rest/releases/assets#upload-a-release-asset).
-Seventeen cleanup/recovery checks pass, including opt-in, completed-file and
-changed-draft rejection, altered membership, a race to completed data and safe
-resume. It reuses the three matching macOS assets and requires the uploaded
-Windows digest, size and state to match. Revoke a temporary token afterward.
+Independent signed-in browser inspection confirms **Draft** status and all four
+GitHub asset SHA-256 values. Private input release IDs are **411419437** (macOS)
+and **411484685** (Windows). The Windows label remains
+`windows-private-test-f8396ccd5e7352a62e526c68438cc7f3c9cedc60`, targeting that exact
+source commit. Its [restored private draft](https://github.com/chonnakanch/yomimado/releases/tag/untagged-a3752f5e03405f7d7a99)
+contains only `windows-dictionary-snapshots.tar.gz`, SHA-256
+`077d6b93a5691a17aee7d8847b832b7c844f45b11270614b2eca50a9b35c5654`.
 
-Authenticated API upload remains untested because no local API credential is
-configured. Without the explicit cleanup option, the uploader rejects the failed
-entry. Nonempty or altered existing assets are always rejected. A
-matching existing repository-only token can be entered at the local prompt
-without changing permissions. Keep both inputs unpublished.
-
-Local `browser-verified-inputs.json` records the observed draft IDs, source targets,
-three verified macOS hashes and Windows upload failure. It is separate from the
-API uploader's success report. After the Windows digest verifies, apply only its
-held pin patch, rerun checks and integrate through protected main. Main still
-selects the old macOS runtime until that change is merged; rerunning the old job
-cannot resolve it.
+`browser-verified-inputs.json` records the independent UI observations separately
+from the API success report. The Windows hash pin is now activated alongside the
+verified macOS revision, input label, three hashes and source archive paths.
+Both exact input directories and the macOS runtime-reuse preflight pass. Main
+still selects the old inputs until these changes are integrated through its
+required Checks; rerunning the old job cannot resolve it.
 
 Local evidence is retained under ignored
 `services/ocr/build/macos-runtime-refresh-42edd4e/`. The approved-source build uses

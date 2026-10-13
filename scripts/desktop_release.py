@@ -43,7 +43,7 @@ INPUTS = {
     "windows": {
         "tag": "windows-private-test-" + WINDOWS_SEED,
         "assets": {
-            "windows-dictionary-snapshots.tar.gz": "e8ed381b9d1ee88b363be0264189359fb0923ed751a7b2aa5d84f7bde9b968be"
+            "windows-dictionary-snapshots.tar.gz": "077d6b93a5691a17aee7d8847b832b7c844f45b11270614b2eca50a9b35c5654"
         },
     },
 }
