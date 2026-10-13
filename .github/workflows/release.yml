@@ -44,9 +44,11 @@ jobs:
           plan="$(python scripts/macos-ci-release.py plan)"
           version="$(jq -er .version <<< "$plan")"
           tag="$(jq -er .tag <<< "$plan")"
-          echo "version=$version" >> "$GITHUB_OUTPUT"
-          echo "tag=$tag" >> "$GITHUB_OUTPUT"
-          echo "prerelease=$(jq -r .prerelease <<< "$plan")" >> "$GITHUB_OUTPUT"
+          {
+            echo "version=$version"
+            echo "tag=$tag"
+            echo "prerelease=$(jq -r .prerelease <<< "$plan")"
+          } >> "$GITHUB_OUTPUT"
           if git show-ref --verify --quiet "refs/tags/$tag"; then
             gh api "repos/$GITHUB_REPOSITORY/releases/tags/$tag" > "$RUNNER_TEMP/existing-release.json"
             jq -e '.draft == false' "$RUNNER_TEMP/existing-release.json" > /dev/null
