@@ -171,16 +171,17 @@ The owner now authorizes a cleanup PR and merge to protected main. There is no
 version bump or publication in that merge. The original v0.1.0 acceptance needs
 no further testing. A published version with its tag is skipped; a missing tag
 requires runtime compatibility before private downloads or builds. The new
-`42edd4e` seed passes the source/runtime gates, but GitHub browser uploads fail.
-The replacement pin patch is verified and retained locally; live pins remain
-unchanged until the uploaded hashes can be checked. The two old input drafts are
-also missing. Exact Windows dictionary files have been recovered and repacked;
-their outer archive needs a new hash pin after upload. A private-only API uploader
-and combined pin patch are prepared and verified locally. The remaining upload
-step needs the owner's repository-only credential entered in a hidden local
-prompt; authenticated upload has not run. Main remains blocked
-until that pin update is integrated through Checks. See the seed record's owner
-upload steps.
+`42edd4e` seed passes the source/runtime gates.
+The owner has now uploaded all three macOS files; GitHub's hashes and saved
+draft/source identity match. The replacement macOS pins are activated on
+`develop`, and the runtime-reuse preflight passes. Exact Windows dictionary files
+have been recovered and repacked; their recreated private draft's upload still
+fails in the isolated browser. The remaining owner step is to remove its failed
+upload entry and attach the 12 MB archive using the browser that succeeded for
+macOS. The Windows outer hash remains held until verification. An optional
+private-only API uploader is retained locally; authenticated API upload has not
+run. Main remains blocked until the verified pin updates are integrated through
+Checks. See the seed record's owner upload steps.
 Future `0.x.x` and `alpha.N`/`beta.N`/`rc.N` versions are pre-releases;
 `1.0.0` and later without a suffix are stable. Both classifications retain the
 same exact-installer publication gate.

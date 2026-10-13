@@ -9,14 +9,16 @@ the output release version comes from the merged app metadata.
 Private draft: [Reviewed macOS runtime seed 42edd4e — CI input only](https://github.com/chonnakanch/yomimado/releases/tag/untagged-54d0249bb3cbf06646e4).
 Input label: `macos-reviewed-seed-42edd4e`. Keep it unpublished.
 
-**Activation is blocked by upload.** The isolated browser reports
-`AttachmentUploadError: App assets attachment upload failed: storage request`.
-The three-file upload and a separate notices-only retry both fail. The draft
-contains metadata but no assets. Existing live pins still select `5120506`;
-the verified replacement patch is retained locally as `seed-pin-update.patch`.
-The owner sees GitHub's generic error, “Something went really wrong, and we
-can't process that file.” The old macOS and Windows input drafts are also absent.
-The approved replacement's three local files remain intact.
+**macOS upload verified; replacement pins activated on `develop`.** The owner
+uploaded the three files through their browser. GitHub displays exactly the
+SHA-256 hashes below; the saved draft label and full source target match. The
+runtime-reuse preflight now passes. The isolated browser's earlier storage error
+does not affect these completed uploads.
+
+The Windows dictionary draft has been recreated, but its upload failed in the
+isolated browser. The Windows outer-archive hash remains unchanged until that
+asset can be verified. Integration through protected main is still pending;
+neither input is published.
 
 | Input                                   | SHA-256                                                            |
 | --------------------------------------- | ------------------------------------------------------------------ |
@@ -48,7 +50,10 @@ Verified for this exact seed:
 - [x] All **362 component records** and **123 native-library records** (114 unique
       inputs plus aliases) are byte-identical to the approved baseline.
 - [x] 78 service and 229 release-tool tests; Python lint/format and actionlint.
-- [ ] Verify the three uploaded GitHub hashes before committing the new pins.
+- [x] Verify the three uploaded GitHub hashes and activate the matching macOS pins.
+- [x] Runtime-reuse preflight, 44 shared-release/rule tests, lint/format and actionlint.
+- [ ] Complete the private Windows dictionary upload and verify its new outer hash.
+- [ ] Integrate the verified inputs through protected main's required Checks.
 
 Private input recovery — 2026-10-13:
 
@@ -65,9 +70,22 @@ Private input recovery — 2026-10-13:
   under ignored `services/ocr/build/private-input-restoration-20261013/`.
   All four input hashes and 13 private-creation, identity/hash rejection and
   resume checks pass. The combined `pin-update.patch` passes 53 shared-release/version
-  tests, Python lint/format and actionlint; it is held until actual uploads verify.
+  tests, Python lint/format and actionlint. The macOS part is now activated after
+  upload verification; `windows-pin-update.patch` remains held separately.
 
-Owner API upload step, bypassing the failed browser upload:
+Remaining owner upload step:
+
+1. Open the [private Windows dictionary draft](https://github.com/chonnakanch/yomimado/releases/edit/untagged-a3752f5e03405f7d7a99)
+   in the same signed-in browser that successfully uploaded the macOS files.
+2. Remove the entry marked **Upload failed**, then attach
+   `services/ocr/build/private-input-restoration-20261013/windows-dictionary-snapshots.tar.gz`
+   (12,074,818 bytes). The agent left the failed entry for owner handling; no
+   completed asset was deleted or overwritten.
+3. Wait for upload completion and choose **Save draft**. Keep it unpublished.
+   Verify GitHub's asset digest against `077d6b93…35c5654` above before activating
+   the held Windows pin.
+
+Alternative owner API uploader, retained locally:
 
 ```sh
 cd /Users/chonnakan/Projects/yomimado
@@ -83,19 +101,19 @@ deletes or overwrites assets. It uses official GitHub API hosts, validates priva
 draft identity, reuses matching completed uploads, and requires each uploaded
 asset's digest, size and state to match. Revoke a temporary token afterward.
 
-Authenticated upload remains untested because no local API credential is
-configured. GitHub's status page reported no current incident and both official
-API hosts passed credential-free TLS checks; neither proves that uploads will
-succeed. A matching existing repository-only token can be entered at the local
-prompt without changing permissions. Manual browser upload remains an alternative
-if its storage failure resolves; keep both inputs unpublished.
+Authenticated API upload remains untested because no local API credential is
+configured. The failed Windows asset entry must be removed by the owner first;
+the uploader deliberately rejects incomplete or altered existing assets. A
+matching existing repository-only token can be entered at the local prompt
+without changing permissions. The token is unnecessary for a successful manual
+browser upload; keep both inputs unpublished.
 
-Then verify `uploaded-inputs.json` and GitHub's four uploaded hashes, apply the
-combined prepared pin patch, rerun checks, commit/push and integrate through
-protected main. The patch updates the macOS seed revision, label, three hashes
-and source archive paths together, plus the repacked Windows outer hash. Until
-then, main's old runtime-reuse preflight continues to reject the changed service;
-rerunning the old release job cannot resolve it.
+Local `browser-verified-inputs.json` records the observed draft IDs, source targets,
+three verified macOS hashes and Windows upload failure. It is separate from the
+API uploader's success report. After the Windows digest verifies, apply only its
+held pin patch, rerun checks and integrate through protected main. Main still
+selects the old macOS runtime until that change is merged; rerunning the old job
+cannot resolve it.
 
 Local evidence is retained under ignored
 `services/ocr/build/macos-runtime-refresh-42edd4e/`. The approved-source build uses

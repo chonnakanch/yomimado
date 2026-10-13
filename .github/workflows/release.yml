@@ -150,8 +150,8 @@ jobs:
         run: |
           set -euo pipefail
           python scripts/desktop_release.py verify-inputs --platform macos --directory "$RUNNER_TEMP/yomimado-input"
-          tar -xzf "$RUNNER_TEMP/yomimado-input/YomiMado_0.1.0_sources_5120506.tar.gz" -C "$RUNNER_TEMP/yomimado-input"
-          echo "YOMIMADO_SOURCE_DIR=$RUNNER_TEMP/yomimado-input/source-delivery-5120506" >> "$GITHUB_ENV"
+          tar -xzf "$RUNNER_TEMP/yomimado-input/YomiMado_0.1.0_sources_42edd4e.tar.gz" -C "$RUNNER_TEMP/yomimado-input"
+          echo "YOMIMADO_SOURCE_DIR=$RUNNER_TEMP/yomimado-input/source-delivery-42edd4e" >> "$GITHUB_ENV"
       - name: Install smoke-only detector from the original publisher
         shell: bash
         run: |
@@ -187,9 +187,9 @@ jobs:
           python scripts/macos-release.py verify-sources "$notices" \
             --source-dir "$source_dir" --revision "$SOURCE_REVISION"
           echo "YOMIMADO_SOURCE_DIR=$source_dir" >> "$GITHUB_ENV"
-          rm -rf "$RUNNER_TEMP/yomimado-input/source-delivery-5120506"
-          rm "$RUNNER_TEMP/yomimado-input/YomiMado_0.1.0_sources_5120506.tar.gz"
-          rm "$RUNNER_TEMP/yomimado-input/YomiMado_0.1.0_notices_5120506.tar.gz"
+          rm -rf "$RUNNER_TEMP/yomimado-input/source-delivery-42edd4e"
+          rm "$RUNNER_TEMP/yomimado-input/YomiMado_0.1.0_sources_42edd4e.tar.gz"
+          rm "$RUNNER_TEMP/yomimado-input/YomiMado_0.1.0_notices_42edd4e.tar.gz"
       - name: Build and verify the new hobby DMG
         env:
           APP_VERSION: ${{ needs.plan.outputs.version }}

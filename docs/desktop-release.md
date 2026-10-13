@@ -9,7 +9,9 @@ reuse before seed downloads/builds when there is no published tag to skip.
 Runtime refresh — 2026-10-13: the [new private macOS seed](macos-runtime-seed.md)
 contains the service fixes from merged source `42edd4e`, with exact mounted
 runtime/source verification and explicit source-only owner approval. New pins
-are prepared on `develop`; dependency advisory triage and new joint-installer
+are activated on `develop` after verifying all three uploaded macOS hashes.
+The recreated private Windows dictionary draft still needs its repacked archive
+uploaded and hash-verified. Dependency advisory triage and new joint-installer
 acceptance/publication remain separate gates.
 
 Published — 2026-10-12: [YomiMado v0.1.0](https://github.com/chonnakanch/yomimado/releases/tag/v0.1.0)

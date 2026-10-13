@@ -17,7 +17,7 @@ import tarfile
 import tomllib
 from pathlib import Path
 
-SEED_REVISION = "5120506bdf5cf5fa93e2780484985473038f2195"
+SEED_REVISION = "42edd4e3d05af293d53d9e0036a81e9586b2bfd8"
 ROOT = Path(__file__).resolve().parent.parent
 
 
