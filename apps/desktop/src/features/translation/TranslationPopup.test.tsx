@@ -406,3 +406,79 @@ it("does not treat a demo boundary as recognized text", async () => {
     container.querySelector<HTMLButtonElement>(".translate-button")!.disabled,
   ).toBe(true);
 });
+
+it.each(["success", "error"])(
+  "ignores stale translation %s after editing and starting another request",
+  async (outcome) => {
+    const state = encodeURIComponent(
+      JSON.stringify({ text: "学校", demo: false }),
+    );
+    window.history.replaceState({}, "", `/?mode=translation&state=${state}`);
+    const pending: Array<(response: Response) => void> = [];
+    vi.stubGlobal(
+      "fetch",
+      vi.fn((url: string) => {
+        if (url.endsWith("/tokenize")) {
+          return Promise.resolve(
+            new Response(JSON.stringify({ sourceText: "学校", tokens: [] })),
+          );
+        }
+        return new Promise<Response>((resolve) => pending.push(resolve));
+      }),
+    );
+
+    await act(async () => root.render(<TranslationPopup />));
+    const button =
+      container.querySelector<HTMLButtonElement>(".translate-button")!;
+    await act(async () => button.click());
+    expect(pending).toHaveLength(1);
+
+    await act(async () => {
+      const textarea =
+        container.querySelector<HTMLTextAreaElement>("textarea")!;
+      Object.getOwnPropertyDescriptor(
+        HTMLTextAreaElement.prototype,
+        "value",
+      )!.set!.call(textarea, "猫");
+      textarea.dispatchEvent(new Event("input", { bubbles: true }));
+    });
+    expect(button.disabled).toBe(false);
+    await act(async () => button.click());
+    expect(pending).toHaveLength(2);
+
+    await act(async () =>
+      pending[0](
+        outcome === "success"
+          ? new Response(
+              JSON.stringify({
+                sourceText: "学校",
+                translatedText: "School",
+                provider: "test",
+                cached: false,
+              }),
+            )
+          : new Response(JSON.stringify({ detail: "Old request failed" }), {
+              status: 503,
+            }),
+      ),
+    );
+    expect(container.textContent).not.toContain("School");
+    expect(container.textContent).not.toContain("Old request failed");
+    expect(button.disabled).toBe(true);
+
+    await act(async () =>
+      pending[1](
+        new Response(
+          JSON.stringify({
+            sourceText: "猫",
+            translatedText: "Cat",
+            provider: "test",
+            cached: false,
+          }),
+        ),
+      ),
+    );
+    expect(container.textContent).toContain("Cat");
+    expect(button.disabled).toBe(false);
+  },
+);

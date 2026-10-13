@@ -23,3 +23,19 @@ it("requests detector diagnostics only in capture debug mode", async () => {
   const normalForm = fetch.mock.calls[1][1].body as FormData;
   expect(normalForm.has("debug")).toBe(false);
 });
+
+it("rejects malformed service data before capture can display it", async () => {
+  vi.stubGlobal(
+    "fetch",
+    vi
+      .fn()
+      .mockResolvedValue(
+        new Response(
+          JSON.stringify({ regions: [{ text: "学校" }], engine: "manga" }),
+        ),
+      ),
+  );
+  await expect(
+    requestOcr(new Blob(["image"], { type: "image/png" })),
+  ).rejects.toThrow("OCR service returned invalid data");
+});

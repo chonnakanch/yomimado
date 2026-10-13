@@ -83,6 +83,10 @@ See [Windows](windows-installed-test.md) and [macOS](macos-clean-mac-test.md) re
       update callers, imports, source recipes and exporter provenance checks.
 - [x] Add a documented version-update command for npm/Tauri/Cargo metadata and
       app lock entries, with preview, input validation and dependency preservation.
+- [x] Complete a focused [code quality review](code-review-2026-10-13.md): share
+      frontend transport/token validation, validate OCR responses, remove repeated
+      popup resets and fix stale translation responses/cache cleanup. Shared Python
+      changes require a newly reviewed macOS runtime seed for a future release.
 - [ ] Merge the prepared maintenance changes through protected main when authorized.
 - [ ] For the next app version, verify its real delivery and exact new installers
       before the owner approves publication. Current v0.1.0 needs no new retest.

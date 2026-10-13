@@ -6,6 +6,7 @@
 - [Development setup](development.md): local service, models, dictionaries and diagnostics.
 - [Script roles](../scripts/README.md): release entrypoints, runtime dependencies and manual rebuild tools.
 - [Implementation plan](implementation-plan.md): completed milestone and current maintenance scope.
+- [Code quality review](code-review-2026-10-13.md): fixed boundary/state issues, duplication and refactor follow-ups.
 - [Product and architecture design](initial-design.md): domain boundaries and coordinate rules.
 - [App icon](app-icon.md): the current icon's origin and generation record.
 - [Dictionary updates](dictionary-updates.md): snapshot replacement and attribution.

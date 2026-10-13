@@ -44,3 +44,18 @@ it("rejects malformed vocabulary responses", async () => {
   );
   await expect(listVocabularyWords()).rejects.toThrow("invalid data");
 });
+
+it.each([0, -1, 1.5])(
+  "rejects saved word IDs that cannot be deleted: %s",
+  async (id) => {
+    vi.stubGlobal(
+      "fetch",
+      vi
+        .fn()
+        .mockResolvedValue(
+          new Response(JSON.stringify({ words: [{ ...saved, id }] })),
+        ),
+    );
+    await expect(listVocabularyWords()).rejects.toThrow("invalid data");
+  },
+);
