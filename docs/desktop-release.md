@@ -6,6 +6,15 @@ records below are historical evidence. The authorized cleanup merge does not
 restore a tag or publish a replacement. Release planning now rejects stale runtime
 reuse before seed downloads/builds when there is no published tag to skip.
 
+Runtime refresh — 2026-10-13: the [new private macOS seed](macos-runtime-seed.md)
+contains the service fixes from merged source `42edd4e`, with exact mounted
+runtime/source verification and explicit source-only owner approval. New pins
+are activated on `develop` after verifying all three uploaded macOS hashes.
+The private Windows dictionary draft is restored with unchanged dictionary bytes
+and a verified new outer-archive hash. Both input pin sets are ready on `develop`;
+integration through protected main remains pending. Dependency advisory triage and new joint-installer
+acceptance/publication remain separate gates.
+
 Published — 2026-10-12: [YomiMado v0.1.0](https://github.com/chonnakanch/yomimado/releases/tag/v0.1.0)
 is a public **pre-release** for macOS Apple Silicon and Windows 11 x64 CPU.
 The owner approves recovery [run `38257468295`](https://github.com/chonnakanch/yomimado/actions/runs/38257468295)

@@ -24,10 +24,11 @@ The [shared release record](desktop-release.md) retains build/recovery URLs,
 original delivery identities, uploaded-hash verification and owner reports.
 
 The workflow/script cleanup, version updater, code-quality fixes (`973c721`) and
-security fixes (`8c8ef02`) are committed on `develop`. They have not been delivered
-to v0.1.0 users. The next release requires updated runtime inputs and a newly
-reviewed macOS seed; the original frozen runtime cannot include these shared
-Python changes. Keep the existing seed-reuse rejection checks in place.
+security fixes (`8c8ef02`) are merged through PR #5. They have not been delivered
+to v0.1.0 users. The [refreshed macOS seed](macos-runtime-seed.md) now contains
+the shared Python fixes and has source-only owner approval; dependency versions
+are unchanged. Advisory triage and new exact-installer gates remain open.
+Keep the existing seed-reuse rejection checks in place.
 
 | Published installer     | SHA-256                                                            |
 | ----------------------- | ------------------------------------------------------------------ |
@@ -169,8 +170,18 @@ Proceed in this order when continuing release preparation:
 The owner now authorizes a cleanup PR and merge to protected main. There is no
 version bump or publication in that merge. The original v0.1.0 acceptance needs
 no further testing. A published version with its tag is skipped; a missing tag
-requires runtime compatibility before private downloads or builds. The current
-changed runtime fails that preflight until a new seed is reviewed.
+requires runtime compatibility before private downloads or builds. The new
+`42edd4e` seed passes the source/runtime gates.
+The owner has now uploaded all four private input files. The API uploader's
+success report and independent browser inspection confirm draft/source identity
+and every GitHub SHA-256. The repacked Windows archive retains the exact pinned
+dictionary gzip files. Both input pin sets are activated on `develop`; exact
+membership/hash checks, dictionary restoration and macOS runtime-reuse preflight
+pass. Forty-six release/rule/dictionary tests, lint/format and actionlint pass.
+The web-upload blocker is resolved through the owner-run API recovery. Main still
+needs the verified pin updates integrated through required Checks. Neither seed
+is public, and no new installer acceptance or publication is approved. See the
+[verified seed record](macos-runtime-seed.md).
 Future `0.x.x` and `alpha.N`/`beta.N`/`rc.N` versions are pre-releases;
 `1.0.0` and later without a suffix are stable. Both classifications retain the
 same exact-installer publication gate.

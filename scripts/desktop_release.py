@@ -33,17 +33,17 @@ spec.loader.exec_module(macos)
 WINDOWS_SEED = "f8396ccd5e7352a62e526c68438cc7f3c9cedc60"
 INPUTS = {
     "macos": {
-        "tag": "macos-reviewed-seed-5120506",
+        "tag": "macos-reviewed-seed-42edd4e",
         "assets": {
-            "YomiMado_0.1.0_aarch64.dmg": "fbe1d788d2f80b442b2abf9c53c5439af81ea78c2bc73c584907b4791f3c1cff",
-            "YomiMado_0.1.0_sources_5120506.tar.gz": "0ca10a4cc5084d4778aa636e07c504db56dcf9baec87af2d37b00859803a2744",
-            "YomiMado_0.1.0_notices_5120506.tar.gz": "f0d2a380e2639a525bf93c61d0aa0c45de5952cb283a9a0afb65810c46b22f71",
+            "YomiMado_0.1.0_aarch64.dmg": "5b7fd0dc412abb370c341d25d2bbb696ad54488cdc3006f3bd662dc1b6a52b8b",
+            "YomiMado_0.1.0_sources_42edd4e.tar.gz": "3781bfa964a9a5c8362162a007323aa03bc912fdb54a6a33c72bf1769b7aa878",
+            "YomiMado_0.1.0_notices_42edd4e.tar.gz": "c5af0d218248cb3c46bfe4ffb402e11c2a2b42045fbaf83d7c2b6f30d0045ff9",
         },
     },
     "windows": {
         "tag": "windows-private-test-" + WINDOWS_SEED,
         "assets": {
-            "windows-dictionary-snapshots.tar.gz": "e8ed381b9d1ee88b363be0264189359fb0923ed751a7b2aa5d84f7bde9b968be"
+            "windows-dictionary-snapshots.tar.gz": "077d6b93a5691a17aee7d8847b832b7c844f45b11270614b2eca50a9b35c5654"
         },
     },
 }
