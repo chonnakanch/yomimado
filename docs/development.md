@@ -209,6 +209,26 @@ missing, kanji meanings from KANJIDIC2 remain available.
 KANJIDIC2 is copyright the Electronic Dictionary Research and Development
 Group, provided under [CC BY-SA 4.0 and the EDRDG dictionary licence](https://www.edrdg.org/edrdg/licence.html).
 
+## Required CI checks
+
+[Checks](../.github/workflows/checks.yml) runs on develop/main pushes and main
+pull requests. Frontend formatting, TypeScript, Vitest and the Vite production
+build run alongside the Python service and release-tool tests. Native formatting,
+tests and debug compilation run on macOS and Windows with Rust 1.98.1. These
+checks build no installer and require no detector/model downloads.
+
+Service CI uses Python 3.11.17 and
+[requirements-ci.txt](../scripts/requirements-ci.txt), with exact wheel hashes
+and all image/tokenizer dependencies installed. It rejects skipped service tests.
+The lock supports Ubuntu x64 CI and local macOS Apple Silicon verification;
+Linux is a test runner, not a supported desktop distribution. Dependency/source
+refresh and installed-runtime verification remain separate release work.
+
+Jobs run in parallel and cache npm/pip downloads and native compilation. New
+commits cancel outdated Checks runs for the same ref; release publisher
+concurrency is separate. Main's required status remains `gates`, which runs even
+after a job fails and rejects failure, cancellation, skipping or missing results.
+
 ## Packaged builds
 
 Development runs the local service on port 8765; packaged apps start their own

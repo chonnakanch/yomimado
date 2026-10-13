@@ -25,10 +25,12 @@ No new dependencies, database migrations or visual redesign were introduced.
 
 These are follow-up maintenance work, not additional confirmed application bugs:
 
-- **Application CI coverage:** `.github/workflows/checks.yml` currently runs three
-  release-tool suites. Frontend and OCR service tests ran locally for this change;
-  add them to required CI so future application regressions are caught on pushes
-  and pull requests. Run Windows-specific Python tests with Python 3.11 or later.
+- **Application CI coverage:** at review time, Checks ran three release-tool
+  suites. The follow-up [Checks](../.github/workflows/checks.yml) now adds frontend
+  and OCR service tests, formatting/type/build checks and macOS/Windows native
+  debug verification. Python tests use 3.11.17 and reject skipped service cases.
+  Its final `gates` requires every job to succeed; installed acceptance remains
+  in Release.
 - **Native capture setup:** `get_capture_surface`, `capture_display` and
   `capture_selection` in `apps/desktop/src-tauri/src/lib.rs` repeat selector
   position/size extraction. Display/manual capture also repeat the compositor

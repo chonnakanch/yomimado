@@ -23,8 +23,13 @@ local file edits; it does not commit, push, create tags, build or publish.
 
 ## Current release and checks
 
-[Checks](../.github/workflows/checks.yml) runs the shared release and macOS CI
-tests. [Release](../.github/workflows/release.yml) builds both platforms and keeps
+[Checks](../.github/workflows/checks.yml) runs frontend and service tests,
+format/type checks, release-rule/version tests, workflow lint and macOS/Windows
+native debug tests/builds in parallel. Its final `gates` job requires every job
+to succeed, including every native matrix entry. `requirements-ci.txt` is the
+test-only Python 3.11 environment with pinned wheel hashes; it is separate from
+the frozen release inputs. Checks accesses no private seed or model weights.
+[Release](../.github/workflows/release.yml) builds both platforms and keeps
 one owner-approved publisher. Its script entrypoints are:
 
 - `desktop_release.py`: pinned input transfer, source/data/notice consolidation,

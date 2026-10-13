@@ -97,6 +97,9 @@ See [Windows](windows-installed-test.md) and [macOS](macos-clean-mac-test.md) re
       Checks now also runs the updater's regression tests.
 - [x] Rename the shared release-rule suite to `test_release_rules.py` and update
       Checks and review references; retain its macOS runtime-reuse checks.
+- [x] Expand Checks into parallel frontend, service, release-tool and macOS/Windows
+      native jobs. Preserve required `gates`, reject skipped service tests and all
+      non-success job results, pin test inputs and cache repeated work.
 - [x] Complete a focused [code quality review](code-review-2026-10-13.md): share
       frontend transport/token validation, validate OCR responses, remove repeated
       popup resets and fix stale translation responses/cache cleanup. Shared Python
@@ -113,6 +116,14 @@ release/version suites pass 51 tests. See the dated reviews for exact interprete
 coverage and limitations. These checks do not establish installed acceptance of
 the new code; no new Windows installer was built for those reviews.
 
+CI follow-up — 2026-10-13: a fresh Python 3.11.17 test environment runs all 78
+service cases without skips and the 51 release/version cases. Frontend tests,
+type/format checks and production build pass; macOS native tests/build pass.
+The final gate rejects all 624 failing/cancelled/skipped/missing-result combinations
+and accepts the one all-success combination. Linux wheel resolution and original
+CI-tool notice hashes verify. Hosted Windows native verification runs after push;
+this follow-up changes no frozen runtime or installed-app acceptance record.
+
 ## Next milestone: refreshed runtimes and next release
 
 The remaining release prerequisite is the runtime refresh recorded in the
@@ -124,10 +135,10 @@ request/form parsing paths; the new origin/size guards do not patch dependencies
 
 Proceed in this order when continuing release preparation:
 
-1. [ ] Extend required [Checks](../.github/workflows/checks.yml) to run frontend
-       and OCR service regression tests, plus their lint/type/format checks. Use Python
-       3.11 or later for Windows graph-checksum tests; currently only the three
-       release/version suites run in this workflow.
+1. [x] Extend required [Checks](../.github/workflows/checks.yml) with frontend and
+       OCR service regression tests, lint/type/format checks and native verification
+       on both desktop platforms. Python uses 3.11.17; the original three release/
+       version suites remain. The final `gates` requires all parallel jobs to pass.
 2. [ ] Triage the recorded Python advisories and choose compatible patched exact
        inputs for both platforms. Update locks, hashes, preferred sources, recipes
        and licence/native notices together; preserve historical delivery records.
