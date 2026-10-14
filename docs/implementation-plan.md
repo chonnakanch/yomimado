@@ -684,8 +684,11 @@ and 200% scale. On 2026-10-14 the owner confirmed the flicker is gone in the nor
 macOS development app, and reported an unwanted focus ring on mouse opening.
 The popover now tracks its own keyboard/pointer input, preserving initial focus
 and arrow/Home/End navigation while showing the blue inset ring only during
-keyboard navigation. Focus appearance and outside-focus dismissal still need
-native owner acceptance; Windows/mixed-DPI interactive acceptance remains pending.
+keyboard navigation. The owner then tested source `8d659c4` in the normal macOS
+development app and confirmed clean mouse opening, the inset keyboard ring,
+Escape dismissal and outside-click dismissal all work correctly. This accepts
+the flicker/focus refinement on the tested macOS setup. Windows/mixed-DPI
+interactive acceptance remains pending; no packaged installer was tested.
 
 WebKit inspection of the actual React components with native windows simulated
 confirmed mouse opening has no outline, ArrowDown focuses Settings with a 2 px
