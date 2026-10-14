@@ -452,17 +452,9 @@ export function FloatingToolbar() {
           </button>
           <button
             disabled={busy}
-            onClick={() => void run("show_secondary_window", { view: "words" })}
+            onClick={() => void run("show_secondary_window", { view: "saved" })}
           >
-            Saved words
-          </button>
-          <button
-            disabled={busy}
-            onClick={() =>
-              void run("show_secondary_window", { view: "sentences" })
-            }
-          >
-            Saved sentences
+            Saved
           </button>
           <button
             disabled={busy}

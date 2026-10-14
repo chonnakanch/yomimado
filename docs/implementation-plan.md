@@ -462,3 +462,29 @@ release tools and macOS/Windows native tests and builds. The owner accepted the
 popup in the running macOS development app. Clipboard success was verified in
 WebKit, not separately in both native hosts. Windows/mixed-DPI runtime acceptance
 remains open; Phase 4 is unstarted pending further authorization.
+
+### Phase 4 navigation refinement — grouped Saved menu
+
+On 2026-10-14 the owner requested one menu for saved words and sentences. The
+toolbar now has **Saved**, opening the existing secondary window directly to a
+shared library with **Words** and **Sentences** tabs. The legacy main window also
+uses one Saved control; existing words/sentences query routes remain compatible.
+Tabs support Left/Right, Home/End, selected semantics and roving focus. Opening
+or returning to a collection refreshes it; independent request guards prevent
+older list responses from overwriting a newer refresh.
+
+The existing records, list/delete APIs, stored order, attribution, translation,
+dates, loading/error/empty states and confirmed removal are retained. The focused
+library route shows collections directly. Full collection-row and settings polish
+remain planned work, separate from this requested navigation change.
+
+Checks passed 136 frontend tests in 19 files, TypeScript/production Vite build,
+Prettier, 51 native tests, Cargo formatting and the macOS debug build. Native
+Windows/mixed-DPI interactive acceptance remains open. No saved-data migration,
+service/dependency/release change or installer publication is included.
+
+Browser inspection of the actual app at 700 × 480 verified one Saved heading,
+Words/Sentences tab selection, keyboard focus, real saved-word data, sentence
+loading/empty states and no horizontal overflow. The normal command-based app
+is running with the new native Saved route. Browser evidence does not replace
+Windows/native menu acceptance.

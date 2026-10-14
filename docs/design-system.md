@@ -247,7 +247,8 @@ and English remain accessible; changing source clears stale output.
 
 ### Saved collections and SettingsWindow
 
-Secondary navigation separates Saved words, Saved sentences and Settings. Use
+Secondary navigation has one **Saved** entry with **Words** and **Sentences** tabs
+inside the library, alongside Settings. Use
 compact readable rows with expandable context rather than wide fixed tables
 that require horizontal scrolling. Keep local dates, existing stored order,
 refresh/error/empty states and confirmed Remove actions. Lists remain readable

@@ -14,6 +14,7 @@ beforeEach(() => {
   Object.assign(globalThis, { IS_REACT_ACT_ENVIRONMENT: true });
   vi.mocked(invoke).mockResolvedValue(undefined);
   window.localStorage.clear();
+  window.history.replaceState({}, "", "/");
   container = document.createElement("div");
   document.body.appendChild(container);
   root = createRoot(container);
@@ -144,7 +145,7 @@ it("shows saved words and removes one only after confirmation", async () => {
   expect(fetch).not.toHaveBeenCalled();
   await act(async () => {
     Array.from(container.querySelectorAll("button"))
-      .find((button) => button.textContent === "Saved words")!
+      .find((button) => button.textContent === "Saved")!
       .click();
   });
   expect(container.textContent).toContain("今日");
@@ -179,11 +180,17 @@ it("shows saved sentences and removes one only after confirmation", async () => 
     translatedText: "It's a good day.",
     createdAt: "2026-09-28T12:00:00+00:00",
   };
-  const fetch = vi.fn((_url: string, options?: RequestInit) => {
+  const fetch = vi.fn((url: string, options?: RequestInit) => {
     if (options?.method === "DELETE")
       return Promise.resolve(new Response(null, { status: 204 }));
     return Promise.resolve(
-      new Response(JSON.stringify({ sentences: [sentence] })),
+      new Response(
+        JSON.stringify(
+          url.endsWith("/vocabulary")
+            ? { words: [] }
+            : { sentences: [sentence] },
+        ),
+      ),
     );
   });
   vi.stubGlobal("fetch", fetch);
@@ -194,9 +201,12 @@ it("shows saved sentences and removes one only after confirmation", async () => 
   expect(fetch).not.toHaveBeenCalled();
   await act(async () => {
     Array.from(container.querySelectorAll("button"))
-      .find((button) => button.textContent === "Saved sentences")!
+      .find((button) => button.textContent === "Saved")!
       .click();
   });
+  await act(async () =>
+    container.querySelector<HTMLButtonElement>("#saved-tab-sentences")!.click(),
+  );
   expect(container.textContent).toContain("今日はいい日だ。");
   expect(container.textContent).toContain("It's a good day.");
 
@@ -208,7 +218,7 @@ it("shows saved sentences and removes one only after confirmation", async () => 
       .click();
   });
   expect(confirm).toHaveBeenCalled();
-  expect(fetch).toHaveBeenCalledTimes(1);
+  expect(fetch).toHaveBeenCalledTimes(2);
 
   confirm.mockReturnValue(true);
   await act(async () => {
@@ -218,7 +228,7 @@ it("shows saved sentences and removes one only after confirmation", async () => 
       )!
       .click();
   });
-  expect(fetch.mock.calls[1][1]).toEqual({
+  expect(fetch.mock.calls[2][1]).toEqual({
     method: "DELETE",
     headers: { "x-yomimado-client": "desktop" },
   });
@@ -232,7 +242,154 @@ it("opens the existing saved-word view when requested by the toolbar", async () 
     vi.fn().mockResolvedValue(new Response(JSON.stringify({ words: [] }))),
   );
   await act(async () => root.render(<App />));
-  expect(container.querySelector('[aria-label="Saved words"]')).not.toBeNull();
+  expect(
+    container.querySelector<HTMLDivElement>("#saved-panel-words")?.hidden,
+  ).toBe(false);
   expect(container.textContent).toContain("No saved words yet");
   window.history.replaceState({}, "", "/");
+});
+
+it("opens the grouped library and switches panels using keyboard tabs", async () => {
+  window.history.replaceState({}, "", "/?view=saved");
+  const fetch = vi.fn((url: string) =>
+    Promise.resolve(
+      new Response(
+        JSON.stringify(
+          url.endsWith("/vocabulary") ? { words: [] } : { sentences: [] },
+        ),
+      ),
+    ),
+  );
+  vi.stubGlobal("fetch", fetch);
+  await act(async () => root.render(<App />));
+  const words = container.querySelector<HTMLButtonElement>("#saved-tab-words")!;
+  const sentences = container.querySelector<HTMLButtonElement>(
+    "#saved-tab-sentences",
+  )!;
+  expect(
+    container.querySelector('[role="tablist"]')?.getAttribute("aria-label"),
+  ).toBe("Saved collections");
+  expect(container.querySelector(".main-actions")).toBeNull();
+  expect(document.activeElement).toBe(words);
+  expect(words.getAttribute("aria-selected")).toBe("true");
+  expect(fetch).toHaveBeenCalledTimes(1);
+  await act(async () =>
+    words.dispatchEvent(
+      new KeyboardEvent("keydown", { key: "ArrowRight", bubbles: true }),
+    ),
+  );
+  expect(document.activeElement).toBe(sentences);
+  expect(sentences.tabIndex).toBe(0);
+  expect(words.tabIndex).toBe(-1);
+  expect(sentences.getAttribute("aria-selected")).toBe("true");
+  expect(
+    container.querySelector<HTMLElement>("#saved-panel-words")!.hidden,
+  ).toBe(true);
+  expect(
+    container.querySelector<HTMLElement>("#saved-panel-sentences")!.hidden,
+  ).toBe(false);
+  expect(fetch.mock.calls[1][0]).toContain("/sentences");
+  await act(async () =>
+    sentences.dispatchEvent(
+      new KeyboardEvent("keydown", { key: "Home", bubbles: true }),
+    ),
+  );
+  expect(document.activeElement).toBe(words);
+  expect(fetch.mock.calls[2][0]).toContain("/vocabulary");
+  await act(async () =>
+    words.dispatchEvent(
+      new KeyboardEvent("keydown", { key: "End", bubbles: true }),
+    ),
+  );
+  expect(document.activeElement).toBe(sentences);
+  await act(async () =>
+    sentences.dispatchEvent(
+      new KeyboardEvent("keydown", { key: "ArrowRight", bubbles: true }),
+    ),
+  );
+  expect(document.activeElement).toBe(words);
+});
+
+it("preserves independent collection errors and refreshes on reopening", async () => {
+  const fetch = vi.fn((url: string) =>
+    Promise.resolve(
+      url.endsWith("/vocabulary")
+        ? new Response(JSON.stringify({ detail: "Words unavailable" }), {
+            status: 503,
+          })
+        : new Response(JSON.stringify({ sentences: [] })),
+    ),
+  );
+  vi.stubGlobal("fetch", fetch);
+  await act(async () => root.render(<App />));
+  const click = async (label: string) =>
+    act(async () =>
+      Array.from(container.querySelectorAll<HTMLButtonElement>("button"))
+        .find((item) => item.textContent === label)!
+        .click(),
+    );
+  await click("Saved");
+  expect(container.querySelector("#saved-panel-words")?.textContent).toContain(
+    "Words unavailable",
+  );
+  await click("Sentences");
+  expect(
+    container.querySelector("#saved-panel-sentences")?.textContent,
+  ).toContain("No saved sentences yet");
+  expect(
+    container.querySelector("#saved-panel-sentences")?.textContent,
+  ).not.toContain("Words unavailable");
+  await click("Hide saved");
+  expect(container.querySelector(".saved-library")).toBeNull();
+  await click("Saved");
+  expect(
+    container
+      .querySelector<HTMLButtonElement>("#saved-tab-sentences")!
+      .getAttribute("aria-selected"),
+  ).toBe("true");
+  expect(
+    fetch.mock.calls.filter(([url]) => url.endsWith("/sentences")),
+  ).toHaveLength(2);
+});
+
+it("keeps the latest collection response when switching back before an old request finishes", async () => {
+  window.history.replaceState({}, "", "/?view=saved");
+  let finishOld!: (response: Response) => void;
+  let wordCalls = 0;
+  vi.stubGlobal(
+    "fetch",
+    vi.fn((url: string) => {
+      if (url.endsWith("/sentences"))
+        return Promise.resolve(new Response(JSON.stringify({ sentences: [] })));
+      wordCalls++;
+      if (wordCalls === 1)
+        return new Promise<Response>((resolve) => {
+          finishOld = resolve;
+        });
+      return Promise.resolve(new Response(JSON.stringify({ words: [] })));
+    }),
+  );
+  await act(async () => root.render(<App />));
+  await act(async () =>
+    container.querySelector<HTMLButtonElement>("#saved-tab-sentences")!.click(),
+  );
+  await act(async () =>
+    container.querySelector<HTMLButtonElement>("#saved-tab-words")!.click(),
+  );
+  expect(container.querySelector("#saved-panel-words")?.textContent).toContain(
+    "No saved words yet",
+  );
+  await act(async () =>
+    finishOld(
+      new Response(JSON.stringify({ detail: "Old request failed" }), {
+        status: 503,
+      }),
+    ),
+  );
+  expect(
+    container.querySelector("#saved-panel-words")?.textContent,
+  ).not.toContain("Old request failed");
+  expect(container.querySelector("#saved-panel-words")?.textContent).toContain(
+    "No saved words yet",
+  );
 });

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import {
   deleteVocabularyWord,
@@ -15,12 +15,24 @@ import {
   type SavedSentence,
 } from "./lib/sentence-client";
 
+import { SavedTabs, type SavedTab } from "./features/library/SavedTabs";
+
 interface DetectorModelStatus {
   required: boolean;
   installed: boolean;
 }
 
 export function App() {
+  const [initialView] = useState(() =>
+    new URLSearchParams(window.location.search).get("view"),
+  );
+  const libraryOnly = ["saved", "words", "sentences"].includes(
+    initialView ?? "",
+  );
+  const [showSaved, setShowSaved] = useState(libraryOnly);
+  const [savedTab, setSavedTab] = useState<SavedTab>(
+    initialView === "sentences" ? "sentences" : "words",
+  );
   const [message, setMessage] = useState("Ready to capture a screen region.");
   const [detectorModel, setDetectorModel] =
     useState<DetectorModelStatus | null>(null);
@@ -28,12 +40,12 @@ export function App() {
     null,
   );
   const [installingDetectorModel, setInstallingDetectorModel] = useState(false);
-  const [showSavedWords, setShowSavedWords] = useState(false);
   const [savedWords, setSavedWords] = useState<SavedWord[]>([]);
+  const wordListRequestId = useRef(0);
+  const sentenceListRequestId = useRef(0);
   const [savedWordsLoading, setSavedWordsLoading] = useState(false);
   const [savedWordsError, setSavedWordsError] = useState<string | null>(null);
   const [removingWordId, setRemovingWordId] = useState<number | null>(null);
-  const [showSavedSentences, setShowSavedSentences] = useState(false);
   const [savedSentences, setSavedSentences] = useState<SavedSentence[]>([]);
   const [sentencesLoading, setSentencesLoading] = useState(false);
   const [sentencesError, setSentencesError] = useState<string | null>(null);
@@ -106,15 +118,17 @@ export function App() {
   };
 
   const loadSavedWords = async () => {
-    setShowSavedWords(true);
+    const requestId = ++wordListRequestId.current;
     setSavedWordsLoading(true);
     setSavedWordsError(null);
     try {
-      setSavedWords(await listVocabularyWords());
+      const words = await listVocabularyWords();
+      if (requestId === wordListRequestId.current) setSavedWords(words);
     } catch (error) {
-      setSavedWordsError(String(error).replace(/^Error: /, ""));
+      if (requestId === wordListRequestId.current)
+        setSavedWordsError(String(error).replace(/^Error: /, ""));
     } finally {
-      setSavedWordsLoading(false);
+      if (requestId === wordListRequestId.current) setSavedWordsLoading(false);
     }
   };
 
@@ -135,15 +149,19 @@ export function App() {
   };
 
   const loadSavedSentences = async () => {
-    setShowSavedSentences(true);
+    const requestId = ++sentenceListRequestId.current;
     setSentencesLoading(true);
     setSentencesError(null);
     try {
-      setSavedSentences(await listSavedSentences());
+      const sentences = await listSavedSentences();
+      if (requestId === sentenceListRequestId.current)
+        setSavedSentences(sentences);
     } catch (error) {
-      setSentencesError(String(error).replace(/^Error: /, ""));
+      if (requestId === sentenceListRequestId.current)
+        setSentencesError(String(error).replace(/^Error: /, ""));
     } finally {
-      setSentencesLoading(false);
+      if (requestId === sentenceListRequestId.current)
+        setSentencesLoading(false);
     }
   };
 
@@ -165,7 +183,7 @@ export function App() {
 
   useEffect(() => {
     const view = new URLSearchParams(window.location.search).get("view");
-    if (view === "words") void loadSavedWords();
+    if (view === "saved" || view === "words") void loadSavedWords();
     if (view === "sentences") void loadSavedSentences();
     if (view === "sources") setShowSources(true);
     if (view === "settings") {
@@ -173,301 +191,352 @@ export function App() {
     }
   }, []);
 
+  useEffect(
+    () => () => {
+      wordListRequestId.current++;
+      sentenceListRequestId.current++;
+    },
+    [],
+  );
+
+  const openSaved = () => {
+    setShowSaved(true);
+    if (savedTab === "words") void loadSavedWords();
+    else void loadSavedSentences();
+  };
+
+  const selectSavedTab = (tab: SavedTab) => {
+    if (tab === savedTab) return;
+    setSavedTab(tab);
+    if (tab === "words") void loadSavedWords();
+    else void loadSavedSentences();
+  };
+
+  useEffect(() => {
+    if (showSaved) document.getElementById(`saved-tab-${savedTab}`)?.focus();
+  }, [showSaved]);
+
   return (
-    <main className="main-window">
-      <h1>
-        YomiMado <span>読み窓</span>
-      </h1>
-      <p>Read beyond the page.</p>
-      {detectorModel?.required && (
-        <section
-          className="model-setup"
-          aria-label="Detector model setup"
-          id="scan-ocr-settings"
-        >
-          <h2>Scan & OCR · Detector model</h2>
-          {detectorModel.installed ? (
-            <p>Installed on this computer. Manga scanning is ready.</p>
-          ) : (
-            <p>
-              Download <code>comictextdetector.pt.onnx</code> from the{" "}
-              <a
-                href="https://github.com/zyddnys/manga-image-translator/releases/tag/beta-0.2.1"
-                target="_blank"
-                rel="noreferrer"
+    <main className={`main-window${libraryOnly ? " saved-library-view" : ""}`}>
+      {libraryOnly ? (
+        <>
+          <h1>Saved</h1>
+          <p>Words and sentences kept locally.</p>
+        </>
+      ) : (
+        <>
+          <h1>
+            YomiMado <span>読み窓</span>
+          </h1>
+          <p>Read beyond the page.</p>
+          {detectorModel?.required && (
+            <section
+              className="model-setup"
+              aria-label="Detector model setup"
+              id="scan-ocr-settings"
+            >
+              <h2>Scan & OCR · Detector model</h2>
+              {detectorModel.installed ? (
+                <p>Installed on this computer. Manga scanning is ready.</p>
+              ) : (
+                <p>
+                  Download <code>comictextdetector.pt.onnx</code> from the{" "}
+                  <a
+                    href="https://github.com/zyddnys/manga-image-translator/releases/tag/beta-0.2.1"
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    original release page
+                  </a>
+                  , then select the downloaded file. YomiMado checks it and
+                  stores a private copy in its app data. Nothing is downloaded
+                  by the app.
+                </p>
+              )}
+              <button
+                className="secondary-button"
+                onClick={() => void installDetectorModel()}
+                disabled={installingDetectorModel}
               >
-                original release page
-              </a>
-              , then select the downloaded file. YomiMado checks it and stores a
-              private copy in its app data. Nothing is downloaded by the app.
-            </p>
+                {installingDetectorModel
+                  ? "Checking model…"
+                  : detectorModel.installed
+                    ? "Replace detector model"
+                    : "Select detector model file"}
+              </button>
+              {detectorModelError && (
+                <p className="translation-error" role="alert">
+                  {detectorModelError}
+                </p>
+              )}
+            </section>
           )}
-          <button
-            className="secondary-button"
-            onClick={() => void installDetectorModel()}
-            disabled={installingDetectorModel}
-          >
-            {installingDetectorModel
-              ? "Checking model…"
-              : detectorModel.installed
-                ? "Replace detector model"
-                : "Select detector model file"}
-          </button>
-          {detectorModelError && (
+          {detectorModelError && !detectorModel?.required && (
             <p className="translation-error" role="alert">
-              {detectorModelError}
+              Unable to check detector model setup: {detectorModelError}
             </p>
           )}
-        </section>
-      )}
-      {detectorModelError && !detectorModel?.required && (
-        <p className="translation-error" role="alert">
-          Unable to check detector model setup: {detectorModelError}
-        </p>
-      )}
-      <div className="main-actions">
-        <button
-          onClick={startCapture}
-          disabled={detectorModel?.required && !detectorModel.installed}
-        >
-          Select screen region
-        </button>
-        <button
-          onClick={scanMangaPage}
-          disabled={detectorModel?.required && !detectorModel.installed}
-        >
-          Scan manga page
-        </button>
-        <button
-          className="secondary-button"
-          onClick={adjustScanArea}
-          disabled={detectorModel?.required && !detectorModel.installed}
-        >
-          Set/adjust scan area
-        </button>
-        <button
-          className="secondary-button"
-          onClick={() =>
-            showSavedWords ? setShowSavedWords(false) : void loadSavedWords()
-          }
-        >
-          {showSavedWords ? "Hide saved words" : "Saved words"}
-        </button>
-        <button
-          className="secondary-button"
-          onClick={() =>
-            showSavedSentences
-              ? setShowSavedSentences(false)
-              : void loadSavedSentences()
-          }
-        >
-          {showSavedSentences ? "Hide saved sentences" : "Saved sentences"}
-        </button>
-      </div>
-      <p className="status">{message}</p>
-      <p className="hint">
-        Shortcuts: Cmd/Ctrl + Shift + O for manual selection; Cmd/Ctrl + Shift +
-        S for Whole Screen. The toolbar is the primary reading control; closing
-        this window keeps YomiMado running.
-      </p>
-      <section className="main-settings" aria-label="Reading settings">
-        <h2>Reading settings</h2>
-        <label className="setting-option">
-          <input
-            type="checkbox"
-            checked={readingOrderEnabled}
-            onChange={(event) =>
-              updateReadingOrder(event.currentTarget.checked)
-            }
-          />
-          <span>
-            <strong>Reading-order controls</strong>
-            <small>Show navigation on page scans. Off by default.</small>
-          </span>
-        </label>
-      </section>
-      <section className="main-settings" aria-label="Sources and licenses">
-        <button
-          className="secondary-button sources-toggle"
-          aria-expanded={showSources}
-          onClick={() => setShowSources((previous) => !previous)}
-        >
-          {showSources ? "Hide sources and licenses" : "Sources and licenses"}
-        </button>
-        {showSources && (
-          <div className="sources-content">
-            <p>
-              Word and kanji data: JMdict and KANJIDIC2, copyright James William
-              Breen and the Electronic Dictionary Research and Development Group
-              (EDRDG), licensed under CC BY-SA 4.0. See the{" "}
-              <a
-                href="https://www.edrdg.org/edrdg/licence.html"
-                target="_blank"
-                rel="noreferrer"
-              >
-                dictionary licence and source
-              </a>
-              .
-            </p>
-            <p>
-              OCR recognition: Manga OCR by kha-white. Translation: Helsinki-NLP
-              opus-mt-ja-en. Both models are identified as Apache-2.0 by their{" "}
-              <a
-                href="https://huggingface.co/kha-white/manga-ocr-base"
-                target="_blank"
-                rel="noreferrer"
-              >
-                Manga OCR
-              </a>{" "}
-              and{" "}
-              <a
-                href="https://huggingface.co/Helsinki-NLP/opus-mt-ja-en"
-                target="_blank"
-                rel="noreferrer"
-              >
-                translation model
-              </a>{" "}
-              cards. Text detection code is from{" "}
-              <a
-                href="https://github.com/dmMaze/comic-text-detector"
-                target="_blank"
-                rel="noreferrer"
-              >
-                comic-text-detector
-              </a>
-              ; detector weights are installed separately by you.
-            </p>
-            <p>
-              The packaged app also includes full model, dictionary, and
-              software notices in its <code>ocr/notices</code> folder (inside
-              Resources on macOS).
-            </p>
-          </div>
-        )}
-      </section>
-      {showSavedWords && (
-        <section className="saved-words" aria-label="Saved words">
-          <div className="saved-words-heading">
-            <h2>Saved words</h2>
+          <div className="main-actions">
+            <button
+              onClick={startCapture}
+              disabled={detectorModel?.required && !detectorModel.installed}
+            >
+              Select screen region
+            </button>
+            <button
+              onClick={scanMangaPage}
+              disabled={detectorModel?.required && !detectorModel.installed}
+            >
+              Scan manga page
+            </button>
             <button
               className="secondary-button"
-              onClick={() => void loadSavedWords()}
-              disabled={savedWordsLoading}
+              onClick={adjustScanArea}
+              disabled={detectorModel?.required && !detectorModel.installed}
             >
-              Refresh
+              Set/adjust scan area
+            </button>
+            <button
+              className="secondary-button"
+              aria-expanded={showSaved}
+              aria-controls="saved-library"
+              onClick={() => (showSaved ? setShowSaved(false) : openSaved())}
+            >
+              {showSaved ? "Hide saved" : "Saved"}
             </button>
           </div>
-          {savedWordsLoading && <p>Loading saved words…</p>}
-          {savedWordsError && (
-            <p className="translation-error" role="alert">
-              {savedWordsError}
-            </p>
-          )}
-          {!savedWordsLoading &&
-            !savedWordsError &&
-            savedWords.length === 0 && (
-              <p>
-                No saved words yet. Choose a word in the learning popup to save
-                it.
+          <p className="status">{message}</p>
+          <p className="hint">
+            Shortcuts: Cmd/Ctrl + Shift + O for manual selection; Cmd/Ctrl +
+            Shift + S for Whole Screen. The toolbar is the primary reading
+            control; closing this window keeps YomiMado running.
+          </p>
+          <section className="main-settings" aria-label="Reading settings">
+            <h2>Reading settings</h2>
+            <label className="setting-option">
+              <input
+                type="checkbox"
+                checked={readingOrderEnabled}
+                onChange={(event) =>
+                  updateReadingOrder(event.currentTarget.checked)
+                }
+              />
+              <span>
+                <strong>Reading-order controls</strong>
+                <small>Show navigation on page scans. Off by default.</small>
+              </span>
+            </label>
+          </section>
+          <section className="main-settings" aria-label="Sources and licenses">
+            <button
+              className="secondary-button sources-toggle"
+              aria-expanded={showSources}
+              onClick={() => setShowSources((previous) => !previous)}
+            >
+              {showSources
+                ? "Hide sources and licenses"
+                : "Sources and licenses"}
+            </button>
+            {showSources && (
+              <div className="sources-content">
+                <p>
+                  Word and kanji data: JMdict and KANJIDIC2, copyright James
+                  William Breen and the Electronic Dictionary Research and
+                  Development Group (EDRDG), licensed under CC BY-SA 4.0. See
+                  the{" "}
+                  <a
+                    href="https://www.edrdg.org/edrdg/licence.html"
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    dictionary licence and source
+                  </a>
+                  .
+                </p>
+                <p>
+                  OCR recognition: Manga OCR by kha-white. Translation:
+                  Helsinki-NLP opus-mt-ja-en. Both models are identified as
+                  Apache-2.0 by their{" "}
+                  <a
+                    href="https://huggingface.co/kha-white/manga-ocr-base"
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    Manga OCR
+                  </a>{" "}
+                  and{" "}
+                  <a
+                    href="https://huggingface.co/Helsinki-NLP/opus-mt-ja-en"
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    translation model
+                  </a>{" "}
+                  cards. Text detection code is from{" "}
+                  <a
+                    href="https://github.com/dmMaze/comic-text-detector"
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    comic-text-detector
+                  </a>
+                  ; detector weights are installed separately by you.
+                </p>
+                <p>
+                  The packaged app also includes full model, dictionary, and
+                  software notices in its <code>ocr/notices</code> folder
+                  (inside Resources on macOS).
+                </p>
+              </div>
+            )}
+          </section>
+        </>
+      )}
+      {showSaved && (
+        <section
+          className="saved-library"
+          aria-label="Saved"
+          id="saved-library"
+        >
+          {!libraryOnly && <h2>Saved</h2>}
+          <SavedTabs active={savedTab} onChange={selectSavedTab} />
+          <section
+            className="saved-words"
+            role="tabpanel"
+            id="saved-panel-words"
+            aria-labelledby="saved-tab-words"
+            tabIndex={0}
+            hidden={savedTab !== "words"}
+          >
+            <div className="saved-words-heading">
+              <h2>Saved words</h2>
+              <button
+                className="secondary-button"
+                onClick={() => void loadSavedWords()}
+                disabled={savedWordsLoading}
+              >
+                Refresh
+              </button>
+            </div>
+            {savedWordsLoading && <p>Loading saved words…</p>}
+            {savedWordsError && (
+              <p className="translation-error" role="alert">
+                {savedWordsError}
               </p>
             )}
-          <ul className="saved-word-list">
-            {savedWords.map((word) => (
-              <li key={word.id}>
-                <div className="saved-word-top">
-                  <div>
-                    <strong lang="ja">{word.surface}</strong>{" "}
-                    <span lang="ja">{word.reading}</span>
-                    {word.dictionaryForm !== word.surface && (
-                      <small>Base: {word.dictionaryForm}</small>
-                    )}
-                  </div>
-                  <button
-                    className="secondary-button"
-                    disabled={removingWordId === word.id}
-                    onClick={() => void removeWord(word)}
-                    aria-label={`Remove ${word.surface}`}
-                  >
-                    {removingWordId === word.id ? "Removing…" : "Remove"}
-                  </button>
-                </div>
-                {word.meanings.length > 0 ? (
-                  <ol>
-                    {word.meanings.map((meaning, index) => (
-                      <li key={index}>{meaning}</li>
-                    ))}
-                  </ol>
-                ) : (
-                  <p className="hint">No dictionary meaning saved.</p>
-                )}
-                <p lang="ja" className="saved-word-context">
-                  {word.sourceText}
+            {!savedWordsLoading &&
+              !savedWordsError &&
+              savedWords.length === 0 && (
+                <p>
+                  No saved words yet. Choose a word in the learning popup to
+                  save it.
                 </p>
-                <small>Saved {new Date(word.createdAt).toLocaleString()}</small>
-                {word.meanings.length > 0 && (
-                  <small>
-                    Possible dictionary senses · Source:{" "}
-                    <a
-                      href="https://www.edrdg.org/wiki/JMdict-EDICT_Dictionary_Project.html"
-                      target="_blank"
-                      rel="noreferrer"
+              )}
+            <ul className="saved-word-list">
+              {savedWords.map((word) => (
+                <li key={word.id}>
+                  <div className="saved-word-top">
+                    <div>
+                      <strong lang="ja">{word.surface}</strong>{" "}
+                      <span lang="ja">{word.reading}</span>
+                      {word.dictionaryForm !== word.surface && (
+                        <small>Base: {word.dictionaryForm}</small>
+                      )}
+                    </div>
+                    <button
+                      className="secondary-button"
+                      disabled={removingWordId === word.id}
+                      onClick={() => void removeWord(word)}
+                      aria-label={`Remove ${word.surface}`}
                     >
-                      JMdict (EDRDG)
-                    </a>{" "}
-                    · CC BY-SA 4.0
+                      {removingWordId === word.id ? "Removing…" : "Remove"}
+                    </button>
+                  </div>
+                  {word.meanings.length > 0 ? (
+                    <ol>
+                      {word.meanings.map((meaning, index) => (
+                        <li key={index}>{meaning}</li>
+                      ))}
+                    </ol>
+                  ) : (
+                    <p className="hint">No dictionary meaning saved.</p>
+                  )}
+                  <p lang="ja" className="saved-word-context">
+                    {word.sourceText}
+                  </p>
+                  <small>
+                    Saved {new Date(word.createdAt).toLocaleString()}
                   </small>
-                )}
-              </li>
-            ))}
-          </ul>
-        </section>
-      )}
-      {showSavedSentences && (
-        <section className="saved-words" aria-label="Saved sentences">
-          <div className="saved-words-heading">
-            <h2>Saved sentences</h2>
-            <button
-              className="secondary-button"
-              onClick={() => void loadSavedSentences()}
-              disabled={sentencesLoading}
-            >
-              Refresh
-            </button>
-          </div>
-          {sentencesLoading && <p>Loading saved sentences…</p>}
-          {sentencesError && (
-            <p className="translation-error" role="alert">
-              {sentencesError}
-            </p>
-          )}
-          {!sentencesLoading &&
-            !sentencesError &&
-            savedSentences.length === 0 && (
-              <p>No saved sentences yet. Save one in the learning popup.</p>
+                  {word.meanings.length > 0 && (
+                    <small>
+                      Possible dictionary senses · Source:{" "}
+                      <a
+                        href="https://www.edrdg.org/wiki/JMdict-EDICT_Dictionary_Project.html"
+                        target="_blank"
+                        rel="noreferrer"
+                      >
+                        JMdict (EDRDG)
+                      </a>{" "}
+                      · CC BY-SA 4.0
+                    </small>
+                  )}
+                </li>
+              ))}
+            </ul>
+          </section>
+          <section
+            className="saved-words"
+            role="tabpanel"
+            id="saved-panel-sentences"
+            aria-labelledby="saved-tab-sentences"
+            tabIndex={0}
+            hidden={savedTab !== "sentences"}
+          >
+            <div className="saved-words-heading">
+              <h2>Saved sentences</h2>
+              <button
+                className="secondary-button"
+                onClick={() => void loadSavedSentences()}
+                disabled={sentencesLoading}
+              >
+                Refresh
+              </button>
+            </div>
+            {sentencesLoading && <p>Loading saved sentences…</p>}
+            {sentencesError && (
+              <p className="translation-error" role="alert">
+                {sentencesError}
+              </p>
             )}
-          <ul className="saved-word-list">
-            {savedSentences.map((sentence) => (
-              <li key={sentence.id}>
-                <div className="saved-word-top">
-                  <strong lang="ja">{sentence.sourceText}</strong>
-                  <button
-                    className="secondary-button"
-                    disabled={removingSentenceId === sentence.id}
-                    onClick={() => void removeSentence(sentence)}
-                    aria-label={`Remove saved sentence ${sentence.id}`}
-                  >
-                    {removingSentenceId === sentence.id
-                      ? "Removing…"
-                      : "Remove"}
-                  </button>
-                </div>
-                {sentence.translatedText && <p>{sentence.translatedText}</p>}
-                <small>
-                  Saved {new Date(sentence.createdAt).toLocaleString()}
-                </small>
-              </li>
-            ))}
-          </ul>
+            {!sentencesLoading &&
+              !sentencesError &&
+              savedSentences.length === 0 && (
+                <p>No saved sentences yet. Save one in the learning popup.</p>
+              )}
+            <ul className="saved-word-list">
+              {savedSentences.map((sentence) => (
+                <li key={sentence.id}>
+                  <div className="saved-word-top">
+                    <strong lang="ja">{sentence.sourceText}</strong>
+                    <button
+                      className="secondary-button"
+                      disabled={removingSentenceId === sentence.id}
+                      onClick={() => void removeSentence(sentence)}
+                      aria-label={`Remove saved sentence ${sentence.id}`}
+                    >
+                      {removingSentenceId === sentence.id
+                        ? "Removing…"
+                        : "Remove"}
+                    </button>
+                  </div>
+                  {sentence.translatedText && <p>{sentence.translatedText}</p>}
+                  <small>
+                    Saved {new Date(sentence.createdAt).toLocaleString()}
+                  </small>
+                </li>
+              ))}
+            </ul>
+          </section>
         </section>
       )}
     </main>

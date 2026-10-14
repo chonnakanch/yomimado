@@ -20,6 +20,12 @@ error/model-setup details when needed; Escape dismisses those details. Compact
 mode keeps both scan-mode icons, Rescan, visibility/status and expand on one row.
 Screenshots still stay local.
 
+Choose **More actions → Saved** to open the shared library. Use **Words** and
+**Sentences** tabs to switch collections; Left/Right or Home/End moves between
+tabs by keyboard. Each collection keeps its Refresh, loading/error/empty states
+and confirmed Remove action. Opening the library or returning to a tab refreshes
+that collection. Settings and sources remain separate toolbar actions.
+
 `Cmd/Ctrl+Shift+O` selects an area on the monitor under the pointer.
 `Cmd/Ctrl+Shift+S` now means Whole Screen on that monitor. This changes the older
 page-scan shortcut described in the published v0.1.0 guide below. Toolbar buttons

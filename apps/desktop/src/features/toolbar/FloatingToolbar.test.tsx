@@ -195,15 +195,15 @@ it("supports keyboard menu navigation, Escape focus return, movement and listene
   );
   expect(invoke).toHaveBeenCalledWith("move_toolbar", { dx: -8, dy: 0 });
   await act(async () => button("More actions").click());
-  expect(document.activeElement).toBe(button("Saved words"));
+  expect(document.activeElement).toBe(button("Saved"));
   await act(async () =>
-    button("Saved words").dispatchEvent(
+    button("Saved").dispatchEvent(
       new KeyboardEvent("keydown", { key: "ArrowDown", bubbles: true }),
     ),
   );
-  expect(document.activeElement).toBe(button("Saved sentences"));
+  expect(document.activeElement).toBe(button("Settings · Scan & OCR"));
   await act(async () =>
-    button("Saved sentences").dispatchEvent(
+    button("Settings · Scan & OCR").dispatchEvent(
       new KeyboardEvent("keydown", { key: "Escape", bubbles: true }),
     ),
   );
@@ -221,6 +221,17 @@ it("offers region focus only for a visible result and invokes native keyboard en
   expect(button("Focus regions").disabled).toBe(false);
   await act(async () => button("Focus regions").click());
   expect(invoke).toHaveBeenCalledWith("focus_ocr_regions", undefined);
+});
+
+it("opens both saved collections through one Saved menu entry", async () => {
+  await mount();
+  await act(async () => button("More actions").click());
+  expect(container.textContent).not.toContain("Saved words");
+  expect(container.textContent).not.toContain("Saved sentences");
+  await act(async () => button("Saved").click());
+  expect(invoke).toHaveBeenCalledWith("show_secondary_window", {
+    view: "saved",
+  });
 });
 
 it("reflects native scan mode, shows progress in its button and restores its completed state", async () => {

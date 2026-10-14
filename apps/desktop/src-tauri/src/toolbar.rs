@@ -549,6 +549,7 @@ pub fn set_overlay_visibility(app: AppHandle, visible: bool) -> Result<(), Strin
 #[derive(Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub enum SecondaryView {
+    Saved,
     Words,
     Sentences,
     Settings,
@@ -567,6 +568,7 @@ pub fn show_secondary_window(app: AppHandle, view: SecondaryView) -> Result<(), 
         return Err("Finish or cancel the scan before opening settings.".into());
     }
     let name = match view {
+        SecondaryView::Saved => "saved",
         SecondaryView::Words => "words",
         SecondaryView::Sentences => "sentences",
         SecondaryView::Settings => "settings",

@@ -354,7 +354,9 @@ Handle minimum usable sizes by stacking sections, not shrinking Japanese type.
 
 ### Secondary library and settings
 
-One native secondary window with Saved words, Saved sentences and Settings views.
+One native secondary window with a **Saved** library and Settings views. The owner
+requested one Saved menu entry on 2026-10-14; the library contains **Words** and
+**Sentences** tabs instead of separate toolbar menu entries.
 Opening settings routes directly to the requested category. Closing it hides or
 destroys this secondary surface without ending the service or reading session.
 Toolbar overflow provides a persistent recovery/quit path; do not require a tray
