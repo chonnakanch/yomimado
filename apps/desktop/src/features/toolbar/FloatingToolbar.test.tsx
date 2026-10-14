@@ -25,6 +25,7 @@ const initial: ToolbarState = {
 let container: HTMLDivElement;
 let root: Root;
 let snapshot: ToolbarState;
+let menuClosedListener: (event: Event<{ restoreFocus: boolean }>) => void;
 let statusListener: (event: Event<ToolbarState>) => void;
 const stopListening = vi.fn();
 
@@ -35,8 +36,13 @@ beforeEach(() => {
   vi.mocked(invoke).mockImplementation(async (command) =>
     command === "get_toolbar_state" ? snapshot : undefined,
   );
-  vi.mocked(listen).mockImplementation(async (_event, callback) => {
-    statusListener = callback as (event: Event<ToolbarState>) => void;
+  vi.mocked(listen).mockImplementation(async (event, callback) => {
+    if (event === "toolbar-state-changed")
+      statusListener = callback as (event: Event<ToolbarState>) => void;
+    else
+      menuClosedListener = callback as (
+        event: Event<{ restoreFocus: boolean }>,
+      ) => void;
     return stopListening;
   });
   container = document.createElement("div");
@@ -187,42 +193,30 @@ it("shrinks native bounds when collapsed and restores the saved preference", asy
   expect(button("Expand toolbar")).toBeDefined();
 });
 
-it("supports keyboard menu navigation, Escape focus return, movement and listener cleanup", async () => {
+it("opens an independent menu window and restores focus after native dismissal", async () => {
   await mount();
+  await act(async () => button("More actions").click());
+  expect(invoke).toHaveBeenCalledWith("show_toolbar_menu");
+  expect(container.querySelector(".toolbar-menu")).toBeNull();
+  expect(button("More actions").getAttribute("aria-expanded")).toBe("true");
+  await act(async () =>
+    menuClosedListener({
+      event: "toolbar-menu-closed",
+      id: 2,
+      payload: { restoreFocus: true },
+    }),
+  );
+  expect(document.activeElement).toBe(button("More actions"));
+  expect(button("More actions").getAttribute("aria-expanded")).toBe("false");
   await act(async () =>
     button("Move toolbar").dispatchEvent(
       new KeyboardEvent("keydown", { key: "ArrowLeft", bubbles: true }),
     ),
   );
   expect(invoke).toHaveBeenCalledWith("move_toolbar", { dx: -8, dy: 0 });
-  await act(async () => button("More actions").click());
-  expect(document.activeElement).toBe(button("Saved"));
-  await act(async () =>
-    button("Saved").dispatchEvent(
-      new KeyboardEvent("keydown", { key: "ArrowDown", bubbles: true }),
-    ),
-  );
-  expect(document.activeElement).toBe(button("Settings"));
-  await act(async () =>
-    button("Settings").dispatchEvent(
-      new KeyboardEvent("keydown", { key: "Escape", bubbles: true }),
-    ),
-  );
-  expect(document.activeElement).toBe(button("More actions"));
   await act(async () => root.unmount());
   expect(stopListening).toHaveBeenCalled();
   root = createRoot(container);
-});
-
-it("opens both saved collections through one Saved menu entry", async () => {
-  await mount();
-  await act(async () => button("More actions").click());
-  expect(container.textContent).not.toContain("Saved words");
-  expect(container.textContent).not.toContain("Saved sentences");
-  await act(async () => button("Saved").click());
-  expect(invoke).toHaveBeenCalledWith("show_secondary_window", {
-    view: "saved",
-  });
 });
 
 it("reflects native scan mode, shows progress in its button and restores its completed state", async () => {
@@ -344,104 +338,37 @@ it("shows loading in the requested mode while native scan startup is pending", a
   expect(container.querySelector(".toolbar-feedback")).toBeNull();
 });
 
-const panelLayout = (open: boolean) => ({
-  rowOffset: open ? 160 : 0,
-  rowHeight: 56,
-  totalHeight: open ? 216 : 56,
-  panelAbove: open,
-  panelMaxExtent: 360,
-});
-const measureToolbar = () =>
-  vi
-    .spyOn(HTMLElement.prototype, "getBoundingClientRect")
-    .mockImplementation(function (this: HTMLElement) {
-      const height = this.classList.contains("toolbar-menu") ? 160 : 56;
+it("does not resize the toolbar when opening or dismissing the separate menu", async () => {
+  vi.spyOn(HTMLElement.prototype, "getBoundingClientRect").mockImplementation(
+    function () {
       return {
         x: 0,
         y: 0,
         top: 0,
         left: 0,
         right: 536,
-        bottom: height,
+        bottom: 56,
         width: 536,
-        height,
+        height: 56,
         toJSON() {},
       };
-    });
-
-it("places overflow above the anchored row and restores its frame on Escape", async () => {
-  measureToolbar();
-  vi.mocked(invoke).mockImplementation(async (command, args) =>
-    command === "resize_toolbar"
-      ? panelLayout((args as { logicalHeight: number }).logicalHeight > 56)
-      : command === "get_toolbar_state"
-        ? snapshot
-        : undefined,
+    },
   );
   await mount();
-  await act(async () => button("More actions").click());
-  expect(
-    container
-      .querySelector(".floating-toolbar")
-      ?.classList.contains("panel-above"),
-  ).toBe(true);
-  expect(
-    container.querySelector<HTMLElement>(".toolbar-menu")?.style.visibility,
-  ).not.toBe("hidden");
-  expect(invoke).toHaveBeenCalledWith("resize_toolbar", {
-    logicalWidth: 536,
-    logicalHeight: 216,
-    logicalRowHeight: 56,
-  });
-  await act(async () =>
-    button("Saved").dispatchEvent(
-      new KeyboardEvent("keydown", { key: "Escape", bubbles: true }),
-    ),
-  );
-  expect(
-    container
-      .querySelector(".floating-toolbar")
-      ?.classList.contains("panel-above"),
-  ).toBe(false);
-  expect(
-    container.querySelector<HTMLElement>(".floating-toolbar")?.style.minHeight,
-  ).toBe("56px");
-  expect(document.activeElement).toBe(button("More actions"));
-});
-
-it("ignores a pending menu placement after Escape and serializes the frame restoration", async () => {
-  measureToolbar();
-  let finish!: (value: ReturnType<typeof panelLayout>) => void;
-  vi.mocked(invoke).mockImplementation(async (command, args) => {
-    if (command === "get_toolbar_state") return snapshot;
-    if (command === "resize_toolbar") {
-      if ((args as { logicalHeight: number }).logicalHeight > 56)
-        return new Promise((resolve) => {
-          finish = resolve;
-        });
-      return panelLayout(false);
-    }
-  });
-  await mount();
-  await act(async () => button("More actions").click());
-  await act(async () =>
-    button("Saved").dispatchEvent(
-      new KeyboardEvent("keydown", { key: "Escape", bubbles: true }),
-    ),
-  );
-  await act(async () => finish(panelLayout(true)));
-  expect(container.querySelector(".toolbar-menu")).toBeNull();
-  expect(
-    container
-      .querySelector(".floating-toolbar")
-      ?.classList.contains("panel-above"),
-  ).toBe(false);
-  const resizeCalls = vi
+  const before = vi
     .mocked(invoke)
-    .mock.calls.filter(([command]) => command === "resize_toolbar");
-  expect(resizeCalls.at(-1)?.[1]).toEqual({
-    logicalWidth: 536,
-    logicalHeight: 56,
-    logicalRowHeight: 56,
-  });
+    .mock.calls.filter(([command]) => command === "resize_toolbar").length;
+  await act(async () => button("More actions").click());
+  await act(async () =>
+    menuClosedListener({
+      event: "toolbar-menu-closed",
+      id: 2,
+      payload: { restoreFocus: true },
+    }),
+  );
+  expect(
+    vi
+      .mocked(invoke)
+      .mock.calls.filter(([command]) => command === "resize_toolbar"),
+  ).toHaveLength(before);
 });

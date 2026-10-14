@@ -658,3 +658,36 @@ On 2026-10-14 the owner tested the normal macOS development app at source
 without moving the toolbar row, and collapse/expand keeps control sizes consistent.
 This accepts the toolbar refinement on the tested macOS setup; it does not certify
 other monitors/scales, Windows or a packaged installer.
+
+### Dropdown transient flicker — separate native popover
+
+The owner's subsequent recording revealed a one-frame toolbar jump when the menu
+closed, despite correct settled positions. A local timing/atomic-frame experiment
+still flickered in the owner's retest and was removed without committing it.
+More actions now renders in its own reusable, transparent native window, anchored
+to the toolbar's measured row. Opening or closing the menu never changes toolbar
+bounds. Placement retains above/below selection, physical/logical scaling, work-area
+limits and scrolling. The popover loads hidden and is revealed after measurement.
+
+Keyboard arrows/Home/End, Escape focus return, outside-focus dismissal, four menu
+destinations and Quit are retained. Generation checks prevent a closed or replaced
+menu's delayed measurement from revealing it again. Capture dismisses/hides the
+popover before taking a screenshot, and does not restore it afterward. Only this
+app window is added to existing window capabilities; no dependency or OS preference
+is changed. Status details remain in their existing inline panel.
+
+Verification passes 152 frontend tests in 21 files, 57 native tests, production
+frontend and macOS native builds, desktop Prettier and Cargo formatting. Regression
+coverage verifies no toolbar resize on menu open/dismiss, keyboard/destination
+behavior, delayed-request invalidation, and popover alignment at 100%, 125%, 150%
+and 200% scale. On 2026-10-14 the owner confirmed the flicker is gone in the normal
+macOS development app, and reported an unwanted focus ring on mouse opening.
+The popover now tracks its own keyboard/pointer input, preserving initial focus
+and arrow/Home/End navigation while showing the blue inset ring only during
+keyboard navigation. Focus appearance and outside-focus dismissal still need
+native owner acceptance; Windows/mixed-DPI interactive acceptance remains pending.
+
+WebKit inspection of the actual React components with native windows simulated
+confirmed mouse opening has no outline, ArrowDown focuses Settings with a 2 px
+inset ring, and Escape returns focus to More actions. The simulated toolbar row
+remained at y=404 throughout. Temporary ignored preview fixtures were removed.

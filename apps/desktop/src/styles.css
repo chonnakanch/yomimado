@@ -8,6 +8,8 @@
 }
 :root[data-mode="toolbar"],
 :root[data-mode="toolbar"] body,
+:root[data-mode="toolbar-menu"],
+:root[data-mode="toolbar-menu"] body,
 :root[data-mode="capture"],
 :root[data-mode="overlay"],
 :root[data-mode="translation"],

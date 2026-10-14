@@ -134,9 +134,14 @@ Japanese type size. Clamp native positions to actual work area with a 12 logical
 px screen inset and 8 logical px anchor gap, reusing tested placement behavior.
 
 Both toolbar forms retain a 56 px row and 36 px controls; collapsing changes width
-and labels rather than control height. Overflow and status details open below when
-space permits, otherwise above. Keep the visible toolbar row anchored when those
-panels open or close. Bound and scroll panels on short work areas.
+and labels rather than control height. Overflow uses its own small native popover,
+positioned below when space permits or above otherwise; opening/dismissing it never
+resizes the toolbar. Status details retain their on-demand inline panel. Bound and
+scroll panels on short work areas.
+
+The native overflow popover starts without a focus ring after mouse opening.
+Keyboard navigation shows the blue 2 px ring inset inside its menu row, so it
+cannot collide with adjacent rows or the window edge.
 
 Use one quiet shadow for popup/menu/toolbar where safe; do not add a native
 Windows overlay shadow that shifts the geometry. Surface borders are 1 px;

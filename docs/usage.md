@@ -20,7 +20,8 @@ error/model-setup details when needed; Escape dismisses those details. Compact
 mode keeps both scan-mode icons, Rescan, visibility/status and expand on one row.
 Both toolbar forms keep the same control height. Near the bottom of the work area,
 More actions opens above the toolbar without moving its row. On short screens the
-menu scrolls; Escape closes it and returns focus to More actions.
+menu scrolls; Escape closes it and returns focus to More actions. More actions uses
+a separate popover so showing or dismissing it does not resize the toolbar.
 Screenshots still stay local.
 
 Choose **More actions → Saved** to open the shared library. Use **Words** and

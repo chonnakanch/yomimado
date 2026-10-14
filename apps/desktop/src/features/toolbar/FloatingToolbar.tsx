@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type KeyboardEvent } from "react";
+import { useEffect, useRef, useState } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import { listen, type UnlistenFn } from "@tauri-apps/api/event";
 import { ScanModeButton, type ScanMode } from "./ScanModeButton";
@@ -72,7 +72,6 @@ export function FloatingToolbar() {
     panelOpen: false,
   });
   const menuButton = useRef<HTMLButtonElement>(null);
-  const menu = useRef<HTMLDivElement>(null);
   const busy = pending || state?.sessionId != null;
   const compact = collapsed || (state?.availableWidth ?? 536) < 536;
   const scanBusy = pendingScanMode !== null || state?.sessionId != null;
@@ -120,7 +119,6 @@ export function FloatingToolbar() {
         }
       });
     const blur = () => {
-      setMenuOpen(false);
       setFeedbackOpen(false);
     };
     window.addEventListener("focus", refresh);
@@ -141,7 +139,7 @@ export function FloatingToolbar() {
     const resize = () => {
       const { width } = element.getBoundingClientRect();
       const rowHeight = row.current?.getBoundingClientRect().height ?? 0;
-      const panel = menu.current ?? feedback.current;
+      const panel = feedback.current;
       const margins = panel ? getComputedStyle(panel) : null;
       const gap = margins
         ? (parseFloat(margins.marginTop) || 0) +
@@ -169,7 +167,7 @@ export function FloatingToolbar() {
             },
           );
           if (!disposed && generation === resizeGeneration.current && next) {
-            setLayout({ ...next, panelOpen: menuOpen || feedbackOpen });
+            setLayout({ ...next, panelOpen: feedbackOpen });
           }
         } catch (e) {
           if (!disposed) setError(String(e));
@@ -180,21 +178,49 @@ export function FloatingToolbar() {
       typeof ResizeObserver === "undefined" ? null : new ResizeObserver(resize);
     observer?.observe(element);
     if (row.current) observer?.observe(row.current);
-    if (menu.current) observer?.observe(menu.current);
     if (feedback.current) observer?.observe(feedback.current);
     resize();
     return () => {
       disposed = true;
       observer?.disconnect();
     };
-  }, [compact, menuOpen, feedbackOpen, error, state?.sessionId, missingModel]);
+  }, [compact, feedbackOpen, error, state?.sessionId, missingModel]);
 
   useEffect(() => {
-    if (menuOpen)
-      menu.current
-        ?.querySelector<HTMLButtonElement>("button:not(:disabled)")
-        ?.focus();
-  }, [menuOpen, layout.panelOpen]);
+    let disposed = false;
+    let stop: UnlistenFn | undefined;
+    void listen<{ restoreFocus: boolean }>("toolbar-menu-closed", (event) => {
+      setMenuOpen(false);
+      if (event.payload.restoreFocus) menuButton.current?.focus();
+    })
+      .then((unlisten) => {
+        if (disposed) unlisten();
+        else stop = unlisten;
+      })
+      .catch((reason) => setError(String(reason)));
+    return () => {
+      disposed = true;
+      stop?.();
+    };
+  }, []);
+
+  useEffect(() => {
+    let disposed = false;
+    const update = async () => {
+      if (menuOpen) await resizeQueue.current;
+      if (disposed) return;
+      await invoke(menuOpen ? "show_toolbar_menu" : "close_toolbar_menu");
+    };
+    void update().catch((reason) => {
+      if (!disposed) {
+        setError(String(reason));
+        setMenuOpen(false);
+      }
+    });
+    return () => {
+      disposed = true;
+    };
+  }, [menuOpen]);
 
   const run = async (
     command: string,
@@ -236,35 +262,6 @@ export function FloatingToolbar() {
     }
   };
 
-  const closeMenu = () => {
-    setMenuOpen(false);
-    menuButton.current?.focus();
-  };
-  const navigateMenu = (event: KeyboardEvent<HTMLDivElement>) => {
-    if (event.key === "Escape") {
-      event.preventDefault();
-      closeMenu();
-      return;
-    }
-    if (!["ArrowDown", "ArrowUp", "Home", "End"].includes(event.key)) return;
-    event.preventDefault();
-    const buttons = Array.from(
-      menu.current?.querySelectorAll<HTMLButtonElement>(
-        "button:not(:disabled)",
-      ) ?? [],
-    );
-    const current = buttons.indexOf(
-      document.activeElement as HTMLButtonElement,
-    );
-    const next =
-      event.key === "Home"
-        ? 0
-        : event.key === "End"
-          ? buttons.length - 1
-          : (current + (event.key === "ArrowDown" ? 1 : -1) + buttons.length) %
-            buttons.length;
-    buttons[next]?.focus();
-  };
   const scan = (mode: ScanMode) => {
     void run("start_toolbar_scan", { mode }, mode);
   };
@@ -427,7 +424,7 @@ export function FloatingToolbar() {
             className="utility-button utility-icon-button"
             aria-label="More actions"
             aria-expanded={menuOpen}
-            aria-controls="toolbar-menu"
+            aria-haspopup="menu"
             ref={menuButton}
             onClick={() => {
               setFeedbackOpen(false);
@@ -499,51 +496,6 @@ export function FloatingToolbar() {
               {state.overlayVisible ? "Hide OCR overlays" : "Show OCR overlays"}
             </button>
           )}
-        </div>
-      )}
-      {menuOpen && (
-        <div
-          className="toolbar-menu"
-          id="toolbar-menu"
-          aria-label="More actions"
-          ref={menu}
-          style={{
-            maxHeight: layout.panelOpen
-              ? Math.min(600, Math.max(0, layout.panelMaxExtent - 4))
-              : 600,
-            visibility: layout.panelOpen ? undefined : "hidden",
-          }}
-          onKeyDown={navigateMenu}
-        >
-          <button
-            disabled={busy}
-            onClick={() => void run("show_secondary_window", { view: "saved" })}
-          >
-            Saved
-          </button>
-          <button
-            disabled={busy}
-            onClick={() =>
-              void run("show_secondary_window", { view: "settings" })
-            }
-          >
-            Settings
-          </button>
-          <button
-            disabled={busy}
-            onClick={() =>
-              void run("show_secondary_window", { view: "sources" })
-            }
-          >
-            Sources & licenses
-          </button>
-          <button
-            onClick={() =>
-              void invoke("quit_app").catch((e) => setError(String(e)))
-            }
-          >
-            Quit YomiMado
-          </button>
         </div>
       )}
     </div>

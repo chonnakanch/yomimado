@@ -12,6 +12,34 @@ use tauri::{
 use crate::capture::{CaptureMetadata, DisplayInfo, Rectangle};
 
 pub const TOOLBAR_EVENT: &str = "toolbar-state-changed";
+pub const TOOLBAR_MENU_CLOSED_EVENT: &str = "toolbar-menu-closed";
+
+#[derive(Default)]
+struct MenuRequest {
+    generation: u64,
+    open: bool,
+}
+#[derive(Default)]
+pub struct ToolbarMenuStore(Mutex<MenuRequest>);
+impl ToolbarMenuStore {
+    fn open(&self) -> Result<u64, String> {
+        let mut state = self.0.lock().map_err(|e| e.to_string())?;
+        state.generation += 1;
+        state.open = true;
+        Ok(state.generation)
+    }
+    fn close(&self) -> Result<bool, String> {
+        let mut state = self.0.lock().map_err(|e| e.to_string())?;
+        let was_open = state.open;
+        state.open = false;
+        state.generation += 1;
+        Ok(was_open)
+    }
+    fn active(&self, generation: u64) -> Result<bool, String> {
+        let state = self.0.lock().map_err(|e| e.to_string())?;
+        Ok(state.open && state.generation == generation)
+    }
+}
 pub const SECONDARY_WINDOW_LABELS: [&str; 3] = ["main", "saved", "sources"];
 pub const CAPTURE_WINDOW_LABELS: [&str; 6] = [
     "toolbar",
@@ -569,6 +597,192 @@ pub enum SecondaryView {
     Sources,
 }
 
+#[tauri::command(async)]
+pub fn show_toolbar_menu(app: AppHandle) -> Result<(), String> {
+    if app
+        .state::<crate::AppState>()
+        .scans
+        .lock()?
+        .active
+        .is_some()
+    {
+        return Err("Finish or cancel the scan before opening More actions.".into());
+    }
+    let request = app.state::<crate::AppState>().toolbar_menu.open()?;
+    let query = format!("mode=toolbar-menu&request={request}");
+    if let Some(window) = app.get_webview_window("toolbar-menu") {
+        window.hide().map_err(|e| e.to_string())?;
+        let mut url = window.url().map_err(|e| e.to_string())?;
+        url.set_query(Some(&query));
+        window.navigate(url).map_err(|e| e.to_string())?;
+    } else {
+        let window = WebviewWindowBuilder::new(
+            &app,
+            "toolbar-menu",
+            WebviewUrl::App(format!("index.html?{query}").into()),
+        )
+        .title("YomiMado More actions")
+        .inner_size(224.0, 200.0)
+        .decorations(false)
+        .transparent(true)
+        .always_on_top(true)
+        .resizable(false)
+        .skip_taskbar(true)
+        .visible(false)
+        .build()
+        .map_err(|e| e.to_string())?;
+        #[cfg(target_os = "windows")]
+        window.set_shadow(false).map_err(|e| e.to_string())?;
+        #[cfg(not(target_os = "windows"))]
+        let _ = window;
+    }
+    Ok(())
+}
+
+#[tauri::command(async)]
+pub fn close_toolbar_menu(app: AppHandle, restore_focus: Option<bool>) -> Result<(), String> {
+    let restore_focus = restore_focus.unwrap_or(false);
+    let was_open = app.state::<crate::AppState>().toolbar_menu.close()?;
+    if let Some(window) = app.get_webview_window("toolbar-menu") {
+        window.hide().map_err(|e| e.to_string())?;
+    }
+    if restore_focus {
+        if let Some(window) = app.get_webview_window("toolbar") {
+            window.set_focus().map_err(|e| e.to_string())?;
+        }
+    }
+    if !was_open && !restore_focus {
+        return Ok(());
+    }
+    app.emit_to(
+        "toolbar",
+        TOOLBAR_MENU_CLOSED_EVENT,
+        serde_json::json!({"restoreFocus":restore_focus}),
+    )
+    .map_err(|e| e.to_string())
+}
+
+fn toolbar_menu_frame(
+    anchor: (f64, f64),
+    row_width: f64,
+    row_height: f64,
+    width: f64,
+    height: f64,
+    area: Rectangle,
+    scale: f64,
+) -> ((i32, i32), f64) {
+    let (_, layout) = toolbar_frame(
+        anchor,
+        row_width,
+        row_height / scale,
+        height / scale + 4.0,
+        area,
+        scale,
+    );
+    let gap = 4.0 * scale;
+    let height = height.min((layout.panel_max_extent * scale - gap).max(1.0));
+    let height = height.floor();
+    let y = if layout.panel_above {
+        anchor.1 - height - gap
+    } else {
+        anchor.1 + row_height + gap
+    };
+    (
+        clamped_position(anchor.0 + row_width - width, y, width, height, area, scale),
+        height,
+    )
+}
+
+#[tauri::command(async)]
+pub fn position_toolbar_menu(
+    app: AppHandle,
+    logical_width: f64,
+    logical_height: f64,
+    request_id: u64,
+) -> Result<Option<f64>, String> {
+    if !app
+        .state::<crate::AppState>()
+        .toolbar_menu
+        .active(request_id)?
+        || app
+            .state::<crate::AppState>()
+            .scans
+            .lock()?
+            .active
+            .is_some()
+    {
+        return Ok(None);
+    }
+    if !logical_width.is_finite()
+        || !logical_height.is_finite()
+        || !(80.0..=600.0).contains(&logical_width)
+        || !(20.0..=600.0).contains(&logical_height)
+    {
+        return Err("Invalid More actions dimensions".into());
+    }
+    let toolbar = app
+        .get_webview_window("toolbar")
+        .ok_or("Toolbar is unavailable")?;
+    let window = app
+        .get_webview_window("toolbar-menu")
+        .ok_or("More actions is unavailable")?;
+    let monitor = toolbar
+        .current_monitor()
+        .map_err(|e| e.to_string())?
+        .ok_or("No active monitor")?;
+    let scale = monitor.scale_factor();
+    let work = monitor.work_area();
+    let area = Rectangle {
+        x: f64::from(work.position.x),
+        y: f64::from(work.position.y),
+        width: f64::from(work.size.width),
+        height: f64::from(work.size.height),
+    };
+    let position = toolbar.outer_position().map_err(|e| e.to_string())?;
+    let size = toolbar.inner_size().map_err(|e| e.to_string())?;
+    let layout = *app
+        .state::<crate::AppState>()
+        .toolbar_layout
+        .lock()
+        .map_err(|e| e.to_string())?;
+    let row_offset = layout.row_offset * scale;
+    let row_height = layout.row_height * scale;
+    let width = (logical_width * scale).ceil().min(area.width);
+    let ((x, y), height) = toolbar_menu_frame(
+        (f64::from(position.x), f64::from(position.y) + row_offset),
+        f64::from(size.width),
+        row_height,
+        width,
+        (logical_height * scale).ceil(),
+        area,
+        scale,
+    );
+    let visible = window.is_visible().map_err(|e| e.to_string())?;
+    // Closing may race a menu webview's first measurement. Keep generation
+    // validation and queued reveal together so a dismissed menu cannot reappear.
+    let state = app.state::<crate::AppState>();
+    let request = state.toolbar_menu.0.lock().map_err(|e| e.to_string())?;
+    if !request.open || request.generation != request_id {
+        return Ok(None);
+    }
+    // Move first so the popup adopts the toolbar monitor's scale, as in the
+    // existing learning-popup path; then apply physical size and position again.
+    window
+        .set_position(PhysicalPosition::new(x, y))
+        .map_err(|e| e.to_string())?;
+    window
+        .set_size(PhysicalSize::new(width as u32, height.floor() as u32))
+        .map_err(|e| e.to_string())?;
+    window
+        .set_position(PhysicalPosition::new(x, y))
+        .map_err(|e| e.to_string())?;
+    if !visible {
+        window.show().map_err(|e| e.to_string())?;
+        window.set_focus().map_err(|e| e.to_string())?;
+    }
+    Ok(Some(height / scale))
+}
+
 impl SecondaryView {
     fn destination(&self) -> (&'static str, &'static str, &'static str) {
         match self {
@@ -829,6 +1043,43 @@ pub fn setup(app: &AppHandle) -> Result<(), String> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn closing_a_menu_invalidates_pending_measurements_and_new_opens_replace_old_ones() {
+        let store = ToolbarMenuStore::default();
+        let first = store.open().unwrap();
+        assert!(store.active(first).unwrap());
+        assert!(store.close().unwrap());
+        assert!(!store.active(first).unwrap());
+        let second = store.open().unwrap();
+        assert!(store.active(second).unwrap());
+        assert!(!store.active(first).unwrap());
+    }
+
+    #[test]
+    fn separate_menu_uses_the_toolbar_anchor_without_changing_its_bounds() {
+        let area = Rectangle {
+            x: -1920.0,
+            y: 30.0,
+            width: 1920.0,
+            height: 1000.0,
+        };
+        for scale in [1.0, 1.25, 1.5, 2.0] {
+            let anchor = (-1900.0, 1030.0 - (SCREEN_INSET + 56.0) * scale);
+            let ((x, y), height) = toolbar_menu_frame(
+                anchor,
+                536.0 * scale,
+                56.0 * scale,
+                224.0 * scale,
+                (154.0 * scale).ceil(),
+                area,
+                scale,
+            );
+            assert_eq!(height, (154.0 * scale).ceil());
+            assert_eq!(f64::from(y) + height + 4.0 * scale, anchor.1);
+            assert_eq!(f64::from(x) + 224.0 * scale, anchor.0 + 536.0 * scale);
+        }
+    }
 
     #[test]
     fn menu_destinations_use_independent_windows_and_all_hide_during_capture() {

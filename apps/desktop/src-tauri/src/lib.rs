@@ -29,6 +29,7 @@ struct AppState {
     overlay_input: overlay::input::InputRouter,
     scans: toolbar::ScanStore,
     toolbar_layout: Mutex<toolbar::ToolbarLayout>,
+    toolbar_menu: toolbar::ToolbarMenuStore,
     service: Mutex<Option<Child>>,
     #[cfg(target_os = "windows")]
     windows_service: Mutex<Option<windows_service::Service>>,
@@ -186,6 +187,7 @@ fn show_capture_window_on(
             return Err("Screen Recording access is required. Enable YomiMado (or your terminal when running `tauri dev`) in System Settings > Privacy & Security > Screen & System Audio Recording, then restart the app.".into());
         }
     }
+    toolbar::close_toolbar_menu(app.clone(), None)?;
     let restore = toolbar::CAPTURE_WINDOW_LABELS
         .iter()
         .filter(|label| {
@@ -202,7 +204,7 @@ fn show_capture_window_on(
     app.state::<AppState>().scans.set_selector_id(id);
     let result: Result<(), String> = (|| {
         app.state::<AppState>().overlay_input.disable(&app)?;
-        for label in toolbar::CAPTURE_WINDOW_LABELS {
+        for label in std::iter::once("toolbar-menu").chain(toolbar::CAPTURE_WINDOW_LABELS) {
             if let Some(window) = app.get_webview_window(label) {
                 window.hide().map_err(|e| e.to_string())?;
             }
@@ -283,7 +285,10 @@ async fn perform_capture(
         session.message = "Capturing screen pixels…".into();
         // Hiding the native selector, not just its DOM, keeps processing from
         // trapping browser input and keeps all app chrome out of the screenshot.
-        for label in std::iter::once("capture-selector").chain(toolbar::CAPTURE_WINDOW_LABELS) {
+        for label in ["capture-selector", "toolbar-menu"]
+            .into_iter()
+            .chain(toolbar::CAPTURE_WINDOW_LABELS)
+        {
             if let Some(window) = app.get_webview_window(label) {
                 window.hide().map_err(|e| e.to_string())?;
             }
@@ -814,6 +819,29 @@ pub fn run() {
                     eprintln!("YomiMado: failed to hide translation popup: {error}");
                 }
             }
+            if matches!(window.label(), "toolbar" | "toolbar-menu")
+                && matches!(event, tauri::WindowEvent::Focused(false))
+            {
+                let app = window.app_handle().clone();
+                tauri::async_runtime::spawn(async move {
+                    // Query after the focus transition: clicking the toolbar
+                    // must leave the menu alive long enough for its toggle action.
+                    tauri::async_runtime::spawn_blocking(move || {
+                        let toolbar_focused = app
+                            .get_webview_window("toolbar")
+                            .is_some_and(|toolbar| toolbar.is_focused().unwrap_or(false));
+                        let menu_visible = app
+                            .get_webview_window("toolbar-menu")
+                            .is_some_and(|menu| menu.is_visible().unwrap_or(false));
+                        let menu_focused = app
+                            .get_webview_window("toolbar-menu")
+                            .is_some_and(|menu| menu.is_focused().unwrap_or(false));
+                        if !toolbar_focused && !menu_focused && menu_visible {
+                            let _ = toolbar::close_toolbar_menu(app, None);
+                        }
+                    });
+                });
+            }
         })
         .plugin(GlobalShortcutBuilder::new().build())
         .plugin(tauri_plugin_dialog::init())
@@ -839,6 +867,7 @@ pub fn run() {
                 overlay_input: overlay::input::InputRouter::default(),
                 scans: toolbar::ScanStore::default(),
                 toolbar_layout: Mutex::new(toolbar::ToolbarLayout::default()),
+                toolbar_menu: toolbar::ToolbarMenuStore::default(),
                 service: Mutex::new(service),
                 #[cfg(target_os = "windows")]
                 windows_service: Mutex::new(windows_service),
@@ -886,6 +915,9 @@ pub fn run() {
             toolbar::rescan,
             toolbar::set_overlay_visibility,
             toolbar::show_secondary_window,
+            toolbar::show_toolbar_menu,
+            toolbar::close_toolbar_menu,
+            toolbar::position_toolbar_menu,
             toolbar::resize_toolbar,
             toolbar::move_toolbar,
             toolbar::drag_toolbar,

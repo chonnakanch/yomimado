@@ -1,6 +1,9 @@
 :root[data-mode="toolbar"] body {
   overflow: hidden;
 }
+:root[data-mode="toolbar-menu"] body {
+  overflow: hidden;
+}
 .floating-toolbar {
   box-sizing: border-box;
   color: var(--color-text-primary);
@@ -105,6 +108,27 @@
 .toolbar-menu button:disabled {
   color: var(--color-text-muted);
   opacity: 1;
+}
+.toolbar-menu-popover {
+  margin: 0;
+  max-width: 100vw;
+}
+.toolbar-menu-popover button {
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+.toolbar-menu-popover button:focus {
+  outline: none;
+}
+.toolbar-menu-popover.keyboard-navigation button:focus {
+  outline: var(--focus-width) solid var(--color-focus);
+  outline-offset: -2px;
+}
+.toolbar-menu-error {
+  color: var(--color-status-error);
+  font-size: var(--font-size-label);
+  margin: 0;
+  overflow-wrap: anywhere;
 }
 
 .floating-toolbar .utility-button {

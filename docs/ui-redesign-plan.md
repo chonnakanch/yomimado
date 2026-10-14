@@ -232,8 +232,9 @@ warning icon. Always provide a keyboard-expand path and access to Quit via expan
 The native bounds must shrink with the content; an invisible expanded window
 must not intercept the manga. Overflow contains saved collections, settings,
 sources/licenses and Quit. Missing-model status links to Scan & OCR.
-Both forms retain 36 px controls and a 56 px row. Overflow and status details grow
-above when there is insufficient room below, keeping the visible row anchored.
+Both forms retain 36 px controls and a 56 px row. Overflow opens in a separate
+native popover so opening or closing it does not resize/move the toolbar. Overflow
+and status details appear above when there is insufficient room below.
 Bound panel height to the actual work area and allow scrolling on short screens.
 
 Define the target explicitly: toolbar buttons scan the monitor containing the
