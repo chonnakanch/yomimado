@@ -626,7 +626,7 @@ toggle or Quit interception was applied. The temporary custom-control source
 native hide-on-close handler is retained. Final native-button acceptance after this
 restoration and Windows/mixed-DPI interactive acceptance remain open.
 
-### Toolbar work-area placement and consistent control sizes — implemented for review
+### Toolbar work-area placement and consistent control sizes — accepted on macOS
 
 The owner reported that opening More actions at the bottom of the screen moved
 the toolbar, and compact/expanded controls changed size. Native placement now
@@ -651,4 +651,10 @@ confirmed the row stayed at y=404 before, during and after menu opening; both fo
 were 56 px tall and all controls 36 px tall. A 600 × 220 inspection confirmed a
 bounded scrolling menu and keyboard access to the last action. The temporary
 ignored fixture is removed. These browser checks simulate native frame placement;
-owner native-window and Windows/mixed-DPI interactive acceptance remain pending.
+Windows/mixed-DPI interactive acceptance remains pending.
+
+On 2026-10-14 the owner tested the normal macOS development app at source
+`cffe385` and confirmed both fixes: More actions opens above near the bottom
+without moving the toolbar row, and collapse/expand keeps control sizes consistent.
+This accepts the toolbar refinement on the tested macOS setup; it does not certify
+other monitors/scales, Windows or a packaged installer.
