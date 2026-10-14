@@ -405,6 +405,11 @@ not native window/input acceptance. The temporary review fixture was removed
 from ignored build output. Final source checks passed 122 frontend tests,
 TypeScript/production Vite build, desktop/document formatting, 50 native tests,
 Cargo formatting and the macOS debug build. The normal command-based development
-app was relaunched with the updated native mode contract for owner review. Native
-visual confirmation of these refinements and Windows/mixed-DPI interactive
-acceptance remain open. Phase 3 remains unstarted.
+app was relaunched with the updated native mode contract. On 2026-10-14 the owner
+confirmed that Whole Screen highlighting, progress inside the scan button,
+icon-only visibility status and compact controls on one row match the request.
+Windows/mixed-DPI interactive acceptance remains open. Phase 3 remains unstarted.
+
+[Checks run 38512106734](https://github.com/chonnakanch/yomimado/actions/runs/38512106734)
+passed all gates for toolbar refinement `74cf470`, including frontend, service,
+release-tool checks and macOS/Windows native tests and builds.
