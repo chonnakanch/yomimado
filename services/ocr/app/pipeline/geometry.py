@@ -17,7 +17,7 @@ def extend_to_visible_ink(
     cv2: Any,
     np: Any,
 ) -> tuple[tuple[int, int, int, int], list[Point], bool]:
-    """Recover cut strokes and nearby end punctuation, not arbitrary neighboring text.
+    """Recover cut strokes, omitted thin strokes and nearby end punctuation.
 
     Search distances follow the detector's glyph size in captured image pixels.
     Large components (bubble borders/art), components cut by the search edge and
@@ -27,7 +27,10 @@ def extend_to_visible_ink(
         return box, polygon, False
     height, width = bgr.shape[:2]
     x1, y1, x2, y2 = box
-    along = math.ceil(glyph_size * 0.8)
+    # A full-screen detector can omit an entire 一 or long-vowel stroke.
+    # Leave enough search space to observe the complete component, rather than
+    # rejecting it as cut by the search edge. Acceptance remains glyph-bounded.
+    along = math.ceil(glyph_size * 1.5)
     across = math.ceil(glyph_size * 0.2)
     px, py = (across, along) if vertical else (along, across)
     left, top = max(0, x1 - px), max(0, y1 - py)
@@ -58,8 +61,14 @@ def extend_to_visible_ink(
         else:
             aligned = t < y2 and b > y1
             gap = max(x1 - r, l - x2, 0)
-        punctuation = max(cw, ch) <= glyph_size * 0.5 and gap <= glyph_size * 0.35
-        if not intersects and not (aligned and punctuation):
+        near_end = gap <= glyph_size * 0.35
+        punctuation = max(cw, ch) <= glyph_size * 0.5
+        thin_stroke = (
+            min(cw, ch) <= glyph_size * 0.2
+            and max(cw, ch) >= glyph_size * 0.45
+            and max(cw, ch) >= min(cw, ch) * 3
+        )
+        if not intersects and not (aligned and near_end and (punctuation or thin_stroke)):
             continue
         corners = [(l - 1, t - 1), (r + 1, t - 1), (r + 1, b + 1), (l - 1, b + 1)]
         if all(cv2.pointPolygonTest(contour, point, False) >= 0 for point in corners):

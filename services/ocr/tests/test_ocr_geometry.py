@@ -51,7 +51,7 @@ def test_bubble_border_and_search_edge_art_do_not_expand_region():
     box = (100, 80, 250, 120)
     cv2.rectangle(image, (85, 73), (265, 127), (0, 0, 0), 2)
     # Art entering the bounded search edge has an unknown full extent.
-    image[95:105, 60:110] = 0
+    image[95:105, 0:110] = 0
     polygon = rectangle(box)
     assert extend_to_visible_ink(image, box, polygon, 40, False, cv2, np) == (box, polygon, False)
 
@@ -70,14 +70,17 @@ def test_blank_dark_or_unknown_scale_preserves_original_polygon(background, glyp
     )
 
 
-def test_recognition_uses_recovered_stroke_and_reports_review_geometry(monkeypatch):
+@pytest.mark.parametrize("detector_left", [60, 90])
+def test_recognition_uses_recovered_stroke_and_reports_review_geometry(monkeypatch, detector_left):
     from app.pipeline import real_ocr
 
     image = Image.new("RGB", (500, 400), "white")
     draw = ImageDraw.Draw(image)
     draw.rectangle((40, 100, 79, 104), fill="black")
     draw.rectangle((90, 85, 110, 115), fill="black")
-    block = SimpleNamespace(lines=[], xyxy=[60, 80, 220, 120], vertical=False, font_size=40)
+    block = SimpleNamespace(
+        lines=[], xyxy=[detector_left, 80, 220, 120], vertical=False, font_size=40
+    )
     monkeypatch.setattr(real_ocr, "_configured_paths", lambda: (Path("."),) * 3)
 
     def recognize(crop):
@@ -96,4 +99,31 @@ def test_recognition_uses_recovered_stroke_and_reports_review_geometry(monkeypat
     assert region.geometrySource == "expandedCrop"
     assert region.needsReview and "visible strokes" in region.reviewReason
     # Keep the detector's original diagnostic box distinct from adjusted geometry.
-    assert response.debug.detections[0].box == rectangle((60, 80, 220, 120))
+    assert response.debug.detections[0].box == rectangle((detector_left, 80, 220, 120))
+
+
+@pytest.mark.parametrize("scale", [1, 2])
+@pytest.mark.parametrize("vertical", [False, True])
+def test_entire_omitted_thin_stroke_is_recovered_but_neighbor_character_is_not(scale, vertical):
+    image = np.full((300, 400, 3), 255, dtype=np.uint8)
+    box = (100, 80, 250, 120)
+    # Full-screen downsampling omitted a complete 一: it does not touch the box.
+    # Its left edge also lies beyond the former 0.8-glyph search distance.
+    image[98:102, 48:94] = 0
+    # A nearby ordinary glyph is deliberately excluded, despite the wider search.
+    image[84:116, 255:285] = 0
+    if vertical:
+        image = image.transpose(1, 0, 2).copy()
+        box = (box[1], box[0], box[3], box[2])
+    image = np.repeat(np.repeat(image, scale, axis=0), scale, axis=1)
+    box = tuple(value * scale for value in box)
+    corrected, polygon, changed = extend_to_visible_ink(
+        image, box, rectangle(box), 40 * scale, vertical, cv2, np
+    )
+    assert changed
+    edge = corrected[1] if vertical else corrected[0]
+    assert edge == 48 * scale - 1
+    # The outside full-glyph pieces must not widen the cross-axis extent.
+    assert corrected[0 if vertical else 1] == 80 * scale
+    assert corrected[2 if vertical else 3] == 120 * scale
+    assert len(polygon) >= 4

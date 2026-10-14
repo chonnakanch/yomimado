@@ -355,3 +355,14 @@ passed every gate for OCR fix `17cb20a`: frontend, service, release tools and bo
 macOS/Windows native tests/builds. These source checks do not close Windows or
 mixed-DPI interactive acceptance. The normal command-launched desktop and updated
 offline service remain open; the owner's post-correction visual review is pending.
+
+The owner subsequently confirmed full text coverage when selecting only the white
+reader panel, while Whole Screen and whole-display manual selection still omitted
+the leading thin stroke. These broader captures can place an entire `一` component
+outside the detector box. The follow-up expands the bounded longitudinal search
+to observe a complete glyph and admits nearby, aligned thin strokes as well as
+small punctuation. Full neighboring characters, bubble/art components, distant
+components and truncated search-edge components remain excluded. Five additional
+regression cases cover disconnected strokes at 1×/2× in both orientations and
+recognition when the entire leading stroke was omitted. Broader native visual
+confirmation is pending; the white-panel confirmation remains recorded.
