@@ -781,7 +781,21 @@ pub fn run() {
                     api.prevent_close();
                     return;
                 }
-                if window.label() == "main" || window.label() == "capture-selector" {
+                if window.label() == "main" {
+                    api.prevent_close();
+                    // AppKit's red close button delivers this callback inside
+                    // windowShouldClose:. Ordering out its key window inline can
+                    // terminate the native loop without an ExitRequested event.
+                    // Queue hiding from a worker after returning the close veto.
+                    let secondary = window.clone();
+                    tauri::async_runtime::spawn_blocking(move || {
+                        if let Err(error) = secondary.hide() {
+                            eprintln!("YomiMado: could not hide settings window: {error}");
+                        }
+                    });
+                    return;
+                }
+                if window.label() == "capture-selector" {
                     api.prevent_close();
                     if let Err(error) = window.hide() {
                         eprintln!("YomiMado: could not hide window: {error}");

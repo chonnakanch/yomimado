@@ -571,3 +571,17 @@ model replacement or permission changes. The normal command-based app is open fo
 - [ ] Owner acceptance of Phase 5 layout and secondary-window close/reopen behavior.
 - [ ] Windows/mixed-DPI interactive acceptance, including Quit/service cleanup.
 - [ ] Future installer/release work requires separate owner authorization.
+
+[Checks run 38567439854](https://github.com/chonnakanch/yomimado/actions/runs/38567439854)
+passed all gates for Settings source `2a66ba4`, including frontend, service,
+release tools and macOS/Windows native tests and builds.
+
+The owner confirmed the Settings categories work, but reported that the macOS red
+close button also removes the toolbar and OCR boxes. A normal detached development
+launch reproduced process exit after the main close/hide callback without an
+ExitRequested event. A temporary native close/reopen/explicit-Quit smoke exercise
+passed, showing that programmatic close alone did not cover the native button path.
+The follow-up change vetoes main-window closure immediately and queues hiding from
+a worker so the native close callback returns before the hide is processed. Local
+native tests (51) and formatting pass; owner verification of the red button remains
+pending. Temporary lifecycle diagnostics and smoke code are removed from source.
