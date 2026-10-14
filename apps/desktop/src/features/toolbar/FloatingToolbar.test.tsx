@@ -12,6 +12,7 @@ vi.mock("@tauri-apps/api/event", () => ({ listen: vi.fn() }));
 const initial: ToolbarState = {
   revision: 1,
   sessionId: null,
+  scanMode: "selectedArea",
   phase: "idle",
   message: "Ready to scan Japanese text.",
   canRescan: false,
@@ -89,7 +90,8 @@ it("blocks overlapping scans, retains the last Rescan and cancels the exact sess
     phase: "recognizing",
     message: "Recognizing Japanese text locally…",
   });
-  expect(button("Selected Area").disabled).toBe(true);
+  expect(button("Whole Screen").disabled).toBe(true);
+  expect(button("Cancel scan").disabled).toBe(false);
   expect(button("Rescan").disabled).toBe(true);
   expect(container.textContent).toContain("Recognizing");
   await act(async () => button("Cancel scan").click());
@@ -122,6 +124,8 @@ it("shows missing-model setup through Settings and preserves service errors", as
   };
   await mount();
   expect(button("Whole Screen").disabled).toBe(true);
+  expect(container.querySelector(".toolbar-feedback")).toBeNull();
+  await act(async () => button("Scan status").click());
   await act(async () => button("Scan & OCR").click());
   expect(invoke).toHaveBeenCalledWith("show_secondary_window", {
     view: "settings",
@@ -150,9 +154,9 @@ it("shrinks native bounds when collapsed and restores the saved preference", asy
         y: 0,
         top: 0,
         left: 0,
-        right: collapsed ? 112 : 520,
+        right: collapsed ? 224 : 520,
         bottom: collapsed ? 48 : 56,
-        width: collapsed ? 112 : 520,
+        width: collapsed ? 224 : 520,
         height: collapsed ? 48 : 56,
         toJSON() {},
       };
@@ -161,7 +165,7 @@ it("shrinks native bounds when collapsed and restores the saved preference", asy
   await mount();
   await act(async () => button("Collapse toolbar").click());
   expect(invoke).toHaveBeenCalledWith("resize_toolbar", {
-    logicalWidth: 112,
+    logicalWidth: 224,
     logicalHeight: 48,
   });
   expect(window.localStorage.getItem("yomimado.toolbar.collapsed.v1")).toBe(
@@ -169,6 +173,13 @@ it("shrinks native bounds when collapsed and restores the saved preference", asy
   );
   expect(button("Expand toolbar")).toBeDefined();
   expect(container.textContent).not.toContain("Selected Area");
+  expect(button("Selected Area")).toBeDefined();
+  expect(button("Whole Screen")).toBeDefined();
+  expect(button("Show OCR overlays")).toBeDefined();
+  await act(async () => button("Whole Screen").click());
+  expect(invoke).toHaveBeenCalledWith("start_toolbar_scan", {
+    mode: "wholeScreen",
+  });
   await act(async () => root.unmount());
   root = createRoot(container);
   await mount();
@@ -210,4 +221,123 @@ it("offers region focus only for a visible result and invokes native keyboard en
   expect(button("Focus regions").disabled).toBe(false);
   await act(async () => button("Focus regions").click());
   expect(invoke).toHaveBeenCalledWith("focus_ocr_regions", undefined);
+});
+
+it("reflects native scan mode, shows progress in its button and restores its completed state", async () => {
+  await mount();
+  expect(button("Selected Area").getAttribute("aria-pressed")).toBe("true");
+  await update({
+    revision: 3,
+    scanMode: "wholeScreen",
+    sessionId: 8,
+    phase: "recognizing",
+    message: "Recognizing Japanese text locally…",
+  });
+  expect(button("Cancel scan").getAttribute("aria-pressed")).toBe("true");
+  expect(button("Cancel scan").getAttribute("aria-busy")).toBe("true");
+  expect(button("Cancel scan").textContent).toContain("Recognizing…");
+  expect(button("Selected Area").getAttribute("aria-pressed")).toBe("false");
+  expect(container.querySelectorAll(".toolbar-loading-icon")).toHaveLength(1);
+  expect(container.querySelector(".toolbar-feedback")).toBeNull();
+  await update({
+    revision: 4,
+    scanMode: "wholeScreen",
+    sessionId: null,
+    phase: "ready",
+    hasOverlay: true,
+    overlayVisible: true,
+  });
+  expect(button("Whole Screen").getAttribute("aria-pressed")).toBe("true");
+  expect(button("Whole Screen").getAttribute("aria-busy")).toBe("false");
+  expect(container.querySelector(".toolbar-loading-icon")).toBeNull();
+  await update({ revision: 2, scanMode: "selectedArea" });
+  expect(button("Whole Screen").getAttribute("aria-pressed")).toBe("true");
+});
+
+it("keeps visibility status in its icon without an automatic text row", async () => {
+  await mount();
+  await update({
+    revision: 2,
+    hasOverlay: true,
+    overlayVisible: false,
+    message: "OCR overlays hidden. Results are kept locally for this session.",
+  });
+  expect(button("Show OCR overlays").title).toContain("OCR overlays hidden");
+  expect(button("Show OCR overlays").getAttribute("aria-pressed")).toBe(
+    "false",
+  );
+  expect(container.querySelector(".toolbar-status")).toBeNull();
+  expect(container.querySelector(".toolbar-feedback")).toBeNull();
+  expect(
+    container
+      .querySelector('[role="status"]')
+      ?.classList.contains("visually-hidden"),
+  ).toBe(true);
+  await update({
+    revision: 3,
+    hasOverlay: true,
+    overlayVisible: true,
+    message: "Overlay restored. Rescan if the page has changed.",
+  });
+  expect(button("Hide OCR overlays").getAttribute("aria-pressed")).toBe("true");
+  expect(container.querySelector(".toolbar-feedback")).toBeNull();
+});
+
+it("reveals errors on request and closes their details with Escape", async () => {
+  await mount();
+  await update({
+    revision: 2,
+    phase: "error",
+    message: "Screen Recording access is required",
+  });
+  expect(button("Scan status").title).toContain("Screen Recording access");
+  expect(container.querySelector(".toolbar-feedback")).toBeNull();
+  await act(async () => button("Scan status").click());
+  const panel = container.querySelector<HTMLElement>(".toolbar-feedback")!;
+  expect(panel.textContent).toContain("Screen Recording access");
+  await act(async () =>
+    panel.dispatchEvent(
+      new KeyboardEvent("keydown", { key: "Escape", bubbles: true }),
+    ),
+  );
+  expect(container.querySelector(".toolbar-feedback")).toBeNull();
+  expect(document.activeElement).toBe(button("Scan status"));
+});
+
+it("uses icon scan controls when the target work area cannot fit expanded labels", async () => {
+  snapshot = { ...initial, availableWidth: 400 };
+  await mount();
+  expect(
+    container.querySelector(".floating-toolbar")?.classList.contains("compact"),
+  ).toBe(true);
+  expect(button("Selected Area")).toBeDefined();
+  expect(button("Whole Screen")).toBeDefined();
+  expect(container.querySelector(".toolbar-brand")).toBeNull();
+});
+
+it("shows loading in the requested mode while native scan startup is pending", async () => {
+  let finishStart: (() => void) | undefined;
+  vi.mocked(invoke).mockImplementation(async (command) => {
+    if (command === "start_toolbar_scan")
+      return new Promise<void>((resolve) => {
+        finishStart = resolve;
+      });
+    return command === "get_toolbar_state" ? snapshot : undefined;
+  });
+  await mount();
+  await act(async () => button("Whole Screen").click());
+  expect(button("Whole Screen").getAttribute("aria-busy")).toBe("true");
+  expect(button("Whole Screen").getAttribute("aria-pressed")).toBe("true");
+  expect(button("Whole Screen").textContent).toContain("Scanning…");
+  expect(button("Selected Area").disabled).toBe(true);
+  snapshot = {
+    ...initial,
+    revision: 2,
+    scanMode: "wholeScreen",
+    sessionId: 20,
+    phase: "capturing",
+  };
+  await act(async () => finishStart?.());
+  expect(button("Cancel scan").textContent).toContain("Capturing…");
+  expect(container.querySelector(".toolbar-feedback")).toBeNull();
 });

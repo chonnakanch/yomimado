@@ -73,6 +73,14 @@ impl Session {
         Ok(id)
     }
 
+    pub fn scan_mode(&self) -> ScanMode {
+        self.active
+            .as_ref()
+            .map(|scan| scan.mode)
+            .or_else(|| self.last_scan.as_ref().map(|scan| scan.mode))
+            .unwrap_or(ScanMode::SelectedArea)
+    }
+
     pub fn active(&self, id: Option<u64>) -> Result<&ActiveScan, String> {
         self.active
             .as_ref()
@@ -271,6 +279,7 @@ fn contains_logical_pointer(display: &DisplayInfo, x: f64, y: f64) -> bool {
 pub struct ToolbarState {
     revision: u64,
     session_id: Option<u64>,
+    scan_mode: ScanMode,
     phase: &'static str,
     message: String,
     can_rescan: bool,
@@ -309,6 +318,7 @@ pub fn get_toolbar_state(app: AppHandle) -> Result<ToolbarState, String> {
     Ok(ToolbarState {
         revision: session.revision,
         session_id: session.active.as_ref().map(|scan| scan.id),
+        scan_mode: session.scan_mode(),
         phase: if session.phase.is_empty() {
             "idle"
         } else {
@@ -792,6 +802,34 @@ mod tests {
             scale_factor: 1.5,
         }
     }
+    #[test]
+    fn toolbar_mode_tracks_active_scan_then_retained_result_and_rescan() {
+        let mut state = Session::default();
+        assert_eq!(state.scan_mode(), ScanMode::SelectedArea);
+        let whole = state
+            .begin(ScanMode::WholeScreen, display(), None, vec![])
+            .unwrap();
+        assert_eq!(state.scan_mode(), ScanMode::WholeScreen);
+        assert!(state
+            .begin(ScanMode::SelectedArea, display(), None, vec![])
+            .is_err());
+        assert_eq!(state.scan_mode(), ScanMode::WholeScreen);
+        state.captured(whole, metadata()).unwrap();
+        state.complete(whole, true).unwrap();
+        assert_eq!(state.scan_mode(), ScanMode::WholeScreen);
+        let area = state
+            .begin(ScanMode::SelectedArea, display(), None, vec![])
+            .unwrap();
+        assert_eq!(state.scan_mode(), ScanMode::SelectedArea);
+        state.stop(Some(area), "", false).unwrap();
+        assert_eq!(state.scan_mode(), ScanMode::WholeScreen);
+        let spec = state.last_scan.clone().unwrap();
+        state
+            .begin(spec.mode, display(), Some(spec), vec![])
+            .unwrap();
+        assert_eq!(state.scan_mode(), ScanMode::WholeScreen);
+    }
+
     #[test]
     fn cancelled_scan_cannot_publish_or_replace_last_success() {
         let mut state = Session::default();

@@ -379,3 +379,32 @@ leading `一`, following the earlier successful white-reader-panel selection.
 Post-fix confirmation of whole-display manual selection is not separately recorded.
 Phase 2 owner approval and Windows/mixed-DPI interactive acceptance remain open;
 no popup phase, installer acceptance or publication is implied.
+
+### Toolbar feedback and compact-layout refinement
+
+The owner requested these Phase 2 refinements before the popup phase: remove the
+automatic status text row, indicate overlay state by icon, highlight the current
+scan mode, put scan progress in its button, and keep compact controls on one row.
+The toolbar now reads native active/retained scan mode, presents an indeterminate
+spinner with phase text inside that button and retains exact-session cancellation
+there. Visibility uses the eye icon and accessible pressed state. Routine messages
+remain screen-reader announcements; warnings expose error/model-setup details only
+on explicit activation, with Escape/focus return.
+
+Compact mode retains Selected Area and Whole Screen as accessible icon buttons,
+Rescan, visibility/status and expand beside the drag handle. Scoped border-box
+controls, a non-wrapping row and sufficient native content width prevent the old
+expand-arrow wrap. Narrow work areas also use the compact form. No capture, OCR,
+dictionary, translation, persistence or popup content behavior was changed.
+
+WebKit inspection of the actual React/CSS with mocked native IPC verified
+520 × 56 expanded and 224 × 48 compact dimensions: controls remained on one row
+and inside the frame. Mode selection, button-contained progress, hidden-state
+icons and requested error details were visually checked. This browser check is
+not native window/input acceptance. The temporary review fixture was removed
+from ignored build output. Final source checks passed 122 frontend tests,
+TypeScript/production Vite build, desktop/document formatting, 50 native tests,
+Cargo formatting and the macOS debug build. The normal command-based development
+app was relaunched with the updated native mode contract for owner review. Native
+visual confirmation of these refinements and Windows/mixed-DPI interactive
+acceptance remain open. Phase 3 remains unstarted.

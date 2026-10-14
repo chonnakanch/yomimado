@@ -121,7 +121,9 @@ dimensions using the actual display scale; do not multiply CSS values by DPI.
 | `--focus-width`       | 2 px             | Visible focus outline, 2 px offset.            |
 | `--motion-fast`       | 120 ms           | Color/fill feedback only.                      |
 
-Toolbar starts around 520 × 56 logical px, collapsed around 112 × 48. These are
+Toolbar starts around 520 × 56 logical px, compact around 224 × 48 after the
+owner's 2026-10-14 refinement. Compact mode retains both scan icons, Rescan,
+overlay visibility/status and expand on one row. These are
 layout targets, not fixed minimums that can clip labels. Popups grow naturally
 until their work-area cap (roughly 70% height), then scroll the details. At narrow
 widths stack reading/metadata below the word, wrap footer actions and retain
@@ -142,11 +144,16 @@ One restrained surface; separate drag handle from buttons. Use short text for
 Selected Area and Whole Screen, with a simple 16–20 px icon where useful.
 Rescan and Hide/Show may use icons with accessible names and focusable tooltips.
 Do not infer meaning from an icon alone. The model-install action belongs in
-Scan & OCR; missing model appears as a compact status/link to that view.
+Scan & OCR; missing models/errors use a warning icon with details and a setup
+link shown only when requested.
 
 Mark overlay visibility with an accessible pressed state and current label.
-Keep collapse/expand operable by keyboard. Busy status (“Capturing…”,
-“Recognizing…”) is a polite live region; errors are alerts. Avoid fake percentages
+The current scan or retained result determines which scan button is pressed and
+accented. Keep collapse/expand operable by keyboard. Busy status (“Capturing…”,
+“Recognizing…”) and an indeterminate spinner appear inside that scan button;
+clicking it cancels its exact active session. Routine status has no visible text
+row, but remains a polite live region; errors are alerts with optional details.
+Stop spinner motion with reduced motion. Avoid fake percentages
 because existing OCR APIs do not expose progress. Overflow is anchored to the
 toolbar, clamped to work area, supports keyboard dismissal and excludes the drag
 region. Quit remains discoverable after expanding the toolbar.

@@ -8,6 +8,7 @@ import "./toolbar.css";
 export interface ToolbarState {
   revision: number;
   sessionId: number | null;
+  scanMode: ScanMode;
   phase:
     | "idle"
     | "selecting"
@@ -27,6 +28,12 @@ export interface ToolbarState {
 }
 
 const collapseKey = "yomimado.toolbar.collapsed.v1";
+const progressLabels: Partial<Record<ToolbarState["phase"], string>> = {
+  selecting: "Selecting…",
+  capturing: "Capturing…",
+  recognizing: "Recognizing…",
+  reviewing: "Reviewing…",
+};
 
 export function FloatingToolbar() {
   const [state, setState] = useState<ToolbarState | null>(null);
@@ -40,10 +47,23 @@ export function FloatingToolbar() {
   });
   const [menuOpen, setMenuOpen] = useState(false);
   const [pending, setPending] = useState(false);
+  const [pendingScanMode, setPendingScanMode] = useState<ScanMode | null>(null);
+  const [feedbackOpen, setFeedbackOpen] = useState(false);
+  const statusButton = useRef<HTMLButtonElement>(null);
+  const feedback = useRef<HTMLDivElement>(null);
   const content = useRef<HTMLDivElement>(null);
   const menuButton = useRef<HTMLButtonElement>(null);
   const menu = useRef<HTMLDivElement>(null);
   const busy = pending || state?.sessionId != null;
+  const compact = collapsed || (state?.availableWidth ?? 520) < 520;
+  const scanBusy = pendingScanMode !== null || state?.sessionId != null;
+  const scanMode =
+    state?.sessionId != null
+      ? (state.scanMode ?? "selectedArea")
+      : (pendingScanMode ?? state?.scanMode ?? "selectedArea");
+  const progress = scanBusy
+    ? (progressLabels[state?.phase ?? "idle"] ?? "Scanning…")
+    : null;
   const missingModel =
     state?.detectorModel.required && !state.detectorModel.installed;
 
@@ -80,7 +100,10 @@ export function FloatingToolbar() {
           refresh();
         }
       });
-    const blur = () => setMenuOpen(false);
+    const blur = () => {
+      setMenuOpen(false);
+      setFeedbackOpen(false);
+    };
     window.addEventListener("focus", refresh);
     window.addEventListener("blur", blur);
     return () => {
@@ -112,14 +135,7 @@ export function FloatingToolbar() {
     observer?.observe(element);
     resize();
     return () => observer?.disconnect();
-  }, [
-    collapsed,
-    menuOpen,
-    error,
-    state?.message,
-    state?.sessionId,
-    missingModel,
-  ]);
+  }, [compact, menuOpen, feedbackOpen, error, state?.sessionId, missingModel]);
 
   useEffect(() => {
     if (menuOpen)
@@ -128,10 +144,16 @@ export function FloatingToolbar() {
         ?.focus();
   }, [menuOpen]);
 
-  const run = async (command: string, args?: Record<string, unknown>) => {
+  const run = async (
+    command: string,
+    args?: Record<string, unknown>,
+    mode?: ScanMode,
+  ) => {
     setError(null);
     setPending(true);
+    setPendingScanMode(mode ?? null);
     setMenuOpen(false);
+    setFeedbackOpen(false);
     try {
       await invoke(command, args);
       const snapshot = await invoke<ToolbarState>("get_toolbar_state");
@@ -144,6 +166,7 @@ export function FloatingToolbar() {
       setError(String(e).replace(/^Error: /, ""));
     } finally {
       setPending(false);
+      setPendingScanMode(null);
     }
   };
 
@@ -151,6 +174,7 @@ export function FloatingToolbar() {
     const next = !collapsed;
     setCollapsed(next);
     setMenuOpen(false);
+    setFeedbackOpen(false);
     try {
       window.localStorage.setItem(collapseKey, String(next));
     } catch {
@@ -190,28 +214,41 @@ export function FloatingToolbar() {
     buttons[next]?.focus();
   };
   const scan = (mode: ScanMode) => {
-    void run("start_toolbar_scan", { mode });
+    void run("start_toolbar_scan", { mode }, mode);
   };
   const status =
     error ??
     (missingModel
       ? "Install the detector model in Scan & OCR to start reading."
       : (state?.message ?? "Connecting to YomiMado…"));
-  const showStatus =
+  const attention =
     !!error ||
-    missingModel ||
-    busy ||
+    !!missingModel ||
     state?.phase === "error" ||
-    state?.phase === "noText" ||
-    state?.message.startsWith("Overlay restored") ||
-    state?.message.startsWith("OCR overlays hidden");
+    state?.phase === "noText";
+  useEffect(() => {
+    if (!attention) setFeedbackOpen(false);
+  }, [attention]);
+  useEffect(() => {
+    if (feedbackOpen)
+      (
+        feedback.current?.querySelector<HTMLButtonElement>(
+          "button:not(:disabled)",
+        ) ?? feedback.current
+      )?.focus();
+  }, [feedbackOpen]);
+  const cancelScan =
+    state?.sessionId != null
+      ? () =>
+          void run("cancel_capture_selector", { sessionId: state.sessionId })
+      : undefined;
 
   return (
     <div
-      className={`floating-toolbar${collapsed ? " collapsed" : ""}`}
+      className={`floating-toolbar${collapsed ? " collapsed" : ""}${compact ? " compact" : ""}`}
       ref={content}
       style={{
-        width: collapsed ? 112 : Math.min(520, state?.availableWidth ?? 520),
+        width: Math.min(compact ? 224 : 520, state?.availableWidth ?? 520),
       }}
     >
       <div
@@ -243,25 +280,28 @@ export function FloatingToolbar() {
         >
           ⠿
         </button>
-        {!collapsed && (
-          <>
-            <span className="toolbar-brand" aria-label="YomiMado">
-              <ToolbarIcon name="book" />
-            </span>
-            <ScanModeButton
-              mode="selectedArea"
-              disabled={!state || busy || !!missingModel}
-              displayName={state?.displayName ?? "current monitor"}
-              onScan={scan}
-            />
-            <ScanModeButton
-              mode="wholeScreen"
-              disabled={!state || busy || !!missingModel}
-              displayName={state?.displayName ?? "current monitor"}
-              onScan={scan}
-            />
-          </>
+        {!compact && (
+          <span className="toolbar-brand" aria-label="YomiMado">
+            <ToolbarIcon name="book" />
+          </span>
         )}
+        {(["selectedArea", "wholeScreen"] as const).map((mode) => {
+          const onCancel =
+            scanBusy && mode === scanMode ? cancelScan : undefined;
+          return (
+            <ScanModeButton
+              key={mode}
+              mode={mode}
+              selected={mode === scanMode}
+              compact={compact}
+              loadingLabel={mode === scanMode ? progress : null}
+              disabled={!state || ((busy || !!missingModel) && !onCancel)}
+              displayName={state?.displayName ?? "current monitor"}
+              onScan={scan}
+              onCancel={onCancel}
+            />
+          );
+        })}
         <button
           className="utility-button utility-icon-button"
           aria-label="Rescan"
@@ -271,43 +311,72 @@ export function FloatingToolbar() {
               : "Scan an area or screen first"
           }
           disabled={!state?.canRescan || busy || !!missingModel}
-          onClick={() => void run("rescan")}
+          onClick={() =>
+            void run("rescan", undefined, state?.scanMode ?? "selectedArea")
+          }
         >
           <ToolbarIcon name="rescan" />
         </button>
-        {!collapsed && (
-          <>
-            <button
-              className="utility-button utility-icon-button"
-              aria-label={
-                state?.overlayVisible
-                  ? "Hide OCR overlays"
-                  : "Show OCR overlays"
-              }
-              aria-pressed={state?.overlayVisible ?? false}
-              disabled={!state?.hasOverlay || busy}
-              title="Show or hide the last OCR result without scanning"
-              onClick={() =>
-                void run("set_overlay_visibility", {
-                  visible: !state?.overlayVisible,
-                })
-              }
-            >
-              <ToolbarIcon
-                name={state?.overlayVisible ? "visible" : "hidden"}
-              />
-            </button>
-            <button
-              className="utility-button utility-icon-button"
-              aria-label="More actions"
-              aria-expanded={menuOpen}
-              aria-controls="toolbar-menu"
-              ref={menuButton}
-              onClick={() => setMenuOpen((previous) => !previous)}
-            >
-              <ToolbarIcon name="menu" />
-            </button>
-          </>
+        <button
+          className={`utility-button utility-icon-button toolbar-overlay-status${state?.overlayVisible ? " is-visible" : ""}${attention ? " needs-attention" : ""}`}
+          aria-label={
+            attention
+              ? "Scan status"
+              : state?.overlayVisible
+                ? "Hide OCR overlays"
+                : "Show OCR overlays"
+          }
+          aria-pressed={
+            attention ? undefined : (state?.overlayVisible ?? false)
+          }
+          aria-expanded={attention ? feedbackOpen : undefined}
+          aria-controls={attention ? "toolbar-feedback" : undefined}
+          disabled={attention ? busy : !state?.hasOverlay || busy}
+          ref={statusButton}
+          title={
+            attention
+              ? `${status} · Click for details`
+              : !state?.hasOverlay
+                ? "No OCR result yet. Scan Japanese text first."
+                : state.overlayVisible
+                  ? "OCR overlays shown · Click to hide"
+                  : "OCR overlays hidden · Click to show"
+          }
+          onClick={() => {
+            if (attention) {
+              setMenuOpen(false);
+              setFeedbackOpen((previous) => !previous);
+            } else {
+              void run("set_overlay_visibility", {
+                visible: !state?.overlayVisible,
+              });
+            }
+          }}
+        >
+          <ToolbarIcon
+            name={
+              attention
+                ? "warning"
+                : state?.overlayVisible
+                  ? "visible"
+                  : "hidden"
+            }
+          />
+        </button>
+        {!compact && (
+          <button
+            className="utility-button utility-icon-button"
+            aria-label="More actions"
+            aria-expanded={menuOpen}
+            aria-controls="toolbar-menu"
+            ref={menuButton}
+            onClick={() => {
+              setFeedbackOpen(false);
+              setMenuOpen((previous) => !previous);
+            }}
+          >
+            <ToolbarIcon name="menu" />
+          </button>
         )}
         <button
           className="utility-button utility-icon-button"
@@ -318,12 +387,29 @@ export function FloatingToolbar() {
           <ToolbarIcon name={collapsed ? "expand" : "collapse"} />
         </button>
       </div>
-      {!collapsed && (
+      <div
+        className="visually-hidden"
+        role={error || state?.phase === "error" ? "alert" : "status"}
+      >
+        {status}
+      </div>
+      {attention && feedbackOpen && (
         <div
-          className={showStatus ? "toolbar-status" : "visually-hidden"}
-          role={error || state?.phase === "error" ? "alert" : "status"}
+          className="toolbar-feedback"
+          id="toolbar-feedback"
+          role="region"
+          aria-label="Scan status details"
+          tabIndex={-1}
+          ref={feedback}
+          onKeyDown={(event) => {
+            if (event.key === "Escape") {
+              event.preventDefault();
+              setFeedbackOpen(false);
+              statusButton.current?.focus();
+            }
+          }}
         >
-          <span>{status}</span>
+          <p>{status}</p>
           {missingModel && (
             <button
               className="toolbar-status-action"
@@ -335,16 +421,17 @@ export function FloatingToolbar() {
               Scan & OCR
             </button>
           )}
-          {state?.sessionId != null && (
+          {state?.hasOverlay && (
             <button
               className="toolbar-status-action"
+              disabled={busy}
               onClick={() =>
-                void run("cancel_capture_selector", {
-                  sessionId: state.sessionId,
+                void run("set_overlay_visibility", {
+                  visible: !state.overlayVisible,
                 })
               }
             >
-              Cancel scan
+              {state.overlayVisible ? "Hide OCR overlays" : "Show OCR overlays"}
             </button>
           )}
         </div>

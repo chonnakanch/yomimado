@@ -13,7 +13,12 @@ monitor without automatic page cropping. **Rescan** takes a new screenshot of
 the last successful area/monitor; it is disabled until there is a successful scan.
 Changed monitor layout/scaling requires a new scan selection. Hide/Show preserves
 results without OCR; rescan if the underlying page changes. The toolbar shows
-scan/cancel/error status; screenshots still stay local.
+the active mode through its highlighted scan button. Scanning shows a spinner
+and phase label inside that button; click it to cancel. The eye icon indicates
+shown/hidden overlays, with no automatic status text row. A warning icon opens
+error/model-setup details when needed; Escape dismisses those details. Compact
+mode keeps both scan-mode icons, Rescan, visibility/status and expand on one row.
+Screenshots still stay local.
 
 `Cmd/Ctrl+Shift+O` selects an area on the monitor under the pointer.
 `Cmd/Ctrl+Shift+S` now means Whole Screen on that monitor. This changes the older

@@ -4,25 +4,45 @@ export type ScanMode = "selectedArea" | "wholeScreen";
 
 export function ScanModeButton({
   mode,
+  selected,
+  compact,
+  loadingLabel,
   disabled,
   displayName,
   onScan,
+  onCancel,
 }: {
   mode: ScanMode;
+  selected: boolean;
+  compact: boolean;
+  loadingLabel: string | null;
   disabled: boolean;
   displayName: string;
   onScan: (mode: ScanMode) => void;
+  onCancel?: () => void;
 }) {
+  const label = mode === "selectedArea" ? "Selected Area" : "Whole Screen";
   return (
     <button
       type="button"
-      className={`utility-button${mode === "selectedArea" ? " utility-button-primary" : ""}`}
+      className={`utility-button toolbar-scan-button${selected ? " utility-button-primary" : ""}${compact ? " utility-icon-button" : ""}`}
+      aria-label={onCancel ? "Cancel scan" : label}
+      aria-pressed={selected}
+      aria-busy={!!loadingLabel}
       disabled={disabled}
-      title={`Scan ${displayName}`}
-      onClick={() => onScan(mode)}
+      title={
+        loadingLabel
+          ? `${label}: ${loadingLabel}${onCancel ? " Click to cancel this scan." : ""}`
+          : `${label} · Scan ${displayName}`
+      }
+      onClick={() => (onCancel ? onCancel() : onScan(mode))}
     >
-      <ToolbarIcon name={mode === "selectedArea" ? "area" : "screen"} />
-      {mode === "selectedArea" ? "Selected Area" : "Whole Screen"}
+      <ToolbarIcon
+        name={
+          loadingLabel ? "loading" : mode === "selectedArea" ? "area" : "screen"
+        }
+      />
+      {!compact && <span>{loadingLabel ?? label}</span>}
     </button>
   );
 }

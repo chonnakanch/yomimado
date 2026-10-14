@@ -221,8 +221,12 @@ Expansion requests must also carry the current token/character identity.
 Expanded toolbar: drag handle, **Selected Area**, **Whole Screen**, **Rescan**,
 **Hide/Show overlays**, overflow and collapse. About 520 × 56 logical px is a
 starting layout, subject to text measurement and platform verification. Collapse
-to an approximately 112 × 48 strip containing a drag handle, expand control and
-Rescan. Always provide a keyboard-expand path and access to Quit via expansion.
+to an approximately 224 × 48 strip containing a drag handle, both scan-mode icons,
+Rescan, overlay visibility/status and expand, following the owner's 2026-10-14
+refinement. Both forms stay on a single row; the current scan/result's mode is
+highlighted, progress appears in that button, and routine status uses its icon
+with accessible announcements. Errors/setup details appear on request from the
+warning icon. Always provide a keyboard-expand path and access to Quit via expansion.
 The native bounds must shrink with the content; an invisible expanded window
 must not intercept the manga. Overflow contains saved collections, settings,
 optional region navigation and Quit. Missing-model status links to Scan & OCR.

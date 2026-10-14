@@ -7,12 +7,15 @@ export type ToolbarIconName =
   | "menu"
   | "expand"
   | "collapse"
-  | "book";
+  | "book"
+  | "loading"
+  | "warning";
 
 /** Small application-owned line icons; no icon/font dependency. */
 export function ToolbarIcon({ name }: { name: ToolbarIconName }) {
   return (
     <svg
+      className={name === "loading" ? "toolbar-loading-icon" : undefined}
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
@@ -21,6 +24,18 @@ export function ToolbarIcon({ name }: { name: ToolbarIconName }) {
       strokeLinejoin="round"
       aria-hidden="true"
     >
+      {name === "loading" && (
+        <>
+          <circle cx="12" cy="12" r="9" opacity="0.25" />
+          <path d="M12 3a9 9 0 0 1 9 9" />
+        </>
+      )}
+      {name === "warning" && (
+        <>
+          <path d="m12 3 10 18H2L12 3Z" />
+          <path d="M12 9v5m0 3v.1" />
+        </>
+      )}
       {name === "area" && <path d="M8 3H3v5m13-5h5v5M3 16v5h5m13-5v5h-5" />}
       {name === "screen" && (
         <>
