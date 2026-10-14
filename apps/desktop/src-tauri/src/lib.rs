@@ -28,6 +28,7 @@ struct AppState {
     overlay: overlay::OverlayStore,
     overlay_input: overlay::input::InputRouter,
     scans: toolbar::ScanStore,
+    toolbar_layout: Mutex<toolbar::ToolbarLayout>,
     service: Mutex<Option<Child>>,
     #[cfg(target_os = "windows")]
     windows_service: Mutex<Option<windows_service::Service>>,
@@ -837,6 +838,7 @@ pub fn run() {
                 overlay: overlay::OverlayStore::default(),
                 overlay_input: overlay::input::InputRouter::default(),
                 scans: toolbar::ScanStore::default(),
+                toolbar_layout: Mutex::new(toolbar::ToolbarLayout::default()),
                 service: Mutex::new(service),
                 #[cfg(target_os = "windows")]
                 windows_service: Mutex::new(windows_service),

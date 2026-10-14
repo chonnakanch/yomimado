@@ -28,6 +28,14 @@ export interface ToolbarState {
 }
 
 const collapseKey = "yomimado.toolbar.collapsed.v1";
+interface ToolbarLayout {
+  rowOffset: number;
+  rowHeight: number;
+  totalHeight: number;
+  panelAbove: boolean;
+  panelMaxExtent: number;
+  panelOpen: boolean;
+}
 const progressLabels: Partial<Record<ToolbarState["phase"], string>> = {
   selecting: "Selecting…",
   capturing: "Capturing…",
@@ -52,10 +60,21 @@ export function FloatingToolbar() {
   const statusButton = useRef<HTMLButtonElement>(null);
   const feedback = useRef<HTMLDivElement>(null);
   const content = useRef<HTMLDivElement>(null);
+  const row = useRef<HTMLDivElement>(null);
+  const resizeQueue = useRef<Promise<void>>(Promise.resolve());
+  const resizeGeneration = useRef(0);
+  const [layout, setLayout] = useState<ToolbarLayout>({
+    rowOffset: 0,
+    rowHeight: 56,
+    totalHeight: 56,
+    panelAbove: false,
+    panelMaxExtent: 600,
+    panelOpen: false,
+  });
   const menuButton = useRef<HTMLButtonElement>(null);
   const menu = useRef<HTMLDivElement>(null);
   const busy = pending || state?.sessionId != null;
-  const compact = collapsed || (state?.availableWidth ?? 520) < 520;
+  const compact = collapsed || (state?.availableWidth ?? 536) < 536;
   const scanBusy = pendingScanMode !== null || state?.sessionId != null;
   const scanMode =
     state?.sessionId != null
@@ -118,23 +137,56 @@ export function FloatingToolbar() {
     const element = content.current;
     if (!element) return;
     let lastSize = "";
+    let disposed = false;
     const resize = () => {
-      const { width, height } = element.getBoundingClientRect();
-      if (!width || !height) return;
+      const { width } = element.getBoundingClientRect();
+      const rowHeight = row.current?.getBoundingClientRect().height ?? 0;
+      const panel = menu.current ?? feedback.current;
+      const margins = panel ? getComputedStyle(panel) : null;
+      const gap = margins
+        ? (parseFloat(margins.marginTop) || 0) +
+          (parseFloat(margins.marginBottom) || 0)
+        : 0;
+      const height =
+        rowHeight + (panel ? panel.getBoundingClientRect().height + gap : 0);
+      if (!width || !rowHeight) return;
       const logicalWidth = Math.ceil(width);
       const logicalHeight = Math.ceil(height);
-      const size = `${logicalWidth}:${logicalHeight}`;
+      const logicalRowHeight = Math.ceil(rowHeight);
+      const size = `${logicalWidth}:${logicalHeight}:${logicalRowHeight}`;
       if (size === lastSize) return;
       lastSize = size;
-      void invoke("resize_toolbar", { logicalWidth, logicalHeight }).catch(
-        (e) => setError(String(e)),
-      );
+      const generation = ++resizeGeneration.current;
+      resizeQueue.current = resizeQueue.current.then(async () => {
+        if (disposed || generation !== resizeGeneration.current) return;
+        try {
+          const next = await invoke<Omit<ToolbarLayout, "panelOpen">>(
+            "resize_toolbar",
+            {
+              logicalWidth,
+              logicalHeight,
+              logicalRowHeight,
+            },
+          );
+          if (!disposed && generation === resizeGeneration.current && next) {
+            setLayout({ ...next, panelOpen: menuOpen || feedbackOpen });
+          }
+        } catch (e) {
+          if (!disposed) setError(String(e));
+        }
+      });
     };
     const observer =
       typeof ResizeObserver === "undefined" ? null : new ResizeObserver(resize);
     observer?.observe(element);
+    if (row.current) observer?.observe(row.current);
+    if (menu.current) observer?.observe(menu.current);
+    if (feedback.current) observer?.observe(feedback.current);
     resize();
-    return () => observer?.disconnect();
+    return () => {
+      disposed = true;
+      observer?.disconnect();
+    };
   }, [compact, menuOpen, feedbackOpen, error, state?.sessionId, missingModel]);
 
   useEffect(() => {
@@ -142,7 +194,7 @@ export function FloatingToolbar() {
       menu.current
         ?.querySelector<HTMLButtonElement>("button:not(:disabled)")
         ?.focus();
-  }, [menuOpen]);
+  }, [menuOpen, layout.panelOpen]);
 
   const run = async (
     command: string,
@@ -236,7 +288,7 @@ export function FloatingToolbar() {
           "button:not(:disabled)",
         ) ?? feedback.current
       )?.focus();
-  }, [feedbackOpen]);
+  }, [feedbackOpen, layout.panelOpen]);
   const cancelScan =
     state?.sessionId != null
       ? () =>
@@ -245,14 +297,16 @@ export function FloatingToolbar() {
 
   return (
     <div
-      className={`floating-toolbar${collapsed ? " collapsed" : ""}${compact ? " compact" : ""}`}
+      className={`floating-toolbar${collapsed ? " collapsed" : ""}${compact ? " compact" : ""}${layout.panelAbove ? " panel-above" : ""}`}
       ref={content}
       style={{
-        width: Math.min(compact ? 224 : 520, state?.availableWidth ?? 520),
+        width: Math.min(compact ? 244 : 536, state?.availableWidth ?? 536),
+        minHeight: layout.totalHeight,
       }}
     >
       <div
         className="floating-toolbar-row"
+        ref={row}
         aria-label="YomiMado reading toolbar"
       >
         <button
@@ -260,8 +314,11 @@ export function FloatingToolbar() {
           aria-label="Move toolbar"
           title="Drag to move. Arrow keys move the focused handle."
           onPointerDown={(event) => {
-            if (event.button === 0)
+            if (event.button === 0) {
+              setMenuOpen(false);
+              setFeedbackOpen(false);
               void invoke("drag_toolbar").catch((e) => setError(String(e)));
+            }
           }}
           onKeyDown={(event) => {
             const direction = {
@@ -272,6 +329,8 @@ export function FloatingToolbar() {
             }[event.key];
             if (!direction) return;
             event.preventDefault();
+            setMenuOpen(false);
+            setFeedbackOpen(false);
             void invoke("move_toolbar", {
               dx: direction[0],
               dy: direction[1],
@@ -401,6 +460,12 @@ export function FloatingToolbar() {
           aria-label="Scan status details"
           tabIndex={-1}
           ref={feedback}
+          style={{
+            maxHeight: layout.panelOpen
+              ? Math.min(600, Math.max(0, layout.panelMaxExtent - 4))
+              : 600,
+            visibility: layout.panelOpen ? undefined : "hidden",
+          }}
           onKeyDown={(event) => {
             if (event.key === "Escape") {
               event.preventDefault();
@@ -442,6 +507,12 @@ export function FloatingToolbar() {
           id="toolbar-menu"
           aria-label="More actions"
           ref={menu}
+          style={{
+            maxHeight: layout.panelOpen
+              ? Math.min(600, Math.max(0, layout.panelMaxExtent - 4))
+              : 600,
+            visibility: layout.panelOpen ? undefined : "hidden",
+          }}
           onKeyDown={navigateMenu}
         >
           <button

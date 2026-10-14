@@ -625,3 +625,30 @@ toggle or Quit interception was applied. The temporary custom-control source
 (`243f97e`, verified with 151 frontend and 51 native tests) is removed; the existing
 native hide-on-close handler is retained. Final native-button acceptance after this
 restoration and Windows/mixed-DPI interactive acceptance remain open.
+
+### Toolbar work-area placement and consistent control sizes — implemented for review
+
+The owner reported that opening More actions at the bottom of the screen moved
+the toolbar, and compact/expanded controls changed size. Native placement now
+anchors the visible row separately from the transparent window frame. Panels grow
+below when there is room or above otherwise; close restores the original row
+position. On short work areas, panel height is bounded and the panel scrolls.
+The previous row offset is retained across native resizing, including fractional
+display scaling and negative monitor origins. Resize requests are serialized;
+late responses after menu dismissal cannot restore stale UI placement.
+
+Both forms keep a 56 logical px row and 36 px controls. Expanded width is 536 px;
+compact width is 244 px, retaining both scan icons, Rescan, visibility and Expand
+on one row. Dragging or keyboard movement dismisses panels. Menu/status focus is
+applied after placement, preserving keyboard navigation and Escape focus return.
+
+Verification passes 149 frontend tests, 55 native tests, production frontend and
+macOS native builds, desktop Prettier and Cargo formatting. Native geometry
+regressions cover top/bottom opening and closing at 100%, 125%, 150% and 200% scale,
+negative work-area origins, short work areas and expansion near the right edge.
+WebKit inspection of actual components with mocked native placement at 600 × 480
+confirmed the row stayed at y=404 before, during and after menu opening; both forms
+were 56 px tall and all controls 36 px tall. A 600 × 220 inspection confirmed a
+bounded scrolling menu and keyboard access to the last action. The temporary
+ignored fixture is removed. These browser checks simulate native frame placement;
+owner native-window and Windows/mixed-DPI interactive acceptance remain pending.

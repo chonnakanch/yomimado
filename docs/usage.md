@@ -18,6 +18,9 @@ and phase label inside that button; click it to cancel. The eye icon indicates
 shown/hidden overlays, with no automatic status text row. A warning icon opens
 error/model-setup details when needed; Escape dismisses those details. Compact
 mode keeps both scan-mode icons, Rescan, visibility/status and expand on one row.
+Both toolbar forms keep the same control height. Near the bottom of the work area,
+More actions opens above the toolbar without moving its row. On short screens the
+menu scrolls; Escape closes it and returns focus to More actions.
 Screenshots still stay local.
 
 Choose **More actions → Saved** to open the shared library. Use **Words** and

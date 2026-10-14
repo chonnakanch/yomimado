@@ -19,7 +19,7 @@ const initial: ToolbarState = {
   hasOverlay: false,
   overlayVisible: false,
   displayName: "Left display",
-  availableWidth: 520,
+  availableWidth: 536,
   detectorModel: { required: false, installed: false },
 };
 let container: HTMLDivElement;
@@ -154,10 +154,10 @@ it("shrinks native bounds when collapsed and restores the saved preference", asy
         y: 0,
         top: 0,
         left: 0,
-        right: collapsed ? 224 : 520,
-        bottom: collapsed ? 48 : 56,
-        width: collapsed ? 224 : 520,
-        height: collapsed ? 48 : 56,
+        right: collapsed ? 244 : 536,
+        bottom: 56,
+        width: collapsed ? 244 : 536,
+        height: 56,
         toJSON() {},
       };
     },
@@ -165,8 +165,9 @@ it("shrinks native bounds when collapsed and restores the saved preference", asy
   await mount();
   await act(async () => button("Collapse toolbar").click());
   expect(invoke).toHaveBeenCalledWith("resize_toolbar", {
-    logicalWidth: 224,
-    logicalHeight: 48,
+    logicalWidth: 244,
+    logicalHeight: 56,
+    logicalRowHeight: 56,
   });
   expect(window.localStorage.getItem("yomimado.toolbar.collapsed.v1")).toBe(
     "true",
@@ -341,4 +342,106 @@ it("shows loading in the requested mode while native scan startup is pending", a
   await act(async () => finishStart?.());
   expect(button("Cancel scan").textContent).toContain("Capturing…");
   expect(container.querySelector(".toolbar-feedback")).toBeNull();
+});
+
+const panelLayout = (open: boolean) => ({
+  rowOffset: open ? 160 : 0,
+  rowHeight: 56,
+  totalHeight: open ? 216 : 56,
+  panelAbove: open,
+  panelMaxExtent: 360,
+});
+const measureToolbar = () =>
+  vi
+    .spyOn(HTMLElement.prototype, "getBoundingClientRect")
+    .mockImplementation(function (this: HTMLElement) {
+      const height = this.classList.contains("toolbar-menu") ? 160 : 56;
+      return {
+        x: 0,
+        y: 0,
+        top: 0,
+        left: 0,
+        right: 536,
+        bottom: height,
+        width: 536,
+        height,
+        toJSON() {},
+      };
+    });
+
+it("places overflow above the anchored row and restores its frame on Escape", async () => {
+  measureToolbar();
+  vi.mocked(invoke).mockImplementation(async (command, args) =>
+    command === "resize_toolbar"
+      ? panelLayout((args as { logicalHeight: number }).logicalHeight > 56)
+      : command === "get_toolbar_state"
+        ? snapshot
+        : undefined,
+  );
+  await mount();
+  await act(async () => button("More actions").click());
+  expect(
+    container
+      .querySelector(".floating-toolbar")
+      ?.classList.contains("panel-above"),
+  ).toBe(true);
+  expect(
+    container.querySelector<HTMLElement>(".toolbar-menu")?.style.visibility,
+  ).not.toBe("hidden");
+  expect(invoke).toHaveBeenCalledWith("resize_toolbar", {
+    logicalWidth: 536,
+    logicalHeight: 216,
+    logicalRowHeight: 56,
+  });
+  await act(async () =>
+    button("Saved").dispatchEvent(
+      new KeyboardEvent("keydown", { key: "Escape", bubbles: true }),
+    ),
+  );
+  expect(
+    container
+      .querySelector(".floating-toolbar")
+      ?.classList.contains("panel-above"),
+  ).toBe(false);
+  expect(
+    container.querySelector<HTMLElement>(".floating-toolbar")?.style.minHeight,
+  ).toBe("56px");
+  expect(document.activeElement).toBe(button("More actions"));
+});
+
+it("ignores a pending menu placement after Escape and serializes the frame restoration", async () => {
+  measureToolbar();
+  let finish!: (value: ReturnType<typeof panelLayout>) => void;
+  vi.mocked(invoke).mockImplementation(async (command, args) => {
+    if (command === "get_toolbar_state") return snapshot;
+    if (command === "resize_toolbar") {
+      if ((args as { logicalHeight: number }).logicalHeight > 56)
+        return new Promise((resolve) => {
+          finish = resolve;
+        });
+      return panelLayout(false);
+    }
+  });
+  await mount();
+  await act(async () => button("More actions").click());
+  await act(async () =>
+    button("Saved").dispatchEvent(
+      new KeyboardEvent("keydown", { key: "Escape", bubbles: true }),
+    ),
+  );
+  await act(async () => finish(panelLayout(true)));
+  expect(container.querySelector(".toolbar-menu")).toBeNull();
+  expect(
+    container
+      .querySelector(".floating-toolbar")
+      ?.classList.contains("panel-above"),
+  ).toBe(false);
+  const resizeCalls = vi
+    .mocked(invoke)
+    .mock.calls.filter(([command]) => command === "resize_toolbar");
+  expect(resizeCalls.at(-1)?.[1]).toEqual({
+    logicalWidth: 536,
+    logicalHeight: 56,
+    logicalRowHeight: 56,
+  });
 });

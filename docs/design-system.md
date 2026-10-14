@@ -124,7 +124,7 @@ dimensions using the actual display scale; do not multiply CSS values by DPI.
 | `--focus-width`       | 2 px             | Visible focus outline, 2 px offset.            |
 | `--motion-fast`       | 120 ms           | Color/fill feedback only.                      |
 
-Toolbar starts around 520 × 56 logical px, compact around 224 × 48 after the
+Toolbar starts around 536 × 56 logical px, compact around 244 × 56 after the
 owner's 2026-10-14 refinement. Compact mode retains both scan icons, Rescan,
 overlay visibility/status and expand on one row. These are
 layout targets, not fixed minimums that can clip labels. Popups grow naturally
@@ -132,6 +132,11 @@ until their work-area cap (roughly 70% height), then scroll the details. At narr
 widths stack reading/metadata below the word, wrap footer actions and retain
 Japanese type size. Clamp native positions to actual work area with a 12 logical
 px screen inset and 8 logical px anchor gap, reusing tested placement behavior.
+
+Both toolbar forms retain a 56 px row and 36 px controls; collapsing changes width
+and labels rather than control height. Overflow and status details open below when
+space permits, otherwise above. Keep the visible toolbar row anchored when those
+panels open or close. Bound and scroll panels on short work areas.
 
 Use one quiet shadow for popup/menu/toolbar where safe; do not add a native
 Windows overlay shadow that shifts the geometry. Surface borders are 1 px;

@@ -221,9 +221,9 @@ Expansion requests must also carry the current token/character identity.
 ### Floating toolbar and two scan modes
 
 Expanded toolbar: drag handle, **Selected Area**, **Whole Screen**, **Rescan**,
-**Hide/Show overlays**, overflow and collapse. About 520 × 56 logical px is a
+**Hide/Show overlays**, overflow and collapse. About 536 × 56 logical px is a
 starting layout, subject to text measurement and platform verification. Collapse
-to an approximately 224 × 48 strip containing a drag handle, both scan-mode icons,
+to an approximately 244 × 56 strip containing a drag handle, both scan-mode icons,
 Rescan, overlay visibility/status and expand, following the owner's 2026-10-14
 refinement. Both forms stay on a single row; the current scan/result's mode is
 highlighted, progress appears in that button, and routine status uses its icon
@@ -231,7 +231,10 @@ with accessible announcements. Errors/setup details appear on request from the
 warning icon. Always provide a keyboard-expand path and access to Quit via expansion.
 The native bounds must shrink with the content; an invisible expanded window
 must not intercept the manga. Overflow contains saved collections, settings,
-optional region navigation and Quit. Missing-model status links to Scan & OCR.
+sources/licenses and Quit. Missing-model status links to Scan & OCR.
+Both forms retain 36 px controls and a 56 px row. Overflow and status details grow
+above when there is insufficient room below, keeping the visible row anchored.
+Bound panel height to the actual work area and allow scrolling on short screens.
 
 Define the target explicitly: toolbar buttons scan the monitor containing the
 toolbar; global capture shortcuts target the monitor under the pointer. Display

@@ -316,7 +316,7 @@ pub fn get_toolbar_state(app: AppHandle) -> Result<ToolbarState, String> {
                 - 2.0 * SCREEN_INSET)
                 .max(112.0)
         })
-        .unwrap_or(520.0);
+        .unwrap_or(536.0);
     let display_name = session
         .active
         .as_ref()
@@ -636,16 +636,61 @@ fn clamped_position(
     )
 }
 
+#[derive(Clone, Copy, Debug, Default, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ToolbarLayout {
+    row_offset: f64,
+    row_height: f64,
+    total_height: f64,
+    panel_above: bool,
+    panel_max_extent: f64,
+}
+
+/// Keep the visible row anchored; only the transparent native frame grows upward.
+fn toolbar_frame(
+    anchor: (f64, f64),
+    width: f64,
+    row_height: f64,
+    panel_extent: f64,
+    area: Rectangle,
+    scale: f64,
+) -> ((i32, i32), ToolbarLayout) {
+    let row_pixels = (row_height * scale).ceil().min(area.height);
+    let (x, row_y) = clamped_position(anchor.0, anchor.1, width, row_pixels, area, scale);
+    let above = (f64::from(row_y) - area.y - SCREEN_INSET * scale).max(0.0);
+    let below =
+        (area.y + area.height - SCREEN_INSET * scale - f64::from(row_y) - row_pixels).max(0.0);
+    let panel_pixels = (panel_extent * scale).ceil();
+    let panel_above = panel_pixels > below && above > below;
+    let available = if panel_above { above } else { below };
+    let extent = panel_pixels.min(available).floor();
+    let offset = if panel_above { extent } else { 0.0 };
+    (
+        (x, (f64::from(row_y) - offset).round() as i32),
+        ToolbarLayout {
+            row_offset: offset / scale,
+            row_height: row_pixels / scale,
+            total_height: (row_pixels + extent) / scale,
+            panel_above,
+            panel_max_extent: available / scale,
+        },
+    )
+}
+
 #[tauri::command(async)]
 pub fn resize_toolbar(
     app: AppHandle,
     logical_width: f64,
     logical_height: f64,
-) -> Result<(), String> {
+    logical_row_height: f64,
+) -> Result<ToolbarLayout, String> {
     if !logical_width.is_finite()
         || !logical_height.is_finite()
         || !(80.0..=900.0).contains(&logical_width)
         || !(40.0..=700.0).contains(&logical_height)
+        || !logical_row_height.is_finite()
+        || !(40.0..=100.0).contains(&logical_row_height)
+        || logical_row_height > logical_height
     {
         return Err("Invalid toolbar dimensions".into());
     }
@@ -665,22 +710,31 @@ pub fn resize_toolbar(
         height: f64::from(work.size.height),
     };
     let width = (logical_width * scale).ceil().min(area.width);
-    let height = (logical_height * scale).ceil().min(area.height);
     let position = window.outer_position().map_err(|e| e.to_string())?;
-    let (x, y) = clamped_position(
-        f64::from(position.x),
-        f64::from(position.y),
+    let state = app.state::<crate::AppState>();
+    let mut previous = state.toolbar_layout.lock().map_err(|e| e.to_string())?;
+    let ((x, y), layout) = toolbar_frame(
+        (
+            f64::from(position.x),
+            f64::from(position.y) + previous.row_offset * scale,
+        ),
         width,
-        height,
+        logical_row_height,
+        logical_height - logical_row_height,
         area,
         scale,
     );
     window
-        .set_size(PhysicalSize::new(width as u32, height as u32))
+        .set_size(PhysicalSize::new(
+            width as u32,
+            (layout.total_height * scale).round() as u32,
+        ))
         .map_err(|e| e.to_string())?;
     window
         .set_position(PhysicalPosition::new(x, y))
-        .map_err(|e| e.to_string())
+        .map_err(|e| e.to_string())?;
+    *previous = layout;
+    Ok(layout)
 }
 
 #[tauri::command(async)]
@@ -703,7 +757,14 @@ pub fn move_toolbar(app: AppHandle, dx: f64, dy: f64) -> Result<(), String> {
         .inner_size()
         .map_err(|e| e.to_string())?
         .to_logical::<f64>(scale);
-    resize_toolbar(app, size.width, size.height)
+    let row_height = app
+        .state::<crate::AppState>()
+        .toolbar_layout
+        .lock()
+        .map_err(|e| e.to_string())?
+        .row_height
+        .max(40.0);
+    resize_toolbar(app, size.width, size.height, row_height).map(|_| ())
 }
 
 #[tauri::command(async)]
@@ -762,7 +823,7 @@ pub fn setup(app: &AppHandle) -> Result<(), String> {
     window
         .set_size(LogicalSize::new(560.0, 56.0))
         .map_err(|e| e.to_string())?;
-    resize_toolbar(app.clone(), 560.0, 56.0)
+    resize_toolbar(app.clone(), 560.0, 56.0, 56.0).map(|_| ())
 }
 
 #[cfg(test)]
@@ -974,5 +1035,79 @@ mod tests {
             clamped_position(-3000.0, -100.0, 168.0, 72.0, area, 1.5),
             (-1902, 48)
         );
+    }
+
+    #[test]
+    fn opening_and_closing_panels_preserves_the_row_at_both_screen_edges() {
+        let area = Rectangle {
+            x: -1920.0,
+            y: 30.0,
+            width: 1920.0,
+            height: 1000.0,
+        };
+        for scale in [1.0, 1.25, 1.5, 2.0] {
+            for bottom in [false, true] {
+                let anchor = (
+                    area.x + 20.0 * scale,
+                    if bottom {
+                        area.y + area.height - (SCREEN_INSET + 56.0) * scale
+                    } else {
+                        area.y + SCREEN_INSET * scale
+                    },
+                );
+                let (closed, _) = toolbar_frame(anchor, 536.0 * scale, 56.0, 0.0, area, scale);
+                let (opened, layout) =
+                    toolbar_frame(anchor, 536.0 * scale, 56.0, 180.0, area, scale);
+                assert_eq!(layout.panel_above, bottom);
+                assert_eq!(
+                    f64::from(opened.1) + layout.row_offset * scale,
+                    f64::from(closed.1)
+                );
+                let restored_anchor = (
+                    f64::from(opened.0),
+                    f64::from(opened.1) + layout.row_offset * scale,
+                );
+                let (restored, _) =
+                    toolbar_frame(restored_anchor, 536.0 * scale, 56.0, 0.0, area, scale);
+                assert_eq!(restored, closed);
+            }
+        }
+    }
+
+    #[test]
+    fn short_work_areas_bound_panel_height_without_moving_the_row() {
+        let area = Rectangle {
+            x: 0.0,
+            y: 0.0,
+            width: 900.0,
+            height: 220.0,
+        };
+        let (position, layout) = toolbar_frame((40.0, 140.0), 536.0, 56.0, 600.0, area, 1.0);
+        assert!(layout.panel_above);
+        assert_eq!(f64::from(position.1) + layout.row_offset, 140.0);
+        assert_eq!(layout.panel_max_extent, 128.0);
+        assert_eq!(layout.total_height, 184.0);
+    }
+
+    #[test]
+    fn expanding_changes_width_without_changing_the_row_height_or_vertical_anchor() {
+        let area = Rectangle {
+            x: 0.0,
+            y: 0.0,
+            width: 1440.0,
+            height: 900.0,
+        };
+        let (compact, compact_layout) = toolbar_frame((1100.0, 832.0), 244.0, 56.0, 0.0, area, 1.0);
+        let (expanded, expanded_layout) = toolbar_frame(
+            (f64::from(compact.0), f64::from(compact.1)),
+            536.0,
+            56.0,
+            0.0,
+            area,
+            1.0,
+        );
+        assert_eq!(compact.1, expanded.1);
+        assert_eq!(compact_layout.row_height, expanded_layout.row_height);
+        assert!(f64::from(expanded.0) + 536.0 <= area.width - SCREEN_INSET);
     }
 }
