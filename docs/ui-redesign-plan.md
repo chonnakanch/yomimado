@@ -292,10 +292,10 @@ hit-test API; multiple per-region webviews are not the default design. The
 adapter choice remains an implementation investigation, with pass-through a
 blocking acceptance requirement, not a claimed existing capability.
 
-Keyboard access must remain available even if the region layer is click-through:
-offer an explicit Focus regions action in overflow, a focused region navigator,
-and Enter to open it. This is keyboard navigation, not automatic panel reading
-order. Give SVG regions labels, focus/selection semantics and Enter/Space
+The original Phase 2 keyboard entry used a Focus regions overflow action. The owner
+requested removal of that menu item on 2026-10-14; the underlying region navigator
+and native focus handling remain. This is keyboard navigation, not automatic panel
+reading order. Give SVG regions labels, focus/selection semantics and Enter/Space
 activation. Optional estimated-order controls retain their setting and label.
 Escape closes the focused popup; Escape in region navigation hides the overlay.
 Do not register a global Escape that would disrupt the reader.

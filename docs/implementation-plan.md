@@ -563,7 +563,7 @@ extended to the two new labels. No OCR/geometry/dictionary/translation/storage/
 dependency/version or installer behavior was changed. Native Windows/mixed-DPI runtime acceptance remains
 open, including current Settings lifecycle; automated native builds do not certify it.
 
-Local verification passed 148 frontend tests in 20 files, TypeScript/production
+Window-separation verification passed 148 frontend tests in 20 files, TypeScript/production
 Vite build, full desktop Prettier, 52 native tests, Cargo formatting and macOS debug
 build/startup. Behavior coverage includes category routes and keyboard navigation,
 reading preference persistence/failure/retry, status retry/old-response rejection,
@@ -577,6 +577,12 @@ Saved/Sources rendering, Settings category navigation, distinct menu destination
 collection aliases, and inclusion of each destination in native close/capture policy.
 The normal command-based app is open for review; simultaneous-window and native
 close/reopen acceptance of this separation remains pending.
+
+The owner also requested removal of the shared instructional footer and the
+**Focus regions** overflow item. More actions now contains Saved, Settings,
+Sources & licenses and Quit. Native region focus/navigation handling is retained;
+help text no longer directs users to the removed menu action. The menu follow-up
+passes 17 toolbar/overlay tests, TypeScript/production build and desktop Prettier.
 
 - [ ] Owner acceptance of Phase 5 layout and secondary-window close/reopen behavior.
 - [ ] Windows/mixed-DPI interactive acceptance, including Quit/service cleanup.

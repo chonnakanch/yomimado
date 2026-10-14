@@ -445,12 +445,6 @@ export function FloatingToolbar() {
           onKeyDown={navigateMenu}
         >
           <button
-            disabled={busy || !state?.hasOverlay || !state.overlayVisible}
-            onClick={() => void run("focus_ocr_regions")}
-          >
-            Focus regions
-          </button>
-          <button
             disabled={busy}
             onClick={() => void run("show_secondary_window", { view: "saved" })}
           >

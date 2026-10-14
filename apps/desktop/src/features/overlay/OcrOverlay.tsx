@@ -325,7 +325,7 @@ export function OcrOverlay() {
       <p className="visually-hidden" role="status">
         {selectedRegion
           ? regionLabel(selectedRegion, state.engine === "demo")
-          : "Activate Focus regions from the toolbar for keyboard access."}
+          : "Select a region to open its learning popup."}
       </p>
       {popupError && <div className="overlay-error">{popupError}</div>}
       <svg

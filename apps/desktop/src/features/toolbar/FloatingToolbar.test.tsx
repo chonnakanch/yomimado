@@ -213,16 +213,6 @@ it("supports keyboard menu navigation, Escape focus return, movement and listene
   root = createRoot(container);
 });
 
-it("offers region focus only for a visible result and invokes native keyboard entry", async () => {
-  await mount();
-  await act(async () => button("More actions").click());
-  expect(button("Focus regions").disabled).toBe(true);
-  await update({ revision: 2, hasOverlay: true, overlayVisible: true });
-  expect(button("Focus regions").disabled).toBe(false);
-  await act(async () => button("Focus regions").click());
-  expect(invoke).toHaveBeenCalledWith("focus_ocr_regions", undefined);
-});
-
 it("opens both saved collections through one Saved menu entry", async () => {
   await mount();
   await act(async () => button("More actions").click());

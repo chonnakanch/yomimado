@@ -164,14 +164,11 @@ Platform-specific coverage and remaining checks are recorded in the
 See [development setup](development.md) for local models and dictionaries, or
 the [release checklist](desktop-release.md) for packaged candidates.
 
-### Development OCR region keyboard access (Phase 2)
+### Development OCR overlays
 
-With an OCR result visible, choose **More actions → Focus regions** on the floating
-toolbar. Arrow keys move through detected regions; Home/End select the first/last.
-Enter or Space opens the existing learning popup. Escape from a popup opened this
-way returns to that region; Escape in region navigation hides the overlay and
-retains its result. **Show OCR overlays** restores it without OCR. The optional
-estimated manga reading-order setting remains separate from this keyboard navigation.
+Click a detected region to open its learning popup. **Show OCR overlays** restores
+a hidden result without OCR. The optional estimated manga reading-order setting
+remains separate from region selection.
 
 Normal outlines are orange; the selected region is blue. Dashed regions indicate
 review, approximate geometry or an explicitly labeled demo boundary. Review guidance
