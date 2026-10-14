@@ -14,7 +14,7 @@
     "windows": [
       {
         "label": "main",
-        "title": "YomiMado",
+        "title": "YomiMado — Settings",
         "width": 700,
         "height": 480,
         "resizable": true,

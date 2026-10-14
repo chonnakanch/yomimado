@@ -40,21 +40,22 @@ it("supports keyboard categories and opens Reading directly without checking the
   expect(reading.getAttribute("aria-selected")).toBe("true");
   await act(async () =>
     reading.dispatchEvent(
-      new KeyboardEvent("keydown", { key: "End", bubbles: true }),
+      new KeyboardEvent("keydown", { key: "Home", bubbles: true }),
     ),
   );
-  expect(document.activeElement).toBe(button("About / Sources"));
-  expect(button("About / Sources").tabIndex).toBe(0);
+  expect(document.activeElement).toBe(button("Scan & OCR"));
+  expect(button("Scan & OCR").tabIndex).toBe(0);
   expect(reading.tabIndex).toBe(-1);
   expect(
     container.querySelector<HTMLElement>("#settings-panel-reading")?.hidden,
   ).toBe(true);
   await act(async () =>
-    button("About / Sources").dispatchEvent(
-      new KeyboardEvent("keydown", { key: "ArrowRight", bubbles: true }),
+    button("Scan & OCR").dispatchEvent(
+      new KeyboardEvent("keydown", { key: "ArrowLeft", bubbles: true }),
     ),
   );
-  expect(document.activeElement).toBe(button("Scan & OCR"));
+  expect(document.activeElement).toBe(reading);
+  expect(button("About / Sources")).toBeUndefined();
   expect(invoke).toHaveBeenCalledWith("detector_model_status");
 });
 

@@ -67,14 +67,9 @@ it("opens Scan & OCR by default and leaves capture on the toolbar", async () => 
 it("routes Sources directly to attribution and packaged notices", async () => {
   window.history.replaceState({}, "", "/?view=sources");
   await act(async () => root.render(<App />));
-  expect(
-    container
-      .querySelector("#settings-tab-about")
-      ?.getAttribute("aria-selected"),
-  ).toBe("true");
-  expect(
-    container.querySelector<HTMLElement>("#settings-panel-about")?.hidden,
-  ).toBe(false);
+  expect(container.querySelector("h1")?.textContent).toBe("Sources & licenses");
+  expect(container.querySelector(".settings-window")).toBeNull();
+  expect(container.querySelector(".saved-library")).toBeNull();
   expect(container.textContent).toContain("JMdict and KANJIDIC2");
   expect(container.textContent).toContain("Electronic Dictionary Research");
   expect(container.textContent).toContain("ocr/notices");
@@ -105,13 +100,12 @@ it("shows saved words and removes one only after confirmation", async () => {
   const confirm = vi.fn().mockReturnValue(false);
   vi.stubGlobal("confirm", confirm);
 
+  window.history.replaceState({}, "", "/?view=saved");
   await act(async () => root.render(<App />));
-  expect(fetch).not.toHaveBeenCalled();
-  await act(async () => {
-    Array.from(container.querySelectorAll("button"))
-      .find((button) => button.textContent === "Saved")!
-      .click();
-  });
+  expect(container.querySelector(".settings-window")).toBeNull();
+  expect(
+    container.querySelector('nav[aria-label="Library and settings"]'),
+  ).toBeNull();
   expect(container.textContent).toContain("今日");
   expect(container.textContent).toContain("today");
   expect(container.textContent).toContain("今日はいい日だ。");
@@ -161,13 +155,12 @@ it("shows saved sentences and removes one only after confirmation", async () => 
   const confirm = vi.fn().mockReturnValue(false);
   vi.stubGlobal("confirm", confirm);
 
+  window.history.replaceState({}, "", "/?view=saved");
   await act(async () => root.render(<App />));
-  expect(fetch).not.toHaveBeenCalled();
-  await act(async () => {
-    Array.from(container.querySelectorAll("button"))
-      .find((button) => button.textContent === "Saved")!
-      .click();
-  });
+  expect(container.querySelector(".settings-window")).toBeNull();
+  expect(
+    container.querySelector('nav[aria-label="Library and settings"]'),
+  ).toBeNull();
   await act(async () =>
     container.querySelector<HTMLButtonElement>("#saved-tab-sentences")!.click(),
   );
@@ -274,7 +267,8 @@ it("opens the grouped library and switches panels using keyboard tabs", async ()
   expect(document.activeElement).toBe(words);
 });
 
-it("preserves independent collection errors and refreshes on reopening", async () => {
+it("preserves independent collection errors and refreshes when returning to a collection", async () => {
+  window.history.replaceState({}, "", "/?view=saved");
   const fetch = vi.fn((url: string) =>
     Promise.resolve(
       url.endsWith("/vocabulary")
@@ -292,7 +286,6 @@ it("preserves independent collection errors and refreshes on reopening", async (
         .find((item) => item.textContent === label)!
         .click(),
     );
-  await click("Saved");
   expect(container.querySelector("#saved-panel-words")?.textContent).toContain(
     "Words unavailable",
   );
@@ -303,9 +296,8 @@ it("preserves independent collection errors and refreshes on reopening", async (
   expect(
     container.querySelector("#saved-panel-sentences")?.textContent,
   ).not.toContain("Words unavailable");
-  await click("Settings");
-  expect(container.querySelector(".saved-library")).toBeNull();
-  await click("Saved");
+  await click("Words");
+  await click("Sentences");
   expect(
     container
       .querySelector<HTMLButtonElement>("#saved-tab-sentences")!

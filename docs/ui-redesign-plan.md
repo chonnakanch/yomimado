@@ -354,11 +354,12 @@ Handle minimum usable sizes by stacking sections, not shrinking Japanese type.
 
 ### Secondary library and settings
 
-One native secondary window with a **Saved** library and Settings views. The owner
-requested one Saved menu entry on 2026-10-14; the library contains **Words** and
-**Sentences** tabs instead of separate toolbar menu entries.
+Separate native **Saved**, **Settings**, and **Sources & licenses** windows, as
+requested by the owner on 2026-10-14. Each toolbar menu entry owns its content;
+opening one never replaces another window's content. The library contains
+**Words** and **Sentences** tabs instead of separate toolbar menu entries.
 Opening settings routes directly to the requested category. Closing it hides or
-destroys this secondary surface without ending the service or reading session.
+hides only that secondary surface without ending the service or reading session.
 Toolbar overflow provides a persistent recovery/quit path; do not require a tray
 integration to complete the first redesign slice.
 
@@ -371,8 +372,8 @@ export, flashcards or pagination backend is required by this redesign.
 
 Settings categories stay limited to working features: Scan & OCR (existing
 model status/select/replace, capture permission guidance, shortcut descriptions),
-Reading (existing estimated-order switch) and About/Sources (attribution and
-packaged notices). Do not turn developer environment variables or detector
+and Reading (existing estimated-order switch). Attribution and packaged notices
+live in Sources & licenses. Do not turn developer environment variables or detector
 heuristics into fictional user-configurable controls. The model stays
 user-installed with existing checksum checks and restart/error semantics.
 
@@ -576,16 +577,17 @@ is introduced. Settings and installer work remain outside this phase.
 ### Phase 5 implementation — Settings review
 
 The owner accepted the Phase 4 library on 2026-10-14 and approved Settings.
-The main root is now the shared Saved/Settings secondary shell, with Scan & OCR,
-Reading and About / Sources categories. Keyboard tabs use roving focus and
-Left/Right/Home/End. Settings and Sources toolbar routes open their category
+The secondary root renders only the requested destination. Saved, Settings and
+Sources & licenses have independent native windows. Settings retains Scan & OCR
+and Reading categories; keyboard tabs use roving focus and Left/Right/Home/End.
+Settings and Sources toolbar routes open their own content
 without the legacy capture dashboard; automatic page-crop helpers remain in the
 backend. The native Reading route is also available. Closing the window retains
 the existing toolbar/session/service lifetime; explicit Quit remains on the toolbar.
 
 After confirming that Vorssaint's quit-on-close feature caused the unexpected
 application exit, the owner requested restoration of native window buttons.
-The secondary window again uses the native title bar and its existing close-to-hide
+Each secondary window uses the native title bar and the existing close-to-hide
 handler. The temporary app-owned controls are removed. External utility exceptions
 and development identity limitations are recorded in the implementation plan.
 

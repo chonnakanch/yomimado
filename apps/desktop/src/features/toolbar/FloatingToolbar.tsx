@@ -462,7 +462,7 @@ export function FloatingToolbar() {
               void run("show_secondary_window", { view: "settings" })
             }
           >
-            Settings · Scan & OCR
+            Settings
           </button>
           <button
             disabled={busy}

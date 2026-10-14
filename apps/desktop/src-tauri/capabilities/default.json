@@ -4,6 +4,8 @@
   "description": "Permissions required by YomiMado's app windows.",
   "windows": [
     "main",
+    "saved",
+    "sources",
     "toolbar",
     "capture-selector",
     "ocr-overlay",

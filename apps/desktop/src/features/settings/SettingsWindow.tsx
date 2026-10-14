@@ -1,13 +1,11 @@
 import { useRef, useState, type KeyboardEvent } from "react";
 import { ScanSettings } from "./ScanSettings";
 import { ReadingSettings } from "./ReadingSettings";
-import { AboutSettings } from "./AboutSettings";
 
-type Category = "scan" | "reading" | "about";
+type Category = "scan" | "reading";
 const categories: { id: Category; label: string }[] = [
   { id: "scan", label: "Scan & OCR" },
   { id: "reading", label: "Reading" },
-  { id: "about", label: "About / Sources" },
 ];
 
 export function SettingsWindow({
@@ -75,10 +73,8 @@ export function SettingsWindow({
         >
           {id === "scan" ? (
             <ScanSettings active={active && category === "scan"} />
-          ) : id === "reading" ? (
-            <ReadingSettings />
           ) : (
-            <AboutSettings />
+            <ReadingSettings />
           )}
         </section>
       ))}

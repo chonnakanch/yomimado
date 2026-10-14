@@ -201,9 +201,9 @@ it("supports keyboard menu navigation, Escape focus return, movement and listene
       new KeyboardEvent("keydown", { key: "ArrowDown", bubbles: true }),
     ),
   );
-  expect(document.activeElement).toBe(button("Settings · Scan & OCR"));
+  expect(document.activeElement).toBe(button("Settings"));
   await act(async () =>
-    button("Settings · Scan & OCR").dispatchEvent(
+    button("Settings").dispatchEvent(
       new KeyboardEvent("keydown", { key: "Escape", bubbles: true }),
     ),
   );

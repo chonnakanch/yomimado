@@ -4,11 +4,23 @@ use std::sync::{
 };
 
 use serde::{Deserialize, Serialize};
-use tauri::{AppHandle, Emitter, LogicalSize, Manager, PhysicalPosition, PhysicalSize};
+use tauri::{
+    AppHandle, Emitter, LogicalSize, Manager, PhysicalPosition, PhysicalSize, WebviewUrl,
+    WebviewWindowBuilder,
+};
 
 use crate::capture::{CaptureMetadata, DisplayInfo, Rectangle};
 
 pub const TOOLBAR_EVENT: &str = "toolbar-state-changed";
+pub const SECONDARY_WINDOW_LABELS: [&str; 3] = ["main", "saved", "sources"];
+pub const CAPTURE_WINDOW_LABELS: [&str; 6] = [
+    "toolbar",
+    "main",
+    "saved",
+    "sources",
+    "ocr-overlay",
+    "translation-popup",
+];
 const SCREEN_INSET: f64 = 12.0;
 
 #[derive(Clone, Copy, Debug, Deserialize, Serialize, PartialEq)]
@@ -557,6 +569,19 @@ pub enum SecondaryView {
     Sources,
 }
 
+impl SecondaryView {
+    fn destination(&self) -> (&'static str, &'static str, &'static str) {
+        match self {
+            Self::Saved => ("saved", "saved", "YomiMado — Saved"),
+            Self::Words => ("saved", "words", "YomiMado — Saved"),
+            Self::Sentences => ("saved", "sentences", "YomiMado — Saved"),
+            Self::Settings => ("main", "settings", "YomiMado — Settings"),
+            Self::Reading => ("main", "reading", "YomiMado — Settings"),
+            Self::Sources => ("sources", "sources", "YomiMado — Sources & licenses"),
+        }
+    }
+}
+
 #[tauri::command(async)]
 pub fn show_secondary_window(app: AppHandle, view: SecondaryView) -> Result<(), String> {
     if app
@@ -566,22 +591,29 @@ pub fn show_secondary_window(app: AppHandle, view: SecondaryView) -> Result<(), 
         .active
         .is_some()
     {
-        return Err("Finish or cancel the scan before opening Saved or Settings.".into());
+        return Err("Finish or cancel the scan before opening another window.".into());
     }
-    let name = match view {
-        SecondaryView::Saved => "saved",
-        SecondaryView::Words => "words",
-        SecondaryView::Sentences => "sentences",
-        SecondaryView::Settings => "settings",
-        SecondaryView::Reading => "reading",
-        SecondaryView::Sources => "sources",
+    let (label, name, title) = view.destination();
+    let window = if let Some(window) = app.get_webview_window(label) {
+        let mut url = window.url().map_err(|e| e.to_string())?;
+        url.set_query(Some(&format!("view={name}")));
+        window.navigate(url).map_err(|e| e.to_string())?;
+        window
+    } else {
+        WebviewWindowBuilder::new(
+            &app,
+            label,
+            WebviewUrl::App(format!("index.html?view={name}").into()),
+        )
+        .title(title)
+        .inner_size(700.0, 480.0)
+        .decorations(true)
+        .resizable(true)
+        .visible(false)
+        .build()
+        .map_err(|e| e.to_string())?
     };
-    let window = app
-        .get_webview_window("main")
-        .ok_or("Settings window is unavailable")?;
-    let mut url = window.url().map_err(|e| e.to_string())?;
-    url.set_query(Some(&format!("view={name}")));
-    window.navigate(url).map_err(|e| e.to_string())?;
+    window.set_title(title).map_err(|e| e.to_string())?;
     window.unminimize().map_err(|e| e.to_string())?;
     window.show().map_err(|e| e.to_string())?;
     window.set_focus().map_err(|e| e.to_string())
@@ -701,7 +733,7 @@ pub fn resume_capture_selection(
         }
         .into();
     }
-    for label in ["toolbar", "main"] {
+    for label in std::iter::once("toolbar").chain(SECONDARY_WINDOW_LABELS) {
         if let Some(window) = app.get_webview_window(label) {
             window.hide().map_err(|e| e.to_string())?;
         }
@@ -736,6 +768,23 @@ pub fn setup(app: &AppHandle) -> Result<(), String> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn menu_destinations_use_independent_windows_and_all_hide_during_capture() {
+        let saved = SecondaryView::Saved.destination().0;
+        let settings = SecondaryView::Settings.destination().0;
+        let sources = SecondaryView::Sources.destination().0;
+        assert_ne!(saved, settings);
+        assert_ne!(saved, sources);
+        assert_ne!(settings, sources);
+        assert_eq!(SecondaryView::Words.destination().0, saved);
+        assert_eq!(SecondaryView::Sentences.destination().0, saved);
+        assert_eq!(SecondaryView::Reading.destination().0, settings);
+        for label in [saved, settings, sources] {
+            assert!(SECONDARY_WINDOW_LABELS.contains(&label));
+            assert!(CAPTURE_WINDOW_LABELS.contains(&label));
+        }
+    }
 
     #[test]
     fn quartz_pointer_targets_retina_and_negative_mixed_scale_monitors() {

@@ -45,8 +45,10 @@ use the toolbar's monitor; Rescan uses its recorded original monitor.
 
 The owner accepted the compact learning popup and Phase 4 Saved library, then
 authorized Phase 5 Settings. Saved-data formats and native capture helpers are
-retained. The secondary window now shows Saved/Settings instead of the legacy
-capture dashboard. Published v0.1.0 installers retain the older interaction below.
+retained. Saved, Settings, and Sources & licenses each open their own native
+window from More actions. They can remain open together; opening another menu
+entry does not replace an existing window's content. Published v0.1.0 installers
+retain the older interaction below.
 
 ### Settings (Phase 5 development source)
 
@@ -61,13 +63,13 @@ ready based on the packaged model status.
 **Reading** contains the existing **Reading-order controls** preference, off by
 default and saved locally for new scans. Save failures leave the previous preference
 in place. This estimated order is separate from keyboard region navigation.
-**About / Sources** keeps dictionary/model attribution, links and packaged notice
-guidance; **More actions → Sources and licenses** opens that category directly.
+**More actions → Sources & licenses** opens a separate attribution window with
+dictionary/model links and packaged notice guidance.
 Use Left/Right or Home/End on category tabs to navigate by keyboard.
 
 Use the native window close button to hide this window. The native title bar
 also provides window movement, minimizing and resizing.
-Closing this window keeps the toolbar and reading session running. Reopen it
+Closing a window leaves the other windows, toolbar and reading session running. Reopen it
 through the toolbar; **More actions → Quit YomiMado** exits the app. Scan actions
 remain on the toolbar. Whole Screen has replaced automatic page cropping in the
 redesigned flow; the historical installer instructions below still apply to v0.1.0.

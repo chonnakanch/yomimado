@@ -536,9 +536,10 @@ The normal development app is available for owner review.
 ### Phase 5 Settings — implemented for review
 
 On 2026-10-14 the owner accepted Phase 4 and authorized the Settings phase.
-The secondary window now contains Saved and Settings navigation. Settings uses
-keyboard-accessible Scan & OCR, Reading and About / Sources categories. The
-Settings route opens Scan & OCR; Sources opens attribution directly; the native
+At the owner's request, Saved, Settings and Sources & licenses now use independent
+native windows with no shared Saved/Settings navigation. Settings uses
+keyboard-accessible Scan & OCR and Reading categories. The
+Settings route opens Scan & OCR; Sources opens attribution in its own window; the native
 secondary-view contract also supports Reading directly. Saved and legacy
 words/sentences query routes remain compatible.
 
@@ -555,21 +556,27 @@ The existing native close-to-hide, open/unminimize/focus and explicit Quit paths
 preserved. At the owner's request, the native title bar and window buttons are
 restored after confirming the external quit-on-close utility caused application
 exit. Temporary app-owned controls, their command and tests are removed. Native
-close hides the secondary window without ending the toolbar/service/reading session.
-No capture/OCR/geometry/dictionary/translation/storage/dependency/version or
-installer behavior was changed. Native Windows/mixed-DPI runtime acceptance remains
+close hides only its secondary window without ending the other windows or
+toolbar/service/reading session. All secondary windows are hidden before capture
+and included in the existing visibility restoration path. Window permissions are
+extended to the two new labels. No OCR/geometry/dictionary/translation/storage/
+dependency/version or installer behavior was changed. Native Windows/mixed-DPI runtime acceptance remains
 open, including current Settings lifecycle; automated native builds do not certify it.
 
 Local verification passed 148 frontend tests in 20 files, TypeScript/production
-Vite build, full desktop Prettier, 51 native tests, Cargo formatting and macOS debug
+Vite build, full desktop Prettier, 52 native tests, Cargo formatting and macOS debug
 build/startup. Behavior coverage includes category routes and keyboard navigation,
 reading preference persistence/failure/retry, status retry/old-response rejection,
 model cancellation/replacement failure/retry and duplicate import prevention.
-Actual components with mocked packaged status were inspected in WebKit at 700 × 480
+Before separating the windows, actual components with mocked packaged status were inspected in WebKit at 700 × 480
 and 280 px width. All three categories wrap without horizontal overflow; attribution
-and permission/shortcut guidance remain accessible. The temporary fixture was removed
+and permission/shortcut guidance remained accessible. The temporary fixture was removed
 from ignored build output. These browser checks do not certify native file pickers,
-model replacement or permission changes. The normal command-based app is open for review.
+model replacement or permission changes. Current regression checks verify isolated
+Saved/Sources rendering, Settings category navigation, distinct menu destinations,
+collection aliases, and inclusion of each destination in native close/capture policy.
+The normal command-based app is open for review; simultaneous-window and native
+close/reopen acceptance of this separation remains pending.
 
 - [ ] Owner acceptance of Phase 5 layout and secondary-window close/reopen behavior.
 - [ ] Windows/mixed-DPI interactive acceptance, including Quit/service cleanup.

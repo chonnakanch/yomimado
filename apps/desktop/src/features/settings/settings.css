@@ -5,7 +5,6 @@
   padding: var(--space-6);
 }
 .secondary-header,
-.secondary-header nav,
 .settings-tabs,
 .settings-card-heading {
   align-items: center;
@@ -26,11 +25,6 @@
 .secondary-brand [lang="ja"] {
   color: var(--color-text-secondary);
   font-weight: 400;
-}
-.secondary-header [aria-current="page"] {
-  background: var(--color-selected);
-  border-color: var(--color-selected);
-  color: var(--color-on-accent);
 }
 .secondary-window h1 {
   font-size: 24px;

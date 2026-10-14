@@ -185,7 +185,7 @@ fn show_capture_window_on(
             return Err("Screen Recording access is required. Enable YomiMado (or your terminal when running `tauri dev`) in System Settings > Privacy & Security > Screen & System Audio Recording, then restart the app.".into());
         }
     }
-    let restore = ["toolbar", "main", "ocr-overlay", "translation-popup"]
+    let restore = toolbar::CAPTURE_WINDOW_LABELS
         .iter()
         .filter(|label| {
             app.get_webview_window(label)
@@ -201,7 +201,7 @@ fn show_capture_window_on(
     app.state::<AppState>().scans.set_selector_id(id);
     let result: Result<(), String> = (|| {
         app.state::<AppState>().overlay_input.disable(&app)?;
-        for label in ["toolbar", "main", "ocr-overlay", "translation-popup"] {
+        for label in toolbar::CAPTURE_WINDOW_LABELS {
             if let Some(window) = app.get_webview_window(label) {
                 window.hide().map_err(|e| e.to_string())?;
             }
@@ -282,13 +282,7 @@ async fn perform_capture(
         session.message = "Capturing screen pixels…".into();
         // Hiding the native selector, not just its DOM, keeps processing from
         // trapping browser input and keeps all app chrome out of the screenshot.
-        for label in [
-            "capture-selector",
-            "toolbar",
-            "main",
-            "ocr-overlay",
-            "translation-popup",
-        ] {
+        for label in std::iter::once("capture-selector").chain(toolbar::CAPTURE_WINDOW_LABELS) {
             if let Some(window) = app.get_webview_window(label) {
                 window.hide().map_err(|e| e.to_string())?;
             }
@@ -781,7 +775,9 @@ pub fn run() {
                     api.prevent_close();
                     return;
                 }
-                if window.label() == "main" || window.label() == "capture-selector" {
+                if toolbar::SECONDARY_WINDOW_LABELS.contains(&window.label())
+                    || window.label() == "capture-selector"
+                {
                     api.prevent_close();
                     if let Err(error) = window.hide() {
                         eprintln!("YomiMado: could not hide window: {error}");

@@ -247,8 +247,9 @@ and English remain accessible; changing source clears stale output.
 
 ### Saved collections and SettingsWindow
 
-Secondary navigation has one **Saved** entry with **Words** and **Sentences** tabs
-inside the library, alongside Settings. Use
+Toolbar navigation has separate **Saved**, **Settings**, and **Sources & licenses**
+windows. There is no Saved/Settings navigation inside those windows. Saved keeps
+**Words** and **Sentences** tabs inside its library. Use
 compact readable rows with expandable context rather than wide fixed tables
 that require horizontal scrolling. Keep local dates, existing stored order,
 refresh/error/empty states and confirmed Remove actions. Lists remain readable
@@ -256,8 +257,8 @@ with larger text and narrow windows.
 
 Settings uses ordinary labeled controls for actual capabilities. Scan & OCR holds
 verified detector status/import/replacement and capture/shortcut guidance;
-Reading holds the existing estimated-order switch; About/Sources retains linked
-attribution and packaged notice guidance. No nonfunctional settings drawn merely
+Reading holds the existing estimated-order switch. Sources & licenses has its own
+window with linked attribution and packaged notice guidance. No nonfunctional settings drawn merely
 to match the reference sidebar. Use native secondary-window decorations for
 move/resize/minimize/close accessibility; toolbar and popup use their compact chrome.
 Close hides the secondary window; explicit Quit stays on the toolbar. The owner

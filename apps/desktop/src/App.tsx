@@ -3,15 +3,15 @@ import { SavedTabs, type SavedTab } from "./features/library/SavedTabs";
 import { SavedWordsView } from "./features/library/SavedWordsView";
 import { SavedSentencesView } from "./features/library/SavedSentencesView";
 import { SettingsWindow } from "./features/settings/SettingsWindow";
+import { AboutSettings } from "./features/settings/AboutSettings";
 import "./features/settings/settings.css";
 
 export function App() {
   const [initialView] = useState(() =>
     new URLSearchParams(window.location.search).get("view"),
   );
-  const [showSaved, setShowSaved] = useState(
-    ["saved", "words", "sentences"].includes(initialView ?? ""),
-  );
+  const showSaved = ["saved", "words", "sentences"].includes(initialView ?? "");
+  const showSources = initialView === "sources";
   const [savedTab, setSavedTab] = useState<SavedTab>(
     initialView === "sentences" ? "sentences" : "words",
   );
@@ -24,22 +24,6 @@ export function App() {
         <span className="secondary-brand">
           YomiMado <span lang="ja">読み窓</span>
         </span>
-        <nav aria-label="Library and settings">
-          <button
-            className="utility-button"
-            aria-current={showSaved ? "page" : undefined}
-            onClick={() => setShowSaved(true)}
-          >
-            Saved
-          </button>
-          <button
-            className="utility-button"
-            aria-current={!showSaved ? "page" : undefined}
-            onClick={() => setShowSaved(false)}
-          >
-            Settings
-          </button>
-        </nav>
       </header>
       {showSaved && (
         <section
@@ -56,16 +40,18 @@ export function App() {
           <SavedSentencesView active={savedTab === "sentences"} />
         </section>
       )}
-      <SettingsWindow
-        active={!showSaved}
-        initialCategory={
-          initialView === "sources"
-            ? "about"
-            : initialView === "reading"
-              ? "reading"
-              : "scan"
-        }
-      />
+      {showSources && (
+        <section aria-label="Sources and licenses">
+          <h1>Sources & licenses</h1>
+          <AboutSettings />
+        </section>
+      )}
+      {!showSaved && !showSources && (
+        <SettingsWindow
+          active
+          initialCategory={initialView === "reading" ? "reading" : "scan"}
+        />
+      )}
       <p className="secondary-footer">
         Closing this window keeps the toolbar running. Quit from More actions on
         the toolbar.
