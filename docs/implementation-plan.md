@@ -342,9 +342,16 @@ scaling, cut leading strokes, detached end punctuation, unrelated art/characters
 unchanged geometry and corrected recognition crops. The complete local Python 3.9
 run passed 87 of 88 service cases; the existing Windows checksum test requires
 `hashlib.file_digest` (Python 3.11+). That exact test passed separately on Python
-3.12. CI's pinned Python 3.11 run remains the full-suite gate. Frontend tests
-(117), TypeScript/Vite build and service Ruff checks pass. Offline-model checks
+3.12. The pinned Python 3.11 CI run subsequently passed the complete 88-case
+service suite with no skips. Frontend tests (117), TypeScript/Vite build and
+service Ruff checks pass. Offline-model checks
 on a clean synthetic Japanese page preserve both complete vertical sentences
 and the horizontal sentence while including its previously cut edge strokes.
 The updated local service is running for owner review; native visual confirmation
 is pending. Phase 2 and Windows/mixed-DPI runtime gates remain open.
+
+[Checks run 38506660742](https://github.com/chonnakanch/yomimado/actions/runs/38506660742)
+passed every gate for OCR fix `17cb20a`: frontend, service, release tools and both
+macOS/Windows native tests/builds. These source checks do not close Windows or
+mixed-DPI interactive acceptance. The normal command-launched desktop and updated
+offline service remain open; the owner's post-correction visual review is pending.
