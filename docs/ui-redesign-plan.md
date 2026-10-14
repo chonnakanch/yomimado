@@ -1,6 +1,6 @@
 # YomiMado UI/UX redesign plan
 
-Status: **Approved by the owner on 2026-10-13. Phase 3 accepted; Phase 4 Saved library implemented for review on 2026-10-14.**
+Status: **Approved by the owner on 2026-10-13. Phases 3 and 4 accepted; Phase 5 Settings implemented for review on 2026-10-14.**
 Prepared 2026-10-13 against `develop` at `4f8a395` (app version `0.1.0`).
 The owner approved this plan and [the design system](design-system.md), then
 authorized Phase 1: design tokens and the floating toolbar, then Phase 2: OCR
@@ -572,3 +572,20 @@ duplicate removals, invalidates earlier list requests and preserves focus in the
 current collection. Refresh runs on reopening/tab entry; inactive or unmounted
 views reject old list responses. No storage migration or automatic lookup/translation
 is introduced. Settings and installer work remain outside this phase.
+
+### Phase 5 implementation — Settings review
+
+The owner accepted the Phase 4 library on 2026-10-14 and approved Settings.
+The main root is now the shared Saved/Settings secondary shell, with Scan & OCR,
+Reading and About / Sources categories. Keyboard tabs use roving focus and
+Left/Right/Home/End. Settings and Sources toolbar routes open their category
+without the legacy capture dashboard; automatic page-crop helpers remain in the
+backend. The native Reading route is also available. Closing the window retains
+the existing toolbar/session/service lifetime; explicit Quit remains on the toolbar.
+
+Native model commands and checksum verification are unchanged. The view preserves
+file-picker cancellation, failed replacement, retry and restart guidance; status
+requests reject stale responses and duplicate imports are blocked. Development
+service model setup is labeled explicitly. Reading keeps its existing setting/key;
+About retains attribution and packaged notices. The owner review, cross-platform
+checks and remaining runtime gates are recorded in the implementation plan.

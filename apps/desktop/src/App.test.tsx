@@ -21,6 +21,7 @@ beforeEach(() => {
 });
 
 it("keeps reading-order controls disabled until enabled in settings", async () => {
+  window.history.replaceState({}, "", "/?view=reading");
   await act(async () => root.render(<App />));
   const setting = container.querySelector<HTMLInputElement>(
     'input[type="checkbox"]',
@@ -49,77 +50,40 @@ afterEach(async () => {
   vi.mocked(invoke).mockReset();
 });
 
-it("starts a one-shot automatic scan from the main window", async () => {
-  vi.mocked(invoke).mockResolvedValue(undefined);
+it("opens Scan & OCR by default and leaves capture on the toolbar", async () => {
   await act(async () => root.render(<App />));
-  await act(async () => {
-    Array.from(container.querySelectorAll("button"))
-      .find((button) => button.textContent === "Scan manga page")!
-      .click();
-  });
-  expect(invoke).toHaveBeenCalledWith("show_auto_scanner");
-  expect(container.textContent).toContain("Finding the manga page");
+  expect(
+    container
+      .querySelector("#settings-tab-scan")
+      ?.getAttribute("aria-selected"),
+  ).toBe("true");
+  expect(container.querySelector(".main-actions")).toBeNull();
+  expect(invoke).not.toHaveBeenCalledWith("show_auto_scanner");
+  expect(container.textContent).toContain(
+    "Whole Screen replaces the older automatic page-scan shortcut",
+  );
 });
 
-it("opens the scan-area adjustment selector", async () => {
-  vi.mocked(invoke).mockResolvedValue(undefined);
+it("routes Sources directly to attribution and packaged notices", async () => {
+  window.history.replaceState({}, "", "/?view=sources");
   await act(async () => root.render(<App />));
-  await act(async () => {
-    Array.from(container.querySelectorAll("button"))
-      .find((button) => button.textContent === "Set/adjust scan area")!
-      .click();
-  });
-  expect(invoke).toHaveBeenCalledWith("show_scan_area_selector");
-});
-
-it("shows dictionary attribution from the sources control", async () => {
-  await act(async () => root.render(<App />));
-  const button = Array.from(container.querySelectorAll("button")).find(
-    (item) => item.textContent === "Sources and licenses",
-  )!;
-  expect(button.getAttribute("aria-expanded")).toBe("false");
-  await act(async () => button.click());
-  expect(button.getAttribute("aria-expanded")).toBe("true");
+  expect(
+    container
+      .querySelector("#settings-tab-about")
+      ?.getAttribute("aria-selected"),
+  ).toBe("true");
+  expect(
+    container.querySelector<HTMLElement>("#settings-panel-about")?.hidden,
+  ).toBe(false);
   expect(container.textContent).toContain("JMdict and KANJIDIC2");
   expect(container.textContent).toContain("Electronic Dictionary Research");
+  expect(container.textContent).toContain("ocr/notices");
   expect(
-    container.querySelector<HTMLAnchorElement>(
+    container.querySelector(
       'a[href="https://www.edrdg.org/edrdg/licence.html"]',
     ),
   ).not.toBeNull();
-});
-
-it("requires manual detector installation before packaged scans", async () => {
-  vi.mocked(invoke).mockImplementation(async (command) => {
-    if (command === "detector_model_status") {
-      return { required: true, installed: false };
-    }
-    if (command === "install_detector_model") {
-      return { required: true, installed: true };
-    }
-    return undefined;
-  });
-  await act(async () => root.render(<App />));
-  expect(container.textContent).toContain("original release page");
-  expect(
-    Array.from(container.querySelectorAll("button")).find(
-      (button) => button.textContent === "Scan manga page",
-    )?.disabled,
-  ).toBe(true);
-
-  await act(async () => {
-    Array.from(container.querySelectorAll("button"))
-      .find((button) => button.textContent === "Select detector model file")!
-      .click();
-  });
-  expect(invoke).toHaveBeenCalledWith("install_detector_model");
-  expect(container.textContent).toContain("Manga scanning is ready");
-  expect(container.textContent).toContain("Installed on this computer");
-  expect(
-    Array.from(container.querySelectorAll("button")).find(
-      (button) => button.textContent === "Scan manga page",
-    )?.disabled,
-  ).toBe(false);
+  expect(invoke).not.toHaveBeenCalled();
 });
 
 it("shows saved words and removes one only after confirmation", async () => {
@@ -339,7 +303,7 @@ it("preserves independent collection errors and refreshes on reopening", async (
   expect(
     container.querySelector("#saved-panel-sentences")?.textContent,
   ).not.toContain("Words unavailable");
-  await click("Hide saved");
+  await click("Settings");
   expect(container.querySelector(".saved-library")).toBeNull();
   await click("Saved");
   expect(

@@ -2,9 +2,8 @@
 
 ## Current status
 
-Updated **2026-10-14**. Current work includes accepted UI redesign Phase 3 and
-Phase 4 Saved library implementation for review on tracked
-`develop`; the app version remains `0.1.0`.
+Updated **2026-10-14**. UI redesign Phases 3 and 4 are accepted. Phase 5 Settings
+is implemented for review on tracked `develop`; the app version remains `0.1.0`.
 
 The **first desktop pre-release milestone is complete**.
 [YomiMado v0.1.0](https://github.com/chonnakanch/yomimado/releases/tag/v0.1.0)
@@ -236,7 +235,7 @@ the floating toolbar only. **Phase 1 was approved for continuation; Phase 2 is i
 - [x] Owner authorized the Compact dictionary popup phase on 2026-10-14.
 - [x] Saved-collection layouts implemented after owner authorization to continue
       Phase 4; result acceptance is tracked below.
-- [ ] Full settings redesign requires approval of the Phase 4 result.
+- [x] Owner accepted Phase 4 and authorized the Settings phase on 2026-10-14.
 
 Local verification: 113 frontend tests in 19 files, TypeScript, Prettier and
 production Vite build; 44 native Rust tests, Rust formatting and macOS debug
@@ -529,7 +528,46 @@ sentence translations and no horizontal overflow. Japanese word/source text rema
 acceptance. The temporary fixture is removed from ignored build output before handoff.
 The normal development app is available for owner review.
 
-- [ ] Owner acceptance of the Phase 4 library layout and interactions.
+- [x] Owner acceptance of the Phase 4 library layout and interactions on 2026-10-14.
 - [ ] Windows/mixed-DPI interactive acceptance.
-- [ ] Full settings phase, pending approval of this result. No installer/publication
+- [x] Owner authorized continuation to Phase 5 Settings. No installer/publication
       or version change is authorized by this source work.
+
+### Phase 5 Settings — implemented for review
+
+On 2026-10-14 the owner accepted Phase 4 and authorized the Settings phase.
+The secondary window now contains Saved and Settings navigation. Settings uses
+keyboard-accessible Scan & OCR, Reading and About / Sources categories. The
+Settings route opens Scan & OCR; Sources opens attribution directly; the native
+secondary-view contract also supports Reading directly. Saved and legacy
+words/sentences query routes remain compatible.
+
+Scan & OCR retains native model status, checksum-verified import/replacement,
+cancel/error handling and restart guidance. Refresh rejects older status responses;
+imports cannot overlap in the view. Development service setup is labeled separately
+from packaged installation without claiming service readiness. Capture permission
+and shortcut guidance describe actual modes; automatic page cropping is removed
+from the secondary user flow, while its tested native helpers remain. Reading keeps
+the existing local-storage key and off-by-default estimated-order preference, with
+explicit save errors. About retains existing links and full packaged notice guidance.
+
+The existing native close-to-hide, open/unminimize/focus and explicit Quit paths are
+preserved. Closing this secondary window keeps the toolbar/service/reading session
+alive. No capture/OCR/geometry/dictionary/translation/storage/dependency/version or
+installer behavior was changed. Native Windows/mixed-DPI runtime acceptance remains
+open, including current Settings lifecycle; automated native builds do not certify it.
+
+Local verification passed 148 frontend tests in 20 files, TypeScript/production
+Vite build, full desktop Prettier, 51 native tests, Cargo formatting and macOS debug
+build/startup. Behavior coverage includes category routes and keyboard navigation,
+reading preference persistence/failure/retry, status retry/old-response rejection,
+model cancellation/replacement failure/retry and duplicate import prevention.
+Actual components with mocked packaged status were inspected in WebKit at 700 × 480
+and 280 px width. All three categories wrap without horizontal overflow; attribution
+and permission/shortcut guidance remain accessible. The temporary fixture was removed
+from ignored build output. These browser checks do not certify native file pickers,
+model replacement or permission changes. The normal command-based app is open for review.
+
+- [ ] Owner acceptance of Phase 5 layout and secondary-window close/reopen behavior.
+- [ ] Windows/mixed-DPI interactive acceptance, including Quit/service cleanup.
+- [ ] Future installer/release work requires separate owner authorization.

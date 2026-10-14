@@ -4,9 +4,9 @@
 
 YomiMado now starts with a compact always-on-top toolbar. Drag its handle, or
 focus the handle and use arrow keys, to move it. Collapse retains both scan icons,
-Rescan, overlay visibility/status and Expand; the native window shrinks too. The overflow menu opens the
-existing saved words/sentences, Settings (including detector import), sources
-and Quit. Closing the secondary main window keeps the app running.
+Rescan, overlay visibility/status and Expand; the native window shrinks too. The
+overflow menu opens Saved, Settings (including detector import), Sources and Quit.
+Closing the secondary main window keeps the app running.
 
 **Selected Area** scans a dragged region; **Whole Screen** scans the toolbar's
 monitor without automatic page cropping. **Rescan** takes a new screenshot of
@@ -24,7 +24,8 @@ Choose **More actions → Saved** to open the shared library. Use **Words** and
 **Sentences** tabs to switch collections; Left/Right or Home/End moves between
 tabs by keyboard. Each collection keeps its Refresh, loading/error/empty states
 and confirmed Remove action. Opening the library or returning to a tab refreshes
-that collection. Settings and sources remain separate toolbar actions.
+that collection. Settings and Sources remain separate toolbar actions; Saved and
+Settings are also available through navigation in the secondary window.
 
 Words show their stored reading and numbered meanings. Expand **Source and saved
 date** for the original Japanese context and local save time. Sentences show the
@@ -42,10 +43,32 @@ row is removed, and stays in the selected tab if you switched collections.
 page-scan shortcut described in the published v0.1.0 guide below. Toolbar buttons
 use the toolbar's monitor; Rescan uses its recorded original monitor.
 
-The owner approved continuation through Phase 3 and accepted the compact learning
-popup in the running macOS development app. Saved-data formats and legacy main-window controls are retained;
-settings/library redesigns remain deferred. Published v0.1.0 installers retain
-the older interaction below.
+The owner accepted the compact learning popup and Phase 4 Saved library, then
+authorized Phase 5 Settings. Saved-data formats and native capture helpers are
+retained. The secondary window now shows Saved/Settings instead of the legacy
+capture dashboard. Published v0.1.0 installers retain the older interaction below.
+
+### Settings (Phase 5 development source)
+
+Choose **More actions → Settings** for **Scan & OCR**. It contains detector status
+and Refresh status, checksum-verified Select/Replace detector model, capture
+permission guidance and scan shortcuts. Canceling the file picker keeps the model;
+a failed import shows an error and leaves the installed model intact. Restart
+YomiMado after replacing a model already in use. In development, model setup is
+managed by the existing local OCR service; the app does not claim that service is
+ready based on the packaged model status.
+
+**Reading** contains the existing **Reading-order controls** preference, off by
+default and saved locally for new scans. Save failures leave the previous preference
+in place. This estimated order is separate from keyboard region navigation.
+**About / Sources** keeps dictionary/model attribution, links and packaged notice
+guidance; **More actions → Sources and licenses** opens that category directly.
+Use Left/Right or Home/End on category tabs to navigate by keyboard.
+
+Closing this window keeps the toolbar and reading session running. Reopen it
+through the toolbar; **More actions → Quit YomiMado** exits the app. Scan actions
+remain on the toolbar. Whole Screen has replaced automatic page cropping in the
+redesigned flow; the historical installer instructions below still apply to v0.1.0.
 
 ### Compact learning popup (Phase 3 development source)
 

@@ -21,9 +21,6 @@
 .saved-library > [role="tabpanel"] {
   margin-top: 0;
 }
-.saved-library-view {
-  padding: var(--space-6);
-}
 .saved-library {
   color: var(--color-text-primary);
   min-width: 0;
@@ -178,9 +175,6 @@
   margin: var(--space-2) 0 0;
 }
 @media (max-width: 420px) {
-  .saved-library-view {
-    padding: var(--space-4);
-  }
   .library-row-heading {
     flex-direction: column;
   }

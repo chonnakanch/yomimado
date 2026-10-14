@@ -553,6 +553,7 @@ pub enum SecondaryView {
     Words,
     Sentences,
     Settings,
+    Reading,
     Sources,
 }
 
@@ -565,13 +566,14 @@ pub fn show_secondary_window(app: AppHandle, view: SecondaryView) -> Result<(), 
         .active
         .is_some()
     {
-        return Err("Finish or cancel the scan before opening settings.".into());
+        return Err("Finish or cancel the scan before opening Saved or Settings.".into());
     }
     let name = match view {
         SecondaryView::Saved => "saved",
         SecondaryView::Words => "words",
         SecondaryView::Sentences => "sentences",
         SecondaryView::Settings => "settings",
+        SecondaryView::Reading => "reading",
         SecondaryView::Sources => "sources",
     };
     let window = app
