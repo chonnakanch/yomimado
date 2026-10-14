@@ -2,8 +2,9 @@
 
 Status: **Approved by the owner on 2026-10-13.** Prepared 2026-10-13.
 Companion architecture and rollout: [UI redesign plan](ui-redesign-plan.md).
-Phase 1 implements the tokens and floating-toolbar controls. Other component
-specifications remain planned until the owner approves the next phase.
+Phase 1 implements the tokens and floating-toolbar controls; the approved Phase 2
+implements OCR region states and keyboard entry, with native platform acceptance
+still required. The dictionary popup and secondary layouts remain future phases.
 
 ## 1. Visual direction and boundaries
 

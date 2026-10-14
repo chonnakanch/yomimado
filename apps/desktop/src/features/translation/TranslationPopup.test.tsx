@@ -482,3 +482,29 @@ it.each(["success", "error"])(
     expect(button.disabled).toBe(false);
   },
 );
+
+it("retains OCR review guidance and requests keyboard focus return only on keyboard dismissal", async () => {
+  const query = `?mode=translation&state=${encodeURIComponent(JSON.stringify({ text: "", demo: true, reviewReason: "Check short text", approximate: true }))}`;
+  window.history.replaceState({}, "", `/${query}`);
+  await act(async () => root.render(<TranslationPopup />));
+  expect(container.querySelector(".translation-review")?.textContent).toContain(
+    "Approximate OCR region. Check short text",
+  );
+  await act(async () =>
+    window.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape" })),
+  );
+  expect(invokeMock).toHaveBeenCalledWith("close_translation_popup", {
+    returnFocus: true,
+    viewQuery: query.slice(1),
+  });
+  const close = container.querySelector(
+    'button[aria-label="Close translation"]',
+  )!;
+  await act(async () =>
+    close.dispatchEvent(new MouseEvent("click", { bubbles: true, detail: 1 })),
+  );
+  expect(invokeMock).toHaveBeenLastCalledWith("close_translation_popup", {
+    returnFocus: false,
+    viewQuery: query.slice(1),
+  });
+});

@@ -1,10 +1,10 @@
 # YomiMado UI/UX redesign plan
 
-Status: **Approved by the owner on 2026-10-13. Phase 1 implemented for review.**
+Status: **Approved by the owner on 2026-10-13. Phase 1 approved for continuation; Phase 2 implemented for review.**
 Prepared 2026-10-13 against `develop` at `4f8a395` (app version `0.1.0`).
 The owner approved this plan and [the design system](design-system.md), then
-authorized Phase 1: design tokens and the floating toolbar. Later phases require
-approval of this result. No installer publication is authorized.
+authorized Phase 1: design tokens and the floating toolbar, then Phase 2: OCR
+regions and native input routing. Later phases require approval of that result. No installer publication is authorized.
 
 ## 1. Goal, scope and reference interpretation
 
@@ -461,7 +461,7 @@ remain aligned; the popup opens sentence-first, supports word/kanji exploration
 and explicit copying/saving; and existing offline learning/persistence works.
 Collections/settings must retain their error states, attribution and model checks.
 
-### Phase 1 implementation — awaiting result approval
+### Phase 1 implementation — approved for continuation
 
 Implemented the semantic tokens and small control/focus primitives, a standalone
 520 × 56 logical px toolbar (112 × 48 collapsed), drag/keyboard movement,
@@ -506,4 +506,22 @@ The original two-document planning deliverable passed Prettier and local link
 checks, and the then-unchanged frontend baseline passed 100 tests in 18 files
 and TypeScript. That historical planning pass does not certify redesigned UI.
 
-Next action: owner review of Phase 1 before any next-phase implementation.
+### Phase 2 implementation — native acceptance gates open
+
+The next approved slice implements `OCRBoundingBox` and scoped token-based region
+styles, explicit uncertainty/demo labels, toolbar keyboard entry and a roving region
+navigator. Native hit routing uses a polygon window region on Windows and native
+cursor sampling/window ignore on macOS. It never runs OCR or lookup on hover and
+retains browser/overlay drag ownership. Frame changes hide stale geometry; capture,
+hide/show, generations and optional reading-order controls retain their guards.
+The existing popup gains review guidance and keyboard dismissal/focus return only.
+Its content/layout redesign remains the next phase; **Compact popup** is the latest
+owner choice in the visual preview.
+
+See [implementation status](implementation-plan.md#ui-redesign--phase-2-review)
+and [native UI checks](ui-overlay-testing.md) for evidence and remaining gates.
+Automated checks do not certify native input routing on both platforms. Do not
+proceed to the popup phase or claim the full redesign accepted while those gates
+remain open. No installer publication is authorized.
+
+Next action: native Phase 2 checks and owner review before the dictionary popup phase.

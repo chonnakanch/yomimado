@@ -227,12 +227,43 @@ pub fn live_display(app: &AppHandle, expected: &DisplayInfo) -> Result<DisplayIn
 }
 
 pub fn pointer_display(app: &AppHandle) -> Result<DisplayInfo, String> {
-    let pointer = app.cursor_position().map_err(|error| error.to_string())?;
-    app.monitor_from_point(pointer.x, pointer.y)
-        .map_err(|error| error.to_string())?
-        .as_ref()
-        .map(display_from_monitor)
-        .ok_or_else(|| "No monitor under the pointer".into())
+    #[cfg(target_os = "macos")]
+    {
+        // Tao 0.35 converts NSEvent's logical mouse Y using the primary
+        // display's physical height. Quartz already supplies top-left points;
+        // match those to each monitor's logical bounds before using its scale.
+        let pointer = crate::overlay::input::logical_cursor_point();
+        return app
+            .available_monitors()
+            .map_err(|error| error.to_string())?
+            .iter()
+            .map(display_from_monitor)
+            .find(|display| contains_logical_pointer(display, pointer.x, pointer.y))
+            .ok_or_else(|| "No monitor under the pointer".into());
+    }
+    #[cfg(not(target_os = "macos"))]
+    {
+        let pointer = app.cursor_position().map_err(|error| error.to_string())?;
+        app.monitor_from_point(pointer.x, pointer.y)
+            .map_err(|error| error.to_string())?
+            .as_ref()
+            .map(display_from_monitor)
+            .ok_or_else(|| "No monitor under the pointer".into())
+    }
+}
+
+#[cfg(any(target_os = "macos", test))]
+fn contains_logical_pointer(display: &DisplayInfo, x: f64, y: f64) -> bool {
+    let bounds = display.physical_bounds;
+    let scale = display.scale_factor;
+    x.is_finite()
+        && y.is_finite()
+        && scale.is_finite()
+        && scale > 0.0
+        && x >= bounds.x / scale
+        && x < (bounds.x + bounds.width) / scale
+        && y >= bounds.y / scale
+        && y < (bounds.y + bounds.height) / scale
 }
 
 #[derive(Clone, Serialize)]
@@ -398,12 +429,25 @@ pub fn reveal_ocr_overlay(
     session_id: u64,
 ) -> Result<Option<serde_json::Value>, String> {
     let state = app.state::<crate::AppState>();
-    let session = state.scans.lock()?;
+    let mut session = state.scans.lock()?;
     if session.active.is_none()
         && session.completed_id == Some(session_id)
         && session.overlay_visible
     {
-        return crate::overlay::reveal_overlay(&app, &state.overlay).map(Some);
+        let result = crate::overlay::reveal_overlay(&app, &state.overlay).map(Some);
+        if let Err(error) = &result {
+            state.overlay_input.disable(&app)?;
+            if let Some(window) = app.get_webview_window("ocr-overlay") {
+                let _ = window.hide();
+            }
+            session.overlay_visible = false;
+            session.phase = "error";
+            session.message = format!("Could not enable OCR region interaction: {error}");
+            session.revision += 1;
+            drop(session);
+            emit_state(&app);
+        }
+        return result;
     }
     Ok(None)
 }
@@ -473,6 +517,7 @@ pub fn set_overlay_visibility(app: AppHandle, visible: bool) -> Result<(), Strin
         )));
         window.navigate(url).map_err(|e| e.to_string())?;
     } else {
+        state.overlay_input.disable(&app)?;
         window.hide().map_err(|error| error.to_string())?;
         if let Some(popup) = app.get_webview_window("translation-popup") {
             popup.hide().map_err(|e| e.to_string())?;
@@ -677,6 +722,32 @@ pub fn setup(app: &AppHandle) -> Result<(), String> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn quartz_pointer_targets_retina_and_negative_mixed_scale_monitors() {
+        let mut retina = display();
+        retina.physical_bounds = Rectangle {
+            x: 0.0,
+            y: 0.0,
+            width: 2940.0,
+            height: 1912.0,
+        };
+        retina.scale_factor = 2.0;
+        assert!(contains_logical_pointer(&retina, 500.0, 650.0));
+        assert!(!contains_logical_pointer(&retina, -100.0, 650.0));
+        assert!(!contains_logical_pointer(&retina, 500.0, 956.0));
+        let mut left = display();
+        left.physical_bounds = Rectangle {
+            x: -1920.0,
+            y: -200.0,
+            width: 1920.0,
+            height: 1080.0,
+        };
+        left.scale_factor = 1.0;
+        assert!(contains_logical_pointer(&left, -100.0, -100.0));
+        assert!(!contains_logical_pointer(&left, 0.0, 0.0));
+        assert!(!contains_logical_pointer(&left, f64::NAN, 0.0));
+    }
 
     fn display() -> DisplayInfo {
         DisplayInfo {

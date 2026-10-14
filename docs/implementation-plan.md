@@ -2,7 +2,7 @@
 
 ## Current status
 
-Updated **2026-10-13**. Current work includes the approved UI redesign Phase 1 on tracked
+Updated **2026-10-14**. Current work includes the approved UI redesign Phase 2 on tracked
 `develop`; the app version remains `0.1.0`.
 
 The **first desktop pre-release milestone is complete**.
@@ -219,8 +219,7 @@ These review follow-ups are recorded separately from completed fixes:
 
 The owner approved [the redesign plan](ui-redesign-plan.md) and
 [design system](design-system.md) on 2026-10-13, and authorized design tokens and
-the floating toolbar only. **Phase 1 is implemented for source/result review;
-next-phase work waits for explicit approval.**
+the floating toolbar only. **Phase 1 was approved for continuation; Phase 2 is implemented for source/result review.**
 
 - [x] Semantic CSS palette, typography/spacing/shape tokens, readable controls,
       focus indicators, offline native font fallback and transparent utility roots.
@@ -232,9 +231,9 @@ next-phase work waits for explicit approval.**
       saved collections, detector import, sources/notices and Quit remain accessible.
 - [x] Preserve local OCR/dictionary/tokenization/translation/persistence and developer
       capture diagnostics. No service/dependency/data/license/version changes.
-- [ ] Owner approval of this Phase 1 result.
-- [ ] Later phases: native selective hit routing/overlay visuals, dictionary popup,
-      saved-collection layouts and full settings redesign. Do not start these yet.
+- [x] Owner approval to continue beyond Phase 1.
+- [ ] Later phases: dictionary popup, saved-collection layouts and full settings
+      redesign. These still require approval of the Phase 2 result.
 
 Local verification: 113 frontend tests in 19 files, TypeScript, Prettier and
 production Vite build; 44 native Rust tests, Rust formatting and macOS debug
@@ -255,3 +254,50 @@ no installer/tag/publication or historical v0.1.0 evidence was changed.
 Older per-attempt plans and abandoned experiments remain recoverable in Git at
 `2885586`. Current build inputs, software/data terms, exact release records and
 replacement recipes stay in the repository; use the [documentation index](README.md).
+
+## UI redesign — Phase 2 review
+
+The owner authorized the next phase after the toolbar and tokens. Phase 2 covers
+OCR region visuals and native input routing, before the dictionary popup redesign.
+The owner selected **Compact popup** in the visual preview for that later phase.
+
+- [x] Extract `OCRBoundingBox` and scoped overlay styles. Preserve original polygons,
+      physical/logical transforms and vertical text; default orange, hover orange,
+      selected blue, dashed review/approximate/demo cues and explicit accessible labels.
+- [x] Native Windows polygon/controls window region; macOS native cursor sampling
+      plus mouse-ignore toggling (8 ms active, 80 ms idle), with drag ownership retained.
+      Disable hit routing on capture, hide and close; fresh reveal generations replace
+      old geometry. Quartz also fixes the observed Retina shortcut monitor-targeting
+      failure in the pinned Tao cursor path. No mouse-event replay, new platform
+      permission or dependency.
+- [x] Toolbar **Focus regions**, roving region focus, arrows/Home/End, Enter/Space;
+      Escape hides results while retaining them. Keyboard-origin popup dismissal returns
+      to the selected region; blur dismissal leaves focus with the reader.
+- [x] Keep estimated reading-order navigation optional; measure only its actual control
+      bounds for native input. Review guidance is passed to the existing learning popup.
+      Dictionary, translation, corrections and persistence are otherwise unchanged.
+- [x] Synthetic local reader fixture for native verification, excluded from the production
+      build. See [the native UI checks](ui-overlay-testing.md).
+- [ ] Complete native acceptance on Windows and mixed-DPI/multiple-monitor systems.
+- [ ] Owner approval of Phase 2 before the compact dictionary popup phase.
+
+Source checks: **117 frontend tests in 19 files**, TypeScript/production Vite build,
+Prettier, **49 native tests**, Cargo formatting and macOS debug build. Service code,
+dependencies, data contracts, version and release records are unchanged.
+
+Runtime verification on 2026-10-14: the owner confirmed Whole Screen produced a real
+OCR overlay using the normal `tauri dev` command and existing offline models. Native
+logs recorded a complete 2940 × 1912 physical capture and `manga` result. Earlier
+Phase 1 debug testing passed Selected Area, repeat capture and same-generation
+hide/show with the demo boundary. Ad-hoc app grants were tied to executable hashes;
+normal command-based development avoided the temporary bundle grant problem.
+
+The first command session ended before repeatable input/CPU measurements could be
+confirmed. Although Safari scrolling/clicking/text selection was observed, this alone
+is not accepted as proof that the native overlay was still active. A detached normal
+development process is running for final checks. Its root-process idle sample was
+0.0% CPU; a later sample was 2.0%. These snapshots include the app UI and do not
+isolate sampler cost or establish a performance guarantee. Keyboard focus return, fast-entry
+click loss, polling latency/CPU and Windows native behavior remain acceptance gates
+until recorded below. These source checks are not exact-installer acceptance; no
+installer was published and historical v0.1.0 evidence is preserved.

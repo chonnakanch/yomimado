@@ -2,6 +2,7 @@
 import { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { invoke } from "@tauri-apps/api/core";
+import { listen } from "@tauri-apps/api/event";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
 import {
   readingOrderSettingKey,
@@ -10,6 +11,9 @@ import {
 import { OcrOverlay } from "./OcrOverlay";
 
 vi.mock("@tauri-apps/api/core", () => ({ invoke: vi.fn() }));
+vi.mock("@tauri-apps/api/event", () => ({
+  listen: vi.fn().mockResolvedValue(vi.fn()),
+}));
 
 let container: HTMLDivElement;
 let root: Root;
@@ -94,8 +98,10 @@ it("loads a text-heavy OCR result from native state instead of the URL", async (
   expect(reviewRegion?.querySelector("title")?.textContent).toContain(
     "verify on page",
   );
-  expect(container.textContent).toContain("Dashed gold: check OCR text");
-  expect(container.textContent).toContain("Approximate OCR area");
+  expect(reviewRegion?.getAttribute("aria-label")).toContain("Review OCR");
+  expect(
+    container.querySelector("polygon.approximate")?.getAttribute("aria-label"),
+  ).toContain("Approximate region");
   expect(container.querySelector(".overlay-reading-order-panel")).toBeNull();
   expect(
     container.querySelectorAll("polygon.ocr-region.approximate"),
@@ -230,7 +236,7 @@ it("steps through estimated scan order and opens the selected region", async () 
   ).not.toBeNull();
   expect(
     container.querySelector(".overlay-reading-order-count")?.textContent,
-  ).toBe("1/2");
+  ).toBe("1/2 · estimated");
   expect(
     container.querySelector(".overlay-reading-order-text")?.textContent,
   ).toBe("短い");
@@ -250,7 +256,7 @@ it("steps through estimated scan order and opens the selected region", async () 
   });
   expect(
     container.querySelector(".overlay-reading-order-count")?.textContent,
-  ).toBe("2/2");
+  ).toBe("2/2 · estimated");
   expect(
     container.querySelector(".overlay-reading-order-text")?.textContent,
   ).toBe("これは長い文章ですがボタンは動きません");
@@ -275,4 +281,154 @@ it("steps through estimated scan order and opens the selected region", async () 
   });
   expect(container.querySelector(".overlay-reading-order-panel")).toBeNull();
   expect(container.querySelector("polygon.ocr-region.active")).toBeNull();
+});
+
+it("opens only on explicit activation and provides keyboard navigation and hide", async () => {
+  let onFocus:
+    ((event: { payload: { regionId: string | null } }) => void) | undefined;
+  const unlisten = vi.fn();
+  vi.mocked(listen).mockImplementation(async (_name, callback) => {
+    onFocus = callback as typeof onFocus;
+    return unlisten;
+  });
+  const metadata = {
+    displayId: "left",
+    displayName: "Left",
+    screenPhysicalBounds: { x: -1000, y: 0, width: 1000, height: 800 },
+    selectionPhysicalBounds: { x: -1000, y: 0, width: 1000, height: 800 },
+    selectionLogicalBounds: { x: -1000, y: 0, width: 1000, height: 800 },
+    imageWidth: 1000,
+    imageHeight: 800,
+    scaleFactor: 1,
+  };
+  const regions = ["今日", "学校"].map((text, index) => ({
+    id: String(index),
+    text,
+    polygon: [
+      { x: 10 + index * 100, y: 10 },
+      { x: 60 + index * 100, y: 10 },
+      { x: 60 + index * 100, y: 100 },
+      { x: 10 + index * 100, y: 100 },
+    ],
+    orientation: "vertical",
+    confidence: 0,
+    type: "dialogue",
+    tokens: [],
+  }));
+  vi.mocked(invoke).mockResolvedValue({
+    metadata,
+    regions,
+    engine: "manga",
+    layout: {
+      windowWidth: 1000,
+      windowHeight: 800,
+      contentLeft: 0,
+      contentTop: 0,
+      contentWidth: 1000,
+      contentHeight: 800,
+      toolbarTop: 0,
+      toolbarHeight: 32,
+    },
+  });
+  await act(async () => root.render(<OcrOverlay />));
+  const polygons = Array.from(
+    container.querySelectorAll<SVGPolygonElement>("polygon"),
+  );
+  const focusFirst = vi.fn();
+  const focusLast = vi.fn();
+  Object.defineProperty(polygons[0], "focus", { value: focusFirst });
+  Object.defineProperty(polygons[1], "focus", { value: focusLast });
+  expect(polygons[0].getAttribute("role")).toBe("button");
+  expect(polygons[0].getAttribute("tabindex")).toBe("0");
+  expect(polygons[1].getAttribute("tabindex")).toBe("-1");
+  await act(async () =>
+    polygons[0].dispatchEvent(new MouseEvent("mouseenter", { bubbles: true })),
+  );
+  expect(invoke).not.toHaveBeenCalledWith(
+    "show_translation_popup",
+    expect.anything(),
+  );
+  await act(async () => onFocus?.({ payload: { regionId: null } }));
+  expect(focusFirst).toHaveBeenCalledOnce();
+  await act(async () =>
+    polygons[0].dispatchEvent(
+      new KeyboardEvent("keydown", { key: "End", bubbles: true }),
+    ),
+  );
+  expect(focusLast).toHaveBeenCalledOnce();
+  expect(polygons[1].getAttribute("aria-pressed")).toBe("true");
+  await act(async () =>
+    polygons[1].dispatchEvent(
+      new KeyboardEvent("keydown", { key: "Enter", bubbles: true }),
+    ),
+  );
+  expect(invoke).toHaveBeenCalledWith(
+    "show_translation_popup",
+    expect.objectContaining({ regionId: "1", text: "学校", keyboard: true }),
+  );
+  await act(async () =>
+    window.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape" })),
+  );
+  expect(invoke).toHaveBeenCalledWith("hide_focused_overlay");
+  await act(async () => root.unmount());
+  expect(unlisten).toHaveBeenCalledOnce();
+  root = createRoot(container);
+  vi.mocked(listen).mockResolvedValue(vi.fn());
+});
+
+it("uses explicit demo labels and Space activation without inventing recognized text", async () => {
+  const metadata = {
+    displayId: "demo",
+    displayName: "Demo",
+    screenPhysicalBounds: { x: 0, y: 0, width: 100, height: 100 },
+    selectionPhysicalBounds: { x: 0, y: 0, width: 100, height: 100 },
+    selectionLogicalBounds: { x: 0, y: 0, width: 100, height: 100 },
+    imageWidth: 100,
+    imageHeight: 100,
+    scaleFactor: 1,
+  };
+  vi.mocked(invoke).mockResolvedValue({
+    metadata,
+    regions: [
+      {
+        id: "demo",
+        text: "Placeholder",
+        polygon: [
+          { x: 0, y: 0 },
+          { x: 100, y: 0 },
+          { x: 100, y: 100 },
+        ],
+        orientation: "horizontal",
+        confidence: 0,
+        type: "other",
+        tokens: [],
+      },
+    ],
+    engine: "demo",
+    layout: {
+      windowWidth: 100,
+      windowHeight: 100,
+      contentLeft: 0,
+      contentTop: 0,
+      contentWidth: 100,
+      contentHeight: 100,
+      toolbarTop: 0,
+      toolbarHeight: 32,
+    },
+  });
+  await act(async () => root.render(<OcrOverlay />));
+  const polygon = container.querySelector("polygon")!;
+  expect(polygon.getAttribute("aria-label")).toContain(
+    "Demo boundary — no recognized text",
+  );
+  expect(polygon.getAttribute("aria-label")).not.toContain("Placeholder");
+  await act(async () =>
+    polygon.dispatchEvent(
+      new KeyboardEvent("keydown", { key: " ", bubbles: true }),
+    ),
+  );
+  expect(invoke).toHaveBeenCalledWith(
+    "show_translation_popup",
+    expect.objectContaining({ demo: true, keyboard: true }),
+  );
 });

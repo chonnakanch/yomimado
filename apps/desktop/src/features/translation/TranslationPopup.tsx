@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState } from "react";
 import { invoke } from "@tauri-apps/api/core";
-import { getCurrentWindow } from "@tauri-apps/api/window";
 import {
   requestTranslation,
   type TranslationResult,
@@ -20,6 +19,8 @@ import type { TextToken } from "../../lib/ocr-types";
 interface PopupState {
   text: string;
   demo: boolean;
+  reviewReason?: string;
+  approximate?: boolean;
   placement?: {
     screen: { x: number; y: number; width: number; height: number };
     anchorLeft: number;
@@ -58,6 +59,7 @@ export function TranslationPopup() {
       ) as PopupState | null,
   );
   const contentRef = useRef<HTMLDivElement>(null);
+  const viewQuery = useRef(window.location.search.slice(1)).current;
   const [source, setSource] = useState(state?.demo ? "" : (state?.text ?? ""));
   const [result, setResult] = useState<TranslationResult | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -167,7 +169,13 @@ export function TranslationPopup() {
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") void getCurrentWindow().close();
+      if (event.key === "Escape")
+        void invoke("close_translation_popup", {
+          returnFocus: true,
+          viewQuery,
+        }).catch((error) =>
+          setError(`Could not close popup: ${String(error)}`),
+        );
     };
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
@@ -319,12 +327,24 @@ export function TranslationPopup() {
           <strong>Japanese → English</strong>
           <button
             className="translation-close"
-            onClick={() => void getCurrentWindow().close()}
+            onClick={(event) =>
+              void invoke("close_translation_popup", {
+                returnFocus: event.detail === 0,
+                viewQuery,
+              })
+            }
             aria-label="Close translation"
           >
             ×
           </button>
         </div>
+        {(state.reviewReason || state.approximate) && (
+          <p className="translation-review" role="status">
+            {state.approximate ? "Approximate OCR region. " : "Review OCR. "}
+            {state.reviewReason ??
+              "Check the text against the page before saving."}
+          </p>
+        )}
         <label htmlFor="translation-source">
           {state.demo
             ? "Demo: type Japanese text to test translation"

@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="ja">
+  <meta charset="utf-8" /><title>YomiMado synthetic reader test</title
+  ><style>
+    body {
+      background: #dedede;
+      margin: 0;
+      font-family: "Hiragino Sans", sans-serif;
+      color: #181818;
+    }
+    header {
+      padding: 24px;
+    }
+    main {
+      margin: 40px auto;
+      background: white;
+      border: 2px solid #181818;
+      width: 720px;
+      min-height: 1600px;
+      padding: 48px;
+      box-sizing: border-box;
+    }
+    section {
+      display: flex;
+      justify-content: space-between;
+      height: 480px;
+    }
+    .vertical {
+      writing-mode: vertical-rl;
+      font-size: 32px;
+      line-height: 1.8;
+      padding: 28px;
+      border: 2px solid;
+      border-radius: 40%;
+      height: 280px;
+    }
+    .horizontal {
+      font-size: 32px;
+      line-height: 1.8;
+    }
+    button,
+    input {
+      font-size: 20px;
+      padding: 12px;
+    }
+    #status {
+      font-family: system-ui;
+      font-size: 18px;
+    }
+  </style>
+  <header>Local synthetic text — no manga assets</header>
+  <main>
+    <section>
+      <div class="vertical">今日はいい天気ですね。</div>
+      <div class="vertical">無理のしすぎはダメだよ。</div>
+    </section>
+    <p class="horizontal">一緒に日本語を勉強しましょう。</p>
+    <button onclick="this.textContent = 'Reader clicked'">
+      Test reader click
+    </button>
+    <p>
+      <input
+        aria-label="Reader text selection"
+        value="Select and drag this reader text"
+      />
+    </p>
+    <p id="status">Scroll: 0</p>
+    <p style="margin-top: 600px">Reader scroll destination</p>
+  </main>
+  <script>
+    addEventListener(
+      "scroll",
+      () =>
+        (document.getElementById("status").textContent =
+          "Scroll: " + Math.round(scrollY)),
+    );
+  </script>
+</html>

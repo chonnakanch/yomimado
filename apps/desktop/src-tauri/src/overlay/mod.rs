@@ -3,6 +3,7 @@ use std::sync::Mutex;
 use tauri::{AppHandle, Manager, PhysicalPosition, PhysicalSize, WebviewUrl, WebviewWindowBuilder};
 
 use crate::capture::{CaptureMetadata, Rectangle};
+pub mod input;
 
 const POPUP_LOGICAL_WIDTH: f64 = 460.0;
 const INITIAL_POPUP_LOGICAL_HEIGHT: f64 = 320.0;
@@ -72,6 +73,9 @@ pub fn reveal_overlay(app: &AppHandle, store: &OverlayStore) -> Result<serde_jso
     let window = app
         .get_webview_window("ocr-overlay")
         .ok_or("OCR overlay is unavailable")?;
+    window
+        .set_ignore_cursor_events(true)
+        .map_err(|e| e.to_string())?;
     window.show().map_err(|e| e.to_string())?;
     let mut state = store.get()?;
     let metadata: CaptureMetadata =
@@ -87,6 +91,9 @@ pub fn reveal_overlay(app: &AppHandle, store: &OverlayStore) -> Result<serde_jso
         window.inner_position().map_err(|e| e.to_string())?,
         window.inner_size().map_err(|e| e.to_string())?,
     );
+    app.state::<crate::AppState>()
+        .overlay_input
+        .install(app, &state, &actual)?;
     let actual = serde_json::to_value(actual).map_err(|e| e.to_string())?;
     state["layout"] = actual.clone();
     store.set(state)?;
@@ -204,8 +211,20 @@ fn popup_position(placement: PopupPlacement, logical_height: f64) -> Result<Popu
     })
 }
 
-fn translation_popup_query(text: &str, demo: bool, placement: PopupPlacement) -> String {
-    let state = serde_json::json!({ "text": text, "demo": demo, "placement": placement });
+fn translation_popup_query(
+    text: &str,
+    demo: bool,
+    placement: PopupPlacement,
+    review_reason: Option<&str>,
+    approximate: bool,
+) -> String {
+    let mut state = serde_json::json!({ "text": text, "demo": demo, "placement": placement });
+    if let Some(reason) = review_reason {
+        state["reviewReason"] = reason.into();
+    }
+    if approximate {
+        state["approximate"] = true.into();
+    }
     let serialized = state.to_string();
     let encoded = urlencoding::encode(&serialized);
     format!("mode=translation&state={encoded}")
@@ -279,6 +298,7 @@ pub fn show_overlay(
     estimated_reading_order: bool,
     session_id: u64,
 ) -> Result<(), String> {
+    app.state::<crate::AppState>().overlay_input.disable(app)?;
     let previous = store.get().ok();
     let layout = layout(metadata);
     let state = serde_json::json!({
@@ -307,6 +327,7 @@ pub fn show_overlay(
             WebviewWindowBuilder::new(app, "ocr-overlay", WebviewUrl::App(OVERLAY_URL.into()))
                 .transparent(true)
                 .decorations(false)
+                .resizable(false)
                 .always_on_top(true)
                 .focused(false)
                 .accept_first_mouse(true)
@@ -353,6 +374,8 @@ pub fn show_translation_popup(
     text: &str,
     polygon: &[OcrPoint],
     demo: bool,
+    review_reason: Option<&str>,
+    approximate: bool,
 ) -> Result<(), String> {
     let screen = app
         .get_webview_window("ocr-overlay")
@@ -369,7 +392,7 @@ pub fn show_translation_popup(
         .unwrap_or(metadata.screen_physical_bounds);
     let placement = popup_placement(metadata, polygon, screen)?;
     let position = popup_position(placement, INITIAL_POPUP_LOGICAL_HEIGHT)?;
-    let query = translation_popup_query(text, demo, placement);
+    let query = translation_popup_query(text, demo, placement, review_reason, approximate);
     if let Some(window) = app.get_webview_window("translation-popup") {
         // Reuse the existing webview: close() can return before its label is
         // removed, so immediately rebuilding with the same label can fail.
@@ -425,6 +448,42 @@ pub fn resize_translation_popup(
     window
         .set_position(PhysicalPosition::new(position.x, position.y))
         .map_err(|error| error.to_string())
+}
+
+pub fn check_frame(app: &AppHandle) -> Result<(), String> {
+    let state = app.state::<crate::AppState>();
+    let mut session = state.scans.lock()?;
+    if session.active.is_some() || !session.overlay_visible || !state.overlay_input.is_active() {
+        return Ok(());
+    }
+    let window = app
+        .get_webview_window("ocr-overlay")
+        .ok_or("OCR overlay is unavailable")?;
+    let data = state.overlay.get()?;
+    let planned: OverlayLayout =
+        serde_json::from_value(data["layout"].clone()).map_err(|e| e.to_string())?;
+    let position = window.inner_position().map_err(|e| e.to_string())?;
+    let size = window.inner_size().map_err(|e| e.to_string())?;
+    let scale = window.scale_factor().map_err(|e| e.to_string())?;
+    if position.x != planned.window_x
+        || position.y != planned.window_y
+        || size.width != planned.window_width
+        || size.height != planned.window_height
+        || data["metadata"]["scaleFactor"].as_f64() != Some(scale)
+    {
+        state.overlay_input.disable(app)?;
+        window.hide().map_err(|e| e.to_string())?;
+        if let Some(popup) = app.get_webview_window("translation-popup") {
+            popup.hide().map_err(|e| e.to_string())?;
+        }
+        session.overlay_visible = false;
+        session.phase = "error";
+        session.message = "Display layout changed. Rescan before using these OCR regions.".into();
+        session.revision += 1;
+        drop(session);
+        crate::toolbar::emit_state(app);
+    }
+    Ok(())
 }
 
 #[cfg(test)]
@@ -513,6 +572,8 @@ mod tests {
             "たまにはいいでしょ",
             false,
             placement,
+            Some("Check short text"),
+            true,
         )));
 
         let state = url
@@ -523,6 +584,8 @@ mod tests {
         let state: serde_json::Value = serde_json::from_str(&state).expect("JSON popup state");
         assert_eq!(state["text"], "たまにはいいでしょ");
         assert_eq!(state["demo"], false);
+        assert_eq!(state["reviewReason"], "Check short text");
+        assert_eq!(state["approximate"], true);
         assert_eq!(state["placement"]["anchorLeft"], 100.0);
     }
 

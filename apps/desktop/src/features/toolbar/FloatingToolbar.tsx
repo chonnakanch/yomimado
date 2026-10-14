@@ -123,7 +123,9 @@ export function FloatingToolbar() {
 
   useEffect(() => {
     if (menuOpen)
-      menu.current?.querySelector<HTMLButtonElement>("button")?.focus();
+      menu.current
+        ?.querySelector<HTMLButtonElement>("button:not(:disabled)")
+        ?.focus();
   }, [menuOpen]);
 
   const run = async (command: string, args?: Record<string, unknown>) => {
@@ -355,6 +357,12 @@ export function FloatingToolbar() {
           ref={menu}
           onKeyDown={navigateMenu}
         >
+          <button
+            disabled={busy || !state?.hasOverlay || !state.overlayVisible}
+            onClick={() => void run("focus_ocr_regions")}
+          >
+            Focus regions
+          </button>
           <button
             disabled={busy}
             onClick={() => void run("show_secondary_window", { view: "words" })}
