@@ -302,7 +302,17 @@ confirmed. Although Safari scrolling/clicking/text selection was observed, this 
 is not accepted as proof that the native overlay was still active. A detached normal
 development process is running for final checks. Its root-process idle sample was
 0.0% CPU; a later sample was 2.0%. These snapshots include the app UI and do not
-isolate sampler cost or establish a performance guarantee. Keyboard focus return, fast-entry
-click loss, polling latency/CPU and Windows native behavior remain acceptance gates
-until recorded below. These source checks are not exact-installer acceptance; no
-installer was published and historical v0.1.0 evidence is preserved.
+isolate sampler cost or establish a performance guarantee. The owner subsequently
+confirmed region keyboard entry, arrow navigation, popup dismissal/focus return,
+quick region clicks and Hide/Show work in the running development app. This is a
+functional smoke check, not a measured fast-entry click-loss or latency benchmark.
+Polling latency/CPU and Windows native behavior remain acceptance gates.
+
+The owner reported missing outlines in Selected Area mode. Opt-in development
+geometry diagnostics reproduced a reused-window frame shift: resizing from 1794
+physical pixels tall to 1442 after setting its position moved its top from 289 to
+642, clipping the upper text even though all three OCR polygons were present.
+Resize the hidden overlay before positioning it, including failure restoration,
+to preserve its intended physical frame. Selected Area runtime verification of
+this correction is pending. These source checks are not exact-installer acceptance;
+no installer was published and historical v0.1.0 evidence is preserved.

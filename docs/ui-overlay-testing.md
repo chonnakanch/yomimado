@@ -14,7 +14,10 @@ proved inconvenient for repeated grants.
 ## Check the native interaction
 
 1. Whole Screen and Selected Area produce aligned polygons for the horizontal and
-   vertical fixture text. Capture must exclude the toolbar, result and popup.
+   vertical fixture text. Switch from Whole Screen to a smaller Selected Area, then
+   select a different-size area and use Rescan and Hide/Show. All polygon edges must
+   remain visible: macOS resizing must precede positioning the reused overlay.
+   Capture must exclude the toolbar, result and popup.
 2. With the overlay visibly present, click **Test reader click**, drag-select the
    input text and scroll in the blank side margin. The browser must receive them.
    Start a drag outside a polygon and cross it; verify mouse-up stays with the browser.
@@ -48,3 +51,9 @@ image/selection ratios used by the frontend, including an OS-adjusted client ori
 Recorded evidence and open acceptance gates are in
 [implementation status](implementation-plan.md#ui-redesign--phase-2-review).
 Source builds/tests are distinct from native manual checks and installer acceptance.
+
+For frame diagnosis only, set `YOMIMADO_OVERLAY_GEOMETRY_DEBUG=1` when launching
+the debug app. Each reveal writes capture metadata, measured native frame and OCR
+polygons to stderr. It omits screenshot bytes and recognized text, is off by
+default and is excluded from release builds. Compare the measured window bounds
+with the selected physical rectangle when investigating clipped edges.

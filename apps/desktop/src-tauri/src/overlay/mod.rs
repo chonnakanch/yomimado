@@ -95,6 +95,21 @@ pub fn reveal_overlay(app: &AppHandle, store: &OverlayStore) -> Result<serde_jso
         .overlay_input
         .install(app, &state, &actual)?;
     let actual = serde_json::to_value(actual).map_err(|e| e.to_string())?;
+    #[cfg(debug_assertions)]
+    if std::env::var_os("YOMIMADO_OVERLAY_GEOMETRY_DEBUG").is_some() {
+        let polygons: Vec<_> = state["regions"]
+            .as_array()
+            .into_iter()
+            .flatten()
+            .map(|region| region["polygon"].clone())
+            .collect();
+        eprintln!(
+            "YomiMado geometry: {}",
+            serde_json::json!({
+                "metadata": state["metadata"], "layout": actual, "polygons": polygons,
+            })
+        );
+    }
     state["layout"] = actual.clone();
     store.set(state)?;
     Ok(actual)
@@ -339,11 +354,14 @@ pub fn show_overlay(
         builder.build().map_err(|e| e.to_string())?
     };
     let result: Result<(), String> = (|| {
-        window
-            .set_position(PhysicalPosition::new(layout.window_x, layout.window_y))
-            .map_err(|e| e.to_string())?;
+        // Resize before positioning: on macOS resizing a reused borderless
+        // window preserves its bottom edge and shifts its top. Positioning first
+        // clips the top of a smaller selection, even after correcting SVG offsets.
         window
             .set_size(PhysicalSize::new(layout.window_width, layout.window_height))
+            .map_err(|e| e.to_string())?;
+        window
+            .set_position(PhysicalPosition::new(layout.window_x, layout.window_y))
             .map_err(|e| e.to_string())?;
         store.set(state)?;
         let mut url = window.url().map_err(|e| e.to_string())?;
@@ -360,8 +378,8 @@ pub fn show_overlay(
             let _ = store.clear();
         }
         if let Some((position, size, url)) = previous_frame {
-            let _ = window.set_position(position);
             let _ = window.set_size(size);
+            let _ = window.set_position(position);
             let _ = window.navigate(url);
         }
     }
