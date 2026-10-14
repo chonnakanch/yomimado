@@ -16,7 +16,8 @@ proved inconvenient for repeated grants.
 1. Whole Screen and Selected Area produce aligned polygons for the horizontal and
    vertical fixture text. Switch from Whole Screen to a smaller Selected Area, then
    select a different-size area and use Rescan and Hide/Show. All polygon edges must
-   remain visible: macOS resizing must precede positioning the reused overlay.
+   remain visible: establish the target monitor, resize, then reapply the position
+   of the reused overlay. Also verify the first Retina scan's physical window size.
    Capture must exclude the toolbar, result and popup.
 2. With the overlay visibly present, click **Test reader click**, drag-select the
    input text and scroll in the blank side margin. The browser must receive them.
@@ -54,6 +55,7 @@ Source builds/tests are distinct from native manual checks and installer accepta
 
 For frame diagnosis only, set `YOMIMADO_OVERLAY_GEOMETRY_DEBUG=1` when launching
 the debug app. Each reveal writes capture metadata, measured native frame and OCR
-polygons to stderr. It omits screenshot bytes and recognized text, is off by
+polygons to stderr; navigator updates also report CSS viewport and physical window
+dimensions. It omits screenshot bytes and recognized text, is off by
 default and is excluded from release builds. Compare the measured window bounds
 with the selected physical rectangle when investigating clipped edges.

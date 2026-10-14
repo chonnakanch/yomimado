@@ -354,9 +354,13 @@ pub fn show_overlay(
         builder.build().map_err(|e| e.to_string())?
     };
     let result: Result<(), String> = (|| {
-        // Resize before positioning: on macOS resizing a reused borderless
-        // window preserves its bottom edge and shifts its top. Positioning first
-        // clips the top of a smaller selection, even after correcting SVG offsets.
+        // Establish the target monitor before converting the physical size;
+        // a new hidden window can still have the default monitor's scale.
+        window
+            .set_position(PhysicalPosition::new(layout.window_x, layout.window_y))
+            .map_err(|e| e.to_string())?;
+        // macOS resizing preserves the bottom edge and shifts the top. Apply the
+        // position again after resizing so smaller selections are not clipped.
         window
             .set_size(PhysicalSize::new(layout.window_width, layout.window_height))
             .map_err(|e| e.to_string())?;
@@ -378,6 +382,7 @@ pub fn show_overlay(
             let _ = store.clear();
         }
         if let Some((position, size, url)) = previous_frame {
+            let _ = window.set_position(position);
             let _ = window.set_size(size);
             let _ = window.set_position(position);
             let _ = window.navigate(url);

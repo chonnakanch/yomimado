@@ -312,7 +312,14 @@ The owner reported missing outlines in Selected Area mode. Opt-in development
 geometry diagnostics reproduced a reused-window frame shift: resizing from 1794
 physical pixels tall to 1442 after setting its position moved its top from 289 to
 642, clipping the upper text even though all three OCR polygons were present.
-Resize the hidden overlay before positioning it, including failure restoration,
-to preserve its intended physical frame. Selected Area runtime verification of
-this correction is pending. These source checks are not exact-installer acceptance;
+Establish the target monitor, resize the hidden overlay, then reapply its
+position, including failure restoration, to preserve the intended physical frame.
+The first diagnostic correction exposed doubled sizing of a newly created Retina
+window when sizing preceded monitor placement; the final sequence covers both
+initial monitor scale and reused-window clipping. Final native diagnostics verified
+2940 × 1912 for the first Retina Whole Screen result and correct frames for two
+smaller selections. The last Selected Area frame was 1506 × 1430 physical pixels
+with a matching 753 × 715 CSS viewport and a positive 31.8 logical-pixel image
+inset. The owner still reports that boxes do not fully cover text; visual coverage
+remains unresolved pending a fresh screenshot. Phase 2 is not accepted. These source checks are not exact-installer acceptance;
 no installer was published and historical v0.1.0 evidence is preserved.

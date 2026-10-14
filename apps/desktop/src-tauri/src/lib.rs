@@ -574,6 +574,17 @@ fn update_overlay_controls(
     {
         return Ok(());
     }
+    #[cfg(debug_assertions)]
+    if std::env::var_os("YOMIMADO_OVERLAY_GEOMETRY_DEBUG").is_some() {
+        eprintln!(
+            "YomiMado viewport: {}",
+            serde_json::json!({
+                "sessionId": session_id, "width": viewport_width, "height": viewport_height,
+                "windowWidth": window.inner_size().map(|size| size.width).ok(),
+                "windowHeight": window.inner_size().map(|size| size.height).ok(),
+            })
+        );
+    }
     let state = app.state::<AppState>();
     let result = state.overlay_input.controls(
         &app,
