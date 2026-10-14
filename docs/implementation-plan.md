@@ -374,5 +374,8 @@ offline-model probe with a synthetic crop deliberately omitting the entire
 leading stroke changed recognition from `緒に日本語を勉強しましょう。` to
 `一緒に日本語を勉強しましょう。`; the corrected crop and polygon include that
 stroke. The updated local service remains running with the normal development
-app. The owner's Whole Screen/whole-display visual confirmation is still pending;
+app. On 2026-10-14 the owner confirmed that Whole Screen now fully covers the
+leading `一`, following the earlier successful white-reader-panel selection.
+Post-fix confirmation of whole-display manual selection is not separately recorded.
+Phase 2 owner approval and Windows/mixed-DPI interactive acceptance remain open;
 no popup phase, installer acceptance or publication is implied.
