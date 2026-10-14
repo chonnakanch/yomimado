@@ -1,6 +1,6 @@
 # YomiMado UI/UX redesign plan
 
-Status: **Approved by the owner on 2026-10-13. Phase 3 Compact popup authorized on 2026-10-14 and implemented for review.**
+Status: **Approved by the owner on 2026-10-13. Phase 3 Compact popup accepted on the running macOS development app on 2026-10-14.**
 Prepared 2026-10-13 against `develop` at `4f8a395` (app version `0.1.0`).
 The owner approved this plan and [the design system](design-system.md), then
 authorized Phase 1: design tokens and the floating toolbar, then Phase 2: OCR
@@ -548,5 +548,8 @@ resize rejects previous popup queries and uses target-monitor physical scaling.
 Popup components/styles and tests are feature-owned; no service, dependency,
 dictionary, storage or release-format change is introduced.
 
-Next action: owner review of Phase 3 and remaining native platform acceptance.
-Saved-collection and settings redesigns remain unstarted.
+The owner confirmed that the Compact popup looks right, stays within the screen
+and returns keyboard focus correctly in the normal macOS development app on
+2026-10-14. Cross-platform Checks passed for `d90aaa4`. Windows/mixed-DPI runtime
+acceptance remains open. Saved-collection and settings redesigns remain unstarted
+pending authorization for the next phase.

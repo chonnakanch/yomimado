@@ -25,8 +25,8 @@ Screenshots still stay local.
 page-scan shortcut described in the published v0.1.0 guide below. Toolbar buttons
 use the toolbar's monitor; Rescan uses its recorded original monitor.
 
-The owner approved continuation through Phase 3, whose learning popup is ready
-for review. Saved-data formats and legacy main-window controls are retained;
+The owner approved continuation through Phase 3 and accepted the compact learning
+popup in the running macOS development app. Saved-data formats and legacy main-window controls are retained;
 settings/library redesigns remain deferred. Published v0.1.0 installers retain
 the older interaction below.
 

@@ -438,8 +438,9 @@ for source/result review; saved-collection and settings redesigns remain unstart
 - [x] Native preferred width 420 logical px, work-area height cap 70%, target-scale
       positioning and rejection of previous-popup resize queries. Sentence/actions
       stay above bounded scrolling details; long sentences scroll independently.
-- [ ] Owner native macOS popup acceptance, including placement, resize, clipboard,
-      keyboard dismissal and region focus return.
+- [x] Owner confirmed the normal macOS development popup looks right, stays within
+      the screen and returns keyboard focus correctly after word/kanji/compound
+      exploration and Edit OCR text → Cancel / Escape on 2026-10-14.
 - [ ] Windows and mixed-DPI interactive acceptance. Installer/publication work is
       not authorized by this source change.
 
@@ -454,3 +455,10 @@ Opaque popup text colors have contrast ≥5.32:1 on their used surfaces; selecte
 token text is 7.05:1 and focus on the popup surface is 6.29:1. Native font fallbacks
 remain offline. No service, dependency, font, model, release version or installer
 change was made. The normal command-based development app was relaunched for review.
+
+[Checks run 38536586847](https://github.com/chonnakanch/yomimado/actions/runs/38536586847)
+passed all gates for Phase 3 source `d90aaa4`, including frontend, service,
+release tools and macOS/Windows native tests and builds. The owner accepted the
+popup in the running macOS development app. Clipboard success was verified in
+WebKit, not separately in both native hosts. Windows/mixed-DPI runtime acceptance
+remains open; Phase 4 is unstarted pending further authorization.
