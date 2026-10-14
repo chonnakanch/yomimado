@@ -5,9 +5,13 @@ use tauri::{AppHandle, Manager, PhysicalPosition, PhysicalSize, WebviewUrl, Webv
 use crate::capture::{CaptureMetadata, Rectangle};
 pub mod input;
 
-const POPUP_LOGICAL_WIDTH: f64 = 460.0;
+// Keep preferred width in sync with --popup-width; all dimensions here are
+// converted once into the target monitor's physical pixels.
+const POPUP_LOGICAL_WIDTH: f64 = 420.0;
 const INITIAL_POPUP_LOGICAL_HEIGHT: f64 = 320.0;
 const POPUP_SCREEN_INSET: f64 = 12.0;
+const POPUP_HEIGHT_FRACTION: f64 = 0.7;
+const POPUP_ANCHOR_GAP: f64 = 8.0;
 const OVERLAY_URL: &str = "index.html?mode=overlay";
 
 #[derive(Default)]
@@ -201,9 +205,9 @@ fn popup_position(placement: PopupPlacement, logical_height: f64) -> Result<Popu
     let width = (POPUP_LOGICAL_WIDTH * scale).round().min(available_width);
     let height = (logical_height * scale)
         .round()
-        .min(available_height)
+        .min((available_height * POPUP_HEIGHT_FRACTION).round())
         .max(1.0);
-    let gap = (8.0 * scale).round();
+    let gap = (POPUP_ANCHOR_GAP * scale).round();
     let screen_left = screen.x + inset;
     let screen_top = screen.y + inset;
     let screen_right = screen.x + screen.width - inset;
@@ -428,6 +432,9 @@ pub fn show_translation_popup(
         window
             .set_size(PhysicalSize::new(position.width, position.height))
             .map_err(|error| error.to_string())?;
+        window
+            .set_position(PhysicalPosition::new(position.x, position.y))
+            .map_err(|error| error.to_string())?;
         window.show().map_err(|error| error.to_string())?;
         window.set_focus().map_err(|error| error.to_string())?;
         return Ok(());
@@ -451,6 +458,9 @@ pub fn show_translation_popup(
     window
         .set_size(PhysicalSize::new(position.width, position.height))
         .map_err(|error| error.to_string())?;
+    window
+        .set_position(PhysicalPosition::new(position.x, position.y))
+        .map_err(|error| error.to_string())?;
     window.show().map_err(|error| error.to_string())?;
     window.set_focus().map_err(|error| error.to_string())?;
     Ok(())
@@ -460,11 +470,21 @@ pub fn resize_translation_popup(
     app: &AppHandle,
     placement: PopupPlacement,
     logical_height: f64,
+    view_query: &str,
 ) -> Result<(), String> {
     let window = app
         .get_webview_window("translation-popup")
         .ok_or("Translation popup is unavailable")?;
+    // A reused webview can still deliver a resize from its previous sentence.
+    if !window.is_visible().map_err(|error| error.to_string())?
+        || window.url().map_err(|error| error.to_string())?.query() != Some(view_query)
+    {
+        return Ok(());
+    }
     let position = popup_position(placement, logical_height)?;
+    window
+        .set_position(PhysicalPosition::new(position.x, position.y))
+        .map_err(|error| error.to_string())?;
     window
         .set_size(PhysicalSize::new(position.width, position.height))
         .map_err(|error| error.to_string())?;
@@ -756,7 +776,7 @@ mod tests {
             PopupPosition {
                 x: 1416,
                 y: 666,
-                width: 920,
+                width: 840,
                 height: 640
             }
         );
@@ -777,8 +797,8 @@ mod tests {
             scale_factor: 2.0,
         };
         let position = popup_position(placement, 800.0).unwrap();
-        assert_eq!(position.width, 920);
-        assert_eq!(position.height, 852);
+        assert_eq!(position.width, 840);
+        assert_eq!(position.height, 596);
         assert!(position.x >= -1576);
         assert!(position.x + position.width as i32 <= -24);
         assert!(position.y >= 54);
@@ -800,7 +820,7 @@ mod tests {
             scale_factor: 1.0,
         };
         let position = popup_position(placement, 680.0).unwrap();
-        assert_eq!((position.width, position.height), (460, 680));
+        assert_eq!((position.width, position.height), (420, 680));
         assert_eq!((position.x, position.y), (208, 120));
     }
 
@@ -819,7 +839,38 @@ mod tests {
             scale_factor: 1.0,
         };
         let position = popup_position(placement, 900.0).unwrap();
-        assert_eq!((position.width, position.height), (336, 476));
-        assert_eq!((position.x, position.y), (12, 12));
+        assert_eq!((position.width, position.height), (336, 333));
+        assert_eq!((position.x, position.y), (12, 155));
+    }
+
+    #[test]
+    fn compact_popup_scales_once_and_caps_height_on_fractional_displays() {
+        for scale in [1.0, 1.25, 1.5, 2.0] {
+            let placement = PopupPlacement {
+                screen: Rectangle {
+                    x: -2400.0,
+                    y: -300.0,
+                    width: 1920.0,
+                    height: 1080.0,
+                },
+                anchor_left: -600.0,
+                anchor_right: -500.0,
+                anchor_top: 700.0,
+                scale_factor: scale,
+            };
+            let position = popup_position(placement, 2000.0).unwrap();
+            let inset = (12.0 * scale).round();
+            assert_eq!(position.width, (420.0 * scale).round() as u32);
+            assert_eq!(
+                position.height,
+                ((1080.0 - 2.0 * inset) * 0.7).round() as u32
+            );
+            assert!(f64::from(position.x) >= -2400.0 + inset);
+            assert!(f64::from(position.x) + f64::from(position.width) <= -480.0 - inset);
+            assert!(f64::from(position.y) >= -300.0 + inset);
+            assert!(f64::from(position.y) + f64::from(position.height) <= 780.0 - inset);
+            let collapsed = popup_position(placement, 180.0).unwrap();
+            assert_eq!(collapsed.height, (180.0 * scale).round() as u32);
+        }
     }
 }

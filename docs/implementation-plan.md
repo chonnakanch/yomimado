@@ -2,7 +2,7 @@
 
 ## Current status
 
-Updated **2026-10-14**. Current work includes the approved UI redesign Phase 2 on tracked
+Updated **2026-10-14**. Current work includes the approved UI redesign Phase 3 on tracked
 `develop`; the app version remains `0.1.0`.
 
 The **first desktop pre-release milestone is complete**.
@@ -232,8 +232,9 @@ the floating toolbar only. **Phase 1 was approved for continuation; Phase 2 is i
 - [x] Preserve local OCR/dictionary/tokenization/translation/persistence and developer
       capture diagnostics. No service/dependency/data/license/version changes.
 - [x] Owner approval to continue beyond Phase 1.
-- [ ] Later phases: dictionary popup, saved-collection layouts and full settings
-      redesign. These still require approval of the Phase 2 result.
+- [x] Owner authorized the Compact dictionary popup phase on 2026-10-14.
+- [ ] Later phases: saved-collection layouts and full settings redesign. These
+      require approval of the Phase 3 result.
 
 Local verification: 113 frontend tests in 19 files, TypeScript, Prettier and
 production Vite build; 44 native Rust tests, Rust formatting and macOS debug
@@ -279,7 +280,8 @@ The owner selected **Compact popup** in the visual preview for that later phase.
 - [x] Synthetic local reader fixture for native verification, excluded from the production
       build. See [the native UI checks](ui-overlay-testing.md).
 - [ ] Complete native acceptance on Windows and mixed-DPI/multiple-monitor systems.
-- [ ] Owner approval of Phase 2 before the compact dictionary popup phase.
+- [x] Owner authorized continuation to the Compact popup after toolbar acceptance
+      on 2026-10-14; remaining Windows/mixed-DPI runtime evidence is still tracked.
 
 Source checks: **117 frontend tests in 19 files**, TypeScript/production Vite build,
 Prettier, **49 native tests**, Cargo formatting and macOS debug build. Service code,
@@ -413,3 +415,42 @@ Windows/mixed-DPI interactive acceptance remains open. Phase 3 remains unstarted
 [Checks run 38512106734](https://github.com/chonnakanch/yomimado/actions/runs/38512106734)
 passed all gates for toolbar refinement `74cf470`, including frontend, service,
 release-tool checks and macOS/Windows native tests and builds.
+
+## UI redesign — Phase 3 Compact popup review
+
+On 2026-10-14, after confirming the toolbar refinements, the owner authorized
+continuation to the selected **Compact popup** design. Phase 3 is implemented
+for source/result review; saved-collection and settings redesigns remain unstarted.
+
+- [x] Sentence-first source with explicit Copy/Save, close, analysis status/retry
+      and no automatic word, kanji or translation lookup.
+- [x] Continuous Japanese token controls preserve Unicode gaps, punctuation and
+      newlines. Selected vocabulary uses 30 px surface, 16 px hiragana presentation,
+      base form, token POS, numbered senses and match warnings.
+- [x] Collapsed alternative matches retain ranked order and entry-specific raw
+      readings/senses when saved. Missing/error states retain Save without meaning.
+- [x] Dedicated kanji controls, labeled on’yomi/kun’yomi and local attribution;
+      compounds load only on expansion and retain independent retry/cache state.
+- [x] Hidden OCR correction draft with Apply and analyze / Cancel, editor focus
+      return and stale lookup/translation/copy/save invalidation on commit.
+- [x] Explicit local translation and matching sentence-save output, copy success/
+      failure and save retry. Existing clients, storage formats and providers retained.
+- [x] Native preferred width 420 logical px, work-area height cap 70%, target-scale
+      positioning and rejection of previous-popup resize queries. Sentence/actions
+      stay above bounded scrolling details; long sentences scroll independently.
+- [ ] Owner native macOS popup acceptance, including placement, resize, clipboard,
+      keyboard dismissal and region focus return.
+- [ ] Windows and mixed-DPI interactive acceptance. Installer/publication work is
+      not authorized by this source change.
+
+Local checks passed 132 frontend tests in 19 files, TypeScript/production Vite
+build, Prettier, 51 native tests, Cargo formatting and the macOS debug build.
+WebKit inspection of actual React/CSS with the real local service verified the
+420 px view, a 280 × 320 narrow view, long-sentence scrolling, no horizontal
+overflow, sentence/details separation, kanji/compound lookup and explicit copy
+feedback. This browser frame does not certify native placement or input routing.
+The temporary review fixture is removed from ignored build output before handoff.
+Opaque popup text colors have contrast ≥5.32:1 on their used surfaces; selected
+token text is 7.05:1 and focus on the popup surface is 6.29:1. Native font fallbacks
+remain offline. No service, dependency, font, model, release version or installer
+change was made. The normal command-based development app was relaunched for review.

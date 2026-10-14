@@ -1,10 +1,12 @@
 # YomiMado UI/UX redesign plan
 
-Status: **Approved by the owner on 2026-10-13. Phase 1 approved for continuation; Phase 2 implemented for review.**
+Status: **Approved by the owner on 2026-10-13. Phase 3 Compact popup authorized on 2026-10-14 and implemented for review.**
 Prepared 2026-10-13 against `develop` at `4f8a395` (app version `0.1.0`).
 The owner approved this plan and [the design system](design-system.md), then
 authorized Phase 1: design tokens and the floating toolbar, then Phase 2: OCR
-regions and native input routing. Later phases require approval of that result. No installer publication is authorized.
+regions and native input routing. After accepting the toolbar refinements, the
+owner authorized Phase 3: the Compact dictionary/learning popup. Further phases
+require approval of that result. No installer publication is authorized.
 
 ## 1. Goal, scope and reference interpretation
 
@@ -524,8 +526,27 @@ owner choice in the visual preview.
 
 See [implementation status](implementation-plan.md#ui-redesign--phase-2-review)
 and [native UI checks](ui-overlay-testing.md) for evidence and remaining gates.
-Automated checks do not certify native input routing on both platforms. Do not
-proceed to the popup phase or claim the full redesign accepted while those gates
-remain open. No installer publication is authorized.
+Automated checks do not certify native input routing on both platforms. The owner
+explicitly authorized the popup phase on 2026-10-14 after confirming the toolbar
+refinements. Windows/mixed-DPI runtime acceptance remains open and is not implied
+by that continuation. No installer publication is authorized.
 
-Next action: native Phase 2 checks and owner review before the dictionary popup phase.
+### Phase 3 implementation — Compact popup review
+
+The learning popup now opens sentence-first at a preferred 420 logical px width,
+grows to content up to 70% of the available work-area height and scrolls details
+below the persistent sentence/actions. Source remains visible during analysis
+loading/failure. Explicit word selection shows hiragana presentation, surface,
+base form, token POS and the first ranked match with numbered senses. Additional
+matches are collapsed and save their own raw readings/senses. Kanji choices retain
+on/kun conventions; compounds load only when expanded, with independent retry.
+
+Copy and save are explicit. Edit OCR text opens a draft; Apply and analyze commits
+it and clears dependent state, while Cancel/Escape preserves the applied source.
+Translation remains on demand. Request guards protect late responses; native
+resize rejects previous popup queries and uses target-monitor physical scaling.
+Popup components/styles and tests are feature-owned; no service, dependency,
+dictionary, storage or release-format change is introduced.
+
+Next action: owner review of Phase 3 and remaining native platform acceptance.
+Saved-collection and settings redesigns remain unstarted.

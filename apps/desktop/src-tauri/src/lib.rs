@@ -732,8 +732,9 @@ fn resize_translation_popup(
     app: AppHandle,
     placement: overlay::PopupPlacement,
     logical_height: f64,
+    view_query: String,
 ) -> Result<(), String> {
-    overlay::resize_translation_popup(&app, placement, logical_height)
+    overlay::resize_translation_popup(&app, placement, logical_height, &view_query)
 }
 
 #[tauri::command(async)]

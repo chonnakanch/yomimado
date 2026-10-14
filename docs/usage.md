@@ -1,10 +1,10 @@
 # Reading with YomiMado
 
-## Phase 1 toolbar (development source)
+## Redesigned toolbar (development source)
 
 YomiMado now starts with a compact always-on-top toolbar. Drag its handle, or
-focus the handle and use arrow keys, to move it. Collapse leaves Rescan and an
-Expand control; the native window shrinks too. The overflow menu opens the
+focus the handle and use arrow keys, to move it. Collapse retains both scan icons,
+Rescan, overlay visibility/status and Expand; the native window shrinks too. The overflow menu opens the
 existing saved words/sentences, Settings (including detector import), sources
 and Quit. Closing the secondary main window keeps the app running.
 
@@ -25,10 +25,33 @@ Screenshots still stay local.
 page-scan shortcut described in the published v0.1.0 guide below. Toolbar buttons
 use the toolbar's monitor; Rescan uses its recorded original monitor.
 
-This source redesign is awaiting Phase 1 result approval. The learning popup,
-legacy main-window controls and saved-data format remain unchanged. Full
-settings/library/popup/overlay redesigns are deferred; published v0.1.0 installers
-retain the following older interaction.
+The owner approved continuation through Phase 3, whose learning popup is ready
+for review. Saved-data formats and legacy main-window controls are retained;
+settings/library redesigns remain deferred. Published v0.1.0 installers retain
+the older interaction below.
+
+### Compact learning popup (Phase 3 development source)
+
+Click an OCR region to open its full Japanese sentence. Copy sentence and Save
+sentence are available immediately; word meanings and translation appear only
+after explicit selection/request. Select a word in the sentence to see its
+hiragana reading, base form, token-analysis POS and numbered possible meanings.
+Alternative dictionary matches are collapsed; each has its own Save this word
+action. Display readings use hiragana, while saved/lookup readings retain the
+original dictionary data. Missing dictionaries still allow Save without meaning.
+
+Select a kanji below the word for meanings and on’yomi/kun’yomi. Expand Example
+compounds to load short local JMdict words; this does not require translation.
+The sentence and its actions stay above scrollable details as the popup grows
+to its work-area limit. Long sentences have their own scroll area.
+
+Edit OCR text opens a correction draft. Apply and analyze commits it, resets
+dependent learning results and retokenizes. Cancel or Escape in the editor keeps
+the applied sentence; Escape elsewhere closes the popup and returns keyboard
+focus to the region when it was opened through region navigation. Translate
+locally retains the existing explicit translation/cache behavior. Save sentence
+includes a matching translation only when one has been requested. Copy/save
+failures are shown inline and can be retried.
 
 ## Published v0.1.0 reading flow
 
