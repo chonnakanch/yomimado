@@ -258,8 +258,11 @@ Settings uses ordinary labeled controls for actual capabilities. Scan & OCR hold
 verified detector status/import/replacement and capture/shortcut guidance;
 Reading holds the existing estimated-order switch; About/Sources retains linked
 attribution and packaged notice guidance. No nonfunctional settings drawn merely
-to match the reference sidebar. Use native secondary-window decorations initially
-for move/resize/close accessibility; toolbar and popup use their compact chrome.
+to match the reference sidebar. At the owner's request on 2026-10-14, the secondary
+window uses app-owned, labeled Minimize, Maximize/restore and Close controls.
+Dragging the brand area moves the window; native edge resizing remains available.
+Close hides the secondary window; explicit Quit stays on the toolbar. Keep all
+three controls on one row at narrow widths and report native action failures.
 
 Keep concise JMdict/KANJIDIC2 source and CC BY-SA attribution with dictionary
 content, and preserve the full sources/licenses entry point. Disclosure must not

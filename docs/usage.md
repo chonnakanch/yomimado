@@ -65,10 +65,17 @@ in place. This estimated order is separate from keyboard region navigation.
 guidance; **More actions → Sources and licenses** opens that category directly.
 Use Left/Right or Home/End on category tabs to navigate by keyboard.
 
+Use **Close window** (X) in the app header to hide this window. The header also has
+Minimize and Maximize/restore controls; drag the brand area to move the window.
 Closing this window keeps the toolbar and reading session running. Reopen it
 through the toolbar; **More actions → Quit YomiMado** exits the app. Scan actions
 remain on the toolbar. Whole Screen has replaced automatic page cropping in the
 redesigned flow; the historical installer instructions below still apply to v0.1.0.
+
+If a macOS utility such as Vorssaint quits apps when their last window closes,
+add YomiMado to that utility's exceptions. Its bundle identifier is
+`com.yomimado.desktop`. A bare command-launched development executable may have
+no macOS bundle identifier, so a bundle-based exception may not cover it.
 
 ### Compact learning popup (Phase 3 development source)
 

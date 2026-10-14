@@ -1,6 +1,7 @@
 mod capture;
 mod detector_model;
 mod overlay;
+mod secondary;
 mod toolbar;
 #[cfg(target_os = "windows")]
 mod windows_service;
@@ -883,6 +884,7 @@ pub fn run() {
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
+            secondary::control_secondary_window,
             toolbar::get_toolbar_state,
             toolbar::start_toolbar_scan,
             toolbar::rescan,

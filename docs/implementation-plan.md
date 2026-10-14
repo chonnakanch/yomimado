@@ -552,19 +552,26 @@ the existing local-storage key and off-by-default estimated-order preference, wi
 explicit save errors. About retains existing links and full packaged notice guidance.
 
 The existing native close-to-hide, open/unminimize/focus and explicit Quit paths are
-preserved. Closing this secondary window keeps the toolbar/service/reading session
-alive. No capture/OCR/geometry/dictionary/translation/storage/dependency/version or
+preserved. At the owner's request, native window buttons are removed and an app-owned
+header provides Minimize, Maximize/restore, Close and a draggable brand area. Close
+uses a native command scoped to the main window to hide it, without requesting
+window destruction or Quit. Action errors remain visible and retryable. The intended
+behavior keeps the toolbar/service/reading session alive; the owner's macOS close
+acceptance is still pending the external utility issue described below.
+No capture/OCR/geometry/dictionary/translation/storage/dependency/version or
 installer behavior was changed. Native Windows/mixed-DPI runtime acceptance remains
 open, including current Settings lifecycle; automated native builds do not certify it.
 
-Local verification passed 148 frontend tests in 20 files, TypeScript/production
+Local verification passed 151 frontend tests in 21 files, TypeScript/production
 Vite build, full desktop Prettier, 51 native tests, Cargo formatting and macOS debug
 build/startup. Behavior coverage includes category routes and keyboard navigation,
 reading preference persistence/failure/retry, status retry/old-response rejection,
 model cancellation/replacement failure/retry and duplicate import prevention.
 Actual components with mocked packaged status were inspected in WebKit at 700 × 480
 and 280 px width. All three categories wrap without horizontal overflow; attribution
-and permission/shortcut guidance remain accessible. The temporary fixture was removed
+and permission/shortcut guidance remain accessible. The three app-owned window
+controls stay on one row at 280 px. Tests cover hide without Quit, action failures
+and retry, and separation of dragging from control clicks. The temporary fixture was removed
 from ignored build output. These browser checks do not certify native file pickers,
 model replacement or permission changes. The normal command-based app is open for review.
 
@@ -589,9 +596,19 @@ also passed for `10b8c58`, but the owner's native red-button retest still exits 
 app. This follow-up does not resolve the reported issue; Phase 5 acceptance remains
 open. A debugger trace records `NSApplication terminate:` reached through the
 native `_handleAEQuit` Apple-event handler after the main close/hide completes.
-The sender attribute was unavailable at that deferred termination breakpoint;
-the source of the Quit event is not identified. The original close handler is
-restored because the deferral does not fix the reported behavior. Temporary
-lifecycle diagnostics and smoke code are removed from source. A user-terminal
-launch comparison remains pending to distinguish the managed launch environment
-from product behavior; no Quit interception or OS preference change is made.
+The sender attribute was unavailable at that deferred termination breakpoint.
+The original close handler is restored because deferral does not fix the reported
+behavior. Temporary lifecycle diagnostics and smoke code are removed from source.
+The owner's own Terminal launch also exits, as does the app-owned Close action.
+
+Local inspection subsequently found Vorssaint 3.4.1's **Quit on close** enabled,
+with only Finder and Phone excepted. Its published implementation explicitly quits
+apps that hide their final user window and matches exceptions by bundle identity.
+The owner authorized adding a YomiMado exception. The `com.yomimado.desktop`
+exception was saved and verified in Vorssaint's UI, retaining the global setting
+and existing exceptions. However, macOS reports no bundle identifier for the bare
+command-launched development process, so this exception cannot protect that process.
+Adding an embedded development plist did not change the reported identity and was
+removed. The owner is choosing between turning off Quit on close for command-based
+development and testing a bundled build. No global toggle or Quit interception has
+been applied, and Phase 5 close/reopen acceptance remains open.
