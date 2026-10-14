@@ -366,3 +366,13 @@ components and truncated search-edge components remain excluded. Five additional
 regression cases cover disconnected strokes at 1×/2× in both orientations and
 recognition when the entire leading stroke was omitted. Broader native visual
 confirmation is pending; the white-panel confirmation remains recorded.
+
+[Checks run 38507911101](https://github.com/chonnakanch/yomimado/actions/runs/38507911101)
+passed all gates for disconnected-stroke fix `05adc1d`, including the complete
+93-case service suite, 117 frontend tests and both native tests/builds. An
+offline-model probe with a synthetic crop deliberately omitting the entire
+leading stroke changed recognition from `緒に日本語を勉強しましょう。` to
+`一緒に日本語を勉強しましょう。`; the corrected crop and polygon include that
+stroke. The updated local service remains running with the normal development
+app. The owner's Whole Screen/whole-display visual confirmation is still pending;
+no popup phase, installer acceptance or publication is implied.
