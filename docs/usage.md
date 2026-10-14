@@ -65,8 +65,8 @@ in place. This estimated order is separate from keyboard region navigation.
 guidance; **More actions → Sources and licenses** opens that category directly.
 Use Left/Right or Home/End on category tabs to navigate by keyboard.
 
-Use **Close window** (X) in the app header to hide this window. The header also has
-Minimize and Maximize/restore controls; drag the brand area to move the window.
+Use the native window close button to hide this window. The native title bar
+also provides window movement, minimizing and resizing.
 Closing this window keeps the toolbar and reading session running. Reopen it
 through the toolbar; **More actions → Quit YomiMado** exits the app. Scan actions
 remain on the toolbar. Whole Screen has replaced automatic page cropping in the

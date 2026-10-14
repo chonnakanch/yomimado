@@ -583,13 +583,11 @@ without the legacy capture dashboard; automatic page-crop helpers remain in the
 backend. The native Reading route is also available. Closing the window retains
 the existing toolbar/session/service lifetime; explicit Quit remains on the toolbar.
 
-The owner requested removal of native window buttons after reporting unexpected
-application exit. The secondary shell now provides labeled app-owned Minimize,
-Maximize/restore and Close buttons, with a draggable brand area and native edge
-resizing. Close invokes a scoped native hide command, preserving the reading
-session. External quit-on-close utilities can still request application Quit;
-their per-app exceptions and development identity limitations are recorded in
-the implementation plan.
+After confirming that Vorssaint's quit-on-close feature caused the unexpected
+application exit, the owner requested restoration of native window buttons.
+The secondary window again uses the native title bar and its existing close-to-hide
+handler. The temporary app-owned controls are removed. External utility exceptions
+and development identity limitations are recorded in the implementation plan.
 
 Native model commands and checksum verification are unchanged. The view preserves
 file-picker cancellation, failed replacement, retry and restart guidance; status

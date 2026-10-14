@@ -552,26 +552,22 @@ the existing local-storage key and off-by-default estimated-order preference, wi
 explicit save errors. About retains existing links and full packaged notice guidance.
 
 The existing native close-to-hide, open/unminimize/focus and explicit Quit paths are
-preserved. At the owner's request, native window buttons are removed and an app-owned
-header provides Minimize, Maximize/restore, Close and a draggable brand area. Close
-uses a native command scoped to the main window to hide it, without requesting
-window destruction or Quit. Action errors remain visible and retryable. The intended
-behavior keeps the toolbar/service/reading session alive; the owner's macOS close
-acceptance is still pending the external utility issue described below.
+preserved. At the owner's request, the native title bar and window buttons are
+restored after confirming the external quit-on-close utility caused application
+exit. Temporary app-owned controls, their command and tests are removed. Native
+close hides the secondary window without ending the toolbar/service/reading session.
 No capture/OCR/geometry/dictionary/translation/storage/dependency/version or
 installer behavior was changed. Native Windows/mixed-DPI runtime acceptance remains
 open, including current Settings lifecycle; automated native builds do not certify it.
 
-Local verification passed 151 frontend tests in 21 files, TypeScript/production
+Local verification passed 148 frontend tests in 20 files, TypeScript/production
 Vite build, full desktop Prettier, 51 native tests, Cargo formatting and macOS debug
 build/startup. Behavior coverage includes category routes and keyboard navigation,
 reading preference persistence/failure/retry, status retry/old-response rejection,
 model cancellation/replacement failure/retry and duplicate import prevention.
 Actual components with mocked packaged status were inspected in WebKit at 700 × 480
 and 280 px width. All three categories wrap without horizontal overflow; attribution
-and permission/shortcut guidance remain accessible. The three app-owned window
-controls stay on one row at 280 px. Tests cover hide without Quit, action failures
-and retry, and separation of dragging from control clicks. The temporary fixture was removed
+and permission/shortcut guidance remain accessible. The temporary fixture was removed
 from ignored build output. These browser checks do not certify native file pickers,
 model replacement or permission changes. The normal command-based app is open for review.
 
@@ -609,6 +605,10 @@ exception was saved and verified in Vorssaint's UI, retaining the global setting
 and existing exceptions. However, macOS reports no bundle identifier for the bare
 command-launched development process, so this exception cannot protect that process.
 Adding an embedded development plist did not change the reported identity and was
-removed. The owner is choosing between turning off Quit on close for command-based
-development and testing a bundled build. No global toggle or Quit interception has
-been applied, and Phase 5 close/reopen acceptance remains open.
+removed. The owner subsequently closed Vorssaint and confirmed that closing Saved
+keeps YomiMado running, identifying the external utility as the cause. The owner
+chose to retain the YomiMado exception and restore native window controls. No global
+toggle or Quit interception was applied. The temporary custom-control source
+(`243f97e`, verified with 151 frontend and 51 native tests) is removed; the existing
+native hide-on-close handler is retained. Final native-button acceptance after this
+restoration and Windows/mixed-DPI interactive acceptance remain open.
