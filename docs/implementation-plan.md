@@ -2,7 +2,8 @@
 
 ## Current status
 
-Updated **2026-10-14**. Current work includes the approved UI redesign Phase 3 on tracked
+Updated **2026-10-14**. Current work includes accepted UI redesign Phase 3 and the
+requested grouped Saved navigation on tracked
 `develop`; the app version remains `0.1.0`.
 
 The **first desktop pre-release milestone is complete**.
@@ -488,3 +489,7 @@ Words/Sentences tab selection, keyboard focus, real saved-word data, sentence
 loading/empty states and no horizontal overflow. The normal command-based app
 is running with the new native Saved route. Browser evidence does not replace
 Windows/native menu acceptance.
+
+[Checks run 38541259393](https://github.com/chonnakanch/yomimado/actions/runs/38541259393)
+passed all gates for grouped Saved source `bacab2d`: frontend, service,
+release tools and macOS/Windows native tests and builds.
