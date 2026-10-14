@@ -285,6 +285,11 @@ Source checks: **117 frontend tests in 19 files**, TypeScript/production Vite bu
 Prettier, **49 native tests**, Cargo formatting and macOS debug build. Service code,
 dependencies, data contracts, version and release records are unchanged.
 
+[Checks run 38502525855](https://github.com/chonnakanch/yomimado/actions/runs/38502525855)
+passed every gate for implementation commit `7190630`: frontend, service,
+release-tools, macOS native tests/build and Windows native tests/build. The
+Windows native build is verified by CI; Windows interactive acceptance is still open.
+
 Runtime verification on 2026-10-14: the owner confirmed Whole Screen produced a real
 OCR overlay using the normal `tauri dev` command and existing offline models. Native
 logs recorded a complete 2940 × 1912 physical capture and `manga` result. Earlier
