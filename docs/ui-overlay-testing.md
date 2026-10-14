@@ -18,7 +18,10 @@ proved inconvenient for repeated grants.
    select a different-size area and use Rescan and Hide/Show. All polygon edges must
    remain visible: establish the target monitor, resize, then reapply the position
    of the reused overlay. Also verify the first Retina scan's physical window size.
-   Capture must exclude the toolbar, result and popup.
+   Capture must exclude the toolbar, result and popup. Check the leading `一` and
+   ending `。` of the horizontal sentence and the outer strokes of both vertical
+   columns. Image-derived boundary corrections use dashed approximate/review
+   regions; their popup must retain the original Japanese and review guidance.
 2. With the overlay visibly present, click **Test reader click**, drag-select the
    input text and scroll in the blank side margin. The browser must receive them.
    Start a drag outside a polygon and cross it; verify mouse-up stays with the browser.

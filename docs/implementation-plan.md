@@ -323,3 +323,28 @@ with a matching 753 × 715 CSS viewport and a positive 31.8 logical-pixel image
 inset. The owner still reports that boxes do not fully cover text; visual coverage
 remains unresolved pending a fresh screenshot. Phase 2 is not accepted. These source checks are not exact-installer acceptance;
 no installer was published and historical v0.1.0 evidence is preserved.
+
+### OCR boundary coverage follow-up
+
+The owner's three comparison screenshots confirmed closed outlines after the
+frame correction, but exposed detector polygons/crops cutting edge glyphs in
+both scan modes, notably the leading `一` and ending punctuation. The OCR adapter
+now searches a bounded, glyph-sized neighborhood for cut strokes and nearby end
+punctuation. It excludes large bubble/art components, unknown search-edge extents,
+dark backgrounds and unrelated full characters. The original polygon remains in
+the corrected convex hull; recognition uses the corrected crop. Adjusted regions
+reuse `expandedCrop`, review guidance and zero uncalibrated confidence. Unchanged
+regions, mask retries and short-vertical recovery retain their existing behavior.
+No model/dependency or OCR response field was added.
+
+Ten new synthetic regression cases cover horizontal/vertical text, 1×/2× image
+scaling, cut leading strokes, detached end punctuation, unrelated art/characters,
+unchanged geometry and corrected recognition crops. The complete local Python 3.9
+run passed 87 of 88 service cases; the existing Windows checksum test requires
+`hashlib.file_digest` (Python 3.11+). That exact test passed separately on Python
+3.12. CI's pinned Python 3.11 run remains the full-suite gate. Frontend tests
+(117), TypeScript/Vite build and service Ruff checks pass. Offline-model checks
+on a clean synthetic Japanese page preserve both complete vertical sentences
+and the horizontal sentence while including its previously cut edge strokes.
+The updated local service is running for owner review; native visual confirmation
+is pending. Phase 2 and Windows/mixed-DPI runtime gates remain open.

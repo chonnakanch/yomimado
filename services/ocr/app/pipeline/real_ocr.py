@@ -13,6 +13,7 @@ from types import SimpleNamespace
 from typing import Any
 
 from app.models import OcrDebug, OcrDebugDetection, OcrResponse, Point, TextRegion
+from app.pipeline.geometry import extend_to_visible_ink
 from app.security import validate_capture_dimensions
 
 SMALL_SELECTION_MAX_SIDE = 320
@@ -32,6 +33,7 @@ MASK_REVIEW_REASON = "Short Japanese-looking text found only in the detector mas
 EXPANDED_REVIEW_REASON = (
     "Short vertical text recovered from an expanded crop; area approximate—verify on page"
 )
+INK_REVIEW_REASON = "Detector boundary extended around visible strokes; verify on page"
 logger = logging.getLogger(__name__)
 
 
@@ -400,7 +402,19 @@ def recognize_with_models(image_bytes: bytes, *, debug: bool = False) -> OcrResp
                 index -= 1
                 continue
         seen_boxes.append(box)
-        crop = image.crop((x1, y1, x2, y2))
+        polygon = [Point(x=point.x + offset_x, y=point.y + offset_y) for point in _polygon(block)]
+        geometry_adjusted = False
+        if detection_pass != "mask":
+            box, polygon, geometry_adjusted = extend_to_visible_ink(
+                bgr,
+                box,
+                polygon,
+                float(getattr(block, "font_size", 0)),
+                bool(block.vertical),
+                cv2,
+                np,
+            )
+        crop = image.crop(box)
         filter_reason = _crop_filter_reason(crop)
         text = "" if filter_reason else recognizer(crop).strip()
         if not filter_reason:
@@ -419,6 +433,8 @@ def recognize_with_models(image_bytes: bytes, *, debug: bool = False) -> OcrResp
             decision_reason = "Manga OCR returned no text"
         elif detection_pass == "mask":
             decision_reason = MASK_REVIEW_REASON
+        elif geometry_adjusted:
+            decision_reason = INK_REVIEW_REASON
         else:
             decision_reason = "Japanese script recognized inside a detector box"
         if debug:
@@ -457,16 +473,19 @@ def recognize_with_models(image_bytes: bytes, *, debug: bool = False) -> OcrResp
             TextRegion(
                 id=f"region-{len(regions) + 1}",
                 text=text,
-                polygon=[
-                    Point(x=point.x + offset_x, y=point.y + offset_y) for point in _polygon(block)
-                ],
+                polygon=polygon,
                 orientation="vertical" if block.vertical else "horizontal",
                 # Manga OCR does not expose a calibrated confidence score.
                 confidence=0,
                 type="other",
                 tokens=[],
-                needsReview=detection_pass == "mask",
-                reviewReason=MASK_REVIEW_REASON if detection_pass == "mask" else None,
+                geometrySource="expandedCrop" if geometry_adjusted else None,
+                needsReview=detection_pass == "mask" or geometry_adjusted,
+                reviewReason=MASK_REVIEW_REASON
+                if detection_pass == "mask"
+                else INK_REVIEW_REASON
+                if geometry_adjusted
+                else None,
             )
         )
         region_boxes.append(box)
@@ -481,7 +500,7 @@ def recognize_with_models(image_bytes: bytes, *, debug: bool = False) -> OcrResp
             if (
                 short_retries >= MAX_SHORT_VERTICAL_RETRIES
                 or (region.orientation != "vertical" and not tall_short_box)
-                or region.needsReview
+                or region.reviewReason == MASK_REVIEW_REASON
                 or character_count not in (1, 2)
             ):
                 continue
