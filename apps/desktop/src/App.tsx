@@ -1,21 +1,12 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { invoke } from "@tauri-apps/api/core";
-import {
-  deleteVocabularyWord,
-  listVocabularyWords,
-  type SavedWord,
-} from "./lib/vocabulary-client";
 import {
   readReadingOrderEnabled,
   saveReadingOrderEnabled,
 } from "./lib/reading-order-setting";
-import {
-  deleteSavedSentence,
-  listSavedSentences,
-  type SavedSentence,
-} from "./lib/sentence-client";
-
 import { SavedTabs, type SavedTab } from "./features/library/SavedTabs";
+import { SavedWordsView } from "./features/library/SavedWordsView";
+import { SavedSentencesView } from "./features/library/SavedSentencesView";
 
 interface DetectorModelStatus {
   required: boolean;
@@ -40,18 +31,6 @@ export function App() {
     null,
   );
   const [installingDetectorModel, setInstallingDetectorModel] = useState(false);
-  const [savedWords, setSavedWords] = useState<SavedWord[]>([]);
-  const wordListRequestId = useRef(0);
-  const sentenceListRequestId = useRef(0);
-  const [savedWordsLoading, setSavedWordsLoading] = useState(false);
-  const [savedWordsError, setSavedWordsError] = useState<string | null>(null);
-  const [removingWordId, setRemovingWordId] = useState<number | null>(null);
-  const [savedSentences, setSavedSentences] = useState<SavedSentence[]>([]);
-  const [sentencesLoading, setSentencesLoading] = useState(false);
-  const [sentencesError, setSentencesError] = useState<string | null>(null);
-  const [removingSentenceId, setRemovingSentenceId] = useState<number | null>(
-    null,
-  );
   const [readingOrderEnabled, setReadingOrderEnabled] = useState(
     readReadingOrderEnabled,
   );
@@ -117,100 +96,13 @@ export function App() {
     }
   };
 
-  const loadSavedWords = async () => {
-    const requestId = ++wordListRequestId.current;
-    setSavedWordsLoading(true);
-    setSavedWordsError(null);
-    try {
-      const words = await listVocabularyWords();
-      if (requestId === wordListRequestId.current) setSavedWords(words);
-    } catch (error) {
-      if (requestId === wordListRequestId.current)
-        setSavedWordsError(String(error).replace(/^Error: /, ""));
-    } finally {
-      if (requestId === wordListRequestId.current) setSavedWordsLoading(false);
-    }
-  };
-
-  const removeWord = async (word: SavedWord) => {
-    if (!window.confirm(`Remove ${word.surface} from saved words?`)) return;
-    setRemovingWordId(word.id);
-    setSavedWordsError(null);
-    try {
-      await deleteVocabularyWord(word.id);
-      setSavedWords((previous) =>
-        previous.filter((item) => item.id !== word.id),
-      );
-    } catch (error) {
-      setSavedWordsError(String(error).replace(/^Error: /, ""));
-    } finally {
-      setRemovingWordId(null);
-    }
-  };
-
-  const loadSavedSentences = async () => {
-    const requestId = ++sentenceListRequestId.current;
-    setSentencesLoading(true);
-    setSentencesError(null);
-    try {
-      const sentences = await listSavedSentences();
-      if (requestId === sentenceListRequestId.current)
-        setSavedSentences(sentences);
-    } catch (error) {
-      if (requestId === sentenceListRequestId.current)
-        setSentencesError(String(error).replace(/^Error: /, ""));
-    } finally {
-      if (requestId === sentenceListRequestId.current)
-        setSentencesLoading(false);
-    }
-  };
-
-  const removeSentence = async (sentence: SavedSentence) => {
-    if (!window.confirm("Remove this saved sentence?")) return;
-    setRemovingSentenceId(sentence.id);
-    setSentencesError(null);
-    try {
-      await deleteSavedSentence(sentence.id);
-      setSavedSentences((previous) =>
-        previous.filter((item) => item.id !== sentence.id),
-      );
-    } catch (error) {
-      setSentencesError(String(error).replace(/^Error: /, ""));
-    } finally {
-      setRemovingSentenceId(null);
-    }
-  };
-
   useEffect(() => {
     const view = new URLSearchParams(window.location.search).get("view");
-    if (view === "saved" || view === "words") void loadSavedWords();
-    if (view === "sentences") void loadSavedSentences();
     if (view === "sources") setShowSources(true);
     if (view === "settings") {
       document.getElementById("scan-ocr-settings")?.scrollIntoView?.();
     }
   }, []);
-
-  useEffect(
-    () => () => {
-      wordListRequestId.current++;
-      sentenceListRequestId.current++;
-    },
-    [],
-  );
-
-  const openSaved = () => {
-    setShowSaved(true);
-    if (savedTab === "words") void loadSavedWords();
-    else void loadSavedSentences();
-  };
-
-  const selectSavedTab = (tab: SavedTab) => {
-    if (tab === savedTab) return;
-    setSavedTab(tab);
-    if (tab === "words") void loadSavedWords();
-    else void loadSavedSentences();
-  };
 
   useEffect(() => {
     if (showSaved) document.getElementById(`saved-tab-${savedTab}`)?.focus();
@@ -300,7 +192,7 @@ export function App() {
               className="secondary-button"
               aria-expanded={showSaved}
               aria-controls="saved-library"
-              onClick={() => (showSaved ? setShowSaved(false) : openSaved())}
+              onClick={() => setShowSaved((previous) => !previous)}
             >
               {showSaved ? "Hide saved" : "Saved"}
             </button>
@@ -399,144 +291,9 @@ export function App() {
           id="saved-library"
         >
           {!libraryOnly && <h2>Saved</h2>}
-          <SavedTabs active={savedTab} onChange={selectSavedTab} />
-          <section
-            className="saved-words"
-            role="tabpanel"
-            id="saved-panel-words"
-            aria-labelledby="saved-tab-words"
-            tabIndex={0}
-            hidden={savedTab !== "words"}
-          >
-            <div className="saved-words-heading">
-              <h2>Saved words</h2>
-              <button
-                className="secondary-button"
-                onClick={() => void loadSavedWords()}
-                disabled={savedWordsLoading}
-              >
-                Refresh
-              </button>
-            </div>
-            {savedWordsLoading && <p>Loading saved words…</p>}
-            {savedWordsError && (
-              <p className="translation-error" role="alert">
-                {savedWordsError}
-              </p>
-            )}
-            {!savedWordsLoading &&
-              !savedWordsError &&
-              savedWords.length === 0 && (
-                <p>
-                  No saved words yet. Choose a word in the learning popup to
-                  save it.
-                </p>
-              )}
-            <ul className="saved-word-list">
-              {savedWords.map((word) => (
-                <li key={word.id}>
-                  <div className="saved-word-top">
-                    <div>
-                      <strong lang="ja">{word.surface}</strong>{" "}
-                      <span lang="ja">{word.reading}</span>
-                      {word.dictionaryForm !== word.surface && (
-                        <small>Base: {word.dictionaryForm}</small>
-                      )}
-                    </div>
-                    <button
-                      className="secondary-button"
-                      disabled={removingWordId === word.id}
-                      onClick={() => void removeWord(word)}
-                      aria-label={`Remove ${word.surface}`}
-                    >
-                      {removingWordId === word.id ? "Removing…" : "Remove"}
-                    </button>
-                  </div>
-                  {word.meanings.length > 0 ? (
-                    <ol>
-                      {word.meanings.map((meaning, index) => (
-                        <li key={index}>{meaning}</li>
-                      ))}
-                    </ol>
-                  ) : (
-                    <p className="hint">No dictionary meaning saved.</p>
-                  )}
-                  <p lang="ja" className="saved-word-context">
-                    {word.sourceText}
-                  </p>
-                  <small>
-                    Saved {new Date(word.createdAt).toLocaleString()}
-                  </small>
-                  {word.meanings.length > 0 && (
-                    <small>
-                      Possible dictionary senses · Source:{" "}
-                      <a
-                        href="https://www.edrdg.org/wiki/JMdict-EDICT_Dictionary_Project.html"
-                        target="_blank"
-                        rel="noreferrer"
-                      >
-                        JMdict (EDRDG)
-                      </a>{" "}
-                      · CC BY-SA 4.0
-                    </small>
-                  )}
-                </li>
-              ))}
-            </ul>
-          </section>
-          <section
-            className="saved-words"
-            role="tabpanel"
-            id="saved-panel-sentences"
-            aria-labelledby="saved-tab-sentences"
-            tabIndex={0}
-            hidden={savedTab !== "sentences"}
-          >
-            <div className="saved-words-heading">
-              <h2>Saved sentences</h2>
-              <button
-                className="secondary-button"
-                onClick={() => void loadSavedSentences()}
-                disabled={sentencesLoading}
-              >
-                Refresh
-              </button>
-            </div>
-            {sentencesLoading && <p>Loading saved sentences…</p>}
-            {sentencesError && (
-              <p className="translation-error" role="alert">
-                {sentencesError}
-              </p>
-            )}
-            {!sentencesLoading &&
-              !sentencesError &&
-              savedSentences.length === 0 && (
-                <p>No saved sentences yet. Save one in the learning popup.</p>
-              )}
-            <ul className="saved-word-list">
-              {savedSentences.map((sentence) => (
-                <li key={sentence.id}>
-                  <div className="saved-word-top">
-                    <strong lang="ja">{sentence.sourceText}</strong>
-                    <button
-                      className="secondary-button"
-                      disabled={removingSentenceId === sentence.id}
-                      onClick={() => void removeSentence(sentence)}
-                      aria-label={`Remove saved sentence ${sentence.id}`}
-                    >
-                      {removingSentenceId === sentence.id
-                        ? "Removing…"
-                        : "Remove"}
-                    </button>
-                  </div>
-                  {sentence.translatedText && <p>{sentence.translatedText}</p>}
-                  <small>
-                    Saved {new Date(sentence.createdAt).toLocaleString()}
-                  </small>
-                </li>
-              ))}
-            </ul>
-          </section>
+          <SavedTabs active={savedTab} onChange={setSavedTab} />
+          <SavedWordsView active={savedTab === "words"} />
+          <SavedSentencesView active={savedTab === "sentences"} />
         </section>
       )}
     </main>

@@ -2,8 +2,8 @@
 
 ## Current status
 
-Updated **2026-10-14**. Current work includes accepted UI redesign Phase 3 and the
-requested grouped Saved navigation on tracked
+Updated **2026-10-14**. Current work includes accepted UI redesign Phase 3 and
+Phase 4 Saved library implementation for review on tracked
 `develop`; the app version remains `0.1.0`.
 
 The **first desktop pre-release milestone is complete**.
@@ -234,8 +234,9 @@ the floating toolbar only. **Phase 1 was approved for continuation; Phase 2 is i
       capture diagnostics. No service/dependency/data/license/version changes.
 - [x] Owner approval to continue beyond Phase 1.
 - [x] Owner authorized the Compact dictionary popup phase on 2026-10-14.
-- [ ] Later phases: saved-collection layouts and full settings redesign. These
-      require approval of the Phase 3 result.
+- [x] Saved-collection layouts implemented after owner authorization to continue
+      Phase 4; result acceptance is tracked below.
+- [ ] Full settings redesign requires approval of the Phase 4 result.
 
 Local verification: 113 frontend tests in 19 files, TypeScript, Prettier and
 production Vite build; 44 native Rust tests, Rust formatting and macOS debug
@@ -493,3 +494,38 @@ Windows/native menu acceptance.
 [Checks run 38541259393](https://github.com/chonnakanch/yomimado/actions/runs/38541259393)
 passed all gates for grouped Saved source `bacab2d`: frontend, service,
 release tools and macOS/Windows native tests and builds.
+
+### Phase 4 Saved library layout — implemented for review
+
+The owner authorized continuation after the grouped Saved navigation. Saved words
+and sentences are now separate feature-owned views inside the shared Saved menu.
+Word rows retain stored surface, reading, base form, numbered meanings and visible
+JMdict attribution; source/context and local saved date use a collapsed disclosure.
+Sentence rows keep the full Japanese and any stored English output, with a saved-date
+disclosure and explicit Japanese-only state. Long text wraps at narrow widths.
+
+The views share a small typed list/delete lifecycle while retaining existing clients
+and schemas. Loading/error/empty/removal states are independent for each collection.
+Earlier lists cannot overwrite newer loads or reintroduce a removed item; confirmed
+removal locks duplicate actions and restores keyboard focus to a nearby row/Refresh
+without stealing focus from another tab. Failures retain data and permit retry.
+Closing/reopening or returning to a tab refreshes the selected collection.
+
+Local verification passed 142 frontend tests in 19 files, TypeScript/production
+Vite build, Prettier and diff checks. Added cases cover stored ordering, old record
+fields, collapsed details, date fallback, existing translations, removal confirmation,
+duplicate removal, stale-list rejection, retry and focus restoration. Native and
+service source/API/storage formats are unchanged; cross-platform Checks will still
+run the existing native/service gates on the exact pushed source.
+
+Browser inspection of actual components with synthetic saved records and mocked
+native IPC verified 700 × 480 and 280 px layouts, long Japanese/readings, disclosures,
+sentence translations and no horizontal overflow. Japanese word/source text remains
+20 px; no remote font is introduced. This is browser evidence, not native Windows
+acceptance. The temporary fixture is removed from ignored build output before handoff.
+The normal development app is available for owner review.
+
+- [ ] Owner acceptance of the Phase 4 library layout and interactions.
+- [ ] Windows/mixed-DPI interactive acceptance.
+- [ ] Full settings phase, pending approval of this result. No installer/publication
+      or version change is authorized by this source work.

@@ -1,6 +1,6 @@
 # YomiMado UI/UX redesign plan
 
-Status: **Approved by the owner on 2026-10-13. Phase 3 Compact popup accepted on the running macOS development app on 2026-10-14.**
+Status: **Approved by the owner on 2026-10-13. Phase 3 accepted; Phase 4 Saved library implemented for review on 2026-10-14.**
 Prepared 2026-10-13 against `develop` at `4f8a395` (app version `0.1.0`).
 The owner approved this plan and [the design system](design-system.md), then
 authorized Phase 1: design tokens and the floating toolbar, then Phase 2: OCR
@@ -553,5 +553,22 @@ dictionary, storage or release-format change is introduced.
 The owner confirmed that the Compact popup looks right, stays within the screen
 and returns keyboard focus correctly in the normal macOS development app on
 2026-10-14. Cross-platform Checks passed for `d90aaa4`. Windows/mixed-DPI runtime
-acceptance remains open. Saved-collection and settings redesigns remain unstarted
-pending authorization for the next phase.
+acceptance remains open. The owner subsequently requested grouped Saved navigation
+and authorized continuation to the remaining Phase 4 library layout. Full settings
+polish remains a later phase.
+
+### Phase 4 implementation — Saved library review
+
+One Saved menu opens Words/Sentences tabs. Feature-owned collection views now
+render compact token-based rows with Japanese surface/reading, numbered stored
+meanings and persistent JMdict attribution. Word source/date details are collapsed;
+sentences retain Japanese and any stored English translation, with a date disclosure.
+Long content wraps at narrow widths without shrinking Japanese. Lists keep their
+service ordering and existing record fields.
+
+List and delete clients are unchanged. Loading, empty, retry and per-row removal
+errors remain explicit. Deletion requires the existing confirmation, disables
+duplicate removals, invalidates earlier list requests and preserves focus in the
+current collection. Refresh runs on reopening/tab entry; inactive or unmounted
+views reject old list responses. No storage migration or automatic lookup/translation
+is introduced. Settings and installer work remain outside this phase.

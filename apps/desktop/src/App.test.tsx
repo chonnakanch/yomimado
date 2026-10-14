@@ -393,3 +393,281 @@ it("keeps the latest collection response when switching back before an old reque
     "No saved words yet",
   );
 });
+
+const libraryWords = [
+  {
+    id: 9,
+    surface: "学校",
+    reading: "ガッコウ",
+    dictionaryForm: "学校",
+    meanings: ["school"],
+    sourceText: "学校に行きます。\n一緒に勉強しましょう。",
+    createdAt: "2026-10-14T00:00:00+00:00",
+  },
+  {
+    id: 4,
+    surface: "猫",
+    reading: "ねこ",
+    dictionaryForm: "猫",
+    meanings: [],
+    sourceText: "",
+    createdAt: "legacy unknown date",
+  },
+];
+const librarySentences = [
+  {
+    id: 7,
+    sourceText: "今日はいい天気ですね。",
+    translatedText: "It's a fine day today.",
+    createdAt: "2026-10-14T00:00:00+00:00",
+  },
+  {
+    id: 2,
+    sourceText: "一緒に日本語を勉強しましょう。",
+    translatedText: null,
+    createdAt: "2026-10-13T00:00:00+00:00",
+  },
+];
+function libraryResponse(value: unknown, status = 200) {
+  return new Response(JSON.stringify(value), { status });
+}
+function pendingResponse() {
+  let resolve!: (value: Response) => void;
+  const promise = new Promise<Response>((done) => {
+    resolve = done;
+  });
+  return { promise, resolve };
+}
+async function openLibrary(tab = "saved") {
+  window.history.replaceState({}, "", `/?view=${tab}`);
+  await act(async () => root.render(<App />));
+}
+
+it("keeps stored word order, meanings and attribution with context/date collapsed", async () => {
+  vi.stubGlobal(
+    "fetch",
+    vi
+      .fn()
+      .mockImplementation(() =>
+        Promise.resolve(libraryResponse({ words: libraryWords })),
+      ),
+  );
+  await openLibrary();
+  const rows = container.querySelectorAll("#saved-panel-words .library-row");
+  expect(
+    Array.from(rows, (row) => row.querySelector("strong")?.textContent),
+  ).toEqual(["学校", "猫"]);
+  expect(rows[0].querySelector(".library-reading")?.textContent).toBe(
+    "ガッコウ",
+  );
+  expect(rows[0].textContent).toContain("school");
+  expect(rows[0].querySelector<HTMLDetailsElement>("details")!.open).toBe(
+    false,
+  );
+  expect(rows[0].querySelector(".library-source")?.textContent).toBe(
+    libraryWords[0].sourceText,
+  );
+  expect(rows[0].querySelector("time")?.getAttribute("datetime")).toBe(
+    "2026-10-14T00:00:00.000Z",
+  );
+  expect(rows[0].querySelector(".library-attribution")?.textContent).toContain(
+    "JMdict (EDRDG) · CC BY-SA 4.0",
+  );
+  expect(rows[1].textContent).toContain("No dictionary meaning saved.");
+  expect(rows[1].textContent).toContain("Saved date unavailable");
+  expect(rows[1].textContent).toContain("No source sentence saved.");
+  await act(async () => rows[0].querySelector<HTMLElement>("summary")!.click());
+  expect(rows[0].querySelector<HTMLDetailsElement>("details")!.open).toBe(true);
+});
+
+it("renders Japanese and saved translation without translating unsaved output", async () => {
+  const fetch = vi
+    .fn()
+    .mockImplementation(() =>
+      Promise.resolve(libraryResponse({ sentences: librarySentences })),
+    );
+  vi.stubGlobal("fetch", fetch);
+  await openLibrary("sentences");
+  const rows = container.querySelectorAll(
+    "#saved-panel-sentences .library-row",
+  );
+  expect(
+    Array.from(
+      rows,
+      (row) => row.querySelector(".library-sentence")?.textContent,
+    ),
+  ).toEqual(librarySentences.map((sentence) => sentence.sourceText));
+  expect(rows[0].querySelector('[lang="en"]')?.textContent).toBe(
+    librarySentences[0].translatedText,
+  );
+  expect(rows[1].textContent).toContain("No translation saved.");
+  expect(rows[0].querySelector<HTMLDetailsElement>("details")!.open).toBe(
+    false,
+  );
+  expect(fetch).toHaveBeenCalledTimes(1);
+  expect(fetch.mock.calls[0][0]).toContain("/sentences");
+});
+
+it("prevents duplicate removal and ignores an old refresh while restoring focus to the next row", async () => {
+  const oldList = pendingResponse(),
+    deletion = pendingResponse();
+  let lists = 0;
+  const fetch = vi.fn((_url: string, options?: RequestInit) => {
+    if (options?.method === "DELETE") return deletion.promise;
+    lists++;
+    return lists === 1
+      ? Promise.resolve(libraryResponse({ words: libraryWords }))
+      : oldList.promise;
+  });
+  vi.stubGlobal("fetch", fetch);
+  const confirm = vi.fn().mockReturnValue(true);
+  vi.stubGlobal("confirm", confirm);
+  await openLibrary();
+  await act(async () =>
+    container
+      .querySelector<HTMLButtonElement>("#saved-panel-words [data-refresh]")!
+      .click(),
+  );
+  const remove = container.querySelector<HTMLButtonElement>(
+    '[aria-label="Remove 学校"]',
+  )!;
+  remove.focus();
+  await act(async () => {
+    remove.click();
+    remove.click();
+  });
+  expect(confirm).toHaveBeenCalledTimes(1);
+  expect(
+    fetch.mock.calls.filter((call) => call[1]?.method === "DELETE"),
+  ).toHaveLength(1);
+  expect(
+    container.querySelector<HTMLButtonElement>('[aria-label="Remove 猫"]')!
+      .disabled,
+  ).toBe(true);
+  expect(
+    container.querySelector<HTMLButtonElement>(
+      "#saved-panel-words [data-refresh]",
+    )!.disabled,
+  ).toBe(true);
+  await act(async () => deletion.resolve(new Response(null, { status: 204 })));
+  expect(container.querySelector('[aria-label="Remove 学校"]')).toBeNull();
+  expect(document.activeElement).toBe(
+    container.querySelector('[aria-label="Remove 猫"]'),
+  );
+  await act(async () =>
+    oldList.resolve(libraryResponse({ words: libraryWords })),
+  );
+  expect(container.querySelector('[aria-label="Remove 学校"]')).toBeNull();
+  expect(
+    container.querySelectorAll("#saved-panel-words .library-row"),
+  ).toHaveLength(1);
+});
+
+it("keeps a failed removal beside its row and supports confirmed retry with refresh focus", async () => {
+  let deletes = 0;
+  vi.stubGlobal(
+    "fetch",
+    vi.fn((_url: string, options?: RequestInit) => {
+      if (options?.method === "DELETE") {
+        deletes++;
+        return Promise.resolve(
+          deletes === 1
+            ? libraryResponse({ detail: "Delete failed" }, 503)
+            : new Response(null, { status: 204 }),
+        );
+      }
+      return Promise.resolve(libraryResponse({ words: [libraryWords[0]] }));
+    }),
+  );
+  const confirm = vi.fn().mockReturnValue(true);
+  vi.stubGlobal("confirm", confirm);
+  await openLibrary();
+  const remove = container.querySelector<HTMLButtonElement>(
+    '[aria-label="Remove 学校"]',
+  )!;
+  remove.focus();
+  await act(async () => remove.click());
+  expect(
+    container.querySelector('.library-row [role="alert"]')?.textContent,
+  ).toContain("Could not remove this word: Delete failed");
+  expect(container.querySelectorAll(".library-row")).toHaveLength(1);
+  expect(remove.disabled).toBe(false);
+  await act(async () => remove.click());
+  expect(confirm).toHaveBeenCalledTimes(2);
+  expect(container.textContent).toContain("No saved words yet");
+  expect(document.activeElement).toBe(
+    container.querySelector("#saved-panel-words [data-refresh]"),
+  );
+});
+
+it("does not steal tab focus when a removal completes in the hidden collection", async () => {
+  const deletion = pendingResponse();
+  vi.stubGlobal(
+    "fetch",
+    vi.fn((url: string, options?: RequestInit) =>
+      options?.method === "DELETE"
+        ? deletion.promise
+        : Promise.resolve(
+            libraryResponse(
+              url.endsWith("/vocabulary")
+                ? { words: libraryWords }
+                : { sentences: librarySentences },
+            ),
+          ),
+    ),
+  );
+  vi.stubGlobal("confirm", vi.fn().mockReturnValue(true));
+  await openLibrary();
+  const remove = container.querySelector<HTMLButtonElement>(
+    '[aria-label="Remove 学校"]',
+  )!;
+  remove.focus();
+  await act(async () => remove.click());
+  const tab = container.querySelector<HTMLButtonElement>(
+    "#saved-tab-sentences",
+  )!;
+  tab.focus();
+  await act(async () => tab.click());
+  await act(async () => deletion.resolve(new Response(null, { status: 204 })));
+  expect(document.activeElement).toBe(tab);
+  expect(
+    container.querySelector<HTMLElement>("#saved-panel-words")!.hidden,
+  ).toBe(true);
+});
+
+it("retains existing rows during load failure and retries the current collection", async () => {
+  let lists = 0;
+  vi.stubGlobal(
+    "fetch",
+    vi.fn(() => {
+      lists++;
+      return Promise.resolve(
+        lists === 2
+          ? libraryResponse({ detail: "List unavailable" }, 503)
+          : libraryResponse({ words: libraryWords }),
+      );
+    }),
+  );
+  await openLibrary();
+  await act(async () =>
+    container
+      .querySelector<HTMLButtonElement>("#saved-panel-words [data-refresh]")!
+      .click(),
+  );
+  expect(
+    container.querySelector('#saved-panel-words [role="alert"]')?.textContent,
+  ).toContain("List unavailable");
+  expect(
+    container.querySelectorAll("#saved-panel-words .library-row"),
+  ).toHaveLength(2);
+  const retry = Array.from(
+    container.querySelectorAll<HTMLButtonElement>("button"),
+  ).find((button) => button.textContent === "Retry loading words")!;
+  await act(async () => retry.click());
+  expect(
+    container.querySelector('#saved-panel-words [role="alert"]'),
+  ).toBeNull();
+  expect(
+    container.querySelectorAll("#saved-panel-words .library-row"),
+  ).toHaveLength(2);
+});

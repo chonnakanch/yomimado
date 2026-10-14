@@ -26,6 +26,17 @@ tabs by keyboard. Each collection keeps its Refresh, loading/error/empty states
 and confirmed Remove action. Opening the library or returning to a tab refreshes
 that collection. Settings and sources remain separate toolbar actions.
 
+Words show their stored reading and numbered meanings. Expand **Source and saved
+date** for the original Japanese context and local save time. Sentences show the
+Japanese and any English translation already saved; **Saved date** reveals their
+local save time. Opening Saved never starts dictionary lookup or translation.
+
+Rows wrap in narrow windows. A failed refresh keeps the previous rows and offers
+Retry loading; a failed removal stays beside its row so you can try Remove again.
+Removal still requires confirmation. During removal, other Remove/Refresh actions
+are disabled. Keyboard focus returns to the next/previous row or Refresh when a
+row is removed, and stays in the selected tab if you switched collections.
+
 `Cmd/Ctrl+Shift+O` selects an area on the monitor under the pointer.
 `Cmd/Ctrl+Shift+S` now means Whole Screen on that monitor. This changes the older
 page-scan shortcut described in the published v0.1.0 guide below. Toolbar buttons

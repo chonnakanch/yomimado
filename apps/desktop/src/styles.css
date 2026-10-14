@@ -55,9 +55,7 @@ button:disabled {
   max-width: 32rem;
   padding: 2rem;
 }
-.main-actions,
-.saved-words-heading,
-.saved-word-top {
+.main-actions {
   align-items: center;
   display: flex;
   gap: 0.6rem;
@@ -74,56 +72,6 @@ button:disabled {
 .secondary-button:disabled {
   cursor: not-allowed;
   opacity: 0.55;
-}
-.saved-words {
-  border-top: 1px solid #5c5048;
-  margin-top: 1.5rem;
-  padding-top: 0.75rem;
-}
-.saved-words h2 {
-  font-size: 1.1rem;
-}
-.saved-words-heading button,
-.saved-word-top button {
-  padding: 0.35rem 0.6rem;
-}
-.saved-word-list {
-  list-style: none;
-  padding: 0;
-}
-.saved-word-list > li {
-  background: #171411;
-  border: 1px solid #5c5048;
-  border-radius: 8px;
-  margin-bottom: 0.6rem;
-  padding: 0.75rem;
-}
-.saved-word-top strong {
-  font-size: 1.15rem;
-  overflow-wrap: anywhere;
-}
-.saved-word-top small {
-  color: #c6bcb5;
-  display: block;
-}
-.saved-word-list ol {
-  margin: 0.45rem 0;
-  padding-left: 1.5rem;
-}
-.saved-word-list p {
-  margin: 0.4rem 0;
-}
-.saved-word-context {
-  color: #c6bcb5;
-  overflow-wrap: anywhere;
-}
-.saved-word-list > li > small {
-  color: #9f958e;
-  display: block;
-  margin-top: 0.2rem;
-}
-.saved-word-list a {
-  color: #ffab83;
 }
 h1 {
   margin-bottom: 0.15rem;
