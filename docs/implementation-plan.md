@@ -583,5 +583,15 @@ ExitRequested event. A temporary native close/reopen/explicit-Quit smoke exercis
 passed, showing that programmatic close alone did not cover the native button path.
 The follow-up change vetoes main-window closure immediately and queues hiding from
 a worker so the native close callback returns before the hide is processed. Local
-native tests (51) and formatting pass; owner verification of the red button remains
-pending. Temporary lifecycle diagnostics and smoke code are removed from source.
+native tests (51) and formatting pass. Cross-platform
+[Checks run 38570389158](https://github.com/chonnakanch/yomimado/actions/runs/38570389158)
+also passed for `10b8c58`, but the owner's native red-button retest still exits the
+app. This follow-up does not resolve the reported issue; Phase 5 acceptance remains
+open. A debugger trace records `NSApplication terminate:` reached through the
+native `_handleAEQuit` Apple-event handler after the main close/hide completes.
+The sender attribute was unavailable at that deferred termination breakpoint;
+the source of the Quit event is not identified. The original close handler is
+restored because the deferral does not fix the reported behavior. Temporary
+lifecycle diagnostics and smoke code are removed from source. A user-terminal
+launch comparison remains pending to distinguish the managed launch environment
+from product behavior; no Quit interception or OS preference change is made.
