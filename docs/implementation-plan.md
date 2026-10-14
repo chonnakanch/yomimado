@@ -515,8 +515,12 @@ Local verification passed 142 frontend tests in 19 files, TypeScript/production
 Vite build, Prettier and diff checks. Added cases cover stored ordering, old record
 fields, collapsed details, date fallback, existing translations, removal confirmation,
 duplicate removal, stale-list rejection, retry and focus restoration. Native and
-service source/API/storage formats are unchanged; cross-platform Checks will still
-run the existing native/service gates on the exact pushed source.
+service source/API/storage formats are unchanged.
+
+[Checks run 38545692404](https://github.com/chonnakanch/yomimado/actions/runs/38545692404)
+passed all gates for Phase 4 source `aed09f4`: frontend, service, release tools,
+and macOS/Windows native tests and builds. These source checks do not replace
+the owner or Windows/mixed-DPI interactive acceptance below.
 
 Browser inspection of actual components with synthetic saved records and mocked
 native IPC verified 700 × 480 and 280 px layouts, long Japanese/readings, disclosures,
