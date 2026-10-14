@@ -52,10 +52,6 @@ export function App() {
           initialCategory={initialView === "reading" ? "reading" : "scan"}
         />
       )}
-      <p className="secondary-footer">
-        Closing this window keeps the toolbar running. Quit from More actions on
-        the toolbar.
-      </p>
     </main>
   );
 }

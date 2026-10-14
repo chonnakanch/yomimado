@@ -37,14 +37,6 @@
   line-height: 1.5;
   margin: var(--space-1) 0 var(--space-4);
 }
-.secondary-footer {
-  border-top: 1px solid var(--color-border);
-  color: var(--color-text-muted);
-  font-size: var(--font-size-label);
-  line-height: 1.5;
-  margin-top: var(--space-6);
-  padding-top: var(--space-4);
-}
 .settings-tabs {
   margin: var(--space-4) 0;
 }
