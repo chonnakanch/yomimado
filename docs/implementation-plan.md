@@ -888,7 +888,9 @@ publication without recording screenshots or Japanese text.
 Verification passes 165 frontend tests, including first Whole Screen under
 StrictMode/suspended animation frames, upload/body timeout and late-response guards,
 plus 59 native tests, TypeScript/production frontend build, desktop formatting,
-Cargo formatting and the macOS native build. The owner's real-reader fresh-launch
-retest remains pending, as does Windows/mixed-DPI runtime acceptance. The native
-policy requires restarting the command-launched app; no automatic restart or
-installer/version change was performed.
+Cargo formatting and the macOS native build. On 2026-10-15 the owner confirmed
+that source `9edd2c2` fixed the reported first-launch Whole Screen stall on their
+real reader. This records acceptance of that fix on the tested macOS setup;
+Windows/mixed-DPI runtime acceptance remains open. The native policy requires
+restarting the command-launched app; no automatic restart or installer/version
+change was performed.
