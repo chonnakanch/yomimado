@@ -854,3 +854,41 @@ and desktop formatting pass. WebKit inspection of the actual region component
 with synthetic Japanese text confirms the orange 2 px stroke, retained review
 dashes and blue 3 px selection. The private fixture was removed. Native visual
 acceptance of this thicker treatment remains open on macOS and Windows/mixed-DPI.
+
+### First Whole Screen recognition stalls in a never-shown webview
+
+On 2026-10-15 the owner reported that Whole Screen remained at Recognizing on a
+fresh app launch until Selected Area was used. Their log confirms capture and
+automatic manga cropping completed. This is distinct from the earlier uncertain
+page-detection fallback. The owner launched the development app independently;
+their process and OCR service were left running during this investigation.
+
+Whole Screen/Rescan create a hidden capture webview, whereas Selected Area shows
+it before capture. The selector builder now disables background throttling using
+the existing Tauri API, supported on the project's macOS 14+ target. This keeps
+the hidden webview's IPC/network continuations runnable without showing a selector
+or taking focus. Windows ignores this macOS policy; its runtime gate remains open.
+
+A separate native WebKit probe used the actual CaptureSelector/requestOcr flow,
+a synthetic PNG (3,081,260 base64 bytes) and an isolated loopback OCR stub. Immediate
+replies completed under both policies. With a 12-second reply delay, the default
+hidden policy stalled after Requesting despite the stub returning HTTP 200 and
+reached the probe's 30-second failure bound. A fresh process with throttling disabled
+processed the same delayed response and reached overlay publication. No user screen
+was captured and the real OCR service was not restarted. The private probe source,
+HTML and configuration were removed; its isolated stub was stopped.
+
+OCR requests now have a three-minute deadline covering image loading, upload and
+response-body parsing. Timeout aborts the browser request, reports failure through
+the existing session-bound finish path and cannot publish a late result. Aborting
+the client request does not promise to stop inference already running in Python.
+Metadata-only native OCR-stage logs distinguish request, recognized response and
+publication without recording screenshots or Japanese text.
+
+Verification passes 165 frontend tests, including first Whole Screen under
+StrictMode/suspended animation frames, upload/body timeout and late-response guards,
+plus 59 native tests, TypeScript/production frontend build, desktop formatting,
+Cargo formatting and the macOS native build. The owner's real-reader fresh-launch
+retest remains pending, as does Windows/mixed-DPI runtime acceptance. The native
+policy requires restarting the command-launched app; no automatic restart or
+installer/version change was performed.

@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { act } from "react";
+import { act, StrictMode } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { invoke } from "@tauri-apps/api/core";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
@@ -83,6 +83,87 @@ it("continues automatic capture when a hidden WebView suspends animation frames"
   expect(invoke).toHaveBeenCalledExactlyOnceWith("capture_auto_page");
   expect(requestOcr).toHaveBeenCalledTimes(1);
   expect(container.textContent).toContain("No text was detected");
+  expect(document.documentElement.dataset.capturing).toBe("false");
+});
+
+it("publishes a first Whole Screen scan once under StrictMode without a prior manual selection or animation frame", async () => {
+  vi.useFakeTimers();
+  vi.stubGlobal("requestAnimationFrame", () => 1);
+  window.history.replaceState({}, "", "/?mode=capture&scan=whole&session=41");
+  vi.mocked(invoke).mockImplementation(async (command) =>
+    command === "capture_whole_screen" ? captured : undefined,
+  );
+  vi.mocked(requestOcr).mockResolvedValue({
+    engine: "manga",
+    regions: [
+      {
+        id: "first",
+        text: "今日",
+        polygon: [
+          { x: 10, y: 10 },
+          { x: 30, y: 10 },
+          { x: 30, y: 70 },
+          { x: 10, y: 70 },
+        ],
+        orientation: "vertical",
+        confidence: 0,
+        type: "dialogue",
+        tokens: [],
+      },
+    ],
+  });
+  await act(async () =>
+    root.render(
+      <StrictMode>
+        <CaptureSelector />
+      </StrictMode>,
+    ),
+  );
+  await act(async () => {
+    await vi.advanceTimersByTimeAsync(100);
+  });
+  expect(
+    vi
+      .mocked(invoke)
+      .mock.calls.filter(([command]) => command === "capture_whole_screen"),
+  ).toEqual([["capture_whole_screen", { sessionId: 41 }]]);
+  expect(requestOcr).toHaveBeenCalledOnce();
+  expect(invoke).toHaveBeenCalledWith("hide_finished_selector", {
+    sessionId: 41,
+  });
+  expect(
+    vi
+      .mocked(invoke)
+      .mock.calls.filter(([command]) => command === "report_ocr_stage")
+      .map(([, args]) => args),
+  ).toEqual([
+    { sessionId: 41, stage: "requesting" },
+    { sessionId: 41, stage: "recognized" },
+    { sessionId: 41, stage: "publishing" },
+  ]);
+  expect(invoke).not.toHaveBeenCalledWith(
+    "capture_selection",
+    expect.anything(),
+  );
+});
+
+it("ends the Whole Screen session with an error when recognition times out", async () => {
+  window.history.replaceState({}, "", "/?mode=capture&scan=whole&session=42");
+  vi.mocked(invoke).mockResolvedValue(captured);
+  vi.mocked(requestOcr).mockRejectedValue(
+    new Error(
+      "OCR timed out after 3 minutes. Check the local OCR service and try again.",
+    ),
+  );
+  await act(async () => root.render(<CaptureSelector />));
+  expect(invoke).toHaveBeenCalledWith("finish_scan", {
+    sessionId: 42,
+    message: expect.stringContaining("OCR timed out"),
+  });
+  expect(invoke).not.toHaveBeenCalledWith(
+    "show_ocr_overlay",
+    expect.anything(),
+  );
   expect(document.documentElement.dataset.capturing).toBe("false");
 });
 

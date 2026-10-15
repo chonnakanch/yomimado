@@ -54,6 +54,11 @@ row is removed, and stays in the selected tab if you switched collections.
 detection and saved/drawn-area fallback. Toolbar buttons use the toolbar's
 monitor; Rescan uses its recorded original monitor.
 
+Whole Screen can be the first scan after launch; Selected Area is not needed to
+initialize it. Recognition allows up to three minutes for a cold local model or
+large page. A stalled OCR request then ends with an error instead of leaving the
+scan button busy indefinitely. Check the local OCR service before retrying.
+
 The owner accepted the compact learning popup and Phase 4 Saved library, then
 authorized Phase 5 Settings. Saved-data formats and native capture helpers are
 retained. Saved, Settings, and Sources & licenses each open their own native

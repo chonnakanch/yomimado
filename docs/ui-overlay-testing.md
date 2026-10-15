@@ -28,6 +28,13 @@ proved inconvenient for repeated grants.
    and the Whole Screen button: downsampled detection must not lose a disconnected
    leading thin stroke. Image-derived boundary corrections use dashed approximate/review
    regions; their popup must retain the original Japanese and review guidance.
+   Start a fresh app process and choose Whole Screen **before** any Selected Area
+   scan. Repeat with cold local models: recognition must complete while the capture
+   selector stays hidden, without bringing it to the foreground. A stalled OCR
+   upload or response must end with an error after three minutes. Native logs show
+   session-bound OCR stages (`Requesting`, `Recognized`, `Publishing`) without
+   screenshot bytes or recognized text. Restart the app when testing a native
+   scheduling change; frontend hot reload alone does not apply it.
 2. With the overlay visibly present, click **Test reader click**, drag-select the
    input text and scroll in the blank side margin. The browser must receive them.
    Start a drag outside a polygon and cross it; verify mouse-up stays with the browser.

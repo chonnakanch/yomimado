@@ -12,7 +12,7 @@ use capture::{
     cleanup_legacy_captures, crop_detected_page, CaptureMetadata, CapturedImage, DisplayInfo,
     Rectangle, ScreenCapture, ViewportSize, XcapScreenCapture,
 };
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use tauri::{
     AppHandle, Emitter, Manager, PhysicalPosition, PhysicalSize, WebviewUrl, WebviewWindowBuilder,
 };
@@ -228,6 +228,10 @@ fn show_capture_window_on(
                 "capture-selector",
                 WebviewUrl::App(format!("index.html?{query}").into()),
             )
+            // Whole Screen/Rescan may never show this webview. On macOS 14+
+            // WKWebView's inactive policy can suspend IPC/fetch continuations
+            // until a manual selection makes it visible for the first time.
+            .background_throttling(tauri::utils::config::BackgroundThrottlingPolicy::Disabled)
             .transparent(true)
             .decorations(false)
             .always_on_top(true)
@@ -534,6 +538,29 @@ async fn capture_selection(
         display.selector_physical_bounds, display.physical_bounds
     );
     perform_capture(app, Arc::clone(&state.capture), display, selection, scan.id).await
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
+enum OcrStage {
+    Requesting,
+    Recognized,
+    Publishing,
+}
+
+#[tauri::command(async)]
+fn report_ocr_stage(
+    window: tauri::WebviewWindow,
+    state: tauri::State<'_, AppState>,
+    session_id: u64,
+    stage: OcrStage,
+) -> Result<(), String> {
+    // Only log stage metadata for the current selector; never image/text data.
+    if window.label() == "capture-selector" && state.scans.lock()?.active(Some(session_id)).is_ok()
+    {
+        eprintln!("YomiMado: scan={session_id} OCR stage={stage:?}");
+    }
+    Ok(())
 }
 
 #[tauri::command(async)]
@@ -956,6 +983,7 @@ pub fn run() {
             capture_selection,
             capture_display,
             capture_auto_page,
+            report_ocr_stage,
             show_ocr_overlay,
             get_overlay_state,
             update_overlay_controls,

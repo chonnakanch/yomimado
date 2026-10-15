@@ -145,6 +145,14 @@ export function CaptureSelector() {
   const captureAndRecognize = async (
     capture: () => Promise<CaptureResult | null>,
   ) => {
+    const reportOcrStage = (
+      stage: "requesting" | "recognized" | "publishing",
+    ) => {
+      if (sessionId !== null)
+        void invoke("report_ocr_stage", { sessionId, stage }).catch(() => {
+          // Optional diagnostics must not interrupt recognition or publication.
+        });
+    };
     document.documentElement.dataset.capturing = "true";
     let canReviewDebugCapture = false;
     try {
@@ -175,9 +183,11 @@ export function CaptureSelector() {
         if (sessionId !== null)
           await invoke("resume_capture_selection", { sessionId, debug: true });
       }
+      reportOcrStage("requesting");
       const rawResponse: OcrResponse = await requestOcr(captured.imageDataUrl, {
         debug: debugCaptureEnabled,
       });
+      reportOcrStage("recognized");
       const response =
         estimatedOrder && rawResponse.engine === "manga"
           ? {
@@ -212,6 +222,7 @@ export function CaptureSelector() {
             noText: true,
           });
       } else {
+        reportOcrStage("publishing");
         await showOverlay(captured, response);
       }
     } catch (captureError) {
