@@ -921,6 +921,21 @@ WebKit inspection of the actual preview with synthetic capture/response data at
 1280 × 720 and 320 × 480 confirms no horizontal clipping, image fitting, keyboard
 disclosures, loading/error presentation and action callbacks. The temporary fixture
 and isolated preview server were removed/stopped and viewport reset. The owner's
-app and OCR service were not restarted. Native debug-flow appearance on macOS and
-Windows/mixed-DPI remains available for owner review; native/service code and
-release artifacts are unchanged.
+app and OCR service were not restarted during that implementation review;
+native/service code and release artifacts are unchanged.
+
+After stopping their own app, the owner authorized a normal command-based launch
+and native verification of source `9726dc1` with capture debug enabled. The existing
+local service reported the manga engine ready. A separate Helium tab displayed the
+repository's synthetic Japanese reader. Native logs confirm capture, recognized
+OCR and a held debug preview; the owner confirmed that the preview appeared.
+The owner then confirmed that Geometry and Detector stage expand, Show overlay
+displays the OCR boxes, and hovering an OCR region and Whole Screen shows the
+debug tooltips. The native log independently confirms `OCR overlay displayed
+(manga)`. This records macOS acceptance of those debug interactions. Native UI
+automation could not target the unbundled process, so the owner performed its
+clicks while the agent inspected logs. Automatic page detection was uncertain on
+this fixture and reused the saved-area fallback; this check does not certify
+automatic crop coverage. The debug app was left running. Normal-mode hover
+suppression retains automated coverage; Windows/mixed-DPI native review remains
+open.
