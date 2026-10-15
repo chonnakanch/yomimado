@@ -905,6 +905,12 @@ Windows/mixed-DPI runtime acceptance remains open. The native policy requires
 restarting the command-launched app; no automatic restart or installer/version
 change was performed.
 
+On 2026-10-15 the owner additionally confirmed that full-screen capture OCR works
+in their current macOS development setup. This records owner acceptance of the
+Whole Screen capture-to-OCR flow. The report does not establish separate results
+for every page-detection fallback, multi-monitor configuration or Windows/DPI
+case, and does not apply to a packaged installer.
+
 ### Debug-only hover tooltips and redesigned capture preview
 
 On 2026-10-15 the owner requested that hover tooltips appear only in the existing
