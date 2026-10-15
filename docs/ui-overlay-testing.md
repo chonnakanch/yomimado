@@ -70,6 +70,8 @@ image/selection ratios used by the frontend, including an OS-adjusted client ori
 Recorded evidence and open acceptance gates are in
 [implementation status](implementation-plan.md#ui-redesign--phase-2-review).
 Source builds/tests are distinct from native manual checks and installer acceptance.
+The [Windows redesign checklist](ui-redesign-windows-checklist.md) records scale,
+multi-monitor, secondary-window and recovery cases for the current development UI.
 
 For frame diagnosis only, set `YOMIMADO_OVERLAY_GEOMETRY_DEBUG=1` when launching
 the debug app. Each reveal writes capture metadata, measured native frame and OCR

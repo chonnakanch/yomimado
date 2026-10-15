@@ -974,3 +974,14 @@ used the project's Python 3.11.17 runtime after an initial Python 3.9 environmen
 failed the Windows-only graph verifier's Python 3.11 API call. Rust is 1.98.1.
 No service, model, dependency, version or installer change was made. Windows and
 other unrecorded native interactions remain separate acceptance gates.
+
+The owner subsequently requested removing the two Clippy exceptions and selected
+automated coverage plus a prepared checklist for Windows. Both exceptions are now
+removed: controls obtain their app handle from the existing window, and popup mode
+comes from native OCR state. CI runs strict all-target Clippy on macOS and Windows.
+The unchanged stale-frame guard now has direct regression coverage for every pair
+of 100/125/150/200% scales and shifted/clipped frames on negative origins, bringing
+the local native suite to 60 tests. The
+[Windows redesign checklist](ui-redesign-windows-checklist.md) separates source UI,
+mixed-DPI, input/focus, independent-window and recovery cases from future installer
+checks. No interactive hardware result is inferred or marked passed.

@@ -220,8 +220,8 @@ Group, provided under [CC BY-SA 4.0 and the EDRDG dictionary licence](https://ww
 [Checks](../.github/workflows/checks.yml) runs on develop/main pushes and main
 pull requests. Frontend formatting, TypeScript, Vitest and the Vite production
 build run alongside the Python service and release-tool tests. Native formatting,
-tests and debug compilation run on macOS and Windows with Rust 1.98.1. These
-checks build no installer and require no detector/model downloads.
+tests, strict Clippy and debug compilation run on macOS and Windows with Rust
+1.98.1. These checks build no installer and require no detector/model downloads.
 
 Service CI uses Python 3.11.17 and
 [requirements-ci.txt](../scripts/requirements-ci.txt), with exact wheel hashes

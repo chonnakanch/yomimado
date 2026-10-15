@@ -7,6 +7,7 @@
 - [Script roles](../scripts/README.md): release entrypoints, runtime dependencies and manual rebuild tools.
 - [Implementation plan](implementation-plan.md): completed milestone and current maintenance scope.
 - [Code quality review](code-review-2026-10-13.md): fixed boundary/state issues, duplication and refactor follow-ups.
+- [Redesign quality review](ui-redesign-review.md) and [Windows UI checklist](ui-redesign-windows-checklist.md): current source checks and remaining interactive acceptance.
 - [Security review](security-review-2026-10-13.md): browser/input guards, dependency advisories and remaining runtime work.
 - [Product and architecture design](initial-design.md): domain boundaries and coordinate rules.
 - [App icon](app-icon.md): the current icon's origin and generation record.

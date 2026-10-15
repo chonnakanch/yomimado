@@ -191,7 +191,6 @@ export function OcrOverlay() {
         metadata: state.metadata,
         text: region.text,
         polygon: region.polygon,
-        demo: state.engine === "demo",
         regionId: region.id,
         ...(state.sessionId !== undefined
           ? { sessionId: state.sessionId }

@@ -406,6 +406,6 @@ it("uses explicit demo labels and Space activation without inventing recognized 
   );
   expect(invoke).toHaveBeenCalledWith(
     "show_translation_popup",
-    expect.objectContaining({ demo: true, keyboard: true }),
+    expect.objectContaining({ keyboard: true }),
   );
 });

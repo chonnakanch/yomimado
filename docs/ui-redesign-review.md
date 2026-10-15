@@ -1,7 +1,8 @@
 # UI redesign verification and code review
 
-Reviewed on 2026-10-15, starting from `0d2c1d0` on `develop`. This is source
-verification after the owner's Phase 5 approval, without a version change or
+Reviewed on 2026-10-15, starting from `0d2c1d0` on `develop`, with the owner's
+subsequent request to remove lint exceptions and prepare Windows coverage. This is
+source verification after the owner's Phase 5 approval, without a version change or
 installer publication.
 
 ## Review findings
@@ -22,11 +23,19 @@ Existing core event permissions already permit this handoff.
 ### Resolved: strict native lint findings
 
 Clippy found one unnecessary return in macOS pointer-display selection and two
-eight-argument IPC commands. The return was removed. The two command boundaries
-have narrow `expect(clippy::too_many_arguments)` annotations with explicit reasons
-to retain their existing frontend contracts. These annotations check that the
-expected lint still exists; they do not suppress other Clippy warnings. No command
-arguments or coordinate behavior changed.
+eight-argument IPC commands. The return was removed. The initial review used two
+narrow argument-count expectations; the owner then requested a refactor, and both
+expectations are now removed. Overlay controls obtain the app handle from their
+injected window. The translation popup obtains demo/manga mode from the stored
+native OCR result instead of a redundant frontend flag. Each command has seven
+parameters, and coordinate and focus behavior remain unchanged.
+
+The native CI matrix now installs Clippy and runs it for all targets with warnings
+denied on both macOS and Windows. A shared native regression test exercises all
+16 scale transitions among 100%, 125%, 150% and 200%, plus shifted/clipped frames
+at negative origins. The existing stale-frame guard is unchanged in behavior and
+is now directly tested; a DPI change invalidates old hits even with unchanged
+physical window dimensions.
 
 No additional confirmed correctness defects were found in the reviewed capture
 session/cancellation, overlay publication/input routing, popup request invalidation,
@@ -36,13 +45,13 @@ all application or platform behavior has been proven.
 
 ## Completed local checks
 
-| Area | Result |
-| --- | --- |
-| Frontend | 172 tests in 20 files; TypeScript; normal and capture-debug production builds; full desktop Prettier check |
-| Native macOS | 59 tests with all targets; locked debug build; Cargo formatting; strict Clippy for all targets with warnings denied |
-| OCR service | 93 tests, zero failures/errors/skips; Ruff lint and formatting for app, tests and all packaged entrypoints/backend; dependency consistency check |
-| Release tools | 229 unittest checks; Ruff lint and formatting across scripts |
-| Patch | `git diff --check` |
+| Area          | Result                                                                                                                                           |
+| ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Frontend      | 172 tests in 20 files; TypeScript; normal and capture-debug production builds; full desktop Prettier check                                       |
+| Native macOS  | 60 tests with all targets; locked debug build; Cargo formatting; strict Clippy for all targets with warnings denied                              |
+| OCR service   | 93 tests, zero failures/errors/skips; Ruff lint and formatting for app, tests and all packaged entrypoints/backend; dependency consistency check |
+| Release tools | 229 unittest checks; Ruff lint and formatting across scripts                                                                                     |
+| Patch         | `git diff --check`                                                                                                                               |
 
 Native checks used Rust 1.98.1. The complete service and release-tool suites used
 the existing Python 3.11.17 environment, matching the project's CI interpreter.
@@ -54,8 +63,13 @@ OCR tests ran with Hugging Face and Transformers offline flags enabled.
 
 ## Remaining acceptance boundaries
 
-- Local compilation/tests cover macOS. Windows compilation is delegated to the
-  existing Checks workflow; interactive Windows/mixed-DPI acceptance remains open.
+- Local compilation/tests cover macOS. The initial review's
+  [Checks run 38744718738](https://github.com/chonnakanch/yomimado/actions/runs/38744718738)
+  passed frontend, service, release tools and macOS/Windows native tests/builds
+  for `0fbb89d`. The follow-up adds strict Clippy to both native CI jobs.
+  The owner chose automated coverage and a
+  [Windows checklist](ui-redesign-windows-checklist.md) for later interactive
+  Windows/mixed-DPI verification; those manual results remain unrecorded.
 - The new error handoff has automated component coverage and verified permissions,
   but no deliberate native window-creation failure was injected into the owner's
   running reading session.

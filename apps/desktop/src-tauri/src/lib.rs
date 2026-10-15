@@ -604,12 +604,7 @@ fn get_overlay_state(state: tauri::State<'_, AppState>) -> Result<serde_json::Va
 }
 
 #[tauri::command(async)]
-#[expect(
-    clippy::too_many_arguments,
-    reason = "Preserve the frontend IPC command contract"
-)]
 fn update_overlay_controls(
-    app: AppHandle,
     window: tauri::WebviewWindow,
     session_id: u64,
     revision: u64,
@@ -634,6 +629,7 @@ fn update_overlay_controls(
             })
         );
     }
+    let app = window.app_handle().clone();
     let state = app.state::<AppState>();
     let result = state.overlay_input.controls(
         &app,
@@ -723,16 +719,11 @@ fn close_translation_popup(
 }
 
 #[tauri::command(async)]
-#[expect(
-    clippy::too_many_arguments,
-    reason = "Preserve the frontend IPC command contract"
-)]
 fn show_translation_popup(
     app: AppHandle,
     metadata: CaptureMetadata,
     text: String,
     polygon: Vec<overlay::OcrPoint>,
-    demo: bool,
     region_id: Option<String>,
     session_id: Option<u64>,
     keyboard: Option<bool>,
@@ -746,6 +737,8 @@ fn show_translation_popup(
         return Err("This OCR result is no longer visible. Show it or rescan first.".into());
     }
     let overlay = state.overlay.get()?;
+    // The stored OCR result owns its engine; the frontend need not repeat it.
+    let demo = overlay["engine"].as_str() == Some("demo");
     let region = overlay["regions"].as_array().and_then(|regions| {
         regions
             .iter()

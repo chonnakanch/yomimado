@@ -493,6 +493,20 @@ pub fn resize_translation_popup(
         .map_err(|error| error.to_string())
 }
 
+fn frame_matches_capture(
+    planned: &OverlayLayout,
+    position: PhysicalPosition<i32>,
+    size: PhysicalSize<u32>,
+    captured_scale: Option<f64>,
+    current_scale: f64,
+) -> bool {
+    position.x == planned.window_x
+        && position.y == planned.window_y
+        && size.width == planned.window_width
+        && size.height == planned.window_height
+        && captured_scale == Some(current_scale)
+}
+
 pub fn check_frame(app: &AppHandle) -> Result<(), String> {
     let state = app.state::<crate::AppState>();
     let mut session = state.scans.lock()?;
@@ -508,12 +522,13 @@ pub fn check_frame(app: &AppHandle) -> Result<(), String> {
     let position = window.inner_position().map_err(|e| e.to_string())?;
     let size = window.inner_size().map_err(|e| e.to_string())?;
     let scale = window.scale_factor().map_err(|e| e.to_string())?;
-    if position.x != planned.window_x
-        || position.y != planned.window_y
-        || size.width != planned.window_width
-        || size.height != planned.window_height
-        || data["metadata"]["scaleFactor"].as_f64() != Some(scale)
-    {
+    if !frame_matches_capture(
+        &planned,
+        position,
+        size,
+        data["metadata"]["scaleFactor"].as_f64(),
+        scale,
+    ) {
         state.overlay_input.disable(app)?;
         window.hide().map_err(|e| e.to_string())?;
         if let Some(popup) = app.get_webview_window("translation-popup") {
@@ -533,6 +548,66 @@ pub fn check_frame(app: &AppHandle) -> Result<(), String> {
 mod tests {
     use super::*;
     use crate::capture::Rectangle;
+
+    #[test]
+    fn frame_guard_rejects_mixed_dpi_transitions_and_shifted_or_clipped_windows() {
+        let scales = [1.0, 1.25, 1.5, 2.0];
+        let planned = OverlayLayout {
+            window_x: -3840,
+            window_y: -2160,
+            window_width: 1600,
+            window_height: 900,
+            content_left: 0.0,
+            content_top: 0.0,
+            content_width: 1600.0,
+            content_height: 900.0,
+            toolbar_top: 0.0,
+            toolbar_height: 0.0,
+        };
+        let position = PhysicalPosition::new(planned.window_x, planned.window_y);
+        let size = PhysicalSize::new(planned.window_width, planned.window_height);
+        for captured_scale in scales {
+            for current_scale in scales {
+                // A DPI transition invalidates old hits even if the physical
+                // frame happens to be unchanged on the destination monitor.
+                assert_eq!(
+                    frame_matches_capture(
+                        &planned,
+                        position,
+                        size,
+                        Some(captured_scale),
+                        current_scale,
+                    ),
+                    captured_scale == current_scale
+                );
+            }
+            for moved in [
+                PhysicalPosition::new(position.x + 1, position.y),
+                PhysicalPosition::new(position.x, position.y + 1),
+            ] {
+                assert!(!frame_matches_capture(
+                    &planned,
+                    moved,
+                    size,
+                    Some(captured_scale),
+                    captured_scale,
+                ));
+            }
+            for resized in [
+                PhysicalSize::new(size.width - 1, size.height),
+                PhysicalSize::new(size.width, size.height - 1),
+            ] {
+                assert!(!frame_matches_capture(
+                    &planned,
+                    position,
+                    resized,
+                    Some(captured_scale),
+                    captured_scale,
+                ));
+            }
+        }
+        assert!(!frame_matches_capture(&planned, position, size, None, 1.0));
+    }
 
     #[test]
     fn measured_window_origin_keeps_whole_screen_pixels_aligned_below_menu_bar() {
