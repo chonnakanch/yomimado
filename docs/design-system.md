@@ -6,8 +6,10 @@ Phase 1 implements the tokens and floating-toolbar controls; the approved Phase 
 implements OCR region states and keyboard entry, with native platform acceptance
 still required. The owner authorized Phase 3 on 2026-10-14; the Compact dictionary
 popup specifications below are implemented and accepted in the running macOS
-development app. The Phase 4 Saved library is accepted. Phase 5 Settings categories
-and the shared secondary shell are implemented for review.
+development app. The Phase 4 Saved library is accepted. The owner approved Phase 5
+Settings and the independent Saved, Settings and Sources windows on 2026-10-15,
+including subsequent UI refinements. Remaining native-platform verification is
+tracked separately in the implementation plan.
 
 ## 1. Visual direction and boundaries
 

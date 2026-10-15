@@ -2,8 +2,9 @@
 
 ## Current status
 
-Updated **2026-10-14**. UI redesign Phases 3 and 4 are accepted. Phase 5 Settings
-is implemented for review on tracked `develop`; the app version remains `0.1.0`.
+Updated **2026-10-15**. UI redesign Phases 3, 4 and 5 are approved by the owner
+on tracked `develop`; the app version remains `0.1.0`. Remaining native-platform
+verification is tracked separately from phase approval below.
 
 The **first desktop pre-release milestone is complete**.
 [YomiMado v0.1.0](https://github.com/chonnakanch/yomimado/releases/tag/v0.1.0)
@@ -533,7 +534,14 @@ The normal development app is available for owner review.
 - [x] Owner authorized continuation to Phase 5 Settings. No installer/publication
       or version change is authorized by this source work.
 
-### Phase 5 Settings — implemented for review
+### Phase 5 Settings — approved by the owner
+
+On 2026-10-15 the owner approved Phase 5 after the Settings implementation and
+subsequent toolbar, capture, popup and debug refinements. The latest application
+source is `9726dc1`; approval was given with documentation at `96b9356`. This
+accepts the phase's implementation and design. It does not substitute for
+unrecorded native checks or authorize a new phase, version change or installer
+publication.
 
 On 2026-10-14 the owner accepted Phase 4 and authorized the Settings phase.
 At the owner's request, Saved, Settings and Sources & licenses now use independent
@@ -584,7 +592,9 @@ Sources & licenses and Quit. Native region focus/navigation handling is retained
 help text no longer directs users to the removed menu action. The menu follow-up
 passes 17 toolbar/overlay tests, TypeScript/production build and desktop Prettier.
 
-- [ ] Owner acceptance of Phase 5 layout and secondary-window close/reopen behavior.
+- [x] Owner approval of Phase 5 implementation and layout on 2026-10-15.
+- [ ] Explicit native-button close/reopen and simultaneous-window verification
+      after restoring native controls; earlier external-utility findings are retained.
 - [ ] Windows/mixed-DPI interactive acceptance, including Quit/service cleanup.
 - [ ] Future installer/release work requires separate owner authorization.
 

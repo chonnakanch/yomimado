@@ -1,12 +1,14 @@
 # YomiMado UI/UX redesign plan
 
-Status: **Approved by the owner on 2026-10-13. Phases 3 and 4 accepted; Phase 5 Settings implemented for review on 2026-10-14.**
+Status: **Plan approved on 2026-10-13. Phases 3 and 4 accepted; Phase 5 approved by the owner on 2026-10-15.**
 Prepared 2026-10-13 against `develop` at `4f8a395` (app version `0.1.0`).
 The owner approved this plan and [the design system](design-system.md), then
 authorized Phase 1: design tokens and the floating toolbar, then Phase 2: OCR
 regions and native input routing. After accepting the toolbar refinements, the
-owner authorized Phase 3: the Compact dictionary/learning popup. Further phases
-require approval of that result. No installer publication is authorized.
+owner authorized Phase 3: the Compact dictionary/learning popup, then Saved and
+Settings. Phase 5 approval covers the current source implementation and design;
+remaining native-platform verification stays open. Further work requires a new
+owner instruction. No installer publication is authorized.
 
 ## 1. Goal, scope and reference interpretation
 
@@ -583,7 +585,12 @@ current collection. Refresh runs on reopening/tab entry; inactive or unmounted
 views reject old list responses. No storage migration or automatic lookup/translation
 is introduced. Settings and installer work remain outside this phase.
 
-### Phase 5 implementation — Settings review
+### Phase 5 implementation — approved by the owner
+
+The owner approved Phase 5 on 2026-10-15 after the subsequent UI refinements and
+macOS debug-flow verification. Unrecorded native close/reopen and Windows/mixed-DPI
+checks remain tracked in the implementation plan; approval does not claim these
+checks passed or authorize installer publication.
 
 The owner accepted the Phase 4 library on 2026-10-14 and approved Settings.
 The secondary root renders only the requested destination. Saved, Settings and
