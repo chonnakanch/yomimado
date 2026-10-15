@@ -8,9 +8,13 @@ Rescan, overlay visibility/status and Expand; the native window shrinks too. The
 overflow menu opens Saved, Settings (including detector import), Sources and Quit.
 Closing the secondary main window keeps the app running.
 
-**Selected Area** scans a dragged region; **Whole Screen** scans the toolbar's
-monitor without automatic page cropping. **Rescan** takes a new screenshot of
-the last successful area/monitor; it is disabled until there is a successful scan.
+**Selected Area** scans exactly the region you drag. **Whole Screen** finds manga
+pages on the toolbar's monitor and sends only the detected page/spread to local
+OCR. If the page boundary is uncertain, it uses the saved manga area for that
+display layout, or asks you to draw one. It does not send the entire monitor to
+OCR as an uncertainty fallback. **Rescan** takes new pixels from the last
+successful area, including a detected crop; use Whole Screen again if the page
+has moved. Rescan is disabled until there is a successful scan.
 Changed monitor layout/scaling requires a new scan selection. Hide/Show preserves
 results without OCR; rescan if the underlying page changes. The toolbar shows
 the active mode through its highlighted scan button. Scanning shows a spinner
@@ -43,9 +47,9 @@ are disabled. Keyboard focus returns to the next/previous row or Refresh when a
 row is removed, and stays in the selected tab if you switched collections.
 
 `Cmd/Ctrl+Shift+O` selects an area on the monitor under the pointer.
-`Cmd/Ctrl+Shift+S` now means Whole Screen on that monitor. This changes the older
-page-scan shortcut described in the published v0.1.0 guide below. Toolbar buttons
-use the toolbar's monitor; Rescan uses its recorded original monitor.
+`Cmd/Ctrl+Shift+S` starts Whole Screen on that monitor, including automatic page
+detection and saved/drawn-area fallback. Toolbar buttons use the toolbar's
+monitor; Rescan uses its recorded original monitor.
 
 The owner accepted the compact learning popup and Phase 4 Saved library, then
 authorized Phase 5 Settings. Saved-data formats and native capture helpers are
@@ -75,8 +79,8 @@ Use the native window close button to hide this window. The native title bar
 also provides window movement, minimizing and resizing.
 Closing a window leaves the other windows, toolbar and reading session running. Reopen it
 through the toolbar; **More actions → Quit YomiMado** exits the app. Scan actions
-remain on the toolbar. Whole Screen has replaced automatic page cropping in the
-redesigned flow; the historical installer instructions below still apply to v0.1.0.
+remain on the toolbar. Whole Screen includes automatic manga-page cropping;
+the historical installer instructions below still apply to v0.1.0.
 
 If a macOS utility such as Vorssaint quits apps when their last window closes,
 add YomiMado to that utility's exceptions. Its bundle identifier is

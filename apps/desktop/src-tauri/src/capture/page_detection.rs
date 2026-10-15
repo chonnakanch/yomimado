@@ -293,6 +293,92 @@ mod tests {
     }
 
     #[test]
+    fn keeps_both_pages_of_a_spread_and_excludes_browser_and_menu_text() {
+        let mut screen = comic_screen();
+        // A narrow dark gutter belongs to the spread; unrelated page-sized
+        // spans with a wide gap remain ambiguous in the separate regression.
+        for y in 100..600 {
+            for x in 480..520 {
+                screen.put_pixel(x, y, Rgba([15, 15, 15, 255]));
+            }
+        }
+        for y in 0..25 {
+            for x in 0..1000 {
+                screen.put_pixel(x, y, Rgba([35, 105, 160, 255]));
+            }
+        }
+        for row in [8, 50, 75] {
+            for x in (20..950).step_by(25) {
+                for y in row..row + 5 {
+                    for dx in 0..2 {
+                        screen.put_pixel(x + dx, y, Rgba([250, 250, 250, 255]));
+                    }
+                }
+            }
+        }
+        let bounds = detect_page_bounds(&screen).unwrap();
+        assert!(bounds.x <= 100 && bounds.x + bounds.width >= 900);
+        assert!(bounds.y > 80 && bounds.y <= 110);
+        assert_eq!(bounds.height + bounds.y, 600);
+    }
+
+    #[test]
+    fn crop_offsets_stay_aligned_on_negative_and_scaled_displays() {
+        for scale in [1.0, 1.25, 1.5, 2.0] {
+            let mut capture = CapturedImage {
+                image_data_url: String::new(),
+                metadata: CaptureMetadata {
+                    display_id: "left".into(),
+                    display_name: "Left".into(),
+                    screen_physical_bounds: Rectangle {
+                        x: -2400.0,
+                        y: -1200.0,
+                        width: 1000.0 * scale,
+                        height: 600.0 * scale,
+                    },
+                    selection_physical_bounds: Rectangle {
+                        x: -2400.0,
+                        y: -1200.0,
+                        width: 1000.0 * scale,
+                        height: 600.0 * scale,
+                    },
+                    selection_logical_bounds: Rectangle {
+                        x: -2400.0 / scale,
+                        y: -1200.0 / scale,
+                        width: 1000.0,
+                        height: 600.0,
+                    },
+                    image_width: 1000,
+                    image_height: 600,
+                    scale_factor: scale,
+                },
+            };
+            crop_metadata(
+                &mut capture,
+                PixelBounds {
+                    x: 100,
+                    y: 80,
+                    width: 700,
+                    height: 500,
+                },
+            );
+            let physical = capture.metadata.selection_physical_bounds;
+            let logical = capture.metadata.selection_logical_bounds;
+            assert_eq!(physical.x, -2400.0 + 100.0 * scale);
+            assert_eq!(physical.y, -1200.0 + 80.0 * scale);
+            assert_eq!(physical.width, 700.0 * scale);
+            assert_eq!(physical.height, 500.0 * scale);
+            assert_eq!(logical.x, -2400.0 / scale + 100.0);
+            assert_eq!(logical.y, -1200.0 / scale + 80.0);
+            assert_eq!(capture.metadata.screen_physical_bounds.x, -2400.0);
+            assert_eq!(
+                (capture.metadata.image_width, capture.metadata.image_height),
+                (700, 500)
+            );
+        }
+    }
+
+    #[test]
     fn stops_before_a_short_dark_site_toolbar_below_the_page() {
         let mut screen = comic_screen();
         for y in 540..600 {

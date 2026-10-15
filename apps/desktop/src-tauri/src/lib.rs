@@ -340,12 +340,20 @@ async fn capture_whole_screen(
     app: AppHandle,
     state: tauri::State<'_, AppState>,
     session_id: u64,
-) -> Result<CapturedImage, String> {
+) -> Result<Option<CapturedImage>, String> {
     let scan = active_scan(&app, Some(session_id))?;
     let mut display = scan.display;
     let area = display.physical_bounds;
     let selection = full_display_selection(&mut display, area)?;
-    perform_capture(app, Arc::clone(&state.capture), display, selection, scan.id).await
+    let captured = perform_capture(
+        app.clone(),
+        Arc::clone(&state.capture),
+        display,
+        selection,
+        scan.id,
+    )
+    .await?;
+    crop_captured_page(app, captured, scan.id).await
 }
 
 #[tauri::command]
@@ -408,6 +416,16 @@ async fn capture_auto_page(
 ) -> Result<Option<CapturedImage>, String> {
     let id = active_scan(&app, session_id)?.id;
     let captured = capture_display(app.clone(), state, session_id).await?;
+    crop_captured_page(app, captured, id).await
+}
+
+// Both entry points inspect pixels locally and publish only the detected page
+// to OCR. None deliberately requests the saved/drawn area fallback in the UI.
+async fn crop_captured_page(
+    app: AppHandle,
+    captured: CapturedImage,
+    id: u64,
+) -> Result<Option<CapturedImage>, String> {
     let result = tauri::async_runtime::spawn_blocking(move || crop_detected_page(captured))
         .await
         .map_err(|error| error.to_string())?

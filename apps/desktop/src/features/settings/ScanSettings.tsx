@@ -187,8 +187,10 @@ export function ScanSettings({ active }: { active: boolean }) {
           successful area or screen.
         </p>
         <p className="settings-note">
-          Whole Screen replaces the older automatic page-scan shortcut; it does
-          not crop the page. Selected Area saves the area for Rescan.
+          Whole Screen finds manga pages on the target monitor before OCR. If
+          detection is uncertain, it uses a saved manga area or asks you to draw
+          one. Selected Area scans exactly what you drag. Rescan repeats the
+          last successful area; use Whole Screen again if the page has moved.
         </p>
       </div>
     </>

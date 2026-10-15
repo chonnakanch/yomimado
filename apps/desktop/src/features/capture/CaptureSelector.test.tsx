@@ -198,46 +198,57 @@ it("allows a manual retry when automatic capture fails", async () => {
   expect(container.textContent).toContain("Drag around the manga reading area");
 });
 
-it("saves a drawn reading area and captures only that selection", async () => {
-  window.history.replaceState({}, "", "/?mode=capture&scan=configure");
-  vi.mocked(invoke).mockImplementation(async (command) =>
-    command === "get_capture_surface" ? surface : captured,
-  );
-  vi.mocked(requestOcr).mockResolvedValue({ engine: "manga", regions: [] });
-
-  await act(async () => root.render(<CaptureSelector />));
-  const selector =
-    container.querySelector<HTMLDivElement>(".capture-selector")!;
-  Object.defineProperty(selector, "clientWidth", { value: 200 });
-  Object.defineProperty(selector, "clientHeight", { value: 100 });
-  selector.setPointerCapture = vi.fn();
-  await act(async () => {
-    selector.dispatchEvent(
-      new MouseEvent("pointerdown", {
-        bubbles: true,
-        clientX: 20,
-        clientY: 10,
-      }),
+it.each(["configure", "whole"])(
+  "saves a drawn reading area after %s and captures only that selection",
+  async (mode) => {
+    window.history.replaceState({}, "", `/?mode=capture&scan=${mode}`);
+    vi.mocked(invoke).mockImplementation(async (command) =>
+      command === "capture_whole_screen"
+        ? null
+        : command === "get_capture_surface"
+          ? surface
+          : captured,
     );
-  });
-  await act(async () => {
-    selector.dispatchEvent(
-      new MouseEvent("pointerup", { bubbles: true, clientX: 140, clientY: 80 }),
-    );
-    await new Promise<void>((resolve) => setTimeout(resolve, 0));
-  });
+    vi.mocked(requestOcr).mockResolvedValue({ engine: "manga", regions: [] });
 
-  expect(loadScanArea(surface)).toEqual({
-    x: 20,
-    y: 10,
-    width: 120,
-    height: 70,
-  });
-  expect(invoke).toHaveBeenCalledWith("capture_selection", {
-    selection: { x: 20, y: 10, width: 120, height: 70 },
-    viewport: { width: 200, height: 100 },
-  });
-});
+    await act(async () => root.render(<CaptureSelector />));
+    const selector =
+      container.querySelector<HTMLDivElement>(".capture-selector")!;
+    Object.defineProperty(selector, "clientWidth", { value: 200 });
+    Object.defineProperty(selector, "clientHeight", { value: 100 });
+    selector.setPointerCapture = vi.fn();
+    await act(async () => {
+      selector.dispatchEvent(
+        new MouseEvent("pointerdown", {
+          bubbles: true,
+          clientX: 20,
+          clientY: 10,
+        }),
+      );
+    });
+    await act(async () => {
+      selector.dispatchEvent(
+        new MouseEvent("pointerup", {
+          bubbles: true,
+          clientX: 140,
+          clientY: 80,
+        }),
+      );
+      await new Promise<void>((resolve) => setTimeout(resolve, 0));
+    });
+
+    expect(loadScanArea(surface)).toEqual({
+      x: 20,
+      y: 10,
+      width: 120,
+      height: 70,
+    });
+    expect(invoke).toHaveBeenCalledWith("capture_selection", {
+      selection: { x: 20, y: 10, width: 120, height: 70 },
+      viewport: { width: 200, height: 100 },
+    });
+  },
+);
 
 it("does not turn an unavailable OCR demo into a scan-area click target", async () => {
   saveScanArea(surface, { x: 20, y: 10, width: 120, height: 70 });
@@ -259,10 +270,37 @@ it("does not turn an unavailable OCR demo into a scan-area click target", async 
   );
 });
 
-it("captures the whole monitor without invoking automatic page cropping", async () => {
+it("sends only the detected Whole Screen page to OCR and preserves its crop metadata", async () => {
   window.history.replaceState({}, "", "/?mode=capture&scan=whole&session=12");
-  vi.mocked(invoke).mockResolvedValue(captured);
-  vi.mocked(requestOcr).mockResolvedValue({ engine: "manga", regions: [] });
+  const page = {
+    imageDataUrl: "data:image/png;base64,AQ==",
+    metadata: {
+      ...captured.metadata,
+      selectionPhysicalBounds: { x: 20, y: 10, width: 120, height: 70 },
+      selectionLogicalBounds: { x: 20, y: 10, width: 120, height: 70 },
+      imageWidth: 120,
+      imageHeight: 70,
+    },
+  };
+  vi.mocked(invoke).mockResolvedValue(page);
+  vi.mocked(requestOcr).mockResolvedValue({
+    engine: "manga",
+    regions: [
+      {
+        id: "page-text",
+        text: "今日",
+        polygon: [
+          { x: 10, y: 10 },
+          { x: 30, y: 10 },
+          { x: 30, y: 50 },
+        ],
+        orientation: "vertical",
+        confidence: 0,
+        type: "dialogue",
+        tokens: [],
+      },
+    ],
+  });
   await act(async () => root.render(<CaptureSelector />));
   await act(async () => {
     await new Promise<void>((resolve) => setTimeout(resolve, 0));
@@ -274,12 +312,73 @@ it("captures the whole monitor without invoking automatic page cropping", async 
     "capture_auto_page",
     expect.anything(),
   );
-  expect(invoke).toHaveBeenCalledWith("finish_scan", {
-    sessionId: 12,
-    message: expect.stringContaining("No text"),
-    noText: true,
+  expect(requestOcr).toHaveBeenCalledExactlyOnceWith(page.imageDataUrl, {
+    debug: false,
   });
+  expect(invoke).toHaveBeenCalledWith(
+    "show_ocr_overlay",
+    expect.objectContaining({
+      sessionId: 12,
+      metadata: page.metadata,
+      estimatedReadingOrder: true,
+    }),
+  );
+  expect(invoke).not.toHaveBeenCalledWith(
+    "get_capture_surface",
+    expect.anything(),
+  );
 });
+
+it("uses the saved manga area when Whole Screen cannot confidently find a page", async () => {
+  window.history.replaceState({}, "", "/?mode=capture&scan=whole&session=13");
+  saveScanArea(surface, { x: 20, y: 10, width: 120, height: 70 });
+  vi.mocked(invoke).mockImplementation(async (command) =>
+    command === "capture_whole_screen"
+      ? null
+      : command === "get_capture_surface"
+        ? surface
+        : captured,
+  );
+  vi.mocked(requestOcr).mockResolvedValue({ engine: "manga", regions: [] });
+  await act(async () => root.render(<CaptureSelector />));
+  expect(invoke).toHaveBeenCalledWith("capture_selection", {
+    sessionId: 13,
+    selection: { x: 20, y: 10, width: 120, height: 70 },
+    viewport: { width: 200, height: 100 },
+  });
+  expect(requestOcr).toHaveBeenCalledOnce();
+});
+
+it.each([null, { x: -50, y: 0, width: 120, height: 70 }])(
+  "asks for a manga area without OCR when Whole Screen is uncertain and the saved area is %j",
+  async (area) => {
+    window.history.replaceState({}, "", "/?mode=capture&scan=whole&session=14");
+    if (area) saveScanArea(surface, area);
+    vi.mocked(invoke).mockImplementation(async (command) =>
+      command === "capture_whole_screen"
+        ? null
+        : command === "get_capture_surface"
+          ? surface
+          : undefined,
+    );
+    await act(async () => root.render(<CaptureSelector />));
+    expect(container.textContent).toContain(
+      "Automatic page detection was uncertain",
+    );
+    expect(container.textContent).toContain(
+      "Drag around the manga reading area",
+    );
+    expect(invoke).toHaveBeenCalledWith("resume_capture_selection", {
+      sessionId: 14,
+      debug: false,
+    });
+    expect(invoke).not.toHaveBeenCalledWith(
+      "capture_selection",
+      expect.anything(),
+    );
+    expect(requestOcr).not.toHaveBeenCalled();
+  },
+);
 
 it("Rescan captures new pixels and retains its session ID through OCR publication", async () => {
   window.history.replaceState({}, "", "/?mode=capture&scan=repeat&session=15");

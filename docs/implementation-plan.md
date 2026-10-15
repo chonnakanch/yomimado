@@ -726,3 +726,32 @@ Read with keyboard enters region navigation, arrows move the blue selection,
 Enter opens its popup, and Escape returns to the region so navigation continues.
 This accepts the replacement on the tested macOS setup. Windows/mixed-DPI
 interaction and packaged-installer acceptance remain unverified.
+
+
+### Whole Screen restores automatic manga-page cropping
+
+On 2026-10-15 the owner reported browser/menu-bar text becoming OCR regions and
+requested the earlier smart manga-page capture behavior. The redesign had kept
+the detector but intentionally bypassed it in Whole Screen. The owner's current
+request supersedes that original literal-full-monitor OCR requirement.
+
+Whole Screen still acquires the complete target monitor locally, then uses the
+existing conservative page detector before OCR. A confident page/spread is cropped
+with its physical/logical offsets preserved and recorded as the successful scan
+area. An uncertain boundary uses a valid saved manga area for the same display
+layout, or opens the selector to draw/save one. It never sends the entire monitor
+to OCR merely because detection failed. Selected Area continues to scan the exact
+manual rectangle; Rescan takes fresh pixels from the last successful crop/area.
+Tooltips, Scan & OCR help, usage and the redesign documents describe this behavior.
+The legacy automatic entry shares the same crop/session-update helper.
+
+Verification passes 158 frontend tests in 20 files, 59 native tests, production
+frontend and macOS native builds, desktop Prettier and Cargo formatting. Coverage
+includes cropped OCR input/overlay metadata, saved/missing/invalid-area fallback,
+drawing a replacement area, two-page spread detection below browser/menu text,
+and crop offsets on negative-origin displays at 100%, 125%, 150% and 200% scale.
+A temporary local diagnostic against the owner's attached 2930 × 1912 screenshot
+found the spread at x=217, y=194, width=2507, height=1718, excluding the top browser
+controls. The diagnostic was removed; the attachment is not a repository fixture.
+The production detector algorithm is unchanged. Native macOS owner acceptance and
+Windows/mixed-DPI interaction remain pending for the restored entry path.

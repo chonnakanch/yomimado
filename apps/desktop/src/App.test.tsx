@@ -37,7 +37,7 @@ it("opens Scan & OCR by default and leaves capture on the toolbar", async () => 
   expect(container.querySelector(".main-actions")).toBeNull();
   expect(invoke).not.toHaveBeenCalledWith("show_auto_scanner");
   expect(container.textContent).toContain(
-    "Whole Screen replaces the older automatic page-scan shortcut",
+    "Whole Screen finds manga pages on the target monitor before OCR",
   );
 });
 

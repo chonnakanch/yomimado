@@ -160,6 +160,11 @@ Do not infer meaning from an icon alone. The model-install action belongs in
 Scan & OCR; missing models/errors use a warning icon with details and a setup
 link shown only when requested.
 
+Whole Screen searches its target monitor for manga pages and crops the detected
+page/spread before OCR. An uncertain boundary uses a saved/drawn manga area;
+Selected Area scans the exact manual rectangle. Explain this in the scan tooltip
+and Scan & OCR help. Rescan reuses the last successful crop/area.
+
 Mark overlay visibility with an accessible pressed state and current label.
 The current scan or retained result determines which scan button is pressed and
 accented. Keep collapse/expand operable by keyboard. Busy status (“Capturing…”,

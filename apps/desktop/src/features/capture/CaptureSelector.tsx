@@ -39,7 +39,8 @@ export function CaptureSelector() {
       : args
         ? invoke<T>(command, args)
         : invoke<T>(command);
-  const scanArea = scanMode === "auto" || scanMode === "configure";
+  const automaticScan = scanMode === "auto" || scanMode === "whole";
+  const scanArea = automaticScan || scanMode === "configure";
   const estimatedOrder =
     scanArea || scanMode === "whole" || params.get("order") === "1";
   const [start, setStart] = useState<Point | null>(null);
@@ -81,12 +82,10 @@ export function CaptureSelector() {
     void (async () => {
       captureStarted.current = true;
       await captureAndRecognize(async () => {
-        if (scanMode === "whole")
-          return invokeCapture<CaptureResult>("capture_whole_screen");
         if (scanMode === "repeat")
           return invokeCapture<CaptureResult>("capture_repeat_scan");
         const automatic = await invokeCapture<CaptureResult | null>(
-          "capture_auto_page",
+          scanMode === "whole" ? "capture_whole_screen" : "capture_auto_page",
         );
         if (automatic) {
           setScanSource("automatic");
@@ -188,10 +187,7 @@ export function CaptureSelector() {
           : rawResponse;
       if (debugCaptureEnabled) {
         setDebugCapture({ captured, response, error: null });
-      } else if (
-        (scanArea || scanMode === "whole") &&
-        response.engine === "demo"
-      ) {
+      } else if (scanArea && response.engine === "demo") {
         document.documentElement.dataset.capturing = "false";
         setError(
           "Area scanning needs the local OCR models. Press Escape to close.",
@@ -204,9 +200,9 @@ export function CaptureSelector() {
           });
       } else if (response.regions.length === 0) {
         document.documentElement.dataset.capturing = "false";
-        if (scanMode === "auto") setNeedsArea(true);
+        if (automaticScan) setNeedsArea(true);
         setError(
-          `No text was detected in this ${scanArea ? "scan area" : "selection"}. ${scanMode === "auto" ? "Drag a reading area to retry, or press Escape to close." : "Press Escape to close."}`,
+          `No text was detected in this ${scanArea ? "scan area" : "selection"}. ${automaticScan ? "Drag a reading area to retry, or press Escape to close." : "Press Escape to close."}`,
         );
         if (sessionId !== null)
           await invoke("finish_scan", {
@@ -220,7 +216,7 @@ export function CaptureSelector() {
       }
     } catch (captureError) {
       document.documentElement.dataset.capturing = "false";
-      if (scanMode === "auto") setNeedsArea(true);
+      if (automaticScan) setNeedsArea(true);
       const message = `Capture or OCR failed: ${String(captureError)}`;
       setDebugCapture((current) =>
         current ? { ...current, error: message } : null,
@@ -308,7 +304,7 @@ export function CaptureSelector() {
     <div
       className="capture-selector"
       onPointerDown={
-        scanMode === "auto" && !needsArea
+        automaticScan && !needsArea
           ? undefined
           : (event) => {
               event.currentTarget.setPointerCapture(event.pointerId);
@@ -318,20 +314,18 @@ export function CaptureSelector() {
             }
       }
       onPointerMove={
-        scanMode === "auto" && !needsArea
+        automaticScan && !needsArea
           ? undefined
           : (event) => start && setEnd(point(event))
       }
       onPointerUp={
-        scanMode === "auto" && !needsArea
-          ? undefined
-          : (event) => void finish(event)
+        automaticScan && !needsArea ? undefined : (event) => void finish(event)
       }
     >
       <p>
-        {scanMode === "whole" || scanMode === "repeat"
+        {scanMode === "repeat"
           ? "Capturing and recognizing Japanese text…"
-          : scanMode === "auto" && !needsArea
+          : automaticScan && !needsArea
             ? "Finding the manga page… Press Escape to cancel."
             : scanArea
               ? "Drag around the manga reading area. It will be reused on future scans. Press Escape to cancel."

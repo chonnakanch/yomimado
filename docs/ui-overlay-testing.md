@@ -13,7 +13,11 @@ proved inconvenient for repeated grants.
 
 ## Check the native interaction
 
-1. Whole Screen and Selected Area produce aligned polygons for the horizontal and
+1. Whole Screen detects/crops the manga page/spread before OCR; menu-bar, browser
+   tabs/address and surrounding app text must not become OCR regions. When the
+   boundary is uncertain, verify saved-area reuse, then missing/invalid saved-area
+   drawing and cancellation. Selected Area still scans exactly what is dragged.
+   Whole Screen and Selected Area produce aligned polygons for the horizontal and
    vertical fixture text. Switch from Whole Screen to a smaller Selected Area, then
    select a different-size area and use Rescan and Hide/Show. All polygon edges must
    remain visible: establish the target monitor, resize, then reapply the position

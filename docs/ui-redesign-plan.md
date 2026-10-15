@@ -39,12 +39,11 @@ continuous scanning, audio, JLPT/WaniKani badges, Wikipedia, stroke counts,
 flashcards or spaced repetition. Do not add Linux or mobile targets.
 
 Retain existing on-demand local translation and OCR correction through secondary
-actions. The owner’s 2026-10-15 refinement replaces optional estimated-order
-controls with explicit Read with keyboard navigation; it is not a third scan mode. Retire automatic page cropping from
-the redesigned user flow: it is neither Whole Screen nor Selected Area. Keep
-its tested backend helper initially, rather than deleting working OCR-adjacent
-logic during the visual refactor. This changes the old page-scan shortcut's
-meaning and requires updated usage documentation.
+actions. The owner’s 2026-10-15 refinements replace optional estimated-order
+controls with explicit Read with keyboard navigation and restore manga-page
+detection to Whole Screen. It searches the target monitor locally, crops the
+confidently detected page/spread before OCR, then falls back to a saved/drawn
+manga area when uncertain. Selected Area remains an exact manual selection.
 
 ## 2. Existing architecture and behavior
 
@@ -139,7 +138,7 @@ Preserve `geometrySource`, `needsReview` and `reviewReason`.
 
 | Area          | Keep                                                                                                                            | Change                                                                                                                                                       |
 | ------------- | ------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Capture       | xcap interface, permission gate, coordinate metadata, compositor wait, PNG handling, response parsing, selection/debug behavior | Explicit target monitor; standalone scan orchestration; Selected Area saves its rectangle; Whole Screen bypasses page cropping; repeat last successful scan. |
+| Capture       | xcap interface, permission gate, coordinate metadata, compositor wait, PNG handling, response parsing, selection/debug behavior | Explicit target monitor; standalone scan orchestration; Selected Area saves its rectangle; Whole Screen detects/crops manga pages with saved/drawn fallback; repeat last successful crop/area. |
 | Overlay       | Stored regions, polygons, orientation, measured viewport transform and review metadata                                          | Reusable `OCRBoundingBox`, orange/blue states, keyboard region selection, true native pass-through, reversible hide/show instead of close-and-clear.         |
 | Popup         | Token reconstruction, API clients, selection guards, ranked word entries, native positioning and explicit saving/translation    | Extract components, show the sentence once, hide editor initially, hiragana reading presentation, disclose alternatives/compounds, add copy.                 |
 | Main/settings | Saved-data clients and removal safeguards; verified model import and sources/notices                                            | Secondary library/settings shell; move model management to Scan & OCR; accessible navigation and compact collections.                                        |
@@ -246,10 +245,13 @@ selection/Whole Screen action rather than guessing.
 
 - **Selected Area:** drag on one monitor, capture and recognize on release.
   Store the successful physical rectangle for Rescan. A drag cannot span monitors.
-- **Whole Screen:** capture that monitor without page detection or a crop based
-  on a saved area; OCR once. Use existing `capture_display` plumbing, but correct
-  any selector-offset limitation needed to represent the full physical monitor.
-  Respect existing size/decoded-image limits and offer Selected Area on overflow.
+- **Whole Screen:** capture the full target monitor locally, then use the existing
+  conservative manga-page detector to crop the visible page/spread before OCR.
+  Preserve crop offsets in physical/logical metadata. If uncertain, use a valid
+  saved manga area for the same display layout or show the selector to draw/save
+  one. Never send the uncropped display to OCR merely because detection failed.
+  Keep existing size/decoded-image limits and suggest Selected Area for unusual
+  pages or layouts. This restores the owner-requested smart capture behavior.
 - **Rescan:** recapture fresh pixels using the last successful mode/area. It never
   reruns OCR on a stored screenshot. Disabled before a successful scan.
 - **Hide overlays:** hide result windows and popup, disable region hit targets,
@@ -258,7 +260,7 @@ selection/Whole Screen action rather than guessing.
   Hide/show is independent of scanning mode and never starts a scan.
 
 Keep Cmd/Ctrl+Shift+O for Selected Area. Propose Cmd/Ctrl+Shift+S for Whole Screen,
-with a visible migration note from the old page-scan behavior. Do not invent
+including page detection and saved/drawn-area fallback. Do not invent
 new global shortcuts from those drawn in the reference images.
 
 Lifecycle: idle → selecting/capturing → recognizing → ready/no-text/error.
@@ -392,7 +394,7 @@ user-installed with existing checksum checks and restart/error semantics.
 | Windows WebView2 creation/frame geometry | Preserve async window creation and off-UI-thread shortcut dispatch; keep overlay shadow handling; verify first click and repeated opens without deadlock or duplicate labels.                                                       |
 | Retina/Windows DPI                       | Reuse `coordinates.ts`, native physical layout, measured viewport and scan-area transforms; test 1×/2× and Windows 100/125/150/200%, monitor offsets and mixed DPI. Do not scatter new multipliers through components.              |
 | Multi-monitor target/reconfiguration     | Native monitor identity and fresh physical bounds; target at scan start; reject stale rescan areas; test left/above-primary origins, disconnect/reconnect and moving toolbar between scales. No cross-monitor drag capture.         |
-| Whole Screen coverage                    | Compare capture pixel bounds to full target monitor; test macOS menu bar/Dock and Windows taskbar, permission failure and image-size rejection. Do not silently report a clipped selector area as the entire monitor.               |
+| Whole Screen coverage                    | Verify full target-monitor acquisition, then cropped page/spread metadata and OCR-only crop. Test uncertain detection with saved/drawn fallback, browser/menu text exclusion, permission failure and image-size rejection.               |
 | macOS transparency, Spaces/full-screen   | Preserve current private-API configuration; test toolbar/overlay stacking in ordinary and full-screen readers, Mission Control and Space changes. Always-on-top alone is not verified coverage of every Space.                      |
 | Capture contamination                    | Hide toolbar/popup/old overlay/secondary window before xcap; verify screenshots contain only the reader using local/synthetic fixtures. Restore windows and focus on success/error/cancel.                                          |
 | Popup edges/focus/resize                 | Work-area clamping including negative origins; test top/bottom/left/right and small displays; no ResizeObserver feedback loop, focus steal on expansion or accidental dismissal while browsing.                                     |

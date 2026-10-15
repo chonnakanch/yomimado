@@ -33,7 +33,9 @@ export function ScanModeButton({
       title={
         loadingLabel
           ? `${label}: ${loadingLabel}${onCancel ? " Click to cancel this scan." : ""}`
-          : `${label} · Scan ${displayName}`
+          : mode === "wholeScreen"
+            ? `${label} · Find manga pages on ${displayName}; use a saved or drawn area if uncertain`
+            : `${label} · Scan ${displayName}`
       }
       onClick={() => (onCancel ? onCancel() : onScan(mode))}
     >
