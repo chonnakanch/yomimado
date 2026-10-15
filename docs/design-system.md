@@ -231,7 +231,11 @@ explicit sentence copying usable.
 The hidden correction editor opens through **Edit OCR text**. Use a labeled
 Japanese textarea only in that state, with Apply/Analyze and Cancel. Keep the
 applied sentence visible until editing is committed, and reset all dependent
-lookup/translation/save states on commit. Review warnings point to this action.
+lookup/translation/save states on commit. Review/approximate regions show a small
+outlined status icon and **Check OCR** beside the Japanese heading, without a
+warning block or repeated edit action. Keep the full review reason and correction
+guidance in its hover tooltip and screen-reader text; **Edit OCR text** remains in
+the secondary actions.
 Demo text is identified and never treated as recognized Japanese.
 
 ### WordDefinition and AlternativeDictionaryMatches

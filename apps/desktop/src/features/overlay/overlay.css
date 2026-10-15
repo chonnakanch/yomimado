@@ -58,12 +58,6 @@
   top: var(--space-2);
   z-index: 2;
 }
-.translation-review {
-  border-left: 2px dashed var(--color-accent);
-  color: var(--color-text-secondary);
-  font-size: var(--font-size-definition);
-  padding-left: var(--space-2);
-}
 @media (prefers-reduced-motion: reduce) {
   .ocr-region {
     transition: none;

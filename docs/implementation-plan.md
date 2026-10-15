@@ -810,3 +810,21 @@ Escape keeps the hint out of the way and the page clear. This records native
 acceptance of the Edge hint on the tested macOS setup. Windows/mixed-DPI interaction
 remains pending. Manga-page detection and its first-scan observation are unchanged
 by this presentation refinement.
+
+### Compact OCR review status in the learning popup
+
+On 2026-10-15 the owner requested a minimal icon and short label in place of the
+large approximate-region warning above the Japanese sentence. Review/approximate
+regions now show a 16 px outlined status icon and **Check OCR** beside the Japanese
+heading. The full reason and correction guidance remain in the hover tooltip and
+screen-reader text. The dashed warning block and its duplicate Edit OCR text link
+are removed; the existing secondary correction action and OCR review metadata are
+preserved. No capture, detection, translation or native-window behavior changes.
+
+Verification passes all 18 popup tests, TypeScript and the production frontend
+build, plus desktop formatting. WebKit inspection of the actual React component
+with synthetic text and native/service calls simulated confirms the indicator fits
+on the heading row at 420 px and 280 px widths without overlap or horizontal
+overflow. Edit OCR text opens its editor; Cancel restores focus to that action.
+The temporary fixture was removed and viewport reset. Normal macOS development
+startup succeeds. Windows/mixed-DPI visual acceptance remains unverified.

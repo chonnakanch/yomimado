@@ -39,6 +39,25 @@
   color: var(--color-text-secondary);
   font-size: var(--font-size-label);
 }
+.translation-heading-labels {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1) var(--space-3);
+}
+.popup-ocr-status {
+  align-items: center;
+  display: inline-flex;
+  gap: var(--space-1);
+  font-size: var(--font-size-metadata);
+  white-space: nowrap;
+}
+.popup-ocr-status svg {
+  color: var(--color-accent);
+  flex: none;
+  height: 16px;
+  width: 16px;
+}
 .translation-popup .utility-button {
   box-sizing: border-box;
   font-size: var(--font-size-label);
@@ -258,10 +277,6 @@
 }
 .compound-reading {
   color: var(--color-text-secondary);
-}
-.translation-review {
-  color: var(--color-text-secondary);
-  font-size: var(--font-size-label);
 }
 .ocr-editor {
   display: flex;

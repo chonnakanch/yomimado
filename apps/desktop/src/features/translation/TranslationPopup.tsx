@@ -436,6 +436,10 @@ export function TranslationPopup() {
       ) * 0.7
     : 600;
   const sentenceMaxHeight = Math.max(56, Math.min(180, popupHeightCap * 0.3));
+  const reviewDescription =
+    state.reviewReason || state.approximate
+      ? `${state.approximate ? "Approximate OCR region." : "Review OCR."} ${state.reviewReason ?? "Check the text against the page before saving."} Use Edit OCR text to correct it.`
+      : null;
 
   return (
     <div className="translation-popup" aria-label="Japanese learning popup">
@@ -446,7 +450,30 @@ export function TranslationPopup() {
           style={{ maxHeight: popupHeightCap * 0.65 }}
         >
           <div className="translation-heading">
-            <span>Japanese</span>
+            <div className="translation-heading-labels">
+              <span>Japanese</span>
+              {reviewDescription && (
+                <span
+                  className="popup-ocr-status"
+                  role="status"
+                  title={reviewDescription}
+                >
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.6"
+                    strokeLinecap="round"
+                    aria-hidden="true"
+                  >
+                    <circle cx="12" cy="12" r="9" />
+                    <path d="M12 7v6m0 4v.1" />
+                  </svg>
+                  <span>Check OCR</span>
+                  <span className="visually-hidden"> {reviewDescription}</span>
+                </span>
+              )}
+            </div>
             <button
               className="utility-button utility-icon-button translation-close"
               onClick={(event) => {
@@ -462,23 +489,6 @@ export function TranslationPopup() {
               ×
             </button>
           </div>
-          {(state.reviewReason || state.approximate) && (
-            <p className="translation-review" role="status">
-              {state.approximate ? "Approximate OCR region. " : "Review OCR. "}
-              {state.reviewReason ??
-                "Check the text against the page before saving."}{" "}
-              <button
-                className="inline-action"
-                disabled={editing}
-                onClick={() => {
-                  setDraft(source);
-                  setEditing(true);
-                }}
-              >
-                Edit OCR text
-              </button>
-            </p>
-          )}
           {state.demo && (
             <p className="popup-metadata">
               Demo boundary — no recognized text. Enter Japanese to try the

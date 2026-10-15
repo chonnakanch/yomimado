@@ -533,9 +533,21 @@ it("retains OCR review guidance and requests keyboard focus return only on keybo
   const query = `?mode=translation&state=${encodeURIComponent(JSON.stringify({ text: "", demo: true, reviewReason: "Check short text", approximate: true }))}`;
   window.history.replaceState({}, "", `/${query}`);
   await act(async () => root.render(<TranslationPopup />));
-  expect(container.querySelector(".translation-review")?.textContent).toContain(
+  const review = container.querySelector(
+    '.translation-heading [role="status"]',
+  );
+  expect(review?.textContent).toContain("Check OCR");
+  expect(review?.getAttribute("title")).toContain(
     "Approximate OCR region. Check short text",
   );
+  expect(review?.querySelector(".visually-hidden")?.textContent).toContain(
+    "Use Edit OCR text to correct it.",
+  );
+  expect(
+    Array.from(container.querySelectorAll("button")).filter(
+      (item) => item.textContent === "Edit OCR text",
+    ),
+  ).toHaveLength(1);
   // Escape first dismisses the demo editor, then closes the popup.
   await click("Cancel");
   await act(async () =>
