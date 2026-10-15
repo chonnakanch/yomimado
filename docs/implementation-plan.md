@@ -788,8 +788,8 @@ interaction remain open for owner review.
 On 2026-10-15 the owner reported that the fallback card obscured the starting area
 for a manga selection and approved the Edge hint proposal. Manual selection and
 the fallback/configure flow now use a bottom-centred, approximately 30 logical px
-pill: **Drag around
-pages · Esc cancel** (or **Drag to capture · Esc cancel** for Selected Area).
+pill: **Drag around pages · Esc cancel** (or **Drag to capture · Esc cancel** for
+Selected Area).
 It ignores pointer events, so selection can start through its text. Pointer-down
 hides it immediately. Escape retains the existing native
 cancel path; pointer cancellation clears the unfinished rectangle and restores
@@ -802,6 +802,11 @@ WebKit inspection of the actual component with native commands simulated measure
 206 × 30 px at both 1280 × 720 and 320 × 480 viewports. A drag starting on the hint
 reached the selector and hid the hint; a tiny drag made no capture/OCR call, and
 Escape issued the session-bound cancellation command. The temporary private fixture
-was removed and viewport reset. Native visual acceptance and Windows/mixed-DPI
-interaction remain pending. Manga-page detection and its first-scan observation
-are unchanged by this presentation refinement.
+was removed and viewport reset.
+
+On 2026-10-15 the owner tested source `184bdf1` in the normal macOS development app
+and confirmed that starting a Selected Area drag over the bottom hint and pressing
+Escape keeps the hint out of the way and the page clear. This records native
+acceptance of the Edge hint on the tested macOS setup. Windows/mixed-DPI interaction
+remains pending. Manga-page detection and its first-scan observation are unchanged
+by this presentation refinement.
