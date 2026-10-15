@@ -71,7 +71,7 @@ Quit YomiMado before checking exit, instead of treating native close as Quit.
 Bundled-service identity, child cleanup, port release and model-hash checks remain.
 
 A shared Windows PowerShell 5.1 driver supports button and menu-item automation.
-Checks CI runs it against two synthetic WinForms processes with identical window
+Checks CI runs it against two synthetic WPF processes with identical window
 titles, verifying PID isolation, a taskbar-skipping toolbar, Settings close/reopen,
 and explicit Quit. This validates the driver without building an installer; it
 does not establish installed Tauri UI or physical mixed-DPI acceptance.

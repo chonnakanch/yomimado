@@ -63,7 +63,9 @@ scale so a fresh-process result is recorded. Start W1 before any Selected Area s
       and guidance appears. Choose a new valid capture target; a fresh scan restores
       aligned regions. Old Rescan geometry must not silently apply to the new layout.
 - [ ] **W11 — Cancel/retry:** cancel a selection, then cancel while OCR is pending.
-      A new scan works, and a late old response cannot replace it. Temporarily stop
+      If the old worker is still finishing, an immediate retry reports busy rather
+      than overlapping model work. Retry after it finishes: the new scan works,
+      and a late old response cannot replace it. Temporarily stop
       the development OCR service and scan: an error becomes available through the
       toolbar status control; it must not spin indefinitely. Restore the service and
       retry. A stalled upload/body has the existing three-minute deadline.
@@ -85,6 +87,11 @@ hit polygons at fractional scales/negative origins, menu placement, stale displa
 rejection, and all 16 transitions among 100/125/150/200% for the overlay frame
 guard, including moved/clipped frames. Frontend tests cover keyboard entry/return,
 menu failure reporting, independent routes and stale responses.
+
+The shared Windows smoke driver also runs against synthetic WPF windows in CI.
+It exercises PID-scoped discovery (including a toolbar absent from the taskbar),
+button/menu invocation, Settings native close/reopen and explicit Quit. Service
+tests cover exclusive recognition admission and its lifetime across cancellation.
 
 These tests establish calculations and application state behavior. They do not
 establish actual WebView2 input routing, physical mixed-DPI transitions or installer

@@ -9,42 +9,45 @@ if ($env:GITHUB_ACTIONS -ne 'true' -or $env:PROCESSOR_ARCHITECTURE -ne 'AMD64') 
 $Work = Join-Path $env:RUNNER_TEMP ('yomimado-ui-driver-' + [Guid]::NewGuid().ToString('N'))
 New-Item -ItemType Directory $Work | Out-Null
 $Executable = Join-Path $Work 'synthetic-reader.exe'
-Add-Type -ReferencedAssemblies System.Windows.Forms,System.Drawing -OutputAssembly $Executable -OutputType WindowsApplication -TypeDefinition @'
+# WPF provides standard Button/MenuItem automation peers. The runner's legacy
+# WinForms provider reports dynamically compiled controls as generic panes.
+Add-Type -AssemblyName PresentationFramework
+Add-Type -AssemblyName PresentationCore
+Add-Type -AssemblyName WindowsBase
+$References = @(
+    [System.Windows.Application].Assembly.Location,
+    [System.Windows.Media.Visual].Assembly.Location,
+    [System.Windows.DependencyObject].Assembly.Location
+)
+Add-Type -ReferencedAssemblies $References -OutputAssembly $Executable -OutputType WindowsApplication -TypeDefinition @'
 using System;
-using System.Drawing;
-using System.Windows.Forms;
+using System.Windows;
+using System.Windows.Controls;
 public static class SyntheticYomiMado {
     private static bool quitting;
-    private static Form toolbar;
-    private static Form menu;
-    private static Form settings;
     [STAThread]
     public static void Main() {
-        Application.EnableVisualStyles();
-        toolbar = new Form { Text="YomiMado toolbar", ShowInTaskbar=false, Width=600, Height=110 };
-        toolbar.StartPosition = FormStartPosition.Manual;
-        toolbar.Location = new Point(80, 80);
-        toolbar.FormClosing += delegate(object sender, FormClosingEventArgs e) { if (!quitting) e.Cancel=true; };
-        settings = new Form { Text="YomiMado - Settings", Width=600, Height=300 };
-        settings.Controls.Add(new Button { Text="Select detector model file", AccessibleName="Select detector model file", Width=250 });
-        settings.FormClosing += delegate(object sender, FormClosingEventArgs e) {
+        var app = new Application { ShutdownMode=ShutdownMode.OnExplicitShutdown };
+        var toolbar = new Window { Title="YomiMado toolbar", ShowInTaskbar=false, Width=600, Height=110, Left=80, Top=80 };
+        toolbar.Closing += delegate(object sender, System.ComponentModel.CancelEventArgs e) { if (!quitting) e.Cancel=true; };
+        var settings = new Window { Title="YomiMado - Settings", Width=600, Height=300 };
+        settings.Content = new Button { Content="Select detector model file", Width=250, Height=30 };
+        settings.Closing += delegate(object sender, System.ComponentModel.CancelEventArgs e) {
             if (!quitting) { e.Cancel=true; settings.Hide(); }
         };
-        menu = new Form { Text="YomiMado More actions", Width=320, Height=120, ShowInTaskbar=false };
-        var choices = new MenuStrip();
-        var open = new ToolStripMenuItem("Settings");
-        open.AccessibleName = "Settings";
+        var menu = new Window { Title="YomiMado More actions", Width=320, Height=120, ShowInTaskbar=false };
+        var choices = new Menu { VerticalAlignment=VerticalAlignment.Top };
+        var open = new MenuItem { Header="Settings" };
         open.Click += delegate { menu.Hide(); settings.Show(); };
-        var quit = new ToolStripMenuItem("Quit YomiMado");
-        quit.AccessibleName = "Quit YomiMado";
-        quit.Click += delegate { quitting=true; Application.Exit(); };
+        var quit = new MenuItem { Header="Quit YomiMado" };
+        quit.Click += delegate { quitting=true; app.Shutdown(); };
         choices.Items.Add(open);
         choices.Items.Add(quit);
-        menu.Controls.Add(choices);
-        var more = new Button { Text="More actions", AccessibleName="More actions", Width=150 };
+        menu.Content = choices;
+        var more = new Button { Content="More actions", Width=150, Height=30 };
         more.Click += delegate { menu.Show(); };
-        toolbar.Controls.Add(more);
-        Application.Run(toolbar);
+        toolbar.Content = more;
+        app.Run(toolbar);
     }
 }
 '@
