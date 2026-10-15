@@ -704,6 +704,7 @@ WebKit inspection of the actual React components with native windows simulated
 confirmed mouse opening has no outline, ArrowDown focuses Settings with a 2 px
 inset ring, and Escape returns focus to More actions. The simulated toolbar row
 remained at y=404 throughout. Temporary ignored preview fixtures were removed.
+
 ### Keyboard reading replaces the legacy reading controls
 
 On 2026-10-15 the owner reported that arrow navigation no longer worked. Removing
@@ -737,7 +738,6 @@ Enter opens its popup, and Escape returns to the region so navigation continues.
 This accepts the replacement on the tested macOS setup. Windows/mixed-DPI
 interaction and packaged-installer acceptance remain unverified.
 
-
 ### Whole Screen restores automatic manga-page cropping
 
 On 2026-10-15 the owner reported browser/menu-bar text becoming OCR regions and
@@ -766,7 +766,6 @@ controls. The diagnostic was removed; the attachment is not a repository fixture
 The production detector algorithm is unchanged. Native macOS owner acceptance and
 Windows/mixed-DPI interaction remain pending for the restored entry path.
 
-
 ### Manga-area fallback guidance refinement
 
 The owner reported the initial automatic-detection fallback still showed the
@@ -791,7 +790,6 @@ with native commands mocked confirmed the card layout and that Cancel issues onl
 cancellation, without selecting or invoking OCR. The private synthetic fixture was
 removed. Native fallback appearance, the first detection failure, and Windows/mixed-DPI
 interaction remain open for owner review.
-
 
 ### Approved Edge hint replaces the selection card
 
@@ -991,3 +989,23 @@ release-only Windows service startup code in debug targets. Platform/build
 conditions now match their consumers without suppressing warnings. Packaged
 service behavior is unchanged, and its Windows SDK/job/readiness tests remain
 enabled in the native test target.
+
+### Follow-up quality fixes: OCR admission and Windows smoke navigation
+
+The owner approved fixes for three follow-up review findings. Recognition now
+admits one worker at a time, covering lazy model initialization and inference.
+Overlapping requests receive HTTP 503 with a retry hint instead of sharing model
+state or queuing screenshots. The worker retains admission after client
+cancellation until inference actually finishes. Four new regression cases bring
+the service suite to 97 passing tests with zero skips; all 229 release-tool tests
+also pass locally, along with service/script Ruff and formatting checks.
+
+Windows installed checks now follow the redesigned toolbar → More actions →
+Settings flow, verify secondary-window close keeps the toolbar alive, and use
+explicit Quit before service/port cleanup assertions. A shared Windows PowerShell
+5.1 driver and synthetic two-process UI test in Checks CI cover window discovery,
+button/menu-item invocation, close/reopen, process isolation and Quit. The release
+workflow invokes the driver under the required Framework PowerShell runtime.
+Actual installed-app and physical mixed-DPI results remain unrecorded; no installer
+or release workflow was run. Future macOS packaging must refresh/review the frozen
+OCR runtime seed for the changed service source; its mismatch rejection remains.

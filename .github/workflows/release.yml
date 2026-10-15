@@ -324,7 +324,13 @@ jobs:
           $python = 'services/ocr/build/windows/venv/Scripts/python.exe'
           & $python scripts/windows_release.py verify --resources "$installed/ocr"
           if ($LASTEXITCODE) { throw 'Installed resource verification failed' }
-          ./scripts/verify-windows-install.ps1 -Installed $installed
+          # UI Automation requires Windows PowerShell's Framework assemblies.
+          $modules = $env:PSModulePath
+          Remove-Item Env:PSModulePath -ErrorAction SilentlyContinue
+          try {
+            & "$env:SystemRoot/System32/WindowsPowerShell/v1.0/powershell.exe" -NoProfile -File scripts/verify-windows-install.ps1 -Installed $installed
+            if ($LASTEXITCODE) { throw 'Installed Windows startup/quit verification failed' }
+          } finally { $env:PSModulePath = $modules }
           & $python scripts/windows_release.py installer-inventory --installer $setup[0].FullName --installed $installed
           if ($LASTEXITCODE) { throw 'Desktop/installer native input verification failed' }
           "YOMIMADO_INSTALLED=$installed" | Add-Content $env:GITHUB_ENV

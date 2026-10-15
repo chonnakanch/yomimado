@@ -147,6 +147,18 @@ jobs:
         run: cargo +1.98.1 test --locked --manifest-path apps/desktop/src-tauri/Cargo.toml
       - name: Compile the desktop debug app
         run: cargo +1.98.1 build --locked --manifest-path apps/desktop/src-tauri/Cargo.toml
+      - name: Test the Windows UI smoke driver with synthetic windows
+        if: runner.os == 'Windows'
+        shell: powershell
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $tokens = $null
+          $errors = $null
+          foreach ($file in @('scripts/windows-ui-driver.ps1', 'scripts/verify-windows-ui.ps1', 'scripts/verify-windows-install.ps1', 'scripts/tests/test-windows-ui-driver.ps1')) {
+            [System.Management.Automation.Language.Parser]::ParseFile((Join-Path $pwd $file), [ref]$tokens, [ref]$errors) | Out-Null
+            if ($errors.Count) { throw "$file has PowerShell syntax errors: $errors" }
+          }
+          & scripts/tests/test-windows-ui-driver.ps1
 
   # Preserve main's existing required status name. A skipped dependent job can
   # otherwise look successful; explicitly reject every non-success result.
