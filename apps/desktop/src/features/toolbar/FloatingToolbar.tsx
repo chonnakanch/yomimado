@@ -223,6 +223,25 @@ export function FloatingToolbar() {
     };
   }, [menuOpen]);
 
+  useEffect(() => {
+    let disposed = false;
+    let stop: UnlistenFn | undefined;
+    void listen<string>("toolbar-action-error", (event) => {
+      if (!disposed) setError(event.payload);
+    })
+      .then((unlisten) => {
+        if (disposed) unlisten();
+        else stop = unlisten;
+      })
+      .catch((reason) => {
+        if (!disposed) setError(String(reason));
+      });
+    return () => {
+      disposed = true;
+      stop?.();
+    };
+  }, []);
+
   const run = async (
     command: string,
     args?: Record<string, unknown>,

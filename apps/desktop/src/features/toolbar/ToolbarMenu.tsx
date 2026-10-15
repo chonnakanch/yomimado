@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, type KeyboardEvent } from "react";
 import { invoke } from "@tauri-apps/api/core";
+import { emitTo } from "@tauri-apps/api/event";
 import { type ToolbarState } from "./FloatingToolbar";
 import "./toolbar.css";
 
@@ -118,7 +119,14 @@ export function ToolbarMenu() {
           view ? { view } : undefined,
         );
     } catch (reason) {
-      setError(String(reason));
+      const message = `More actions failed: ${String(reason).replace(/^Error: /, "")}`;
+      setError(message);
+      // The menu is already hidden when a destination fails. Keep the error
+      // available through the toolbar's existing status control.
+      await emitTo("toolbar", "toolbar-action-error", message).catch(
+        (failure) =>
+          console.error("YomiMado: could not report menu error", failure),
+      );
     }
   };
   return (

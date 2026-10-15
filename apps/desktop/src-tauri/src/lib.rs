@@ -604,6 +604,10 @@ fn get_overlay_state(state: tauri::State<'_, AppState>) -> Result<serde_json::Va
 }
 
 #[tauri::command(async)]
+#[expect(
+    clippy::too_many_arguments,
+    reason = "Preserve the frontend IPC command contract"
+)]
 fn update_overlay_controls(
     app: AppHandle,
     window: tauri::WebviewWindow,
@@ -719,6 +723,10 @@ fn close_translation_popup(
 }
 
 #[tauri::command(async)]
+#[expect(
+    clippy::too_many_arguments,
+    reason = "Preserve the frontend IPC command contract"
+)]
 fn show_translation_popup(
     app: AppHandle,
     metadata: CaptureMetadata,

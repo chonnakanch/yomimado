@@ -955,3 +955,22 @@ this fixture and reused the saved-area fallback; this check does not certify
 automatic crop coverage. The debug app was left running. Normal-mode hover
 suppression retains automated coverage; Windows/mixed-DPI native review remains
 open.
+
+### Complete checks and redesign code review
+
+On 2026-10-15 the owner requested complete frontend, native and OCR-service checks
+and a code-quality review. The [review record](ui-redesign-review.md) describes
+scope, findings and remaining native acceptance boundaries. Review found a menu
+destination failure could be rendered in an already-hidden popover; errors now
+reach the toolbar's existing status control through a targeted event. Regression
+tests cover both ends. An unnecessary native return was removed, and two existing
+IPC commands retain documented, narrowly expected argument-count lints.
+
+Local verification passes 172 frontend tests, normal/debug production builds and
+Prettier; 59 native tests, locked macOS build, Cargo formatting and strict Clippy;
+93 OCR-service tests with zero skips, Ruff/format and dependency consistency; and
+229 release-tool tests with script Ruff/format checks. Full service verification
+used the project's Python 3.11.17 runtime after an initial Python 3.9 environment
+failed the Windows-only graph verifier's Python 3.11 API call. Rust is 1.98.1.
+No service, model, dependency, version or installer change was made. Windows and
+other unrecorded native interactions remain separate acceptance gates.

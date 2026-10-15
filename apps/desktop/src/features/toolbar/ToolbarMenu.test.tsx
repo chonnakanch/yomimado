@@ -3,8 +3,10 @@ import { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, it, expect, vi } from "vitest";
 import { invoke } from "@tauri-apps/api/core";
+import { emitTo } from "@tauri-apps/api/event";
 import { ToolbarMenu } from "./ToolbarMenu";
 vi.mock("@tauri-apps/api/core", () => ({ invoke: vi.fn() }));
+vi.mock("@tauri-apps/api/event", () => ({ emitTo: vi.fn() }));
 let container: HTMLDivElement, root: Root;
 beforeEach(() => {
   Object.assign(globalThis, { IS_REACT_ACT_ENVIRONMENT: true });
@@ -12,6 +14,7 @@ beforeEach(() => {
   vi.mocked(invoke).mockImplementation(async (command) =>
     command === "get_toolbar_state" ? { sessionId: null } : undefined,
   );
+  vi.mocked(emitTo).mockResolvedValue();
   container = document.createElement("div");
   document.body.appendChild(container);
   root = createRoot(container);
@@ -21,6 +24,7 @@ afterEach(async () => {
   container.remove();
   vi.restoreAllMocks();
   vi.mocked(invoke).mockReset();
+  vi.mocked(emitTo).mockReset();
 });
 const button = (label: string) =>
   [...container.querySelectorAll<HTMLButtonElement>("button")].find(
@@ -108,6 +112,21 @@ it("blocks secondary views during scans but keeps Quit available", async () => {
   expect(button("Quit YomiMado").disabled).toBe(false);
   await act(async () => button("Quit YomiMado").click());
   expect(invoke).toHaveBeenCalledWith("quit_app", undefined);
+});
+it("reports a failed destination to the visible toolbar after dismissing the menu", async () => {
+  vi.mocked(invoke).mockImplementation(async (command) => {
+    if (command === "get_toolbar_state") return { sessionId: null };
+    if (command === "show_secondary_window")
+      throw new Error("Settings window could not be opened");
+  });
+  await mount();
+  await act(async () => button("Settings").click());
+  expect(invoke).toHaveBeenCalledWith("close_toolbar_menu");
+  expect(emitTo).toHaveBeenCalledWith(
+    "toolbar",
+    "toolbar-action-error",
+    "More actions failed: Settings window could not be opened",
+  );
 });
 it("positions only its own native popover using the current request generation", async () => {
   vi.spyOn(HTMLElement.prototype, "getBoundingClientRect").mockImplementation(

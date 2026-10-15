@@ -281,13 +281,12 @@ pub fn pointer_display(app: &AppHandle) -> Result<DisplayInfo, String> {
         // display's physical height. Quartz already supplies top-left points;
         // match those to each monitor's logical bounds before using its scale.
         let pointer = crate::overlay::input::logical_cursor_point();
-        return app
-            .available_monitors()
+        app.available_monitors()
             .map_err(|error| error.to_string())?
             .iter()
             .map(display_from_monitor)
             .find(|display| contains_logical_pointer(display, pointer.x, pointer.y))
-            .ok_or_else(|| "No monitor under the pointer".into());
+            .ok_or_else(|| "No monitor under the pointer".into())
     }
     #[cfg(not(target_os = "macos"))]
     {

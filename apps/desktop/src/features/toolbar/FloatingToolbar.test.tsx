@@ -27,6 +27,7 @@ let root: Root;
 let snapshot: ToolbarState;
 let menuClosedListener: (event: Event<{ restoreFocus: boolean }>) => void;
 let statusListener: (event: Event<ToolbarState>) => void;
+let actionErrorListener: (event: Event<string>) => void;
 const stopListening = vi.fn();
 
 beforeEach(() => {
@@ -39,6 +40,8 @@ beforeEach(() => {
   vi.mocked(listen).mockImplementation(async (event, callback) => {
     if (event === "toolbar-state-changed")
       statusListener = callback as (event: Event<ToolbarState>) => void;
+    else if (event === "toolbar-action-error")
+      actionErrorListener = callback as (event: Event<string>) => void;
     else
       menuClosedListener = callback as (
         event: Event<{ restoreFocus: boolean }>,
@@ -72,6 +75,24 @@ const update = (changes: Partial<ToolbarState>) =>
       payload: { ...snapshot, ...changes },
     }),
   );
+
+it("keeps menu action failures accessible after the popover has closed", async () => {
+  await mount();
+  await act(async () =>
+    actionErrorListener({
+      event: "toolbar-action-error",
+      id: 1,
+      payload: "More actions failed: Settings window could not be opened",
+    }),
+  );
+  expect(container.querySelector('[role="alert"]')?.textContent).toContain(
+    "Settings window could not be opened",
+  );
+  await act(async () => button("Scan status").click());
+  expect(container.querySelector("#toolbar-feedback")?.textContent).toContain(
+    "Settings window could not be opened",
+  );
+});
 
 it.each([false, true])(
   "shows toolbar hover tooltips only with debug enabled=%s",
