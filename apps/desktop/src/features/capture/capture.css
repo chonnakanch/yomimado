@@ -1,0 +1,39 @@
+.capture-guidance {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-window);
+  box-shadow: 0 8px 24px rgb(0 0 0 / 0.24);
+  box-sizing: border-box;
+  color: var(--color-text-primary);
+  font-family: var(--font-ui);
+  left: var(--space-3);
+  max-height: calc(100vh - 24px);
+  overflow: auto;
+  padding: var(--space-4);
+  position: absolute;
+  top: var(--space-3);
+  width: min(360px, calc(100vw - 24px));
+}
+.capture-guidance h1 {
+  font-size: var(--font-size-reading);
+  font-weight: 600;
+  margin: 0 0 var(--space-2);
+}
+.capture-selector .capture-guidance p {
+  background: transparent;
+  border-radius: 0;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-label);
+  line-height: 1.5;
+  margin: 0 0 var(--space-3);
+  overflow-wrap: anywhere;
+  padding: 0;
+  position: static;
+}
+.capture-selector .capture-guidance .capture-guidance-error {
+  color: var(--color-status-error);
+}
+.capture-guidance kbd {
+  color: var(--color-text-muted);
+  font: inherit;
+}

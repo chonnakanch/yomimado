@@ -15,6 +15,8 @@ display layout, or asks you to draw one. It does not send the entire monitor to
 OCR as an uncertainty fallback. **Rescan** takes new pixels from the last
 successful area, including a detected crop; use Whole Screen again if the page
 has moved. Rescan is disabled until there is a successful scan.
+If selection is needed, **Select manga pages** explains how to draw around a page
+or spread. The guidance hides while you drag; Cancel or Escape cancels selection.
 Changed monitor layout/scaling requires a new scan selection. Hide/Show preserves
 results without OCR; rescan if the underlying page changes. The toolbar shows
 the active mode through its highlighted scan button. Scanning shows a spinner

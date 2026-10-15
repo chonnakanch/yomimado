@@ -176,9 +176,7 @@ it("asks for a scan area when none has been saved", async () => {
   });
 
   expect(container.textContent).toContain("Drag around the manga reading area");
-  expect(container.textContent).toContain(
-    "Automatic page detection was uncertain",
-  );
+  expect(container.textContent).toContain("Page boundaries weren’t clear");
   expect(invoke).not.toHaveBeenCalledWith(
     "capture_selection",
     expect.anything(),
@@ -362,9 +360,7 @@ it.each([null, { x: -50, y: 0, width: 120, height: 70 }])(
           : undefined,
     );
     await act(async () => root.render(<CaptureSelector />));
-    expect(container.textContent).toContain(
-      "Automatic page detection was uncertain",
-    );
+    expect(container.textContent).toContain("Page boundaries weren’t clear");
     expect(container.textContent).toContain(
       "Drag around the manga reading area",
     );
@@ -498,4 +494,40 @@ it("keeps the developer capture preview accessible when OCR fails", async () => 
     debug: true,
   });
   expect(invoke).not.toHaveBeenCalledWith("finish_scan", expect.anything());
+});
+
+it("offers Cancel for uncertain page selection without treating a button press as a drag", async () => {
+  window.history.replaceState({}, "", "/?mode=capture&scan=whole&session=30");
+  vi.mocked(invoke).mockImplementation(async (command) =>
+    command === "capture_whole_screen"
+      ? null
+      : command === "get_capture_surface"
+        ? surface
+        : undefined,
+  );
+  await act(async () => root.render(<CaptureSelector />));
+  const selector =
+    container.querySelector<HTMLDivElement>(".capture-selector")!;
+  selector.setPointerCapture = vi.fn();
+  const cancel = container.querySelector<HTMLButtonElement>(
+    ".capture-guidance button",
+  )!;
+  expect(container.querySelector("h1")?.textContent).toBe("Select manga pages");
+  expect(container.querySelector(".capture-error")).toBeNull();
+  expect(container.querySelector('[role="alert"]')).toBeNull();
+  await act(async () => {
+    cancel.dispatchEvent(
+      new MouseEvent("pointerdown", {
+        bubbles: true,
+        clientX: 20,
+        clientY: 20,
+      }),
+    );
+    cancel.click();
+  });
+  expect(selector.setPointerCapture).not.toHaveBeenCalled();
+  expect(invoke).toHaveBeenCalledWith("cancel_capture_selector", {
+    sessionId: 30,
+  });
+  expect(requestOcr).not.toHaveBeenCalled();
 });

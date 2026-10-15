@@ -755,3 +755,26 @@ found the spread at x=217, y=194, width=2507, height=1718, excluding the top bro
 controls. The diagnostic was removed; the attachment is not a repository fixture.
 The production detector algorithm is unchanged. Native macOS owner acceptance and
 Windows/mixed-DPI interaction remain pending for the restored entry path.
+
+
+### Manga-area fallback guidance refinement
+
+The owner reported the initial automatic-detection fallback still showed the
+legacy warning design. The native log subsequently recorded successful automatic
+crops for a spread (2504 × 1728) and a single page (1138 × 1521), but this does not
+establish why the first scan was uncertain or certify visible coverage. Clarification
+about repeatability/layout remains pending; the conservative detector was not changed.
+
+The fallback now uses a token-based **Select manga pages** card with page/spread
+drawing guidance, saved-area explanation and Cancel/Esc. Expected uncertain bounds
+use a polite status rather than an error warning. Actual capture/save errors remain
+alerts. The card hides while dragging; its pointer events cannot start a capture
+selection. Both legacy automatic and Whole Screen fallback share this presentation.
+
+Verification passes 159 frontend tests, the production frontend build and desktop
+formatting. The existing unchanged native source passed 59 tests and its macOS build
+in the preceding restoration. WebKit inspection of the actual capture component
+with native commands mocked confirmed the card layout and that Cancel issues only
+cancellation, without selecting or invoking OCR. The private synthetic fixture was
+removed. Native fallback appearance, the first detection failure, and Windows/mixed-DPI
+interaction remain open for owner review.

@@ -10,6 +10,7 @@ import type { Point } from "../../lib/ocr-types";
 import type { OcrResponse } from "../../lib/ocr-types";
 import { CaptureDebugView } from "./CaptureDebugView";
 import { orderMangaRegions } from "./reading-order";
+import "./capture.css";
 import {
   loadScanArea,
   physicalToSelection,
@@ -47,6 +48,8 @@ export function CaptureSelector() {
   const [end, setEnd] = useState<Point | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [needsArea, setNeedsArea] = useState(scanMode === "configure");
+  const [pageUncertain, setPageUncertain] = useState(false);
+  const [dragging, setDragging] = useState(false);
   const [scanSource, setScanSource] = useState<
     "automatic" | "saved" | "manual"
   >("manual");
@@ -101,9 +104,8 @@ export function CaptureSelector() {
         const area = loadScanArea(surface);
         const selection = area && physicalToSelection(area, viewport, surface);
         if (!selection) {
-          setError(
-            "Automatic page detection was uncertain. Drag around the manga area to save it for future scans.",
-          );
+          setError(null);
+          setPageUncertain(true);
           setNeedsArea(true);
           return null;
         }
@@ -308,6 +310,7 @@ export function CaptureSelector() {
           ? undefined
           : (event) => {
               event.currentTarget.setPointerCapture(event.pointerId);
+              setDragging(true);
               const next = point(event);
               setStart(next);
               setEnd(next);
@@ -319,19 +322,55 @@ export function CaptureSelector() {
           : (event) => start && setEnd(point(event))
       }
       onPointerUp={
-        automaticScan && !needsArea ? undefined : (event) => void finish(event)
+        automaticScan && !needsArea
+          ? undefined
+          : (event) => {
+              setDragging(false);
+              void finish(event);
+            }
       }
     >
-      <p>
-        {scanMode === "repeat"
-          ? "Capturing and recognizing Japanese text…"
-          : automaticScan && !needsArea
-            ? "Finding the manga page… Press Escape to cancel."
-            : scanArea
-              ? "Drag around the manga reading area. It will be reused on future scans. Press Escape to cancel."
-              : "Drag to capture a region. Press Escape to cancel."}
-      </p>
-      {error && <p className="capture-error">{error}</p>}
+      {scanArea && needsArea ? (
+        <section
+          className="capture-guidance"
+          aria-labelledby="capture-guidance-title"
+          style={{ visibility: dragging ? "hidden" : undefined }}
+          onPointerDown={(event) => event.stopPropagation()}
+          onPointerMove={(event) => event.stopPropagation()}
+          onPointerUp={(event) => event.stopPropagation()}
+        >
+          <h1 id="capture-guidance-title">Select manga pages</h1>
+          <p role="status">
+            {pageUncertain && "Page boundaries weren’t clear. "}
+            Drag around the manga reading area. Include both pages for a spread.
+          </p>
+          <p>We’ll reuse this area when automatic detection is uncertain.</p>
+          {error && (
+            <p className="capture-guidance-error" role="alert">
+              {error}
+            </p>
+          )}
+          <button
+            className="utility-button"
+            onClick={() => void invokeCapture("cancel_capture_selector")}
+          >
+            Cancel <kbd>Esc</kbd>
+          </button>
+        </section>
+      ) : (
+        <>
+          <p>
+            {scanMode === "repeat"
+              ? "Capturing and recognizing Japanese text…"
+              : automaticScan && !needsArea
+                ? "Finding the manga page… Press Escape to cancel."
+                : scanArea
+                  ? "Drag around the manga reading area. It will be reused on future scans. Press Escape to cancel."
+                  : "Drag to capture a region. Press Escape to cancel."}
+          </p>
+          {error && <p className="capture-error">{error}</p>}
+        </>
+      )}
       {selection && (
         <div
           className="selection"
