@@ -48,7 +48,6 @@ export function CaptureSelector() {
   const [end, setEnd] = useState<Point | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [needsArea, setNeedsArea] = useState(scanMode === "configure");
-  const [pageUncertain, setPageUncertain] = useState(false);
   const [dragging, setDragging] = useState(false);
   const [scanSource, setScanSource] = useState<
     "automatic" | "saved" | "manual"
@@ -105,7 +104,6 @@ export function CaptureSelector() {
         const selection = area && physicalToSelection(area, viewport, surface);
         if (!selection) {
           setError(null);
-          setPageUncertain(true);
           setNeedsArea(true);
           return null;
         }
@@ -329,34 +327,27 @@ export function CaptureSelector() {
               void finish(event);
             }
       }
+      onPointerCancel={() => {
+        setDragging(false);
+        setStart(null);
+        setEnd(null);
+      }}
     >
-      {scanArea && needsArea ? (
-        <section
-          className="capture-guidance"
-          aria-labelledby="capture-guidance-title"
+      {scanMode !== "repeat" && (!automaticScan || needsArea) ? (
+        <div
+          className="capture-edge-guidance"
           style={{ visibility: dragging ? "hidden" : undefined }}
-          onPointerDown={(event) => event.stopPropagation()}
-          onPointerMove={(event) => event.stopPropagation()}
-          onPointerUp={(event) => event.stopPropagation()}
         >
-          <h1 id="capture-guidance-title">Select manga pages</h1>
-          <p role="status">
-            {pageUncertain && "Page boundaries weren’t clear. "}
-            Drag around the manga reading area. Include both pages for a spread.
-          </p>
-          <p>We’ll reuse this area when automatic detection is uncertain.</p>
           {error && (
-            <p className="capture-guidance-error" role="alert">
+            <p className="capture-edge-error" role="alert">
               {error}
             </p>
           )}
-          <button
-            className="utility-button"
-            onClick={() => void invokeCapture("cancel_capture_selector")}
-          >
-            Cancel <kbd>Esc</kbd>
-          </button>
-        </section>
+          <div className="capture-edge-hint" role="status">
+            <span>{scanArea ? "Drag around pages" : "Drag to capture"}</span>
+            <kbd>Esc cancel</kbd>
+          </div>
+        </div>
       ) : (
         <>
           <p>

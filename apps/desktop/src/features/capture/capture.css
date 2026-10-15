@@ -1,39 +1,48 @@
-.capture-guidance {
+.capture-edge-guidance {
+  align-items: center;
+  bottom: var(--space-3);
+  color: var(--color-text-primary);
+  display: flex;
+  flex-direction: column;
+  font-family: var(--font-ui);
+  gap: var(--space-2);
+  left: 50%;
+  max-width: calc(100% - 24px);
+  pointer-events: none;
+  position: absolute;
+  transform: translateX(-50%);
+  width: max-content;
+}
+.capture-edge-hint {
+  align-items: center;
   background: var(--color-surface);
   border: 1px solid var(--color-border);
-  border-radius: var(--radius-window);
-  box-shadow: 0 8px 24px rgb(0 0 0 / 0.24);
+  border-radius: 16px;
   box-sizing: border-box;
-  color: var(--color-text-primary);
-  font-family: var(--font-ui);
-  left: var(--space-3);
-  max-height: calc(100vh - 24px);
-  overflow: auto;
-  padding: var(--space-4);
-  position: absolute;
-  top: var(--space-3);
-  width: min(360px, calc(100vw - 24px));
+  display: flex;
+  flex-wrap: wrap;
+  font-size: var(--font-size-metadata);
+  gap: 0 var(--space-3);
+  justify-content: center;
+  line-height: 1.25;
+  max-width: 100%;
+  min-height: 30px;
+  padding: 6px var(--space-3);
 }
-.capture-guidance h1 {
-  font-size: var(--font-size-reading);
-  font-weight: 600;
-  margin: 0 0 var(--space-2);
-}
-.capture-selector .capture-guidance p {
-  background: transparent;
-  border-radius: 0;
+.capture-edge-hint kbd {
   color: var(--color-text-secondary);
+  font: inherit;
+}
+.capture-selector .capture-edge-error {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-control);
+  color: var(--color-status-error);
   font-size: var(--font-size-label);
   line-height: 1.5;
-  margin: 0 0 var(--space-3);
+  margin: 0;
+  max-width: min(360px, calc(100vw - 24px));
   overflow-wrap: anywhere;
-  padding: 0;
+  padding: var(--space-2) var(--space-3);
   position: static;
-}
-.capture-selector .capture-guidance .capture-guidance-error {
-  color: var(--color-status-error);
-}
-.capture-guidance kbd {
-  color: var(--color-text-muted);
-  font: inherit;
 }

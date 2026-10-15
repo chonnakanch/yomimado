@@ -175,8 +175,8 @@ it("asks for a scan area when none has been saved", async () => {
     await new Promise<void>((resolve) => setTimeout(resolve, 0));
   });
 
-  expect(container.textContent).toContain("Drag around the manga reading area");
-  expect(container.textContent).toContain("Page boundaries weren’t clear");
+  expect(container.textContent).toContain("Drag around pages");
+  expect(container.querySelector(".capture-edge-hint")).not.toBeNull();
   expect(invoke).not.toHaveBeenCalledWith(
     "capture_selection",
     expect.anything(),
@@ -193,7 +193,7 @@ it("allows a manual retry when automatic capture fails", async () => {
   });
 
   expect(container.textContent).toContain("screen capture unavailable");
-  expect(container.textContent).toContain("Drag around the manga reading area");
+  expect(container.textContent).toContain("Drag around pages");
 });
 
 it.each(["configure", "whole"])(
@@ -360,10 +360,8 @@ it.each([null, { x: -50, y: 0, width: 120, height: 70 }])(
           : undefined,
     );
     await act(async () => root.render(<CaptureSelector />));
-    expect(container.textContent).toContain("Page boundaries weren’t clear");
-    expect(container.textContent).toContain(
-      "Drag around the manga reading area",
-    );
+    expect(container.querySelector(".capture-edge-hint")).not.toBeNull();
+    expect(container.textContent).toContain("Drag around pages");
     expect(invoke).toHaveBeenCalledWith("resume_capture_selection", {
       sessionId: 14,
       debug: false,
@@ -496,38 +494,58 @@ it("keeps the developer capture preview accessible when OCR fails", async () => 
   expect(invoke).not.toHaveBeenCalledWith("finish_scan", expect.anything());
 });
 
-it("offers Cancel for uncertain page selection without treating a button press as a drag", async () => {
-  window.history.replaceState({}, "", "/?mode=capture&scan=whole&session=30");
-  vi.mocked(invoke).mockImplementation(async (command) =>
-    command === "capture_whole_screen"
-      ? null
-      : command === "get_capture_surface"
-        ? surface
-        : undefined,
-  );
-  await act(async () => root.render(<CaptureSelector />));
-  const selector =
-    container.querySelector<HTMLDivElement>(".capture-selector")!;
-  selector.setPointerCapture = vi.fn();
-  const cancel = container.querySelector<HTMLButtonElement>(
-    ".capture-guidance button",
-  )!;
-  expect(container.querySelector("h1")?.textContent).toBe("Select manga pages");
-  expect(container.querySelector(".capture-error")).toBeNull();
-  expect(container.querySelector('[role="alert"]')).toBeNull();
-  await act(async () => {
-    cancel.dispatchEvent(
-      new MouseEvent("pointerdown", {
-        bubbles: true,
-        clientX: 20,
-        clientY: 20,
-      }),
+it.each(["whole", "selected"])(
+  "allows a drag through the %s edge hint, hides it during selection and cancels with Escape",
+  async (mode) => {
+    window.history.replaceState(
+      {},
+      "",
+      `/?mode=capture&${mode === "whole" ? "scan=whole&" : ""}session=30`,
     );
-    cancel.click();
-  });
-  expect(selector.setPointerCapture).not.toHaveBeenCalled();
-  expect(invoke).toHaveBeenCalledWith("cancel_capture_selector", {
-    sessionId: 30,
-  });
-  expect(requestOcr).not.toHaveBeenCalled();
-});
+    vi.mocked(invoke).mockImplementation(async (command) =>
+      command === "capture_whole_screen"
+        ? null
+        : command === "get_capture_surface"
+          ? surface
+          : undefined,
+    );
+    await act(async () => root.render(<CaptureSelector />));
+    const selector =
+      container.querySelector<HTMLDivElement>(".capture-selector")!;
+    selector.setPointerCapture = vi.fn();
+    const hint = container.querySelector<HTMLElement>(".capture-edge-hint")!;
+    const guidance = container.querySelector<HTMLElement>(
+      ".capture-edge-guidance",
+    )!;
+    expect(hint.textContent).toBe(
+      `${mode === "whole" ? "Drag around pages" : "Drag to capture"}Esc cancel`,
+    );
+    expect(container.querySelector(".capture-guidance")).toBeNull();
+    expect(container.querySelector("button")).toBeNull();
+    expect(container.querySelector('[role="alert"]')).toBeNull();
+    await act(async () =>
+      hint.dispatchEvent(
+        new MouseEvent("pointerdown", {
+          bubbles: true,
+          clientX: 20,
+          clientY: 20,
+        }),
+      ),
+    );
+    expect(selector.setPointerCapture).toHaveBeenCalledOnce();
+    expect(guidance.style.visibility).toBe("hidden");
+    expect(container.querySelector(".selection")).not.toBeNull();
+    await act(async () =>
+      window.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape" })),
+    );
+    expect(invoke).toHaveBeenCalledWith("cancel_capture_selector", {
+      sessionId: 30,
+    });
+    expect(requestOcr).not.toHaveBeenCalled();
+    await act(async () =>
+      selector.dispatchEvent(new Event("pointercancel", { bubbles: true })),
+    );
+    expect(guidance.style.visibility).toBe("");
+    expect(container.querySelector(".selection")).toBeNull();
+  },
+);

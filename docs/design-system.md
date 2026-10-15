@@ -165,11 +165,13 @@ page/spread before OCR. An uncertain boundary uses a saved/drawn manga area;
 Selected Area scans the exact manual rectangle. Explain this in the scan tooltip
 and Scan & OCR help. Rescan reuses the last successful crop/area.
 
-An uncertain manga boundary opens a quiet **Select manga pages** card using the
-shared surface, text, border and spacing tokens. Explain drawing one rectangle
-around a page/spread and reuse of that area. Provide Cancel/Esc. Hide the card
-while dragging so it cannot cover the page; interacting with its controls must
-not start a selection. Expected uncertainty is guidance, not an error alert.
+An uncertain manga boundary uses the approved **Edge hint**: a compact bottom-centred
+pill reading “Drag around pages · Esc cancel,” approximately 30 logical px high.
+Selected Area uses the same hint with “Drag to capture · Esc cancel.”
+It and any error detail ignore pointer events, so a drag can begin through the hint.
+Hide the hint immediately while dragging; Escape cancels. Keep longer explanations
+in help rather than over the reading area. Expected uncertainty is not an error;
+actual capture/save failures retain an accessible alert above the hint.
 
 Mark overlay visibility with an accessible pressed state and current label.
 The current scan or retained result determines which scan button is pressed and

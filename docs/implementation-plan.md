@@ -781,3 +781,27 @@ with native commands mocked confirmed the card layout and that Cancel issues onl
 cancellation, without selecting or invoking OCR. The private synthetic fixture was
 removed. Native fallback appearance, the first detection failure, and Windows/mixed-DPI
 interaction remain open for owner review.
+
+
+### Approved Edge hint replaces the selection card
+
+On 2026-10-15 the owner reported that the fallback card obscured the starting area
+for a manga selection and approved the Edge hint proposal. Manual selection and
+the fallback/configure flow now use a bottom-centred, approximately 30 logical px
+pill: **Drag around
+pages · Esc cancel** (or **Drag to capture · Esc cancel** for Selected Area).
+It ignores pointer events, so selection can start through its text. Pointer-down
+hides it immediately. Escape retains the existing native
+cancel path; pointer cancellation clears the unfinished rectangle and restores
+the hint. The former heading, explanatory paragraphs and Cancel button are removed.
+Actual capture/save failures retain their accessible alert above the hint.
+
+Verification passes 160 frontend tests, production frontend build and desktop
+formatting. Normal macOS development startup succeeds with unchanged native source.
+WebKit inspection of the actual component with native commands simulated measured
+206 × 30 px at both 1280 × 720 and 320 × 480 viewports. A drag starting on the hint
+reached the selector and hid the hint; a tiny drag made no capture/OCR call, and
+Escape issued the session-bound cancellation command. The temporary private fixture
+was removed and viewport reset. Native visual acceptance and Windows/mixed-DPI
+interaction remain pending. Manga-page detection and its first-scan observation
+are unchanged by this presentation refinement.
