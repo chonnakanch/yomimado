@@ -694,8 +694,6 @@ WebKit inspection of the actual React components with native windows simulated
 confirmed mouse opening has no outline, ArrowDown focuses Settings with a 2 px
 inset ring, and Escape returns focus to More actions. The simulated toolbar row
 remained at y=404 throughout. Temporary ignored preview fixtures were removed.
-
-
 ### Keyboard reading replaces the legacy reading controls
 
 On 2026-10-15 the owner reported that arrow navigation no longer worked. Removing
@@ -722,5 +720,9 @@ activation and region focus return. WebKit inspection of the actual components
 with mocked native commands confirmed explicit entry, a blue selection moving
 between vertical regions, and Enter activating the selected region. Changing
 selection did not issue OCR, tokenization, dictionary or translation commands.
-The temporary ignored synthetic fixture was removed. Native macOS owner acceptance
-and Windows/mixed-DPI interaction remain pending for this replacement.
+The temporary ignored synthetic fixture was removed. On 2026-10-15 the owner
+tested source `4ab2234` in the normal macOS development app and confirmed that
+Read with keyboard enters region navigation, arrows move the blue selection,
+Enter opens its popup, and Escape returns to the region so navigation continues.
+This accepts the replacement on the tested macOS setup. Windows/mixed-DPI
+interaction and packaged-installer acceptance remain unverified.
