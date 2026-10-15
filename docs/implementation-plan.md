@@ -828,3 +828,9 @@ on the heading row at 420 px and 280 px widths without overlap or horizontal
 overflow. Edit OCR text opens its editor; Cancel restores focus to that action.
 The temporary fixture was removed and viewport reset. Normal macOS development
 startup succeeds. Windows/mixed-DPI visual acceptance remains unverified.
+
+The owner subsequently requested a smaller warning indicator. **Check OCR** now
+uses the 11 px caption token with a 12 px icon and 2 px internal gap, down from
+12 px text and a 16 px icon. Its gap from Japanese is reduced from 12 px to 8 px.
+The tooltip, screen-reader detail and correction action are unchanged. Verification
+passes the 18 popup tests, production frontend build and desktop formatting.

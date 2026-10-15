@@ -235,7 +235,8 @@ lookup/translation/save states on commit. Review/approximate regions show a smal
 outlined status icon and **Check OCR** beside the Japanese heading, without a
 warning block or repeated edit action. Keep the full review reason and correction
 guidance in its hover tooltip and screen-reader text; **Edit OCR text** remains in
-the secondary actions.
+the secondary actions. The owner's size refinement uses an 11 px caption token,
+12 px icon and 2 px icon/text gap for this brief status, preserving its contrast.
 Demo text is identified and never treated as recognized Japanese.
 
 ### WordDefinition and AlternativeDictionaryMatches
