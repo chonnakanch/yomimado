@@ -843,3 +843,14 @@ hover, and a matching 8% hover fill. Blue selection/keyboard focus, dashed revie
 states, polygon geometry and stroke widths are unchanged. Other accent controls
 retain their existing palette. Overlay tests, the production frontend build and
 desktop formatting pass; native Windows/mixed-DPI visual acceptance remains open.
+
+The owner's screenshot showed that the 1 px lines remained hard to distinguish.
+The follow-up uses vivid orange `#F56B00` with a 2 CSS px default stroke, up from
+1 px; hover uses `#FF7900` at 3 px. Blue selection/focus also uses 3 px. Review
+dashes, transparent default fill, polygon coordinates and non-scaling strokes are
+preserved. The default orange measures approximately 3.01:1 against white; contrast
+against manga artwork varies. Five overlay tests, the production frontend build
+and desktop formatting pass. WebKit inspection of the actual region component
+with synthetic Japanese text confirms the orange 2 px stroke, retained review
+dashes and blue 3 px selection. The private fixture was removed. Native visual
+acceptance of this thicker treatment remains open on macOS and Windows/mixed-DPI.

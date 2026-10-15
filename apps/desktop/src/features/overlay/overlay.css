@@ -16,7 +16,7 @@
   fill: transparent;
   pointer-events: all;
   stroke: var(--color-region-default);
-  stroke-width: 1px;
+  stroke-width: 2px;
   transition:
     fill var(--motion-fast),
     stroke var(--motion-fast);
@@ -25,13 +25,13 @@
 .ocr-region:hover {
   fill: var(--color-region-hover-fill);
   stroke: var(--color-region-hover);
-  stroke-width: 2px;
+  stroke-width: 3px;
 }
 .ocr-region.active,
 .ocr-region:focus-visible {
   fill: var(--color-region-selected-fill);
   stroke: var(--color-region-selected);
-  stroke-width: 2px;
+  stroke-width: 3px;
 }
 .ocr-region:focus-visible {
   outline: none;

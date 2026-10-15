@@ -36,8 +36,8 @@ styles consume roles, never repeat hex values. The palette below is implemented 
 | `--color-background`           | `#181818`                   | Secondary-window canvas; dark text on filled accents.   |
 | `--color-surface`              | `#242220`                   | Toolbar, popup, collection rows and settings surfaces.  |
 | `--color-surface-elevated`     | `#302C29`                   | Overflow menu, disclosure panels and hovered controls.  |
-| `--color-accent`               | `#D97F5C`                   | Primary action, region default outline and links.       |
-| `--color-accent-hover`         | `#E88762`                   | Primary action hover and region hover outline.          |
+| `--color-accent`               | `#D97F5C`                   | Primary action and links.                               |
+| `--color-accent-hover`         | `#E88762`                   | Primary action hover.                                   |
 | `--color-selected`             | `#75A5EB`                   | Chosen token, active region and focus ring.             |
 | `--color-text-primary`         | `#F5F2EF`                   | Japanese and primary UI text.                           |
 | `--color-text-secondary`       | `#B9B1AB`                   | Readings, metadata and supporting text.                 |
@@ -47,10 +47,10 @@ styles consume roles, never repeat hex values. The palette below is implemented 
 | `--color-on-accent`            | `var(--color-background)`   | Text/icon on filled orange or blue action.              |
 | `--color-focus`                | `var(--color-selected)`     | Keyboard outline independent of hover.                  |
 | `--color-status-error`         | `var(--color-accent-hover)` | Error text/icon with explicit message, not color alone. |
-| `--color-region-default`       | `#E8750B`                  | Saturated orange for ordinary OCR polygons.              |
-| `--color-region-hover`         | `#F58A1F`                  | Brighter orange for hovered OCR polygons.                |
+| `--color-region-default`       | `#F56B00`                  | Vivid orange for ordinary OCR polygons.                  |
+| `--color-region-hover`         | `#FF7900`                  | Brighter orange for hovered OCR polygons.                |
 | `--color-region-selected`      | `var(--color-selected)`     | Selected OCR polygon.                                   |
-| `--color-region-hover-fill`    | `rgb(232 117 11 / 0.08)`    | Minimal orange hover wash above manga.                  |
+| `--color-region-hover-fill`    | `rgb(245 107 0 / 0.08)`     | Minimal orange hover wash above manga.                  |
 | `--color-region-selected-fill` | `rgb(117 165 235 / 0.10)`   | Minimal selected wash above manga.                      |
 
 Filled accents use dark text, not small white labels. Secondary controls use
@@ -188,9 +188,9 @@ region. Quit remains discoverable after expanding the toolbar.
 
 | State              | Stroke                | Fill            | Additional cue                                              |
 | ------------------ | --------------------- | --------------- | ----------------------------------------------------------- |
-| Default            | 1 CSS px orange       | Transparent     | Region orientation in accessible label.                     |
-| Hover              | 2 CSS px accent-hover | Orange at 8%    | Pointer cursor, no lookup triggered.                        |
-| Selected           | 2 CSS px blue         | Blue at 10%     | Selected semantics and keyboard focus if active.            |
+| Default            | 2 CSS px vivid orange | Transparent     | Region orientation in accessible label.                     |
+| Hover              | 3 CSS px orange       | Orange at 8%    | Pointer cursor, no lookup triggered.                        |
+| Selected           | 3 CSS px blue         | Blue at 10%     | Selected semantics and keyboard focus if active.            |
 | Review/approximate | Same state colors     | Same state fill | Dashed stroke and “Review OCR” / “Approximate region” text. |
 | Demo               | Dashed outline        | Transparent     | “Demo boundary — no recognized text.”                       |
 
