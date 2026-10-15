@@ -22,7 +22,9 @@ struct Route {
     session_id: u64,
     epoch: u64,
     active: bool,
+    #[cfg(target_os = "macos")]
     origin: Point,
+    #[cfg(target_os = "macos")]
     scale: f64,
     width: u32,
     height: u32,
@@ -46,6 +48,7 @@ pub struct InputRouter {
 
 // Inclusive edges match the visible polygon boundary; concave regions must not
 // turn the empty corners of their bounding box into native hit targets.
+#[cfg(any(target_os = "macos", test))]
 fn contains(polygon: &[Point], p: Point) -> bool {
     let mut inside = false;
     for (a, b) in polygon
@@ -109,7 +112,9 @@ impl InputRouter {
         layout: &OverlayLayout,
     ) -> Result<(), String> {
         let polygons = physical_polygons(state, layout)?;
-        let scale = state["metadata"]["scaleFactor"]
+        // Both adapters require valid capture metadata; only the macOS pointer
+        // sampler retains the scale in its route.
+        state["metadata"]["scaleFactor"]
             .as_f64()
             .filter(|s| s.is_finite() && *s > 0.0)
             .ok_or("Invalid overlay display scale")?;
@@ -119,11 +124,15 @@ impl InputRouter {
                 .as_u64()
                 .ok_or("Missing overlay generation")?,
             active: true,
+            #[cfg(target_os = "macos")]
             origin: Point {
                 x: layout.window_x.into(),
                 y: layout.window_y.into(),
             },
-            scale,
+            #[cfg(target_os = "macos")]
+            scale: state["metadata"]["scaleFactor"]
+                .as_f64()
+                .ok_or("Invalid overlay display scale")?,
             width: layout.window_width,
             height: layout.window_height,
             polygons,

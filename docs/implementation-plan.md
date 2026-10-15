@@ -985,3 +985,9 @@ the local native suite to 60 tests. The
 [Windows redesign checklist](ui-redesign-windows-checklist.md) separates source UI,
 mixed-DPI, input/focus, independent-window and recovery cases from future installer
 checks. No interactive hardware result is inferred or marked passed.
+
+The new strict Windows gate exposed unused macOS pointer-routing state and
+release-only Windows service startup code in debug targets. Platform/build
+conditions now match their consumers without suppressing warnings. Packaged
+service behavior is unchanged, and its Windows SDK/job/readiness tests remain
+enabled in the native test target.

@@ -2,7 +2,7 @@ mod capture;
 mod detector_model;
 mod overlay;
 mod toolbar;
-#[cfg(target_os = "windows")]
+#[cfg(all(target_os = "windows", any(not(debug_assertions), test)))]
 mod windows_service;
 
 use std::process::Child;
@@ -31,7 +31,7 @@ struct AppState {
     toolbar_layout: Mutex<toolbar::ToolbarLayout>,
     toolbar_menu: toolbar::ToolbarMenuStore,
     service: Mutex<Option<Child>>,
-    #[cfg(target_os = "windows")]
+    #[cfg(all(not(debug_assertions), target_os = "windows"))]
     windows_service: Mutex<Option<windows_service::Service>>,
 }
 
@@ -905,8 +905,6 @@ pub fn run() {
                 Ok(service) => (Some(service), None),
                 Err(error) => (None, Some(error.to_string())),
             };
-            #[cfg(all(debug_assertions, target_os = "windows"))]
-            let windows_service = None;
             app.manage(AppState {
                 capture: Arc::new(XcapScreenCapture::new()),
                 overlay: overlay::OverlayStore::default(),
@@ -915,7 +913,7 @@ pub fn run() {
                 toolbar_layout: Mutex::new(toolbar::ToolbarLayout::default()),
                 toolbar_menu: toolbar::ToolbarMenuStore::default(),
                 service: Mutex::new(service),
-                #[cfg(target_os = "windows")]
+                #[cfg(all(not(debug_assertions), target_os = "windows"))]
                 windows_service: Mutex::new(windows_service),
             });
             #[cfg(all(not(debug_assertions), target_os = "windows"))]
@@ -1000,7 +998,7 @@ pub fn run() {
         .run(|app, event| {
             if matches!(event, tauri::RunEvent::Exit) {
                 app.state::<AppState>().overlay_input.stop();
-                #[cfg(target_os = "windows")]
+                #[cfg(all(not(debug_assertions), target_os = "windows"))]
                 if let Ok(mut service) = app.state::<AppState>().windows_service.lock() {
                     // Drop closes the job and terminates its entire service tree.
                     service.take();

@@ -37,6 +37,13 @@ at negative origins. The existing stale-frame guard is unchanged in behavior and
 is now directly tested; a DPI change invalidates old hits even with unchanged
 physical window dimensions.
 
+The first strict Windows run also exposed dead code: macOS pointer-sampling
+fields/helpers and bundled-service startup plumbing were compiled into Windows
+development targets that cannot use them. These now have explicit platform/build
+conditions, without warning suppression. Release service startup/cleanup retain
+their existing code and configuration. The Windows service module still compiles
+under tests, preserving its real SDK-layout, job-termination and readiness tests.
+
 No additional confirmed correctness defects were found in the reviewed capture
 session/cancellation, overlay publication/input routing, popup request invalidation,
 Saved list/delete lifecycle, model setup, or OCR geometry-extension paths. This is
