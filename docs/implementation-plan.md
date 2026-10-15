@@ -762,8 +762,11 @@ Windows/mixed-DPI interaction remain pending for the restored entry path.
 The owner reported the initial automatic-detection fallback still showed the
 legacy warning design. The native log subsequently recorded successful automatic
 crops for a spread (2504 × 1728) and a single page (1138 × 1521), but this does not
-establish why the first scan was uncertain or certify visible coverage. Clarification
-about repeatability/layout remains pending; the conservative detector was not changed.
+establish why the first scan was uncertain or certify visible coverage. On 2026-10-15
+the owner confirmed that only the first scan failed; later scans detected pages
+automatically. The initial failure's cause and recurrence after a fresh launch
+remain unverified. The conservative detector was not changed based on this single
+fallback, and no additional owner test was requested.
 
 The fallback now uses a token-based **Select manga pages** card with page/spread
 drawing guidance, saved-area explanation and Cancel/Esc. Expected uncertain bounds
