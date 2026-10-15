@@ -29,12 +29,14 @@ proved inconvenient for repeated grants.
    Start a drag outside a polygon and cross it; verify mouse-up stays with the browser.
 3. Hover a polygon, then activate it explicitly. Hover must not perform dictionary,
    tokenization or translation work. A click opens the existing learning popup.
-4. Choose **Focus regions** in toolbar overflow. Arrows/Home/End change focus;
+4. Choose **Read with keyboard** in toolbar overflow. Arrows/Home/End change focus;
    Enter/Space open a popup, and Escape returns to its originating region. Escape
    in region navigation hides results; Show restores them without another OCR call.
    Clicking elsewhere dismisses the popup without moving focus back to the overlay.
-5. Switch the optional estimated-order setting on/off; its controls remain usable
-   and its native hit rectangle must not cover the rest of the reader.
+5. Read with keyboard is disabled without a visible completed result and during
+   scans. Settings → Reading explains the controls; no old toggle or Previous/Next
+   text panel remains. Keyboard entry must work without moving the pointer over
+   a polygon. Navigation must not perform OCR or translation.
 6. Rescan, cancel, hide/show and close/reopen must not retain stale hit polygons.
    Disconnect/change a monitor or its DPI; stale geometry must hide with guidance.
 7. Try fast pointer entries and immediate clicks at multiple speeds. Record missed

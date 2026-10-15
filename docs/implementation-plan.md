@@ -694,3 +694,33 @@ WebKit inspection of the actual React components with native windows simulated
 confirmed mouse opening has no outline, ArrowDown focuses Settings with a 2 px
 inset ring, and Escape returns focus to More actions. The simulated toolbar row
 remained at y=404 throughout. Temporary ignored preview fixtures were removed.
+
+
+### Keyboard reading replaces the legacy reading controls
+
+On 2026-10-15 the owner reported that arrow navigation no longer worked. Removing
+Focus regions had also removed the explicit entry that focused the native overlay;
+the SVG arrow handlers remained, but normal scan completion deliberately leaves
+keyboard focus in the reader. The owner approved **More actions → Read with
+keyboard** as the replacement for the first-release Reading-order controls.
+
+The new action uses the existing guarded native focus command and is disabled
+without visible completed OCR results or during a scan. Arrows/Home/End select
+regions; Enter/Space opens the selected popup. Keyboard popup dismissal returns
+to the originating region. Escape from region navigation hides overlays and
+focuses the toolbar. An HTML focus target handles navigation if a webview cannot
+focus SVG polygons. Scan completion and hover still do not steal keyboard focus.
+The old preference, Previous/Next text panel, styling and storage listener are
+removed. Existing preference data is left untouched and ignored. Reading settings
+now explains keyboard reading. Estimated scan ordering and OCR geometry are
+preserved; this does not infer manga panel order or change published installers.
+
+Verification passes 154 frontend tests in 20 files, 57 native tests, the production
+frontend build, macOS native build and desktop formatting. Regression checks cover
+the menu's visible-result guard, explicit native focus entry, HTML fallback arrows,
+activation and region focus return. WebKit inspection of the actual components
+with mocked native commands confirmed explicit entry, a blue selection moving
+between vertical regions, and Enter activating the selected region. Changing
+selection did not issue OCR, tokenization, dictionary or translation commands.
+The temporary ignored synthetic fixture was removed. Native macOS owner acceptance
+and Windows/mixed-DPI interaction remain pending for this replacement.

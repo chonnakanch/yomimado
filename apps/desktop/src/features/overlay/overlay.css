@@ -4,16 +4,12 @@
   position: relative;
   width: 100vw;
 }
+.ocr-overlay:focus {
+  outline: none;
+}
 .ocr-overlay svg {
   overflow: visible;
   position: absolute;
-}
-.overlay-controls {
-  left: 0;
-  pointer-events: none;
-  position: absolute;
-  right: 0;
-  z-index: 1;
 }
 .ocr-region {
   cursor: pointer;
@@ -48,50 +44,6 @@
 }
 .ocr-region.demo {
   fill: transparent;
-}
-.overlay-reading-order-panel {
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-window);
-  box-sizing: border-box;
-  left: var(--space-1);
-  max-height: 70vh;
-  overflow: auto;
-  padding: var(--space-2);
-  pointer-events: all;
-  position: absolute;
-  width: min(320px, calc(100vw - 8px));
-  z-index: 1;
-}
-.overlay-reading-order-nav {
-  align-items: center;
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-1);
-}
-.overlay-reading-order-nav button {
-  flex: none;
-  font-size: var(--font-size-label);
-  min-height: var(--control-compact);
-  padding: 0 var(--space-2);
-}
-.overlay-reading-order-count {
-  color: var(--color-text-secondary);
-  font-size: var(--font-size-metadata);
-  font-variant-numeric: tabular-nums;
-}
-.overlay-reading-order-text {
-  font-size: var(--font-size-definition);
-  margin: var(--space-2) 0 0;
-  max-height: 96px;
-  overflow: auto;
-  overflow-wrap: anywhere;
-  white-space: pre-wrap;
-}
-.overlay-region-status {
-  color: var(--color-text-secondary);
-  font-size: var(--font-size-metadata);
-  margin: var(--space-2) 0 0;
 }
 .overlay-error {
   background: var(--color-surface);

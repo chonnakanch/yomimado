@@ -79,7 +79,13 @@ it("opens one grouped Saved destination after dismissing the menu", async () => 
   await act(async () => button("Saved").click());
   expect(
     [...container.querySelectorAll("button")].map((b) => b.textContent),
-  ).toEqual(["Saved", "Settings", "Sources & licenses", "Quit YomiMado"]);
+  ).toEqual([
+    "Read with keyboard",
+    "Saved",
+    "Settings",
+    "Sources & licenses",
+    "Quit YomiMado",
+  ]);
   expect(invoke).toHaveBeenCalledWith("close_toolbar_menu");
   expect(invoke).toHaveBeenCalledWith("show_secondary_window", {
     view: "saved",
@@ -127,3 +133,38 @@ it("positions only its own native popover using the current request generation",
   });
   expect(invoke).not.toHaveBeenCalledWith("resize_toolbar", expect.anything());
 });
+
+it("explicitly enters region navigation only for a visible idle OCR result", async () => {
+  vi.mocked(invoke).mockResolvedValue({
+    sessionId: null,
+    hasOverlay: true,
+    overlayVisible: true,
+  });
+  await mount();
+  expect(document.activeElement).toBe(button("Read with keyboard"));
+  await act(async () => button("Read with keyboard").click());
+  expect(invoke).toHaveBeenCalledWith("focus_ocr_regions");
+  expect(
+    vi
+      .mocked(invoke)
+      .mock.calls.findIndex(([name]) => name === "close_toolbar_menu"),
+  ).toBeLessThan(
+    vi
+      .mocked(invoke)
+      .mock.calls.findIndex(([name]) => name === "focus_ocr_regions"),
+  );
+});
+it.each([
+  { sessionId: null, hasOverlay: false, overlayVisible: false },
+  { sessionId: null, hasOverlay: true, overlayVisible: false },
+  { sessionId: 1, hasOverlay: true, overlayVisible: true },
+])(
+  "does not enable keyboard reading without visible, completed regions: %j",
+  async (state) => {
+    vi.mocked(invoke).mockResolvedValue(state);
+    await mount();
+    expect(button("Read with keyboard").disabled).toBe(true);
+    await act(async () => button("Read with keyboard").click());
+    expect(invoke).not.toHaveBeenCalledWith("focus_ocr_regions");
+  },
+);

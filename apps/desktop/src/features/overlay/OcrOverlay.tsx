@@ -6,10 +6,6 @@ import "./overlay.css";
 import type { CaptureMetadata } from "../../lib/coordinates";
 import { ocrPolygonToOverlay } from "../../lib/coordinates";
 import type { TextRegion } from "../../lib/ocr-types";
-import {
-  readReadingOrderEnabled,
-  readingOrderSettingKey,
-} from "../../lib/reading-order-setting";
 
 interface OverlayState {
   sessionId?: number;
@@ -43,36 +39,18 @@ export function OcrOverlay() {
   const [state, setState] = useState<OverlayState | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [activeRegionId, setActiveRegionId] = useState<string | null>(null);
-  const [readingOrderEnabled, setReadingOrderEnabled] = useState(
-    readReadingOrderEnabled,
-  );
   const [popupError, setPopupError] = useState<string | null>(null);
   const [revealed, setRevealed] = useState(false);
-  const controlsRef = useRef<HTMLDivElement>(null);
+  const navigatorRef = useRef<HTMLDivElement>(null);
   const regionElements = useRef(new Map<string, SVGPolygonElement>());
   const [focusRequest, setFocusRequest] = useState<{
     regionId: string | null;
     revision: number;
   } | null>(null);
-  const controlRevision = useRef(0);
-  const viewQuery = useRef(window.location.search.slice(1)).current;
   const [viewport, setViewport] = useState({
     width: window.innerWidth,
     height: window.innerHeight,
   });
-
-  useEffect(() => {
-    const handleSettingChange = (event: StorageEvent) => {
-      if (event.key !== null && event.key !== readingOrderSettingKey) return;
-      const enabled = readReadingOrderEnabled();
-      setReadingOrderEnabled(enabled);
-      if (!enabled) {
-        setActiveRegionId(null);
-      }
-    };
-    window.addEventListener("storage", handleSettingChange);
-    return () => window.removeEventListener("storage", handleSettingChange);
-  }, []);
 
   useEffect(() => {
     let mounted = true;
@@ -128,57 +106,6 @@ export function OcrOverlay() {
   }, [state?.sessionId]);
 
   useEffect(() => {
-    if (state?.sessionId === undefined || !revealed) return;
-    const update = () => {
-      const rectangles = Array.from(
-        controlsRef.current?.querySelectorAll<HTMLElement>(
-          "button, .overlay-reading-order-panel",
-        ) ?? [],
-      )
-        .filter(
-          (element) =>
-            !element.closest(".overlay-reading-order-panel") ||
-            element.classList.contains("overlay-reading-order-panel"),
-        )
-        .map((element) => {
-          const bounds = element.getBoundingClientRect();
-          return {
-            x: bounds.x,
-            y: bounds.y,
-            width: bounds.width,
-            height: bounds.height,
-          };
-        })
-        .filter((bounds) => bounds.width > 0 && bounds.height > 0);
-      void invoke("update_overlay_controls", {
-        sessionId: state.sessionId,
-        revision: ++controlRevision.current,
-        rectangles,
-        viewportWidth: window.innerWidth,
-        viewportHeight: window.innerHeight,
-        viewQuery,
-      }).catch((error) =>
-        setLoadError(`Could not route overlay input: ${String(error)}`),
-      );
-    };
-    const observer =
-      typeof ResizeObserver === "undefined" ? null : new ResizeObserver(update);
-    if (controlsRef.current) observer?.observe(controlsRef.current);
-    const panel = controlsRef.current?.querySelector(
-      ".overlay-reading-order-panel",
-    );
-    if (panel) observer?.observe(panel);
-    update();
-    return () => observer?.disconnect();
-  }, [
-    state?.sessionId,
-    revealed,
-    readingOrderEnabled,
-    viewport,
-    activeRegionId,
-  ]);
-
-  useEffect(() => {
     let mounted = true;
     let unlisten: UnlistenFn | undefined;
     void listen<{ regionId: string | null }>("focus-ocr-region", (event) => {
@@ -210,11 +137,32 @@ export function OcrOverlay() {
     const regionId =
       focusRequest.regionId ?? activeRegionId ?? state.regions[0]?.id;
     if (regionId && regionElements.current.has(regionId)) {
-      setActiveRegionId(regionId);
-      regionElements.current.get(regionId)?.focus();
+      focusRegion(regionId);
     }
     // A focus request is explicit; loading and hover must never steal focus.
   }, [focusRequest, state?.sessionId, revealed]);
+
+  const focusRegion = (regionId: string) => {
+    setActiveRegionId(regionId);
+    const element = regionElements.current.get(regionId);
+    element?.focus?.();
+    // SVG focus support varies between webviews. Keep a real HTML focus target
+    // so native keyboard entry still works when polygon.focus() does not.
+    if (document.activeElement !== element) navigatorRef.current?.focus();
+  };
+  const navigateRegion = (key: string, current: number) => {
+    if (!state?.regions.length) return;
+    const nextIndex =
+      key === "Home"
+        ? 0
+        : key === "End"
+          ? state.regions.length - 1
+          : (current +
+              (["ArrowDown", "ArrowRight"].includes(key) ? 1 : -1) +
+              state.regions.length) %
+            state.regions.length;
+    focusRegion(state.regions[nextIndex].id);
+  };
 
   if (loadError) return <div className="overlay-error">{loadError}</div>;
   if (!state) return null;
@@ -226,25 +174,14 @@ export function OcrOverlay() {
     (viewport.height * state.metadata.scaleFactor) / state.layout.windowHeight;
   const contentWidth = state.layout.contentWidth * scaleX;
   const contentHeight = state.layout.contentHeight * scaleY;
-  const selectedRegionId =
-    activeRegionId ??
-    (state.estimatedReadingOrder && readingOrderEnabled
-      ? state.regions[0]?.id
-      : null);
-  const selectedRegionIndex = state.regions.findIndex(
-    (region) => region.id === selectedRegionId,
+  const selectedRegionId = activeRegionId;
+  const activeRegionIndex = Math.max(
+    0,
+    state.regions.findIndex((region) => region.id === activeRegionId),
   );
-  const activeRegionIndex = Math.max(0, selectedRegionIndex);
   const selectedRegion = state.regions.find(
     (region) => region.id === activeRegionId,
   );
-
-  const moveReadingOrder = (direction: number) => {
-    const count = state.regions.length;
-    if (!count) return;
-    const nextIndex = (activeRegionIndex + direction + count) % count;
-    setActiveRegionId(state.regions[nextIndex].id);
-  };
 
   const handleRegionClick = async (region: TextRegion, keyboard = false) => {
     setActiveRegionId(region.id);
@@ -267,60 +204,42 @@ export function OcrOverlay() {
   };
 
   return (
-    <div className="ocr-overlay">
-      <div
-        className="overlay-controls"
-        ref={controlsRef}
-        style={{
-          top: state.layout.toolbarTop * scaleY,
-          height: state.layout.toolbarHeight * scaleY,
-        }}
-      >
-        {state.estimatedReadingOrder &&
-          readingOrderEnabled &&
-          state.regions.length > 0 && (
-            <div
-              className="overlay-reading-order-panel"
-              aria-label="Estimated manga reading order"
-            >
-              <div className="overlay-reading-order-nav">
-                <button
-                  aria-label="Previous text region"
-                  onClick={() => moveReadingOrder(-1)}
-                >
-                  ‹
-                </button>
-                <span className="overlay-reading-order-count">
-                  {activeRegionIndex + 1}/{state.regions.length} · estimated
-                </span>
-                <button
-                  aria-label="Next text region"
-                  onClick={() => moveReadingOrder(1)}
-                >
-                  ›
-                </button>
-                <button
-                  aria-label="Open selected text region"
-                  onClick={(event) =>
-                    void handleRegionClick(
-                      state.regions[activeRegionIndex],
-                      event.detail === 0,
-                    )
-                  }
-                >
-                  Open
-                </button>
-              </div>
-              <p className="overlay-reading-order-text" aria-live="polite">
-                {state.regions[activeRegionIndex]?.text}
-              </p>
-            </div>
-          )}
-      </div>
+    <div
+      className="ocr-overlay"
+      ref={navigatorRef}
+      tabIndex={-1}
+      role="group"
+      aria-label="OCR region navigator"
+      aria-describedby="region-navigation-help"
+      onKeyDown={(event) => {
+        if (event.defaultPrevented || event.target !== event.currentTarget)
+          return;
+        const index = activeRegionIndex;
+        if (
+          [
+            "ArrowUp",
+            "ArrowDown",
+            "ArrowLeft",
+            "ArrowRight",
+            "Home",
+            "End",
+          ].includes(event.key)
+        ) {
+          event.preventDefault();
+          navigateRegion(event.key, index);
+        } else if (
+          (event.key === "Enter" || event.key === " ") &&
+          state.regions[index]
+        ) {
+          event.preventDefault();
+          void handleRegionClick(state.regions[index], true);
+        }
+      }}
+    >
       <p className="visually-hidden" id="region-navigation-help">
         Use arrow keys to move between text regions, Enter or Space to open, and
         Escape to hide OCR overlays. Navigation follows detected regions;
-        estimated reading order is optional.
+        whole-screen order is estimated and may differ from manga panel order.
       </p>
       <p className="visually-hidden" role="status">
         {selectedRegion
@@ -346,31 +265,13 @@ export function OcrOverlay() {
             demo={state.engine === "demo"}
             selected={selectedRegionId === region.id}
             tabIndex={index === activeRegionIndex ? 0 : -1}
-            number={
-              state.estimatedReadingOrder && readingOrderEnabled
-                ? index + 1
-                : undefined
-            }
             elementRef={(element) => {
               if (element) regionElements.current.set(region.id, element);
               else regionElements.current.delete(region.id);
             }}
             onFocus={() => setActiveRegionId(region.id)}
             onActivate={(keyboard) => void handleRegionClick(region, keyboard)}
-            onNavigate={(key) => {
-              const nextIndex =
-                key === "Home"
-                  ? 0
-                  : key === "End"
-                    ? state.regions.length - 1
-                    : (index +
-                        (["ArrowDown", "ArrowRight"].includes(key) ? 1 : -1) +
-                        state.regions.length) %
-                      state.regions.length;
-              const next = state.regions[nextIndex];
-              setActiveRegionId(next.id);
-              regionElements.current.get(next.id)?.focus();
-            }}
+            onNavigate={(key) => navigateRegion(key, index)}
             key={region.id}
             points={polygonPoints(region, state.metadata, {
               width: contentWidth,

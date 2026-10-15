@@ -187,6 +187,13 @@ can remain clickable while visually transparent. Label uncertainty explicitly;
 unknown confidence must never become a percentage badge. Apply selected color
 after hover styling so hovering a selected region does not erase selection.
 
+Use **More actions → Read with keyboard** as the explicit keyboard entry for visible
+OCR results. Arrows select regions, Home/End jump to the first/last, and Enter/Space
+opens the selected popup. Escape returns from the popup to its region; Escape in
+the region navigator hides overlays and focuses the toolbar. Keep keyboard entry
+out of scan completion so focus stays in the reader. This replaces the former
+Reading-order toggle and Previous/Next text panel.
+
 Native hit routing is an independent requirement in the architecture plan.
 `pointer-events` only selects DOM targets; visual transparency alone is not proof
 that underlying applications receive input.

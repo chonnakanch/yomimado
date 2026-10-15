@@ -59,33 +59,15 @@ it("supports keyboard categories and opens Reading directly without checking the
   expect(invoke).toHaveBeenCalledWith("detector_model_status");
 });
 
-it("keeps a failed preference unchecked and retries without changing its stored key", async () => {
+it("replaces the reading-order toggle with current keyboard-reading instructions", async () => {
   window.history.replaceState({}, "", "/?view=reading");
+  window.localStorage.setItem("yomimado.reading-order.enabled.v1", "true");
   await mount();
-  const setting = container.querySelector<HTMLInputElement>(
-    'input[type="checkbox"]',
-  )!;
-  const save = vi
-    .spyOn(Storage.prototype, "setItem")
-    .mockImplementationOnce(() => {
-      throw new Error("Storage unavailable");
-    });
-  await act(async () => setting.click());
-  expect(setting.checked).toBe(false);
-  expect(container.querySelector('[role="alert"]')?.textContent).toContain(
-    "Storage unavailable",
-  );
-  expect(
-    window.localStorage.getItem("yomimado.reading-order.enabled.v1"),
-  ).toBeNull();
-  await act(async () => setting.click());
-  expect(save).toHaveBeenCalledWith(
-    "yomimado.reading-order.enabled.v1",
-    "true",
-  );
-  expect(setting.checked).toBe(true);
-  expect(container.querySelector('[role="alert"]')).toBeNull();
-  expect(container.textContent).toContain("Applies to new scans");
+  expect(container.querySelector('input[type="checkbox"]')).toBeNull();
+  expect(container.textContent).toContain("More actions → Read with keyboard");
+  expect(container.textContent).toContain("Arrow keys move between regions");
+  expect(container.textContent).not.toContain("Focus regions");
+  expect(invoke).not.toHaveBeenCalled();
 });
 
 it("retries a status failure without claiming that the model is installed", async () => {

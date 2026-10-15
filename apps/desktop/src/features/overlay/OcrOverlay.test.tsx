@@ -4,10 +4,6 @@ import { createRoot, type Root } from "react-dom/client";
 import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
-import {
-  readingOrderSettingKey,
-  saveReadingOrderEnabled,
-} from "../../lib/reading-order-setting";
 import { OcrOverlay } from "./OcrOverlay";
 
 vi.mock("@tauri-apps/api/core", () => ({ invoke: vi.fn() }));
@@ -179,7 +175,8 @@ it("mounts the current polygons before revealing a reused native overlay", async
   expect(invoke).toHaveBeenCalledWith("reveal_ocr_overlay", { sessionId: 90 });
 });
 
-it("steps through estimated scan order and opens the selected region", async () => {
+it("replaces the old reading panel without auto-selecting or stealing focus", async () => {
+  window.localStorage.setItem("yomimado.reading-order.enabled.v1", "true");
   const metadata = {
     displayId: "display",
     displayName: "Display",
@@ -225,62 +222,8 @@ it("steps through estimated scan order and opens the selected region", async () 
   expect(container.querySelector(".overlay-reading-order-panel")).toBeNull();
   expect(container.querySelector("polygon.ocr-region.active")).toBeNull();
 
-  await act(async () => {
-    saveReadingOrderEnabled(true);
-    window.dispatchEvent(
-      new StorageEvent("storage", { key: readingOrderSettingKey }),
-    );
-  });
-  expect(
-    container.querySelector(".overlay-reading-order-panel"),
-  ).not.toBeNull();
-  expect(
-    container.querySelector(".overlay-reading-order-count")?.textContent,
-  ).toBe("1/2 · estimated");
-  expect(
-    container.querySelector(".overlay-reading-order-text")?.textContent,
-  ).toBe("短い");
-  expect(
-    container.querySelector(
-      ".overlay-reading-order-nav .overlay-reading-order-text",
-    ),
-  ).toBeNull();
-  expect(
-    container.querySelector("polygon.ocr-region.active title")?.textContent,
-  ).toContain("1. 短い");
-
-  await act(async () => {
-    container
-      .querySelector<HTMLButtonElement>('button[aria-label="Next text region"]')
-      ?.click();
-  });
-  expect(
-    container.querySelector(".overlay-reading-order-count")?.textContent,
-  ).toBe("2/2 · estimated");
-  expect(
-    container.querySelector(".overlay-reading-order-text")?.textContent,
-  ).toBe("これは長い文章ですがボタンは動きません");
-
-  await act(async () => {
-    container
-      .querySelector<HTMLButtonElement>(
-        'button[aria-label="Open selected text region"]',
-      )
-      ?.click();
-  });
-  expect(invoke).toHaveBeenCalledWith(
-    "show_translation_popup",
-    expect.objectContaining({ text: "これは長い文章ですがボタンは動きません" }),
-  );
-
-  await act(async () => {
-    saveReadingOrderEnabled(false);
-    window.dispatchEvent(
-      new StorageEvent("storage", { key: readingOrderSettingKey }),
-    );
-  });
-  expect(container.querySelector(".overlay-reading-order-panel")).toBeNull();
-  expect(container.querySelector("polygon.ocr-region.active")).toBeNull();
+  expect(document.activeElement).toBe(document.body);
+  expect(container.querySelectorAll("button")).toHaveLength(0);
 });
 
 it("opens only on explicit activation and provides keyboard navigation and hide", async () => {
@@ -350,15 +293,30 @@ it("opens only on explicit activation and provides keyboard navigation and hide"
   );
   await act(async () => onFocus?.({ payload: { regionId: null } }));
   expect(focusFirst).toHaveBeenCalledOnce();
+  const navigator = container.querySelector<HTMLElement>(".ocr-overlay")!;
+  expect(document.activeElement).toBe(navigator);
+  // A webview that cannot focus SVG must receive arrows through the HTML target.
+  await act(async () =>
+    navigator.dispatchEvent(
+      new KeyboardEvent("keydown", { key: "ArrowRight", bubbles: true }),
+    ),
+  );
+  expect(polygons[1].getAttribute("aria-pressed")).toBe("true");
+  await act(async () =>
+    navigator.dispatchEvent(
+      new KeyboardEvent("keydown", { key: "ArrowLeft", bubbles: true }),
+    ),
+  );
+  expect(polygons[0].getAttribute("aria-pressed")).toBe("true");
   await act(async () =>
     polygons[0].dispatchEvent(
       new KeyboardEvent("keydown", { key: "End", bubbles: true }),
     ),
   );
-  expect(focusLast).toHaveBeenCalledOnce();
+  expect(focusLast).toHaveBeenCalledTimes(2);
   expect(polygons[1].getAttribute("aria-pressed")).toBe("true");
   await act(async () =>
-    polygons[1].dispatchEvent(
+    navigator.dispatchEvent(
       new KeyboardEvent("keydown", { key: "Enter", bubbles: true }),
     ),
   );
@@ -366,6 +324,16 @@ it("opens only on explicit activation and provides keyboard navigation and hide"
     "show_translation_popup",
     expect.objectContaining({ regionId: "1", text: "学校", keyboard: true }),
   );
+  // Native popup dismissal requests the selected region, not the first one.
+  await act(async () => onFocus?.({ payload: { regionId: "1" } }));
+  expect(polygons[1].getAttribute("aria-pressed")).toBe("true");
+  expect(document.activeElement).toBe(navigator);
+  await act(async () =>
+    navigator.dispatchEvent(
+      new KeyboardEvent("keydown", { key: "ArrowDown", bubbles: true }),
+    ),
+  );
+  expect(polygons[0].getAttribute("aria-pressed")).toBe("true");
   await act(async () =>
     window.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape" })),
   );

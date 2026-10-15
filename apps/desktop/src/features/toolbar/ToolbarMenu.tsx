@@ -4,6 +4,7 @@ import { type ToolbarState } from "./FloatingToolbar";
 import "./toolbar.css";
 
 const items = [
+  { label: "Read with keyboard", view: "regions" },
   { label: "Saved", view: "saved" },
   { label: "Settings", view: "settings" },
   { label: "Sources & licenses", view: "sources" },
@@ -110,10 +111,12 @@ export function ToolbarMenu() {
   const run = async (view: (typeof items)[number]["view"]) => {
     try {
       await invoke("close_toolbar_menu");
-      await invoke(
-        view ? "show_secondary_window" : "quit_app",
-        view ? { view } : undefined,
-      );
+      if (view === "regions") await invoke("focus_ocr_regions");
+      else
+        await invoke(
+          view ? "show_secondary_window" : "quit_app",
+          view ? { view } : undefined,
+        );
     } catch (reason) {
       setError(String(reason));
     }
@@ -133,7 +136,13 @@ export function ToolbarMenu() {
         <button
           role="menuitem"
           key={label}
-          disabled={view !== null && (!state || state.sessionId !== null)}
+          disabled={
+            view !== null &&
+            (!state ||
+              state.sessionId !== null ||
+              (view === "regions" &&
+                (!state.hasOverlay || !state.overlayVisible)))
+          }
           onClick={() => void run(view)}
         >
           {label}

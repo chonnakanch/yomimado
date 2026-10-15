@@ -64,9 +64,9 @@ YomiMado after replacing a model already in use. In development, model setup is
 managed by the existing local OCR service; the app does not claim that service is
 ready based on the packaged model status.
 
-**Reading** contains the existing **Reading-order controls** preference, off by
-default and saved locally for new scans. Save failures leave the previous preference
-in place. This estimated order is separate from keyboard region navigation.
+**Reading** explains **More actions → Read with keyboard**, which replaces the
+old Reading-order controls preference and Previous/Next text panel. No preference
+needs to be enabled before using keyboard reading.
 **More actions → Sources & licenses** opens a separate attribution window with
 dictionary/model links and packaged notice guidance.
 Use Left/Right or Home/End on category tabs to navigate by keyboard.
@@ -154,13 +154,14 @@ crop also excludes a short dark site toolbar beneath a clear light page edge.
 Ambiguous dark page content is kept rather than cut off. The
 app does not watch for screen changes or translate text automatically. Close
 the overlay before changing pages, then scan again.
-Reading-order controls are off by default. Enable **Reading-order controls** in
-the main YomiMado window's Reading settings to show a fixed Previous/Next row
-with the selected text below it on page scans; **Open** shows its learning
-popup. There is no Reading order button on the manga overlay. The setting is
-saved locally and applies to new scans.
-This order uses text positions, not panel detection, so you can always click a
-region directly if the suggested order is wrong.
+After scanning, choose **More actions → Read with keyboard**. The OCR overlays
+must be visible and the scan finished. Arrow keys select the next/previous region;
+Home/End select the first/last region. Enter or Space opens its learning popup.
+Escape closes the popup and returns focus to that region. Escape from region
+navigation hides the overlays and returns to the toolbar. Show the overlays again
+to resume. No translation runs merely because selection changes.
+Navigation follows the detected sequence; estimated order on whole-screen scans
+uses text positions, not panel detection. Click any region directly if it is wrong.
 Platform-specific coverage and remaining checks are recorded in the
 [Windows installed-app record](windows-installed-test.md) and
 [macOS installed-app record](macos-clean-mac-test.md).
@@ -171,8 +172,8 @@ the [release checklist](desktop-release.md) for packaged candidates.
 ### Development OCR overlays
 
 Click a detected region to open its learning popup. **Show OCR overlays** restores
-a hidden result without OCR. The optional estimated manga reading-order setting
-remains separate from region selection.
+a hidden result without OCR. Use **More actions → Read with keyboard** to focus
+regions without opening a popup. Ordinary scan completion keeps focus in your reader.
 
 Normal outlines are orange; the selected region is blue. Dashed regions indicate
 review, approximate geometry or an explicitly labeled demo boundary. Review guidance

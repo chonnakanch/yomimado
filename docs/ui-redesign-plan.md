@@ -39,8 +39,8 @@ continuous scanning, audio, JLPT/WaniKani badges, Wikipedia, stroke counts,
 flashcards or spaced repetition. Do not add Linux or mobile targets.
 
 Retain existing on-demand local translation and OCR correction through secondary
-actions. Preserve optional estimated reading-order navigation, off by default,
-without promoting it to a third scan mode. Retire automatic page cropping from
+actions. The owner’s 2026-10-15 refinement replaces optional estimated-order
+controls with explicit Read with keyboard navigation; it is not a third scan mode. Retire automatic page cropping from
 the redesigned user flow: it is neither Whole Screen nor Selected Area. Keep
 its tested backend helper initially, rather than deleting working OCR-adjacent
 logic during the visual refactor. This changes the old page-scan shortcut's
@@ -125,8 +125,8 @@ base form, chosen meanings, source sentence and timestamp; POS is not persisted.
 Saved sentences optionally contain a translation. Saving does not trigger one.
 
 Saved scan areas are in webview localStorage, keyed by display ID, physical bounds
-and scale (`features/capture/scan-area.ts`). The reading-order preference is
-also in localStorage and the overlay listens for storage changes. Native overlay
+and scale (`features/capture/scan-area.ts`). The former reading-order preference
+was also in localStorage; Read with keyboard replaces it without a saved toggle. Native overlay
 state is ephemeral. Do not equate any of these with a global React state.
 
 Important data limits: word senses expose glosses, not dictionary-sense POS, so
@@ -297,10 +297,13 @@ adapter choice remains an implementation investigation, with pass-through a
 blocking acceptance requirement, not a claimed existing capability.
 
 The original Phase 2 keyboard entry used a Focus regions overflow action. The owner
-requested removal of that menu item on 2026-10-14; the underlying region navigator
-and native focus handling remain. This is keyboard navigation, not automatic panel
-reading order. Give SVG regions labels, focus/selection semantics and Enter/Space
-activation. Optional estimated-order controls retain their setting and label.
+requested its removal on 2026-10-14, which also removed explicit keyboard entry.
+On 2026-10-15 the owner approved **Read with keyboard** in More actions to restore
+entry and replace the old Reading-order controls preference and Previous/Next
+text panel. It is available only for visible, completed OCR results. Give SVG
+regions labels, focus/selection semantics and Enter/Space activation. Keep an HTML
+focus fallback for webviews that cannot focus an SVG polygon. Arrow navigation
+uses the detected sequence; estimated scan ordering does not imply panel detection.
 Escape closes the focused popup; Escape in region navigation hides the overlay.
 Do not register a global Escape that would disrupt the reader.
 
@@ -435,7 +438,7 @@ close permission; new toolbar labels/operations require deliberate review.
    refresh after explicit saves/reopen, retain attribution and dates. Verify older
    saved databases still read and duplicates behave identically.
 8. **Finish settings and lifecycle.** Move detector status/import/replacement to
-   Scan & OCR; preserve source/licenses and reading-order switch. Make secondary
+   Scan & OCR; preserve source/licenses and document Read with keyboard in Reading. Make secondary
    close/reopen and explicit Quit reliable on both targets; update usage/help and
    shortcut migration text.
 9. **Verify and record source readiness.** Run the checks below, inspect compact
