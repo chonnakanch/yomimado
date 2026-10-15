@@ -28,98 +28,107 @@ afterEach(async () => {
   container.remove();
   window.history.replaceState({}, "", "/");
   vi.mocked(invoke).mockReset();
+  vi.unstubAllEnvs();
 });
 
-it("loads a text-heavy OCR result from native state instead of the URL", async () => {
-  const regions = Array.from({ length: 300 }, (_, index) => ({
-    id: `region-${index}`,
-    text: "日本語の長い文章".repeat(20),
-    polygon: [
-      { x: 10, y: 10 },
-      { x: 30, y: 10 },
-      { x: 30, y: 40 },
-      { x: 10, y: 40 },
-    ],
-    orientation: "vertical",
-    confidence: 0,
-    type: "dialogue",
-    tokens: [],
-    ...(index === 0
-      ? {
-          needsReview: true,
-          reviewReason: "Short text from detector mask; verify on page",
-        }
-      : {}),
-    ...(index === 1
-      ? {
-          geometrySource: "expandedCrop",
-          needsReview: true,
-          reviewReason: "Expanded short vertical crop; area approximate",
-        }
-      : {}),
-  }));
-  vi.mocked(invoke).mockResolvedValue({
-    metadata: {
-      displayId: "display",
-      displayName: "Display",
-      screenPhysicalBounds: { x: 0, y: 0, width: 1000, height: 800 },
-      selectionPhysicalBounds: { x: 0, y: 0, width: 1000, height: 800 },
-      selectionLogicalBounds: { x: 0, y: 0, width: 1000, height: 800 },
-      imageWidth: 1000,
-      imageHeight: 800,
-      scaleFactor: 1,
-    },
-    regions,
-    engine: "manga",
-    layout: {
-      windowWidth: 1000,
-      windowHeight: 800,
-      contentLeft: 0,
-      contentTop: 0,
-      contentWidth: 1000,
-      contentHeight: 800,
-      toolbarTop: 0,
-      toolbarHeight: 32,
-    },
-  });
+it.each([false, true])(
+  "loads OCR from native state, preserving accessible review labels with debug tooltips enabled=%s",
+  async (debug) => {
+    vi.stubEnv("VITE_CAPTURE_DEBUG", debug ? "1" : "0");
+    const regions = Array.from({ length: 300 }, (_, index) => ({
+      id: `region-${index}`,
+      text: "日本語の長い文章".repeat(20),
+      polygon: [
+        { x: 10, y: 10 },
+        { x: 30, y: 10 },
+        { x: 30, y: 40 },
+        { x: 10, y: 40 },
+      ],
+      orientation: "vertical",
+      confidence: 0,
+      type: "dialogue",
+      tokens: [],
+      ...(index === 0
+        ? {
+            needsReview: true,
+            reviewReason: "Short text from detector mask; verify on page",
+          }
+        : {}),
+      ...(index === 1
+        ? {
+            geometrySource: "expandedCrop",
+            needsReview: true,
+            reviewReason: "Expanded short vertical crop; area approximate",
+          }
+        : {}),
+    }));
+    vi.mocked(invoke).mockResolvedValue({
+      metadata: {
+        displayId: "display",
+        displayName: "Display",
+        screenPhysicalBounds: { x: 0, y: 0, width: 1000, height: 800 },
+        selectionPhysicalBounds: { x: 0, y: 0, width: 1000, height: 800 },
+        selectionLogicalBounds: { x: 0, y: 0, width: 1000, height: 800 },
+        imageWidth: 1000,
+        imageHeight: 800,
+        scaleFactor: 1,
+      },
+      regions,
+      engine: "manga",
+      layout: {
+        windowWidth: 1000,
+        windowHeight: 800,
+        contentLeft: 0,
+        contentTop: 0,
+        contentWidth: 1000,
+        contentHeight: 800,
+        toolbarTop: 0,
+        toolbarHeight: 32,
+      },
+    });
 
-  await act(async () => root.render(<OcrOverlay />));
+    await act(async () => root.render(<OcrOverlay />));
 
-  expect(invoke).toHaveBeenCalledExactlyOnceWith("get_overlay_state");
-  expect(container.querySelectorAll("polygon.ocr-region")).toHaveLength(300);
-  const reviewRegion = container.querySelector(
-    "polygon.ocr-region.needs-review",
-  );
-  expect(reviewRegion).not.toBeNull();
-  expect(reviewRegion?.querySelector("title")?.textContent).toContain(
-    "verify on page",
-  );
-  expect(reviewRegion?.getAttribute("aria-label")).toContain("Review OCR");
-  expect(
-    container.querySelector("polygon.approximate")?.getAttribute("aria-label"),
-  ).toContain("Approximate region");
-  expect(container.querySelector(".overlay-reading-order-panel")).toBeNull();
-  expect(
-    container.querySelectorAll("polygon.ocr-region.approximate"),
-  ).toHaveLength(1);
-  expect(window.location.search).toBe("?mode=overlay");
+    expect(invoke).toHaveBeenCalledExactlyOnceWith("get_overlay_state");
+    expect(container.querySelectorAll("polygon.ocr-region")).toHaveLength(300);
+    const reviewRegion = container.querySelector(
+      "polygon.ocr-region.needs-review",
+    );
+    expect(reviewRegion).not.toBeNull();
+    if (debug)
+      expect(reviewRegion?.querySelector("title")?.textContent).toContain(
+        "verify on page",
+      );
+    else expect(container.querySelector("polygon title")).toBeNull();
+    expect(reviewRegion?.getAttribute("aria-label")).toContain("Review OCR");
+    expect(
+      container
+        .querySelector("polygon.approximate")
+        ?.getAttribute("aria-label"),
+    ).toContain("Approximate region");
+    expect(container.querySelector(".overlay-reading-order-panel")).toBeNull();
+    expect(
+      container.querySelectorAll("polygon.ocr-region.approximate"),
+    ).toHaveLength(1);
+    expect(window.location.search).toBe("?mode=overlay");
 
-  await act(async () => {
-    reviewRegion?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
-  });
-  expect(invoke).toHaveBeenCalledWith(
-    "show_translation_popup",
-    expect.objectContaining({ text: regions[0].text }),
-  );
-});
+    await act(async () => {
+      reviewRegion?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    });
+    expect(invoke).toHaveBeenCalledWith(
+      "show_translation_popup",
+      expect.objectContaining({ text: regions[0].text }),
+    );
+  },
+);
 
 it("mounts the current polygons before revealing a reused native overlay", async () => {
   vi.mocked(invoke).mockImplementation(async (command) => {
     if (command === "reveal_ocr_overlay") {
       expect(container.querySelectorAll("polygon")).toHaveLength(1);
-      expect(container.querySelector("polygon title")?.textContent).toContain(
-        "今日",
-      );
+      expect(
+        container.querySelector("polygon")?.getAttribute("aria-label"),
+      ).toContain("今日");
       return {
         windowWidth: 1000,
         windowHeight: 800,

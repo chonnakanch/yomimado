@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState, type PointerEvent } from "react";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import { invoke } from "@tauri-apps/api/core";
 import { requestOcr } from "../../lib/ocr-client";
+import { captureDebugEnabled } from "../../lib/debug-mode";
 import {
   normalizeRectangle,
   type CaptureMetadata,
@@ -25,7 +26,7 @@ interface CaptureResult {
 }
 
 export function CaptureSelector() {
-  const debugCaptureEnabled = import.meta.env.VITE_CAPTURE_DEBUG === "1";
+  const debugCaptureEnabled = captureDebugEnabled();
   const params = new URLSearchParams(window.location.search);
   const scanMode = params.get("scan");
   const sessionId = params.has("session")

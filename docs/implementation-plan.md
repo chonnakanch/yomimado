@@ -894,3 +894,33 @@ real reader. This records acceptance of that fix on the tested macOS setup;
 Windows/mixed-DPI runtime acceptance remains open. The native policy requires
 restarting the command-launched app; no automatic restart or installer/version
 change was performed.
+
+### Debug-only hover tooltips and redesigned capture preview
+
+On 2026-10-15 the owner requested that hover tooltips appear only in the existing
+capture debug mode, and that its preview match the approved redesign. One shared
+flag reader now controls `VITE_CAPTURE_DEBUG=1` across capture, toolbar, OCR polygons
+and the learning popup. Normal mode omits hover title attributes/SVG titles while
+retaining accessible names, scan descriptions, OCR review metadata, dashed regions
+and Check OCR. Debug mode preserves the detailed tooltips and existing explicit
+Show overlay review step. No production Settings toggle is added.
+
+The capture preview now uses shared tokens, compact utility buttons, readable
+Japanese rows, a labeled geometry legend and feature-owned CSS. Final/review
+polygons share the current orange and dash cues; candidates use a dedicated cyan
+token and filtered boxes use muted dots. Geometry and detector details are collapsed
+initially, with all existing coordinates, retries, reasons and crops retained.
+The exact in-memory capture keeps its aspect ratio. Narrow layouts stack the
+image and results in independent keyboard-focusable scroll panes. Loading and
+errors retain the image; Show overlay waits for a response and Close stays usable.
+
+Verification passes 170 frontend tests, TypeScript, normal/debug production
+frontend builds and desktop formatting. Tests cover both tooltip modes with
+accessible labels preserved, explicit debug publication, diagnostics and errors.
+WebKit inspection of the actual preview with synthetic capture/response data at
+1280 × 720 and 320 × 480 confirms no horizontal clipping, image fitting, keyboard
+disclosures, loading/error presentation and action callbacks. The temporary fixture
+and isolated preview server were removed/stopped and viewport reset. The owner's
+app and OCR service were not restarted. Native debug-flow appearance on macOS and
+Windows/mixed-DPI remains available for owner review; native/service code and
+release artifacts are unchanged.

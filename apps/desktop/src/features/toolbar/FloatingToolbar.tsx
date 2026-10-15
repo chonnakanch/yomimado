@@ -3,6 +3,7 @@ import { invoke } from "@tauri-apps/api/core";
 import { listen, type UnlistenFn } from "@tauri-apps/api/event";
 import { ScanModeButton, type ScanMode } from "./ScanModeButton";
 import { ToolbarIcon } from "./ToolbarIcon";
+import { debugTooltip } from "../../lib/debug-mode";
 import "./toolbar.css";
 
 export interface ToolbarState {
@@ -309,7 +310,10 @@ export function FloatingToolbar() {
         <button
           className="utility-button utility-icon-button toolbar-drag"
           aria-label="Move toolbar"
-          title="Drag to move. Arrow keys move the focused handle."
+          aria-description="Drag to move. Arrow keys move the focused handle."
+          title={debugTooltip(
+            "Drag to move. Arrow keys move the focused handle.",
+          )}
           onPointerDown={(event) => {
             if (event.button === 0) {
               setMenuOpen(false);
@@ -361,11 +365,11 @@ export function FloatingToolbar() {
         <button
           className="utility-button utility-icon-button"
           aria-label="Rescan"
-          title={
+          title={debugTooltip(
             state?.canRescan
               ? "Rescan the last successful area or screen"
-              : "Scan an area or screen first"
-          }
+              : "Scan an area or screen first",
+          )}
           disabled={!state?.canRescan || busy || !!missingModel}
           onClick={() =>
             void run("rescan", undefined, state?.scanMode ?? "selectedArea")
@@ -389,15 +393,15 @@ export function FloatingToolbar() {
           aria-controls={attention ? "toolbar-feedback" : undefined}
           disabled={attention ? busy : !state?.hasOverlay || busy}
           ref={statusButton}
-          title={
+          title={debugTooltip(
             attention
               ? `${status} · Click for details`
               : !state?.hasOverlay
                 ? "No OCR result yet. Scan Japanese text first."
                 : state.overlayVisible
                   ? "OCR overlays shown · Click to hide"
-                  : "OCR overlays hidden · Click to show"
-          }
+                  : "OCR overlays hidden · Click to show",
+          )}
           onClick={() => {
             if (attention) {
               setMenuOpen(false);
@@ -437,7 +441,9 @@ export function FloatingToolbar() {
         <button
           className="utility-button utility-icon-button"
           aria-label={collapsed ? "Expand toolbar" : "Collapse toolbar"}
-          title={collapsed ? "Expand toolbar" : "Collapse toolbar"}
+          title={debugTooltip(
+            collapsed ? "Expand toolbar" : "Collapse toolbar",
+          )}
           onClick={collapse}
         >
           <ToolbarIcon name={collapsed ? "expand" : "collapse"} />

@@ -192,6 +192,12 @@ review, approximate geometry or an explicitly labeled demo boundary. Review guid
 also appears in the learning popup; use its existing OCR editor to correct text.
 No word meaning or translation request runs merely because a region is hovered.
 
+Detailed hover tooltips are reserved for capture debug mode (`VITE_CAPTURE_DEBUG=1`).
+Normal reading retains screen-reader labels, dashed review cues and the compact
+Check OCR status. Debug mode pauses before the interactive overlay so you can
+review the exact capture and recognized text; expand Geometry or Detector stage
+for diagnostic details. See [development setup](development.md) to enable it.
+
 The native adapter is implemented for source review. Windows, mixed-DPI and rapid
 pointer-entry acceptance remain tracked in [native UI checks](ui-overlay-testing.md).
 These changes do not change the published v0.1.0 installers.

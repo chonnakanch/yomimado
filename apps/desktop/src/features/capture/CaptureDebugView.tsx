@@ -1,6 +1,7 @@
 import { useLayoutEffect, useRef, useState } from "react";
 import type { CaptureMetadata } from "../../lib/coordinates";
 import type { OcrResponse, Point } from "../../lib/ocr-types";
+import "./capture-debug.css";
 
 function polygonPoints(points: Point[]): string {
   return points.map((point) => `${point.x},${point.y}`).join(" ");
@@ -69,30 +70,54 @@ export function CaptureDebugView({
   }, [imageWidth, imageHeight]);
 
   return (
-    <main className="capture-debug">
+    <main className="capture-debug" aria-label="Capture debug preview">
       <div className="capture-debug-panel">
         <header className="capture-debug-header">
           <div>
             <h1>Capture debug</h1>
             <p>
-              Exact PNG sent to OCR. Orange: final regions; dashed gold: review
-              suggested; cyan: detector candidates; gray: filtered boxes.
+              Review the captured image and recognized text before showing the
+              overlay.
             </p>
           </div>
           <div className="capture-debug-actions">
-            <button onClick={onContinue} disabled={!response}>
+            <button
+              className="utility-button utility-button-primary"
+              onClick={onContinue}
+              disabled={!response}
+            >
               Show overlay
             </button>
-            <button className="capture-debug-secondary" onClick={onCancel}>
+            <button className="utility-button" onClick={onCancel}>
               Close
             </button>
           </div>
         </header>
 
+        <ul className="capture-debug-legend" aria-label="Geometry legend">
+          <li>
+            <span className="capture-debug-key final" aria-hidden="true" />
+            Final region
+          </li>
+          <li>
+            <span className="capture-debug-key review" aria-hidden="true" />
+            Review OCR
+          </li>
+          <li>
+            <span className="capture-debug-key candidate" aria-hidden="true" />
+            Detector candidate
+          </li>
+          <li>
+            <span className="capture-debug-key filtered" aria-hidden="true" />
+            Filtered
+          </li>
+        </ul>
+
         <div className="capture-debug-content">
           <section
             className="capture-debug-image-section"
             aria-label="Captured image"
+            tabIndex={0}
             ref={imageSectionRef}
           >
             <div className="capture-debug-image-frame" style={imageSize}>
@@ -114,7 +139,7 @@ export function CaptureDebugView({
                   ))}
                   {response.regions.map((region) => (
                     <polygon
-                      className={`capture-debug-final-region${region.needsReview ? " needs-review" : ""}`}
+                      className={`capture-debug-final-region${region.needsReview || region.geometrySource ? " needs-review" : ""}`}
                       key={region.id}
                       points={polygonPoints(region.polygon)}
                     >
@@ -130,22 +155,32 @@ export function CaptureDebugView({
             </div>
           </section>
 
-          <section className="capture-debug-results" aria-label="OCR result">
+          <section
+            className="capture-debug-results"
+            aria-label="OCR result"
+            tabIndex={0}
+          >
             <h2>OCR result</h2>
-            <p>
-              {imageWidth} × {imageHeight} image px · {metadata.scaleFactor}×
-              display scale
-            </p>
-            <p>Capture held in memory; no PNG saved to disk.</p>
-            {scanSource === "automatic" && (
-              <p>Automatic manga-page crop used.</p>
+            <div className="capture-debug-summary">
+              <p>
+                {imageWidth} × {imageHeight} image px · {metadata.scaleFactor}×
+                display scale
+              </p>
+              <p>Capture held in memory; no PNG saved to disk.</p>
+              {scanSource === "automatic" && (
+                <p>Automatic manga-page crop used.</p>
+              )}
+              {scanSource === "saved" && <p>Saved manga-area fallback used.</p>}
+            </div>
+            {error && (
+              <p className="capture-debug-error" role="alert">
+                {error}
+              </p>
             )}
-            {scanSource === "saved" && <p>Saved manga-area fallback used.</p>}
-            {error && <p className="capture-debug-error">{error}</p>}
-            {!response && !error && <p>Recognizing text…</p>}
+            {!response && !error && <p role="status">Recognizing text…</p>}
             {response && (
               <>
-                <p>
+                <p role="status">
                   Engine: {response.engine} · {response.regions.length}{" "}
                   region(s)
                 </p>
@@ -155,7 +190,7 @@ export function CaptureDebugView({
                 <ol>
                   {response.regions.map((region) => (
                     <li key={region.id}>
-                      <strong>{region.text}</strong>
+                      <strong lang="ja">{region.text}</strong>
                       <span>
                         {region.orientation} · confidence:{" "}
                         {region.confidence === 0
@@ -170,11 +205,14 @@ export function CaptureDebugView({
                       {region.reviewReason && (
                         <span>{region.reviewReason}</span>
                       )}
-                      <code>
-                        {region.polygon
-                          .map((point) => `(${point.x}, ${point.y})`)
-                          .join(" ")}
-                      </code>
+                      <details className="capture-debug-geometry">
+                        <summary>Geometry</summary>
+                        <code>
+                          {region.polygon
+                            .map((point) => `(${point.x}, ${point.y})`)
+                            .join(" ")}
+                        </code>
+                      </details>
                     </li>
                   ))}
                 </ol>
@@ -184,8 +222,11 @@ export function CaptureDebugView({
                   </p>
                 )}
                 {response.debug && (
-                  <section className="capture-debug-detector-results">
-                    <h2>Detector stage</h2>
+                  <details className="capture-debug-detector-results">
+                    <summary>
+                      Detector stage · {response.debug.detections.length}{" "}
+                      candidates
+                    </summary>
                     <p>
                       {response.debug.detections.length} candidate box(es) after
                       duplicate retry boxes are merged. Empty and filtered
@@ -221,8 +262,14 @@ export function CaptureDebugView({
                               : detection.detectionPass === "mask"
                                 ? "text-mask retry"
                                 : "full image"}{" "}
-                            · {detection.status} · {detection.text || "No text"}
+                            · {detection.status}
                           </span>
+                          <p
+                            className="capture-debug-detection-text"
+                            lang={detection.text ? "ja" : undefined}
+                          >
+                            {detection.text || "No text"}
+                          </p>
                           {detection.filterReason && (
                             <span>
                               Filtered:{" "}
@@ -250,7 +297,7 @@ export function CaptureDebugView({
                         </li>
                       ))}
                     </ol>
-                  </section>
+                  </details>
                 )}
               </>
             )}

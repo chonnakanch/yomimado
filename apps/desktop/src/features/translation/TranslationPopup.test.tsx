@@ -56,6 +56,7 @@ afterEach(async () => {
   await act(async () => root.unmount());
   container.remove();
   vi.unstubAllGlobals();
+  vi.unstubAllEnvs();
   vi.restoreAllMocks();
 });
 
@@ -529,45 +530,53 @@ it.each(["success", "error"])(
   },
 );
 
-it("retains OCR review guidance and requests keyboard focus return only on keyboard dismissal", async () => {
-  const query = `?mode=translation&state=${encodeURIComponent(JSON.stringify({ text: "", demo: true, reviewReason: "Check short text", approximate: true }))}`;
-  window.history.replaceState({}, "", `/${query}`);
-  await act(async () => root.render(<TranslationPopup />));
-  const review = container.querySelector(
-    '.translation-heading [role="status"]',
-  );
-  expect(review?.textContent).toContain("Check OCR");
-  expect(review?.getAttribute("title")).toContain(
-    "Approximate OCR region. Check short text",
-  );
-  expect(review?.querySelector(".visually-hidden")?.textContent).toContain(
-    "Use Edit OCR text to correct it.",
-  );
-  expect(
-    Array.from(container.querySelectorAll("button")).filter(
-      (item) => item.textContent === "Edit OCR text",
-    ),
-  ).toHaveLength(1);
-  // Escape first dismisses the demo editor, then closes the popup.
-  await click("Cancel");
-  await act(async () =>
-    window.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape" })),
-  );
-  expect(invokeMock).toHaveBeenCalledWith("close_translation_popup", {
-    returnFocus: true,
-    viewQuery: query.slice(1),
-  });
-  const close = container.querySelector(
-    'button[aria-label="Close translation"]',
-  )!;
-  await act(async () =>
-    close.dispatchEvent(new MouseEvent("click", { bubbles: true, detail: 1 })),
-  );
-  expect(invokeMock).toHaveBeenLastCalledWith("close_translation_popup", {
-    returnFocus: false,
-    viewQuery: query.slice(1),
-  });
-});
+it.each([false, true])(
+  "retains OCR review guidance and focus return with debug tooltips enabled=%s",
+  async (debug) => {
+    vi.stubEnv("VITE_CAPTURE_DEBUG", debug ? "1" : "0");
+    const query = `?mode=translation&state=${encodeURIComponent(JSON.stringify({ text: "", demo: true, reviewReason: "Check short text", approximate: true }))}`;
+    window.history.replaceState({}, "", `/${query}`);
+    await act(async () => root.render(<TranslationPopup />));
+    const review = container.querySelector(
+      '.translation-heading [role="status"]',
+    );
+    expect(review?.textContent).toContain("Check OCR");
+    if (debug)
+      expect(review?.getAttribute("title")).toContain(
+        "Approximate OCR region. Check short text",
+      );
+    else expect(review?.getAttribute("title")).toBeNull();
+    expect(review?.querySelector(".visually-hidden")?.textContent).toContain(
+      "Use Edit OCR text to correct it.",
+    );
+    expect(
+      Array.from(container.querySelectorAll("button")).filter(
+        (item) => item.textContent === "Edit OCR text",
+      ),
+    ).toHaveLength(1);
+    // Escape first dismisses the demo editor, then closes the popup.
+    await click("Cancel");
+    await act(async () =>
+      window.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape" })),
+    );
+    expect(invokeMock).toHaveBeenCalledWith("close_translation_popup", {
+      returnFocus: true,
+      viewQuery: query.slice(1),
+    });
+    const close = container.querySelector(
+      'button[aria-label="Close translation"]',
+    )!;
+    await act(async () =>
+      close.dispatchEvent(
+        new MouseEvent("click", { bubbles: true, detail: 1 }),
+      ),
+    );
+    expect(invokeMock).toHaveBeenLastCalledWith("close_translation_popup", {
+      returnFocus: false,
+      viewQuery: query.slice(1),
+    });
+  },
+);
 
 const schoolToken: TextToken = {
   surface: "学校",

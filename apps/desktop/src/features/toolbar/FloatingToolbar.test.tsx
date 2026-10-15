@@ -56,6 +56,7 @@ afterEach(async () => {
   vi.restoreAllMocks();
   vi.clearAllMocks();
   vi.unstubAllGlobals();
+  vi.unstubAllEnvs();
 });
 
 const button = (label: string) =>
@@ -71,6 +72,22 @@ const update = (changes: Partial<ToolbarState>) =>
       payload: { ...snapshot, ...changes },
     }),
   );
+
+it.each([false, true])(
+  "shows toolbar hover tooltips only with debug enabled=%s",
+  async (debug) => {
+    vi.stubEnv("VITE_CAPTURE_DEBUG", debug ? "1" : "0");
+    await mount();
+    const whole = button("Whole Screen");
+    expect(whole.getAttribute("aria-description")).toContain(
+      "Find manga pages on Left display",
+    );
+    if (debug)
+      expect(whole.title).toContain("Find manga pages on Left display");
+    else expect(container.querySelector("[title]")).toBeNull();
+    expect(whole.getAttribute("aria-label")).toBe("Whole Screen");
+  },
+);
 
 it("offers two explicit scan modes and disables Rescan until a successful capture", async () => {
   await mount();
@@ -258,7 +275,7 @@ it("keeps visibility status in its icon without an automatic text row", async ()
     overlayVisible: false,
     message: "OCR overlays hidden. Results are kept locally for this session.",
   });
-  expect(button("Show OCR overlays").title).toContain("OCR overlays hidden");
+  expect(button("Show OCR overlays").getAttribute("title")).toBeNull();
   expect(button("Show OCR overlays").getAttribute("aria-pressed")).toBe(
     "false",
   );
@@ -286,7 +303,9 @@ it("reveals errors on request and closes their details with Escape", async () =>
     phase: "error",
     message: "Screen Recording access is required",
   });
-  expect(button("Scan status").title).toContain("Screen Recording access");
+  expect(container.querySelector('[role="alert"]')?.textContent).toContain(
+    "Screen Recording access",
+  );
   expect(container.querySelector(".toolbar-feedback")).toBeNull();
   await act(async () => button("Scan status").click());
   const panel = container.querySelector<HTMLElement>(".toolbar-feedback")!;

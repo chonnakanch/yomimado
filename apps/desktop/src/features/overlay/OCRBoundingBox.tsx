@@ -1,4 +1,5 @@
 import type { TextRegion } from "../../lib/ocr-types";
+import { captureDebugEnabled } from "../../lib/debug-mode";
 
 export function regionLabel(
   region: TextRegion,
@@ -62,7 +63,7 @@ export function OCRBoundingBox({
         }
       }}
     >
-      <title>{label}</title>
+      {captureDebugEnabled() && <title>{label}</title>}
     </polygon>
   );
 }

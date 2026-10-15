@@ -15,6 +15,7 @@ import { requestWord, type WordEntry } from "../../lib/word-client";
 import { saveVocabularyWord } from "../../lib/vocabulary-client";
 import { saveSentence } from "../../lib/sentence-client";
 import type { TextToken } from "../../lib/ocr-types";
+import { debugTooltip } from "../../lib/debug-mode";
 import { ClickableSentence, isWord } from "./ClickableSentence";
 import { WordDefinition } from "./WordDefinition";
 import { KanjiDetail } from "./KanjiDetail";
@@ -456,7 +457,7 @@ export function TranslationPopup() {
                 <span
                   className="popup-ocr-status"
                   role="status"
-                  title={reviewDescription}
+                  title={debugTooltip(reviewDescription)}
                 >
                   <svg
                     viewBox="0 0 24 24"

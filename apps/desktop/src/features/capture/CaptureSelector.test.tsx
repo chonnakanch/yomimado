@@ -575,6 +575,64 @@ it("keeps the developer capture preview accessible when OCR fails", async () => 
   expect(invoke).not.toHaveBeenCalledWith("finish_scan", expect.anything());
 });
 
+it("holds successful debug OCR for review until Show overlay is explicitly activated", async () => {
+  vi.stubEnv("VITE_CAPTURE_DEBUG", "1");
+  vi.stubGlobal(
+    "ResizeObserver",
+    class {
+      observe() {}
+      disconnect() {}
+    },
+  );
+  window.history.replaceState({}, "", "/?mode=capture&scan=whole&session=25");
+  vi.mocked(invoke).mockResolvedValue(captured);
+  vi.mocked(requestOcr).mockResolvedValue({
+    engine: "manga",
+    regions: [
+      {
+        id: "debug",
+        text: "今日",
+        polygon: [
+          { x: 10, y: 10 },
+          { x: 30, y: 10 },
+          { x: 30, y: 60 },
+        ],
+        orientation: "vertical",
+        confidence: 0,
+        type: "dialogue",
+        tokens: [],
+      },
+    ],
+  });
+  await act(async () => root.render(<CaptureSelector />));
+  expect(container.querySelector(".capture-debug")?.textContent).toContain(
+    "今日",
+  );
+  expect(requestOcr).toHaveBeenCalledExactlyOnceWith(captured.imageDataUrl, {
+    debug: true,
+  });
+  expect(invoke).toHaveBeenCalledWith("resume_capture_selection", {
+    sessionId: 25,
+    debug: true,
+  });
+  expect(invoke).not.toHaveBeenCalledWith(
+    "show_ocr_overlay",
+    expect.anything(),
+  );
+  const show = Array.from(container.querySelectorAll("button")).find(
+    (button) => button.textContent === "Show overlay",
+  )!;
+  expect(show.disabled).toBe(false);
+  await act(async () => show.click());
+  expect(invoke).toHaveBeenCalledWith(
+    "show_ocr_overlay",
+    expect.objectContaining({
+      sessionId: 25,
+      regions: [expect.objectContaining({ text: "今日" })],
+    }),
+  );
+});
+
 it.each(["whole", "selected"])(
   "allows a drag through the %s edge hint, hides it during selection and cancels with Escape",
   async (mode) => {

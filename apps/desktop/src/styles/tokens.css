@@ -19,6 +19,7 @@
   --color-region-selected: var(--color-selected);
   --color-region-hover-fill: rgb(245 107 0 / 0.08);
   --color-region-selected-fill: rgb(117 165 235 / 0.1);
+  --color-debug-candidate: #58d5e8;
   --font-ui:
     "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui,
     sans-serif;

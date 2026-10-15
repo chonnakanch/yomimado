@@ -52,6 +52,7 @@ styles consume roles, never repeat hex values. The palette below is implemented 
 | `--color-region-selected`      | `var(--color-selected)`     | Selected OCR polygon.                                   |
 | `--color-region-hover-fill`    | `rgb(245 107 0 / 0.08)`     | Minimal orange hover wash above manga.                  |
 | `--color-region-selected-fill` | `rgb(117 165 235 / 0.10)`   | Minimal selected wash above manga.                      |
+| `--color-debug-candidate`      | `#58D5E8`                  | Detector candidates in the debug preview only.          |
 
 Filled accents use dark text, not small white labels. Secondary controls use
 primary text on elevated/surface backgrounds. Verify normal text contrast ≥4.5:1
@@ -155,14 +156,15 @@ scale animation or repeated pulsing while OCR is running.
 
 One restrained surface; separate drag handle from buttons. Use short text for
 Selected Area and Whole Screen, with a simple 16–20 px icon where useful.
-Rescan and Hide/Show may use icons with accessible names and focusable tooltips.
+Rescan and Hide/Show may use icons with accessible names. Hover tooltips appear
+only with capture debug mode enabled (`VITE_CAPTURE_DEBUG=1`).
 Do not infer meaning from an icon alone. The model-install action belongs in
 Scan & OCR; missing models/errors use a warning icon with details and a setup
 link shown only when requested.
 
 Whole Screen searches its target monitor for manga pages and crops the detected
 page/spread before OCR. An uncertain boundary uses a saved/drawn manga area;
-Selected Area scans the exact manual rectangle. Explain this in the scan tooltip
+Selected Area scans the exact manual rectangle. Explain this in the debug scan tooltip
 and Scan & OCR help. Rescan reuses the last successful crop/area.
 
 An uncertain manga boundary uses the approved **Edge hint**: a compact bottom-centred
@@ -234,10 +236,30 @@ applied sentence visible until editing is committed, and reset all dependent
 lookup/translation/save states on commit. Review/approximate regions show a small
 outlined status icon and **Check OCR** beside the Japanese heading, without a
 warning block or repeated edit action. Keep the full review reason and correction
-guidance in its hover tooltip and screen-reader text; **Edit OCR text** remains in
+guidance in its debug-only hover tooltip and screen-reader text; **Edit OCR text** remains in
 the secondary actions. The owner's size refinement uses an 11 px caption token,
 12 px icon and 2 px icon/text gap for this brief status, preserving its contrast.
 Demo text is identified and never treated as recognized Japanese.
+
+### CaptureDebugPreview
+
+Use the same surface, border, spacing, Japanese typography and 36 px utility
+buttons as the redesigned app. Keep the exact in-memory capture fitted without
+stretching; show readable recognized text alongside it, stacking the panes at
+narrow widths. Each pane scrolls independently and has visible keyboard focus.
+Keep Show overlay disabled while recognition is pending and Close available.
+Errors retain the capture and use an accessible alert.
+
+Use the normal orange for final regions and dashed orange for review/approximate
+geometry. Detector candidates use the dedicated cyan token with a thinner dashed
+stroke; filtered candidates use muted dotted strokes. Pair the colors with a
+compact labeled legend. Preserve all source geometry, retry/crop information and
+unknown-confidence labels. Collapse Geometry and Detector stage details by default.
+
+The existing capture debug flag controls this preview and hover tooltips on the
+toolbar, OCR polygons and popup review indicator. Normal reading keeps accessible
+names, review metadata and the small Check OCR indicator without hover popups.
+No debug setting is added to production Settings.
 
 ### WordDefinition and AlternativeDictionaryMatches
 

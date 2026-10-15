@@ -1,4 +1,5 @@
 import { ToolbarIcon } from "./ToolbarIcon";
+import { debugTooltip } from "../../lib/debug-mode";
 
 export type ScanMode = "selectedArea" | "wholeScreen";
 
@@ -22,21 +23,21 @@ export function ScanModeButton({
   onCancel?: () => void;
 }) {
   const label = mode === "selectedArea" ? "Selected Area" : "Whole Screen";
+  const description = loadingLabel
+    ? `${label}: ${loadingLabel}${onCancel ? " Click to cancel this scan." : ""}`
+    : mode === "wholeScreen"
+      ? `${label} · Find manga pages on ${displayName}; use a saved or drawn area if uncertain`
+      : `${label} · Scan ${displayName}`;
   return (
     <button
       type="button"
       className={`utility-button toolbar-scan-button${selected ? " utility-button-primary" : ""}${compact ? " utility-icon-button" : ""}`}
       aria-label={onCancel ? "Cancel scan" : label}
+      aria-description={description}
       aria-pressed={selected}
       aria-busy={!!loadingLabel}
       disabled={disabled}
-      title={
-        loadingLabel
-          ? `${label}: ${loadingLabel}${onCancel ? " Click to cancel this scan." : ""}`
-          : mode === "wholeScreen"
-            ? `${label} · Find manga pages on ${displayName}; use a saved or drawn area if uncertain`
-            : `${label} · Scan ${displayName}`
-      }
+      title={debugTooltip(description)}
       onClick={() => (onCancel ? onCancel() : onScan(mode))}
     >
       <ToolbarIcon
