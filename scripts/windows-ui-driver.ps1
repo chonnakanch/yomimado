@@ -125,8 +125,8 @@ function Open-YomiMadoMenu {
     $Menu = Get-YomiMadoWindow $Process 'YomiMado More actions'
     if ($Menu -ne [IntPtr]::Zero) { return $Menu }
     $Toolbar = Wait-YomiMadoWindow $Process 'YomiMado toolbar'
-    Wait-YomiMadoUi $Process { $null -ne (Get-YomiMadoAction $Toolbar 'More actions') } 'Toolbar actions did not load.'
     if (-not [YomiMadoUiNative]::SetForegroundWindow($Toolbar)) { throw 'Cannot focus toolbar.' }
+    Wait-YomiMadoUi $Process { $null -ne (Get-YomiMadoAction $Toolbar 'More actions') } 'Toolbar actions did not load.'
     Invoke-YomiMadoAction $Toolbar 'More actions'
     return Wait-YomiMadoWindow $Process 'YomiMado More actions'
 }

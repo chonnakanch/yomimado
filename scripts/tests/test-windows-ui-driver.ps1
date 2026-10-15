@@ -26,20 +26,22 @@ public static class SyntheticYomiMado {
         toolbar.Location = new Point(80, 80);
         toolbar.FormClosing += delegate(object sender, FormClosingEventArgs e) { if (!quitting) e.Cancel=true; };
         settings = new Form { Text="YomiMado - Settings", Width=600, Height=300 };
-        settings.Controls.Add(new Button { Text="Select detector model file", Width=250 });
+        settings.Controls.Add(new Button { Text="Select detector model file", AccessibleName="Select detector model file", Width=250 });
         settings.FormClosing += delegate(object sender, FormClosingEventArgs e) {
             if (!quitting) { e.Cancel=true; settings.Hide(); }
         };
         menu = new Form { Text="YomiMado More actions", Width=320, Height=120, ShowInTaskbar=false };
         var choices = new MenuStrip();
         var open = new ToolStripMenuItem("Settings");
+        open.AccessibleName = "Settings";
         open.Click += delegate { menu.Hide(); settings.Show(); };
         var quit = new ToolStripMenuItem("Quit YomiMado");
+        quit.AccessibleName = "Quit YomiMado";
         quit.Click += delegate { quitting=true; Application.Exit(); };
         choices.Items.Add(open);
         choices.Items.Add(quit);
         menu.Controls.Add(choices);
-        var more = new Button { Text="More actions", Width=150 };
+        var more = new Button { Text="More actions", AccessibleName="More actions", Width=150 };
         more.Click += delegate { menu.Show(); };
         toolbar.Controls.Add(more);
         Application.Run(toolbar);
@@ -68,6 +70,21 @@ try {
     if ($Other.HasExited) { throw 'Quit affected a different process.' }
     Stop-YomiMadoViaMenu $Other
     Write-Host 'Windows UI driver: PID-scoped toolbar/menu discovery, Settings close/reopen and explicit Quit passed.'
+} catch {
+    # Synthetic labels only: retain UIA/native diagnostics if the runner's
+    # accessibility provider differs from the installed WebView2 provider.
+    foreach ($Owned in @($First, $Other)) {
+        if ($null -eq $Owned) { continue }
+        foreach ($Handle in [YomiMadoUiNative]::Windows($Owned.Id)) {
+            Write-Host "Synthetic window $($Owned.Id): $([YomiMadoUiNative]::Text($Handle))"
+            Write-Host ([YomiMadoUiNative]::Controls($Handle) -join ' | ')
+            $Element = [System.Windows.Automation.AutomationElement]::FromHandle($Handle)
+            foreach ($Node in $Element.FindAll([System.Windows.Automation.TreeScope]::Descendants, [System.Windows.Automation.Condition]::TrueCondition)) {
+                Write-Host "$($Node.Current.ControlType.ProgrammaticName): $($Node.Current.Name)"
+            }
+        }
+    }
+    throw
 } finally {
     foreach ($Owned in @($First, $Other)) {
         if ($null -ne $Owned) {
