@@ -47,10 +47,10 @@ styles consume roles, never repeat hex values. The palette below is implemented 
 | `--color-on-accent`            | `var(--color-background)`   | Text/icon on filled orange or blue action.              |
 | `--color-focus`                | `var(--color-selected)`     | Keyboard outline independent of hover.                  |
 | `--color-status-error`         | `var(--color-accent-hover)` | Error text/icon with explicit message, not color alone. |
-| `--color-region-default`       | `var(--color-accent)`       | Ordinary OCR polygon.                                   |
-| `--color-region-hover`         | `var(--color-accent-hover)` | Hovered OCR polygon.                                    |
+| `--color-region-default`       | `#E8750B`                  | Saturated orange for ordinary OCR polygons.              |
+| `--color-region-hover`         | `#F58A1F`                  | Brighter orange for hovered OCR polygons.                |
 | `--color-region-selected`      | `var(--color-selected)`     | Selected OCR polygon.                                   |
-| `--color-region-hover-fill`    | `rgb(217 127 92 / 0.08)`    | Minimal hover wash above manga.                         |
+| `--color-region-hover-fill`    | `rgb(232 117 11 / 0.08)`    | Minimal orange hover wash above manga.                  |
 | `--color-region-selected-fill` | `rgb(117 165 235 / 0.10)`   | Minimal selected wash above manga.                      |
 
 Filled accents use dark text, not small white labels. Secondary controls use

@@ -834,3 +834,12 @@ uses the 11 px caption token with a 12 px icon and 2 px internal gap, down from
 12 px text and a 16 px icon. Its gap from Japanese is reduced from 12 px to 8 px.
 The tooltip, screen-reader detail and correction action are unchanged. Verification
 passes the 18 popup tests, production frontend build and desktop formatting.
+
+### More orange OCR region outlines
+
+On 2026-10-15 the owner requested more orange detected-region boxes. The dedicated
+region tokens now use saturated orange `#E8750B`, brighter orange `#F58A1F` on
+hover, and a matching 8% hover fill. Blue selection/keyboard focus, dashed review
+states, polygon geometry and stroke widths are unchanged. Other accent controls
+retain their existing palette. Overlay tests, the production frontend build and
+desktop formatting pass; native Windows/mixed-DPI visual acceptance remains open.
