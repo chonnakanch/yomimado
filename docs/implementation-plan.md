@@ -4,7 +4,9 @@
 
 Updated **2026-10-16**. The owner closed the UI redesign implementation on tracked
 `develop`, through source commit `cd2d202`. Phases 3, 4 and 5 retain their recorded
-approvals; the app version remains `0.1.0`. All source CI gates pass. Remaining
+approvals. The owner subsequently authorized version `0.2.0`, integration into
+`main` and a release build; that preparation is tracked below. All redesign source
+CI gates pass. Remaining
 native-platform verification and packaging are separate release-preparation work;
 closing implementation does not approve installers or publication.
 
@@ -1046,3 +1048,17 @@ macOS frozen-runtime refresh for the changed OCR service, version/release notes,
 protected-main integration and exact-installer acceptance before owner-approved
 publication. Untested cases remain unrecorded. No installer, tag or public release
 was created by this closure; historical v0.1.0 evidence is unchanged.
+
+### Version 0.2.0 release preparation
+
+On 2026-10-16 the owner requested the `0.2.0` version bump, protected-main merge
+and release build. The five version files agree, with no dependency changes.
+Release notes describe the redesign. Version-updater tests now choose a distinct
+target dynamically, retaining write-failure/rollback coverage when the repository
+itself reaches `0.2.0`.
+
+The current macOS runtime seed is for `42edd4e`; reuse correctly rejects the
+redesigned source and changed frozen OCR modules. Prepare and verify a refreshed
+runtime/source seed before activating new pins. Keep source/licence review and
+exact-installer publication approvals distinct. No new human approval or installed
+acceptance is inferred from the build request.

@@ -5,6 +5,22 @@ screen: capture a region, recognize Japanese locally, then click to view reading
 dictionary/kanji information and an on-demand local translation. Saved words,
 sentences and translation cache stay on the computer.
 
+## Changes in 0.2.0
+
+- Redesigned floating toolbar starts at the bottom center of the screen, with
+  Selected Area, smart Whole Screen, Rescan and compact controls.
+- Clearer orange OCR outlines, improved character coverage and compact capture
+  guidance that stays out of the selection area.
+- Read with keyboard navigates OCR regions and opens the learning popup.
+- Compact dictionary/learning popup with word readings, kanji, example compounds,
+  OCR correction and on-demand translation.
+- Saved words and sentences share one library; Saved, Settings and Sources each
+  open in their own window.
+- Capture debug previews match the design; detailed hover tooltips appear only
+  in debug mode. Cold-start capture and overlapping OCR requests are handled.
+
+## Downloads and installation
+
 Download the Apple Silicon `.dmg` for macOS or the per-user Windows 11 x64
 `_x64-setup.exe`. Windows inference uses the CPU and requires no developer Python
 or CUDA. Paid code signing is not used for this hobby release; macOS is ad-hoc

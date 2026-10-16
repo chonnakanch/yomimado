@@ -25,6 +25,8 @@ class UpdateVersionTests(unittest.TestCase):
             target.parent.mkdir(parents=True, exist_ok=True)
             shutil.copyfile(updater.ROOT / name, target)
         self.current = updater.ci.version(self.root)
+        major, minor, patch_version = self.current.split("-", 1)[0].split(".")
+        self.next_version = f"{major}.{minor}.{int(patch_version) + 1}"
 
     def snapshot(self):
         return {name: (self.root / name).read_bytes() for name in updater.FILES}
@@ -60,7 +62,7 @@ class UpdateVersionTests(unittest.TestCase):
 
     def test_dry_run_and_same_version_leave_every_file_unchanged(self):
         original = self.snapshot()
-        _, output = self.update("0.2.0", dry_run=True)
+        _, output = self.update(self.next_version, dry_run=True)
         self.assertIn("Would update", output)
         self.assertEqual(self.snapshot(), original)
         self.update(self.current)
@@ -77,7 +79,7 @@ class UpdateVersionTests(unittest.TestCase):
             + f'\n[[package]]\nname = "yomimado"\nversion = "{self.current}"\nsource = "registry+https://example.invalid/index"\n'
         )
         original = self.snapshot()
-        self.update("0.2.0")
+        self.update(self.next_version)
         for name, before in original.items():
             self.assertEqual(
                 updater.ci.normalized(name, before.decode()),
@@ -129,7 +131,7 @@ class UpdateVersionTests(unittest.TestCase):
                     p: p.read_bytes() for p in self.root.rglob("*") if p.is_file()
                 }
                 with self.assertRaises((ValueError, OSError)):
-                    self.update("0.2.0")
+                    self.update(self.next_version)
                 self.assertEqual(
                     {p: p.read_bytes() for p in self.root.rglob("*") if p.is_file()},
                     before,
@@ -144,7 +146,7 @@ class UpdateVersionTests(unittest.TestCase):
         )
         original = self.snapshot()
         with self.assertRaisesRegex(ValueError, "version field"):
-            self.update("0.2.0")
+            self.update(self.next_version)
         self.assertEqual(self.snapshot(), original)
 
     def test_windows_crlf_line_endings_survive_update_and_roundtrip(self):
@@ -152,8 +154,8 @@ class UpdateVersionTests(unittest.TestCase):
             path = self.root / name
             path.write_bytes(path.read_bytes().replace(b"\n", b"\r\n"))
         original = self.snapshot()
-        self.update("0.2.0")
-        self.assertEqual(updater.ci.version(self.root), "0.2.0")
+        self.update(self.next_version)
+        self.assertEqual(updater.ci.version(self.root), self.next_version)
         self.update(self.current)
         self.assertEqual(self.snapshot(), original)
 
@@ -175,7 +177,7 @@ class UpdateVersionTests(unittest.TestCase):
             patch.object(Path, "write_bytes", write),
             self.assertRaisesRegex(OSError, "disk failure"),
         ):
-            self.update("0.2.0")
+            self.update(self.next_version)
         self.assertEqual(self.snapshot(), original)
 
     def test_cli_resolves_repository_from_outside_checkout(self):
