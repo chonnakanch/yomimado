@@ -2,6 +2,13 @@
 
 ## Current status
 
+**System tray planning — 2026-10-17:** the owner requested a plan for a macOS menu
+bar icon and Windows notification-area icon. The
+[system tray plan](system-tray-plan.md) proposes native toolbar show/hide,
+Saved/settings/sources access and shared Quit cleanup, with capture guards,
+platform icon assets and installed-app checks. Implementation has not started;
+existing candidate hashes and acceptance records are unchanged.
+
 **Windows taskbar follow-up — 2026-10-17:** after accepting the 0.2.1 overlay
 startup repair, the owner reported automatic manga detection including the
 Windows taskbar. The source follow-up restricts both Windows automatic entry
