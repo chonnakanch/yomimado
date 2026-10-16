@@ -10,9 +10,12 @@ merged at `645ba088118f41880abfc37df1b595fa85e3ad42` after all required checks
 passed. The [0.2.0 installer build](https://github.com/chonnakanch/yomimado/actions/runs/38841492110)
 ran from that exact main commit; the macOS candidate passed, but the Windows
 installed-startup check exposed a UI Automation driver mismatch. The repair passed
-all checks and merged through [PR #8](https://github.com/chonnakanch/yomimado/pull/8)
-at `820a352f5d75216706f0ea35e9622e29a15a7e4c`; a corrected
-[build](https://github.com/chonnakanch/yomimado/actions/runs/38889738880) is running.
+all checks and merged through [PR #8](https://github.com/chonnakanch/yomimado/pull/8),
+then [PR #9](https://github.com/chonnakanch/yomimado/pull/9) added Toggle-only scan
+coverage. Current main is `c03ee1edba4e0f545cb7ed85a7552c544a4bfcdc`; its
+[build](https://github.com/chonnakanch/yomimado/actions/runs/38892964547) passes both
+installers and combined verification. The protected publisher is waiting for
+separate exact-installer acceptance and owner approval.
 All main source CI gates pass. Remaining
 native-platform verification and packaging are separate release-preparation work;
 closing implementation does not approve installers or publication.
@@ -1112,3 +1115,21 @@ Toggle-only `aria-pressed` scan buttons as another unsupported driver pattern.
 The helper now invokes Toggle when Invoke is unavailable, with a real WPF
 regression from both pressed states. Menu ExpandCollapse and ordinary Invoke
 remain covered; no app/runtime/dependency changes are involved.
+
+PR #9 passed all push/PR checks and merged at
+`c03ee1edba4e0f545cb7ed85a7552c544a4bfcdc`. All final main
+[Checks 38892964546](https://github.com/chonnakanch/yomimado/actions/runs/38892964546)
+pass. The superseded `820a352` build was cancelled; final
+[Release 38892964547](https://github.com/chonnakanch/yomimado/actions/runs/38892964547)
+passed planning and private input verification before rebuilding both installers.
+
+Final release-build verification is complete: macOS passes in 11 minutes 28 seconds,
+Windows in 46 minutes and combined verification in 1 minute 33 seconds. Windows
+exact-setup startup/Quit, model setup, scan buttons/shortcuts, cancellation and
+frozen learning/persistence all pass. The
+[verified candidate](https://github.com/chonnakanch/yomimado/actions/runs/38892964547/artifacts/12045450534)
+is retained until 2026-10-30; its ZIP digest and delivery scope are recorded in
+[the shared release record](desktop-release.md). Public API metadata confirms the
+successful jobs and waiting publisher; the large artifact was not downloaded
+locally. New exact-installer human acceptance, physical Windows/mixed-DPI checks
+and protected publication remain open. Keep main at `c03ee1e` for this candidate.

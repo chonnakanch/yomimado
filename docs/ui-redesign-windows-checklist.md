@@ -4,6 +4,14 @@ Status: prepared on 2026-10-15. The owner chose automated coverage and a checkli
 for later interactive verification. No interactive Windows result is inferred
 from the macOS workspace or GitHub's Windows Server build runner.
 
+Automated update — **2026-10-16**: final 0.2.0 source `c03ee1e` passes
+[Checks](https://github.com/chonnakanch/yomimado/actions/runs/38892964546) and the
+[installed Windows release checks](https://github.com/chonnakanch/yomimado/actions/runs/38892964547).
+Invoke/ExpandCollapse/Toggle regression coverage, exact-setup startup/Quit,
+Settings close retaining the toolbar, model setup, scan buttons/shortcuts, cancellation and frozen
+learning/persistence pass. These hosted results do not complete the physical
+scale/monitor matrix or the detailed manual cases below. Those remain **not run**.
+
 This checklist tests the redesigned development source. The published v0.1.0
 installer and its historical acceptance records describe an earlier UI. No new
 installer build, publication or approval is required by this checklist.
