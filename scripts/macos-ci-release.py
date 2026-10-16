@@ -360,7 +360,7 @@ def verify_artifact(directory: Path, expected: dict) -> None:
 
 def verify_environment(data: dict, policies: dict) -> None:
     if (
-        data.get("name") != "macos-release"
+        data.get("name") != "desktop-release"
         or data.get("can_admins_bypass") is not False
         or data.get("deployment_branch_policy")
         != {"protected_branches": False, "custom_branch_policies": True}
@@ -372,7 +372,7 @@ def verify_environment(data: dict, policies: dict) -> None:
         )
     ):
         raise ValueError(
-            "macos-release needs a required reviewer, no administrator bypass, and a main-only branch rule"
+            "desktop-release needs a required reviewer, no administrator bypass, and a main-only branch rule"
         )
 
 

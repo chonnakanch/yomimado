@@ -120,8 +120,8 @@ def download_inputs(directory: Path) -> None:
         raise ValueError("Private inputs require the current default main commit")
     verify_main_rules(request(API + "/rules/branches/main?per_page=100"))
     macos.verify_environment(
-        request(API + "/environments/macos-release"),
-        request(API + "/environments/macos-release/deployment-branch-policies"),
+        request(API + "/environments/desktop-release"),
+        request(API + "/environments/desktop-release/deployment-branch-policies"),
     )
     # The by-tag API does not reliably expose unpublished drafts. Enumerate
     # with a bounded, complete pagination pass and never send a mutation.

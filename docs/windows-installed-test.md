@@ -118,7 +118,7 @@ added by this broad pass. **Protected publication review remains open.**
 
 A later `main` build creates different installer bytes and requires both its
 macOS and Windows exact-installer tests before approving the publish job in
-`macos-release`. Builds and private seed transfer run automatically on protected
+`desktop-release`. Builds and private seed transfer run automatically on protected
 `main`; only publication requires the separate exact-installer approval.
 
 Reusable six-check checklist — all six maintainer-reported pass for current

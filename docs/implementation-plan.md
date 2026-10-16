@@ -12,10 +12,11 @@ ran from that exact main commit; the macOS candidate passed, but the Windows
 installed-startup check exposed a UI Automation driver mismatch. The repair passed
 all checks and merged through [PR #8](https://github.com/chonnakanch/yomimado/pull/8),
 then [PR #9](https://github.com/chonnakanch/yomimado/pull/9) added Toggle-only scan
-coverage. Current main is `c03ee1edba4e0f545cb7ed85a7552c544a4bfcdc`; its
+coverage. Release source is `c03ee1edba4e0f545cb7ed85a7552c544a4bfcdc`; its
 [build](https://github.com/chonnakanch/yomimado/actions/runs/38892964547) passes both
-installers and combined verification. The protected publisher is waiting for
-separate exact-installer acceptance and owner approval.
+installers and combined verification. The protected publisher subsequently passed
+after owner approval; [v0.2.0](https://github.com/chonnakanch/yomimado/releases/tag/v0.2.0)
+was published as a pre-release on 2026-10-16 at 19:22 Bangkok time.
 All main source CI gates pass. Remaining
 native-platform verification and packaging are separate release-preparation work;
 closing implementation does not approve installers or publication.
@@ -1133,3 +1134,14 @@ is retained until 2026-10-30; its ZIP digest and delivery scope are recorded in
 successful jobs and waiting publisher; the large artifact was not downloaded
 locally. New exact-installer human acceptance, physical Windows/mixed-DPI checks
 and protected publication remain open. Keep main at `c03ee1e` for this candidate.
+
+### Shared publication environment name — 2026-10-16
+
+The owner requested a platform-neutral approval name. Future release workflows,
+private-input protection checks and publisher validation use `desktop-release`
+instead of the historical `macos-release`. The replacement retains the existing
+required reviewer, disabled administrator bypass and exact `main` deployment rule;
+the old protected environment remains for historical runs. Validation rejects the
+old name and still rejects missing reviewers, administrator bypass and broad or
+tag deployment rules. This changes release workflow metadata, not application
+code, dependencies or the published 0.2.0 installers.
