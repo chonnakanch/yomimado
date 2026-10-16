@@ -117,7 +117,11 @@ function Invoke-YomiMadoAction {
     param([IntPtr]$Window, [string]$Name)
     $Action = Get-YomiMadoAction $Window $Name
     if ($null -eq $Action -or -not $Action.Current.IsEnabled) { throw "Action is unavailable: $Name" }
-    $Action.GetCurrentPattern([System.Windows.Automation.InvokePattern]::Pattern).Invoke()
+    $Invoke = $null
+    if (-not $Action.TryGetCurrentPattern([System.Windows.Automation.InvokePattern]::Pattern, [ref]$Invoke)) {
+        throw "Action does not expose Invoke: $Name"
+    }
+    $Invoke.Invoke()
 }
 
 function Open-YomiMadoMenu {
@@ -126,8 +130,19 @@ function Open-YomiMadoMenu {
     if ($Menu -ne [IntPtr]::Zero) { return $Menu }
     $Toolbar = Wait-YomiMadoWindow $Process 'YomiMado toolbar'
     if (-not [YomiMadoUiNative]::SetForegroundWindow($Toolbar)) { throw 'Cannot focus toolbar.' }
-    Wait-YomiMadoUi $Process { $null -ne (Get-YomiMadoAction $Toolbar 'More actions') } 'Toolbar actions did not load.'
-    Invoke-YomiMadoAction $Toolbar 'More actions'
+    Wait-YomiMadoUi $Process {
+        $Action = Get-YomiMadoAction $Toolbar 'More actions'
+        $null -ne $Action -and $Action.Current.IsEnabled
+    } 'Toolbar actions did not load.'
+    $Action = Get-YomiMadoAction $Toolbar 'More actions'
+    $Expand = $null
+    # WebView2 exposes aria-expanded menu buttons through ExpandCollapse.
+    # Ordinary buttons (including the WPF fixture) can expose Invoke instead.
+    if ($Action.TryGetCurrentPattern([System.Windows.Automation.ExpandCollapsePattern]::Pattern, [ref]$Expand)) {
+        $Expand.Expand()
+    } else {
+        Invoke-YomiMadoAction $Toolbar 'More actions'
+    }
     return Wait-YomiMadoWindow $Process 'YomiMado More actions'
 }
 

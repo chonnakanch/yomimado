@@ -5,8 +5,12 @@
 Updated **2026-10-16**. The owner closed the UI redesign implementation on tracked
 `develop`, through source commit `cd2d202`. Phases 3, 4 and 5 retain their recorded
 approvals. The owner subsequently authorized version `0.2.0`, integration into
-`main` and a release build; that preparation is tracked below. All redesign source
-CI gates pass. Remaining
+`main` and a release build. Protected [PR #7](https://github.com/chonnakanch/yomimado/pull/7)
+merged at `645ba088118f41880abfc37df1b595fa85e3ad42` after all required checks
+passed. The [0.2.0 installer build](https://github.com/chonnakanch/yomimado/actions/runs/38841492110)
+ran from that exact main commit; the macOS candidate passed, but the Windows
+installed-startup check exposed a UI Automation driver mismatch being repaired.
+All main source CI gates pass. Remaining
 native-platform verification and packaging are separate release-preparation work;
 closing implementation does not approve installers or publication.
 
@@ -1074,3 +1078,20 @@ pass. All three private seed uploads now independently match the local SHA-256
 values in GitHub. Replacement source/hash pins are activated; the runtime-reuse
 rejection remains intact. Required Checks and the protected-main merge precede
 the hosted release build. No installed-app or publication approval is claimed.
+
+Protected PR #7 subsequently merged at
+`645ba088118f41880abfc37df1b595fa85e3ad42` after
+[Checks 38840926023](https://github.com/chonnakanch/yomimado/actions/runs/38840926023)
+passed on the final seed pins. The merged tree is identical to the tested head.
+Main [Checks 38841491986](https://github.com/chonnakanch/yomimado/actions/runs/38841491986)
+and [Release 38841492110](https://github.com/chonnakanch/yomimado/actions/runs/38841492110)
+started automatically. All main Checks jobs and the aggregate gate pass. Release
+planning and all private input hashes pass; the macOS installer job passes in
+10 minutes 50 seconds. Windows produced a setup but failed installed startup
+because the driver assumed Invoke on the ExpandCollapse toolbar menu button.
+Later Windows gates, combined verification and publication were skipped. The
+focused repair supports both menu patterns and tests an ExpandCollapse-only WPF
+peer as well as the ordinary Invoke button. Only this Windows test helper is added
+to the explicit macOS runtime-reuse scope; shared OCR and dependency rejection
+remain covered. Protected publication remains a separate owner review for the
+exact new installer bytes.

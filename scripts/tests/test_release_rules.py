@@ -140,6 +140,7 @@ class VersionTests(unittest.TestCase):
             "scripts/windows_python.py",
             "scripts/release_dictionaries.py",
             "scripts/verify-windows-ui.ps1",
+            "scripts/windows-ui-driver.ps1",
             ".github/workflows/windows-onnx-prototype.yml",
             "scripts/onnx-probe-inputs.json",
             "scripts/onnx_generation.py",
