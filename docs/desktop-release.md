@@ -20,6 +20,21 @@ explicitly scoped outside the unchanged macOS frozen runtime. No new exact-insta
 acceptance or publication approval is recorded. Historical v0.1.0 evidence below
 remains unchanged.
 
+The driver repair [PR #8](https://github.com/chonnakanch/yomimado/pull/8) passed
+all push and pull-request checks, including the ExpandCollapse-only Windows
+fixture, and merged at `820a352f5d75216706f0ea35e9622e29a15a7e4c`.
+The corrected [Release 38889738880](https://github.com/chonnakanch/yomimado/actions/runs/38889738880)
+passed planning and is building a fresh candidate. The earlier run's installer
+hashes are superseded; no acceptance is carried forward. Corrected main
+[Checks 38889739313](https://github.com/chonnakanch/yomimado/actions/runs/38889739313)
+pass on the exact merge commit.
+
+Follow-up inspection found the same assumption in scan actions: `aria-pressed`
+buttons expose Toggle instead of Invoke. The driver now supports both patterns,
+with a real WPF Toggle-only fixture exercised from both pressed states. The
+ExpandCollapse menu and ordinary Invoke paths remain covered. This affects only
+the Windows smoke driver; app, runtime and dependency inputs are unchanged.
+
 Latest publication — **2026-10-13**: [PR #6](https://github.com/chonnakanch/yomimado/pull/6)
 is merged at `b188b05dd42ac5553cfbc0c1188c9646e2ce29ca` after all 12 PR checks pass.
 [Checks `38378686824`](https://github.com/chonnakanch/yomimado/actions/runs/38378686824)
