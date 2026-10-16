@@ -10,9 +10,13 @@ merged at `645ba088118f41880abfc37df1b595fa85e3ad42` after all required checks
 passed. The [0.2.0 installer build](https://github.com/chonnakanch/yomimado/actions/runs/38841492110)
 ran from that exact main commit; the macOS candidate passed, but the Windows
 installed-startup check exposed a UI Automation driver mismatch. The repair passed
-all checks and merged through [PR #8](https://github.com/chonnakanch/yomimado/pull/8)
-at `820a352f5d75216706f0ea35e9622e29a15a7e4c`; a corrected
-[build](https://github.com/chonnakanch/yomimado/actions/runs/38889738880) is running.
+all checks and merged through [PR #8](https://github.com/chonnakanch/yomimado/pull/8),
+then [PR #9](https://github.com/chonnakanch/yomimado/pull/9) added Toggle-only scan
+coverage. Release source is `c03ee1edba4e0f545cb7ed85a7552c544a4bfcdc`; its
+[build](https://github.com/chonnakanch/yomimado/actions/runs/38892964547) passes both
+installers and combined verification. The protected publisher subsequently passed
+after owner approval; [v0.2.0](https://github.com/chonnakanch/yomimado/releases/tag/v0.2.0)
+was published as a pre-release on 2026-10-16 at 19:22 Bangkok time.
 All main source CI gates pass. Remaining
 native-platform verification and packaging are separate release-preparation work;
 closing implementation does not approve installers or publication.
@@ -1112,3 +1116,39 @@ Toggle-only `aria-pressed` scan buttons as another unsupported driver pattern.
 The helper now invokes Toggle when Invoke is unavailable, with a real WPF
 regression from both pressed states. Menu ExpandCollapse and ordinary Invoke
 remain covered; no app/runtime/dependency changes are involved.
+
+PR #9 passed all push/PR checks and merged at
+`c03ee1edba4e0f545cb7ed85a7552c544a4bfcdc`. All final main
+[Checks 38892964546](https://github.com/chonnakanch/yomimado/actions/runs/38892964546)
+pass. The superseded `820a352` build was cancelled; final
+[Release 38892964547](https://github.com/chonnakanch/yomimado/actions/runs/38892964547)
+passed planning and private input verification before rebuilding both installers.
+
+Final release-build verification is complete: macOS passes in 11 minutes 28 seconds,
+Windows in 46 minutes and combined verification in 1 minute 33 seconds. Windows
+exact-setup startup/Quit, model setup, scan buttons/shortcuts, cancellation and
+frozen learning/persistence all pass. The
+[verified candidate](https://github.com/chonnakanch/yomimado/actions/runs/38892964547/artifacts/12045450534)
+is retained until 2026-10-30; its ZIP digest and delivery scope are recorded in
+[the shared release record](desktop-release.md). Public API metadata confirms the
+successful jobs and, at that point, a waiting publisher; the large artifact was
+not downloaded locally. The owner subsequently approved publication, as recorded
+in Current status. Physical Windows/mixed-DPI checks and a detailed local
+installed-app report remain unrecorded; the published tag stays at `c03ee1e`.
+
+### Shared publication environment name — 2026-10-16
+
+The owner requested a platform-neutral approval name. Future release workflows,
+private-input protection checks and publisher validation use `desktop-release`
+instead of the historical `macos-release`. The replacement retains the existing
+required reviewer, disabled administrator bypass and exact `main` deployment rule;
+the old protected environment remains for historical runs. Validation rejects the
+old name and still rejects missing reviewers, administrator bypass and broad or
+tag deployment rules. This changes release workflow metadata, not application
+code, dependencies or the published 0.2.0 installers.
+
+The live GitHub environment passes the updated validator. API comparison confirms
+identical reviewer identity, self-review setting, administrator bypass and branch
+policies; the comparison is retained under ignored
+`services/ocr/build/release-environment-rename/`. All 229 release-tool tests, Ruff
+lint/format, Prettier and diff checks pass; the develop push CI also passes.

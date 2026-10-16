@@ -426,7 +426,7 @@ One-time GitHub setup, before the first merge:
    unpublished draft by its fixed staging name and checks all three hashes.
    It transfers pinned artifacts to read-only builders; no release-ID variable
    or personal token is needed. See [the shared flow](desktop-release.md).
-3. Create the `macos-release` environment with **chonnakanch** as a required
+3. Create the `desktop-release` environment with **chonnakanch** as a required
    reviewer. Allow deployments from `main`. Permit the owner to approve their
    own run for this personal project. The workflow checks through GitHub's API
    that a real required-reviewer rule exists; an unprotected or absent
@@ -493,7 +493,7 @@ allowed files and all digests, then verify GitHub's uploaded asset digests.
 
 For each new candidate, download `verified-desktop-candidate` from the run,
 check its hashes, and test the exact installed DMG using
-[the existing-Mac checklist](macos-clean-mac-test.md). Approving `macos-release`
+[the existing-Mac checklist](macos-clean-mac-test.md). Approving `desktop-release`
 attests to those installed-app checks for this exact candidate, not the older
 seed. Test the Windows setup from the same combined artifact using its six-check
 report before this publish review; automatic builds approve no installer.

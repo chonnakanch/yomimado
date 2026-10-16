@@ -1,5 +1,22 @@
 # Apple Silicon installed-app release test
 
+Current 0.2.0 automated candidate — **2026-10-16**:
+[Release 38892964547](https://github.com/chonnakanch/yomimado/actions/runs/38892964547)
+at `c03ee1edba4e0f545cb7ed85a7552c544a4bfcdc` passes the macOS job in
+**11 minutes 28 seconds** and combined verification. Mounted bundle/signature,
+corresponding-source/notice binding and offline frozen-service checks pass in CI.
+The refreshed runtime seed has explicit source/licence-only approval.
+
+The [combined candidate](https://github.com/chonnakanch/yomimado/actions/runs/38892964547/artifacts/12045450534)
+and its ZIP digest are recorded in [the shared release record](desktop-release.md).
+Hosted gates verify the exact member hashes; the new DMG/archives were not
+downloaded locally. **No new existing-Mac installed-app acceptance is recorded**.
+The fresh-Mac waiver and other untested cases remain; prior human passes below do
+not transfer to these bytes. The owner subsequently approved the protected
+publisher; [v0.2.0](https://github.com/chonnakanch/yomimado/releases/tag/v0.2.0)
+is public as a pre-release. That protected review is separate from source-only
+approval; no detailed local installed-app report is inferred.
+
 Latest automated release — **2026-10-13**: [run `38378686892`](https://github.com/chonnakanch/yomimado/actions/runs/38378686892)
 at `b188b05dd42ac5553cfbc0c1188c9646e2ce29ca` passes the macOS build in
 **11 minutes 49 seconds**, combined verification and protected publication.

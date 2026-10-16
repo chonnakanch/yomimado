@@ -21,7 +21,7 @@ import desktop_release as release
 ROOT = Path(__file__).parents[2]
 REVISION = "a" * 40
 ENVIRONMENT = {
-    "name": "macos-release",
+    "name": "desktop-release",
     "can_admins_bypass": False,
     "deployment_branch_policy": {
         "protected_branches": False,
@@ -682,7 +682,7 @@ class PublisherRehearsalTests(unittest.TestCase):
                     elif '/rules/branches/main?' in endpoint:
                         print('[]' if scenario=='unprotected-main' else (root/'expected-main-rules.json').read_text())
                     elif endpoint.endswith('/deployment-branch-policies'): print((root/'policies.json').read_text())
-                    elif endpoint.endswith('/environments/macos-release'):
+                    elif endpoint.endswith('/environments/desktop-release'):
                         value=json.loads((root/'environment.json').read_text())
                         if scenario=='unprotected': value['protection_rules']=[]
                         print(json.dumps(value))
@@ -790,7 +790,9 @@ class PublisherRehearsalTests(unittest.TestCase):
         self.assertIn("name: Release", workflow)
         inputs = workflow.split("\n  seed-inputs:\n", 1)[1].split("\n  build:\n", 1)[0]
         self.assertNotIn("environment:", inputs)
-        self.assertEqual(workflow.count("environment: macos-release"), 1)
+        self.assertEqual(workflow.count("environment: desktop-release"), 1)
+        self.assertNotIn("environments/macos-release", workflow)
+        self.assertEqual(workflow.count("environments/desktop-release"), 4)
         # An owner review can stay pending while a later main build starts.
         # Publication alone must serialize tag creation and uploads.
         self.assertNotIn("concurrency:", workflow.split("\njobs:\n", 1)[0])

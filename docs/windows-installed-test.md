@@ -1,5 +1,24 @@
 # Windows candidate test record
 
+Current 0.2.0 automated candidate — **2026-10-16**:
+[Release 38892964547](https://github.com/chonnakanch/yomimado/actions/runs/38892964547)
+at `c03ee1edba4e0f545cb7ed85a7552c544a4bfcdc` passes the Windows job in
+**46 minutes** and combined verification. The exact setup passes component-terms
+rejection, installed startup/explicit Quit and service cleanup, missing/staged model
+states, file-dialog cancellation, Settings close retaining the toolbar, scan
+buttons/shortcuts and cancellation, plus frozen offline
+OCR/learning and persistence. The driver covers Invoke, ExpandCollapse and Toggle;
+its real Windows regression fixture also passes in required Checks.
+
+The [combined candidate](https://github.com/chonnakanch/yomimado/actions/runs/38892964547/artifacts/12045450534)
+and its ZIP digest are recorded in [the shared release record](desktop-release.md).
+Hosted gates verify the exact member hashes. The ZIP/EXE and nested archives were
+not downloaded locally. **No new local Windows 11/hardware acceptance is recorded**;
+physical mixed-DPI and the other untested cases remain open. The owner subsequently
+approved the protected publisher; [v0.2.0](https://github.com/chonnakanch/yomimado/releases/tag/v0.2.0)
+is public as a pre-release. Earlier v0.1.0 passes below remain bound to their
+original installer hashes.
+
 Latest automated release — **2026-10-13**: [run `38378686892`](https://github.com/chonnakanch/yomimado/actions/runs/38378686892)
 at `b188b05dd42ac5553cfbc0c1188c9646e2ce29ca` passes the Windows build in
 **47 minutes 2 seconds**, combined verification and protected publication.
@@ -100,7 +119,7 @@ added by this broad pass. **Protected publication review remains open.**
 
 A later `main` build creates different installer bytes and requires both its
 macOS and Windows exact-installer tests before approving the publish job in
-`macos-release`. Builds and private seed transfer run automatically on protected
+`desktop-release`. Builds and private seed transfer run automatically on protected
 `main`; only publication requires the separate exact-installer approval.
 
 Reusable six-check checklist — all six maintainer-reported pass for current

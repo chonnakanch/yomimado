@@ -307,7 +307,7 @@ class ArtifactTests(unittest.TestCase):
         policies = {"branch_policies": [{"name": "main", "type": "branch"}]}
         ci.verify_environment(
             {
-                "name": "macos-release",
+                "name": "desktop-release",
                 "can_admins_bypass": False,
                 "deployment_branch_policy": {
                     "protected_branches": False,
@@ -321,9 +321,9 @@ class ArtifactTests(unittest.TestCase):
         )
         for data in (
             {},
-            {"name": "macos-release", "protection_rules": []},
+            {"name": "desktop-release", "protection_rules": []},
             {
-                "name": "macos-release",
+                "name": "desktop-release",
                 "protection_rules": [{"type": "required_reviewers", "reviewers": []}],
             },
         ):
@@ -332,7 +332,7 @@ class ArtifactTests(unittest.TestCase):
 
     def test_environment_rejects_bypass_and_broad_branch_rules(self):
         data = {
-            "name": "macos-release",
+            "name": "desktop-release",
             "can_admins_bypass": False,
             "deployment_branch_policy": {
                 "protected_branches": False,
@@ -344,6 +344,12 @@ class ArtifactTests(unittest.TestCase):
         }
         policies = {"branch_policies": [{"name": "main", "type": "branch"}]}
         ci.verify_environment(data, policies)
+        for name in ("macos-release", "unprotected-release"):
+            with (
+                self.subTest(environment=name),
+                self.assertRaisesRegex(ValueError, "desktop-release"),
+            ):
+                ci.verify_environment({**data, "name": name}, policies)
         data["can_admins_bypass"] = True
         with self.assertRaisesRegex(ValueError, "no administrator bypass"):
             ci.verify_environment(data, policies)

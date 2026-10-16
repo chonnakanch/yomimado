@@ -1,5 +1,35 @@
 # Shared desktop release checklist
 
+Verified 0.2.0 candidate — **2026-10-16**: all checks pass for final main
+`c03ee1edba4e0f545cb7ed85a7552c544a4bfcdc`, after
+[PR #9](https://github.com/chonnakanch/yomimado/pull/9) completed native control-pattern
+coverage. [Release 38892964547](https://github.com/chonnakanch/yomimado/actions/runs/38892964547)
+passes planning, private input verification, both installer builds and combined
+verification. macOS finishes in **11 minutes 28 seconds**, Windows in **46 minutes**,
+and combined verification in **1 minute 33 seconds**. The Windows exact-setup
+startup/Quit, model setup, buttons/shortcuts, cancellation, frozen learning and
+persistence gates all pass. Protected `publish` subsequently passed; see the publication update below.
+Superseded `820a352` retry `38889738880` was cancelled.
+
+Download [verified-desktop-candidate](https://github.com/chonnakanch/yomimado/actions/runs/38892964547/artifacts/12045450534),
+artifact `12045450534` (**4,361,498,912 bytes**), retained until
+**2026-10-30 19:07 Bangkok time**. GitHub's artifact ZIP SHA-256:
+`faf1a1521e46613dae765052f7882307a77085ee26a01d1e164ef4ba8e27f1d8`.
+The hosted gate verifies the six-file layout, source/version/classification,
+both platform records, installer/source/notice hashes and original input coverage.
+Exact member hashes are in `desktop-SHA256SUMS.txt` and
+`desktop-release-candidate.json` inside the artifact. The large ZIP and its members
+were not independently downloaded locally. Public API job/step and artifact
+metadata are retained under ignored `services/ocr/build/release-0.2.0-c03ee1e/`.
+
+Publication update — **2026-10-16 19:22 Bangkok time**: the owner approved the
+protected publisher and [v0.2.0](https://github.com/chonnakanch/yomimado/releases/tag/v0.2.0)
+is public as a pre-release at `c03ee1e`. No separate detailed local installed-app
+test report is recorded here; the protected review remains the publication evidence. Fresh-Mac and
+Windows hardware limitations, dependency advisories and the unverified complete
+source-only rebuild remain disclosed. Historical v0.1.0 evidence is unchanged.
+The published tag and assets remain bound to `c03ee1e`.
+
 Version 0.2.0 preparation — **2026-10-16**: the owner authorized the version bump,
 protected-main merge and installer build. [PR #7](https://github.com/chonnakanch/yomimado/pull/7)
 merged at `645ba088118f41880abfc37df1b595fa85e3ad42` after all required
@@ -8,7 +38,7 @@ passed. All five version files agree on `0.2.0`, with no dependency changes.
 The refreshed [macOS source/runtime seed](macos-runtime-review-0.2.0.md) has explicit
 source/licence-only approval and exact uploaded-hash verification. Release
 [38841492110](https://github.com/chonnakanch/yomimado/actions/runs/38841492110)
-is building both platforms from the merged main commit. All main
+built from the merged main commit. All main
 [Checks 38841491986](https://github.com/chonnakanch/yomimado/actions/runs/38841491986)
 pass. The macOS installer job passes in **10 minutes 50 seconds**; Windows
 packaging produced a setup, but the installed-startup gate failed because the UI
@@ -24,7 +54,7 @@ The driver repair [PR #8](https://github.com/chonnakanch/yomimado/pull/8) passed
 all push and pull-request checks, including the ExpandCollapse-only Windows
 fixture, and merged at `820a352f5d75216706f0ea35e9622e29a15a7e4c`.
 The corrected [Release 38889738880](https://github.com/chonnakanch/yomimado/actions/runs/38889738880)
-passed planning and is building a fresh candidate. The earlier run's installer
+passed planning and built a fresh macOS candidate before cancellation. The earlier run's installer
 hashes are superseded; no acceptance is carried forward. Corrected main
 [Checks 38889739313](https://github.com/chonnakanch/yomimado/actions/runs/38889739313)
 pass on the exact merge commit.
@@ -302,7 +332,7 @@ Future packaging checklist:
 ## Flow and permissions
 
 1. **Plan** runs only on this repository's `main`, checks matching Tauri/npm/Cargo
-   versions, default branch and the existing `macos-release` protection. A released
+   versions, default branch and the `desktop-release` protection. A released
    version with its tag is skipped; an existing incomplete tag fails closed.
    For an absent tag, frozen-runtime reuse is checked before downloads/builds;
    changed shared runtime/dependency inputs require a newly reviewed seed.
@@ -333,7 +363,7 @@ Future packaging checklist:
    delivery, and provenance binds every retained platform input.
    Diagnostic `windows-main-evidence` is separate from published assets. Detector
    weights and test screenshots never enter the delivery.
-5. **publish** waits for a new review in `macos-release` after the combined artifact
+5. **publish** waits for a new review in `desktop-release` after the combined artifact
    exists. The owner must test **both exact new installers** first. It verifies
    all six public files and their retained inputs, protection, current main,
    classification and absent tag,
@@ -345,9 +375,12 @@ Future packaging checklist:
    later builds behind a pending human review. Uploads are never cancelled by a
    later main push. Main now includes this follow-up through PR #3.
 
-The environment keeps its historical `macos-release` name to preserve its already
-configured reviewer, exact `main` branch rule and disabled administrator bypass.
-Its **publish** review now covers both platforms. Builds and private input transfer
+The shared publisher uses `desktop-release`, replacing the historical
+`macos-release` name after the 0.2.0 publication. The replacement must preserve
+required reviewer `chonnakanch`, the exact `main` branch rule and disabled
+administrator bypass. Keep the old protected environment for historical runs;
+changing workflow names does not rename their recorded environment. Its **publish**
+review covers both platforms. Builds and private input transfer
 require no manual review. The agent never supplies the owner publication review.
 Build/provenance files retain `installedAppVerified=false`
 and private Windows flags: automated checks do not rewrite archived bytes or

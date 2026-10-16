@@ -61,8 +61,8 @@ jobs:
           test "$(gh api "repos/$GITHUB_REPOSITORY" --jq .default_branch)" = main
           gh api "repos/$GITHUB_REPOSITORY/rules/branches/main?per_page=100" > "$RUNNER_TEMP/main-rules.json"
           python scripts/desktop_release.py verify-main-rules --directory "$RUNNER_TEMP/main-rules.json"
-          gh api "repos/$GITHUB_REPOSITORY/environments/macos-release" > "$RUNNER_TEMP/release-environment.json"
-          gh api "repos/$GITHUB_REPOSITORY/environments/macos-release/deployment-branch-policies" > "$RUNNER_TEMP/release-policies.json"
+          gh api "repos/$GITHUB_REPOSITORY/environments/desktop-release" > "$RUNNER_TEMP/release-environment.json"
+          gh api "repos/$GITHUB_REPOSITORY/environments/desktop-release/deployment-branch-policies" > "$RUNNER_TEMP/release-policies.json"
           python scripts/macos-ci-release.py verify-environment --directory "$RUNNER_TEMP/release-environment.json" --policies "$RUNNER_TEMP/release-policies.json"
           echo "release=true" >> "$GITHUB_OUTPUT"
 
@@ -223,7 +223,7 @@ jobs:
             echo "### Installer confirmation required"
             echo "Merged commit: $SOURCE_REVISION"
             echo "$record" | jq -r '.assets | to_entries[] | "- \(.key): \(.value)"'
-            echo "Download verified-desktop-candidate and test its exact DMG and the Windows setup before approving the publish job in macos-release."
+            echo "Download verified-desktop-candidate and test its exact DMG and the Windows setup before approving the publish job in desktop-release."
             echo "Fresh-Mac testing is waived; never describe it as passed."
           } >> "$GITHUB_STEP_SUMMARY"
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
@@ -493,7 +493,7 @@ jobs:
     needs: [plan, verify-transfer]
     runs-on: ubuntu-latest
     timeout-minutes: 20
-    environment: macos-release
+    environment: desktop-release
     # Pending installer review must not hold later main builds. Serialize only
     # the publisher, and never cancel an upload after its version tag is created.
     concurrency:
@@ -527,8 +527,8 @@ jobs:
           test "$(gh api "repos/$GITHUB_REPOSITORY" --jq .default_branch)" = main
           gh api "repos/$GITHUB_REPOSITORY/rules/branches/main?per_page=100" > "$RUNNER_TEMP/main-rules.json"
           python3 scripts/desktop_release.py verify-main-rules --directory "$RUNNER_TEMP/main-rules.json"
-          gh api "repos/$GITHUB_REPOSITORY/environments/macos-release" > "$RUNNER_TEMP/release-environment.json"
-          gh api "repos/$GITHUB_REPOSITORY/environments/macos-release/deployment-branch-policies" > "$RUNNER_TEMP/release-policies.json"
+          gh api "repos/$GITHUB_REPOSITORY/environments/desktop-release" > "$RUNNER_TEMP/release-environment.json"
+          gh api "repos/$GITHUB_REPOSITORY/environments/desktop-release/deployment-branch-policies" > "$RUNNER_TEMP/release-policies.json"
           python3 scripts/macos-ci-release.py verify-environment --directory "$RUNNER_TEMP/release-environment.json" --policies "$RUNNER_TEMP/release-policies.json"
           main_sha="$(gh api "repos/$GITHUB_REPOSITORY/git/ref/heads/main" --jq .object.sha)"
           test "$main_sha" = "$GITHUB_SHA"
