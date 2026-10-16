@@ -2,6 +2,22 @@
 
 ## Current status
 
+**Windows taskbar follow-up — 2026-10-17:** after accepting the 0.2.1 overlay
+startup repair, the owner reported automatic manga detection including the
+Windows taskbar. The source follow-up restricts both Windows automatic entry
+points to the selected monitor's OS-reported work area before page detection and
+OCR. It preserves full-monitor physical/logical coordinate mapping and exact
+manual selections. This follow-up is separate from the already built and tested
+`31f51a7` candidate; that candidate's hashes and acceptance are unchanged.
+
+Local verification passes 65 native tests, the 22 capture-selector frontend
+tests, strict Clippy, Cargo/document formatting and the macOS debug build.
+Regression coverage checks bottom/top/left/right taskbar work-area insets,
+100%, 125%, 150% and 200% scales, negative/secondary monitor origins, unchanged
+full work areas and invalid-area rejection. Windows-specific compilation and
+physical taskbar exclusion require Windows checks; no new installer is built or
+accepted by these local results.
+
 **0.2.1 candidate update — 2026-10-17:** the Windows missing-overlay startup repair
 merged through [PR #11](https://github.com/chonnakanch/yomimado/pull/11) at
 `31f51a7c4fe1bb192c3eeecea1f90d57d3ee5882`. All exact-main Checks, both installer

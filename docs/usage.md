@@ -10,8 +10,10 @@ Closing the secondary main window keeps the app running.
 
 **Selected Area** scans exactly the region you drag. **Whole Screen** finds manga
 pages on the toolbar's monitor and sends only the detected page/spread to local
-OCR. If the page boundary is uncertain, it uses the saved manga area for that
-display layout, or asks you to draw one. It does not send the entire monitor to
+OCR. On Windows, automatic detection excludes the monitor area reserved for the
+taskbar, using the work area reported by Windows. If the page boundary is uncertain,
+it uses the saved manga area for that display layout, or asks you to draw one.
+It does not send the entire monitor to
 OCR as an uncertainty fallback. **Rescan** takes new pixels from the last
 successful area, including a detected crop; use Whole Screen again if the page
 has moved. Rescan is disabled until there is a successful scan.

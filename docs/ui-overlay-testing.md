@@ -33,6 +33,11 @@ proved inconvenient for repeated grants.
    Read with keyboard immediately, then repeated scans and Hide/Show. The new
    overlay must load the app page even when WebView2 initially reports
    `about:blank`; OCR state must exist before React requests it.
+   With a visible Windows taskbar, verify automatic detection stops at the
+   monitor's reported work-area edge and never creates regions for its icons,
+   clock or weather. Repeat with a light/dark taskbar and any supported taskbar
+   edge, then on a secondary monitor at a different scale. Auto-hidden taskbars
+   use the work area reported by Windows. Manual Selected Area remains exact.
    Start a fresh app process and choose Whole Screen **before** any Selected Area
    scan. Repeat with cold local models: recognition must complete while the capture
    selector stays hidden, without bringing it to the foreground. A stalled OCR

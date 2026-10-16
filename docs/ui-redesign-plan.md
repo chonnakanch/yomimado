@@ -253,6 +253,8 @@ selection/Whole Screen action rather than guessing.
   Store the successful physical rectangle for Rescan. A drag cannot span monitors.
 - **Whole Screen:** capture the full target monitor locally, then use the existing
   conservative manga-page detector to crop the visible page/spread before OCR.
+  On Windows, restrict automatic acquisition to the monitor's reported work area
+  so the reserved taskbar area cannot become part of the detected page.
   Preserve crop offsets in physical/logical metadata. If uncertain, use a valid
   saved manga area for the same display layout or show the selector to draw/save
   one. Never send the uncropped display to OCR merely because detection failed.

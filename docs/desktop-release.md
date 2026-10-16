@@ -1,5 +1,11 @@
 # Shared desktop release checklist
 
+Source follow-up — **2026-10-17**: the owner subsequently reported Windows
+automatic page detection including the taskbar. The `develop` follow-up excludes
+the monitor's reported taskbar work-area inset before automatic capture. It is
+not included in the `31f51a7` candidate below. Preserve that candidate's exact
+hashes and owner report; any rebuilt installer needs its own verification.
+
 Verified 0.2.1 candidate — **2026-10-17**: [PR #11](https://github.com/chonnakanch/yomimado/pull/11)
 merged the overlay startup repair at `31f51a7c4fe1bb192c3eeecea1f90d57d3ee5882`.
 All exact-main [Checks](https://github.com/chonnakanch/yomimado/actions/runs/38930206019)
