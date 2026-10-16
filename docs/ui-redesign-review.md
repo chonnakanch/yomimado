@@ -1,5 +1,10 @@
 # UI redesign verification and code review
 
+Status: **Implementation closed by the owner on 2026-10-16.** Final source
+`cd2d202` passes all jobs and the aggregate gate in
+[Checks run 38837880179](https://github.com/chonnakanch/yomimado/actions/runs/38837880179).
+The remaining acceptance boundaries below are retained for future release work.
+
 Reviewed on 2026-10-15, starting from `0d2c1d0` on `develop`, with the owner's
 subsequent request to remove lint exceptions and prepare Windows coverage. This is
 source verification after the owner's Phase 5 approval, without a version change or

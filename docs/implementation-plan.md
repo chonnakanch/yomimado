@@ -2,9 +2,11 @@
 
 ## Current status
 
-Updated **2026-10-15**. UI redesign Phases 3, 4 and 5 are approved by the owner
-on tracked `develop`; the app version remains `0.1.0`. Remaining native-platform
-verification is tracked separately from phase approval below.
+Updated **2026-10-16**. The owner closed the UI redesign implementation on tracked
+`develop`, through source commit `cd2d202`. Phases 3, 4 and 5 retain their recorded
+approvals; the app version remains `0.1.0`. All source CI gates pass. Remaining
+native-platform verification and packaging are separate release-preparation work;
+closing implementation does not approve installers or publication.
 
 The **first desktop pre-release milestone is complete**.
 [YomiMado v0.1.0](https://github.com/chonnakanch/yomimado/releases/tag/v0.1.0)
@@ -1029,3 +1031,18 @@ Local verification passes 61 native tests, strict all-target Clippy, Cargo
 formatting and the locked macOS debug build; 25 toolbar/menu frontend tests,
 TypeScript/Vite production build and changed-file Prettier checks also pass.
 Physical Windows placement remains part of the prepared acceptance checklist.
+
+### Redesign implementation closed — 2026-10-16
+
+The owner requested closure after the bottom-screen toolbar change. The source
+implementation is complete through `cd2d202`, with all jobs and the aggregate
+gate passing in
+[Checks run 38837880179](https://github.com/chonnakanch/yomimado/actions/runs/38837880179).
+No additional redesign phase is active.
+
+Future release preparation retains the final macOS smoke test, the prepared
+Windows/mixed-DPI checklist, recorded dependency-advisory triage, a reviewed
+macOS frozen-runtime refresh for the changed OCR service, version/release notes,
+protected-main integration and exact-installer acceptance before owner-approved
+publication. Untested cases remain unrecorded. No installer, tag or public release
+was created by this closure; historical v0.1.0 evidence is unchanged.

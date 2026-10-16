@@ -1,6 +1,10 @@
 # YomiMado UI/UX redesign plan
 
-Status: **Plan approved on 2026-10-13. Phases 3 and 4 accepted; Phase 5 approved by the owner on 2026-10-15.**
+Status: **Implementation closed by the owner on 2026-10-16, through `cd2d202`.**
+Plan approval (2026-10-13), Phase 3/4 acceptance and Phase 5 approval (2026-10-15)
+remain recorded below. Source CI passes; remaining native verification and
+packaging are tracked as separate release-preparation work in the
+[implementation plan](implementation-plan.md#redesign-implementation-closed--2026-10-16).
 Prepared 2026-10-13 against `develop` at `4f8a395` (app version `0.1.0`).
 The owner approved this plan and [the design system](design-system.md), then
 authorized Phase 1: design tokens and the floating toolbar, then Phase 2: OCR
@@ -138,13 +142,13 @@ Preserve `geometrySource`, `needsReview` and `reviewReason`.
 
 ## 3. Reuse and required changes
 
-| Area          | Keep                                                                                                                            | Change                                                                                                                                                       |
-| ------------- | ------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Area          | Keep                                                                                                                            | Change                                                                                                                                                                                         |
+| ------------- | ------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Capture       | xcap interface, permission gate, coordinate metadata, compositor wait, PNG handling, response parsing, selection/debug behavior | Explicit target monitor; standalone scan orchestration; Selected Area saves its rectangle; Whole Screen detects/crops manga pages with saved/drawn fallback; repeat last successful crop/area. |
-| Overlay       | Stored regions, polygons, orientation, measured viewport transform and review metadata                                          | Reusable `OCRBoundingBox`, orange/blue states, keyboard region selection, true native pass-through, reversible hide/show instead of close-and-clear.         |
-| Popup         | Token reconstruction, API clients, selection guards, ranked word entries, native positioning and explicit saving/translation    | Extract components, show the sentence once, hide editor initially, hiragana reading presentation, disclose alternatives/compounds, add copy.                 |
-| Main/settings | Saved-data clients and removal safeguards; verified model import and sources/notices                                            | Secondary library/settings shell; move model management to Scan & OCR; accessible navigation and compact collections.                                        |
-| Styling       | Existing React/plain CSS approach and transparent-root handling                                                                 | Semantic CSS variables, scoped primitives, readable Japanese hierarchy and shared component states.                                                          |
+| Overlay       | Stored regions, polygons, orientation, measured viewport transform and review metadata                                          | Reusable `OCRBoundingBox`, orange/blue states, keyboard region selection, true native pass-through, reversible hide/show instead of close-and-clear.                                           |
+| Popup         | Token reconstruction, API clients, selection guards, ranked word entries, native positioning and explicit saving/translation    | Extract components, show the sentence once, hide editor initially, hiragana reading presentation, disclose alternatives/compounds, add copy.                                                   |
+| Main/settings | Saved-data clients and removal safeguards; verified model import and sources/notices                                            | Secondary library/settings shell; move model management to Scan & OCR; accessible navigation and compact collections.                                                                          |
+| Styling       | Existing React/plain CSS approach and transparent-root handling                                                                 | Semantic CSS variables, scoped primitives, readable Japanese hierarchy and shared component states.                                                                                            |
 
 ## 4. Proposed component and state architecture
 
@@ -396,7 +400,7 @@ user-installed with existing checksum checks and restart/error semantics.
 | Windows WebView2 creation/frame geometry | Preserve async window creation and off-UI-thread shortcut dispatch; keep overlay shadow handling; verify first click and repeated opens without deadlock or duplicate labels.                                                       |
 | Retina/Windows DPI                       | Reuse `coordinates.ts`, native physical layout, measured viewport and scan-area transforms; test 1×/2× and Windows 100/125/150/200%, monitor offsets and mixed DPI. Do not scatter new multipliers through components.              |
 | Multi-monitor target/reconfiguration     | Native monitor identity and fresh physical bounds; target at scan start; reject stale rescan areas; test left/above-primary origins, disconnect/reconnect and moving toolbar between scales. No cross-monitor drag capture.         |
-| Whole Screen coverage                    | Verify full target-monitor acquisition, then cropped page/spread metadata and OCR-only crop. Test uncertain detection with saved/drawn fallback, browser/menu text exclusion, permission failure and image-size rejection.               |
+| Whole Screen coverage                    | Verify full target-monitor acquisition, then cropped page/spread metadata and OCR-only crop. Test uncertain detection with saved/drawn fallback, browser/menu text exclusion, permission failure and image-size rejection.          |
 | macOS transparency, Spaces/full-screen   | Preserve current private-API configuration; test toolbar/overlay stacking in ordinary and full-screen readers, Mission Control and Space changes. Always-on-top alone is not verified coverage of every Space.                      |
 | Capture contamination                    | Hide toolbar/popup/old overlay/secondary window before xcap; verify screenshots contain only the reader using local/synthetic fixtures. Restore windows and focus on success/error/cancel.                                          |
 | Popup edges/focus/resize                 | Work-area clamping including negative origins; test top/bottom/left/right and small displays; no ResizeObserver feedback loop, focus steal on expansion or accidental dismissal while browsing.                                     |
