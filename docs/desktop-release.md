@@ -8,7 +8,8 @@ pass. macOS finishes in **12 minutes 24 seconds**, Windows in **46 minutes 45 se
 and combined verification in **1 minute 50 seconds**. The Windows exact-setup
 terms/rejection, startup/Quit, model setup/buttons/shortcuts and frozen
 learning/persistence gates pass. The protected publisher is **waiting** in
-`desktop-release`; no 0.2.1 publication or installed-app visual pass is inferred.
+`desktop-release`. The owner confirmed the Windows capture/keyboard check below;
+0.2.1 publication still requires separate approval.
 
 Download the [verified desktop candidate](https://github.com/chonnakanch/yomimado/actions/runs/38930205981/artifacts/12060264675),
 artifact `12060264675` (**4,361,552,015 bytes**), retained until
@@ -38,10 +39,14 @@ Combined source, notice and provenance hashes are retained in the local metadata
 record and the downloadable checksums. Reading the summary does not constitute
 an independent local installer hash/download or an installed-app visual test.
 
-The owner must confirm the fresh Windows first scan in both modes, visible
-outlines, keyboard entry and popup activation. Local macOS development launch
+On **2026-10-17**, the owner answered **“Both modes and keyboard work”** to the
+exact-candidate check: quit 0.2.0, install the linked 0.2.1 setup, then test Whole
+Screen first on a fresh launch, Selected Area, and Read with keyboard → Enter.
+This records visible outlines and popup activation working on the owner's Windows
+setup for the installer hash above. It does not establish mixed-DPI coverage or
+other untested hardware cases. Local macOS development launch
 succeeded, but computer-use could not attach to the unbundled app, so it supplies
-no visual pass. Exact new installer acceptance remains separate. Preserve the
+no visual pass. Exact macOS installer acceptance remains separate. Preserve the
 existing fresh-Mac waiver, hardware limitations and source-only-rebuild/advisory
 disclosures. Main must stay at `31f51a7` while this candidate awaits review.
 

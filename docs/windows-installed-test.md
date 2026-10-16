@@ -13,13 +13,16 @@ The [Windows test candidate](https://github.com/chonnakanch/yomimado/actions/run
 contains the setup, `SHA256SUMS.txt` and platform records. Its files are inputs to
 the [verified combined candidate](https://github.com/chonnakanch/yomimado/actions/runs/38930205981/artifacts/12060264675).
 ZIP digests and expiry are in [the shared release record](desktop-release.md).
-No installer/archive was downloaded locally. The owner has been asked to quit
-0.2.0, install this exact 0.2.1 setup, then test a fresh Whole Screen scan before
-Selected Area, visible outlines, keyboard region entry and popup activation.
+No installer/archive was downloaded on this macOS development host. On
+**2026-10-17**, the owner answered **“Both modes and keyboard work”** to the check
+request to quit 0.2.0, install this exact 0.2.1 setup, then test a fresh Whole Screen
+scan before Selected Area, visible outlines, keyboard region entry and popup
+activation. This is an owner-reported pass for the Windows missing-overlay repair.
 Exact setup SHA-256 from the successful combined verification summary:
 `b0aecb9d8d43d8ad30bf8350c56ae77fc3c17939a9aba1ab40e637c309d31933`.
 
-**That visual result is pending**; physical mixed-DPI and the other hardware
+**Both capture modes and keyboard/popup interaction pass by owner report**;
+physical mixed-DPI and the other hardware
 limitations remain open. Publication is waiting for separate owner approval in
 `desktop-release`. Do not transfer old human reports to these new installer bytes.
 

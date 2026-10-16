@@ -6,9 +6,10 @@
 merged through [PR #11](https://github.com/chonnakanch/yomimado/pull/11) at
 `31f51a7c4fe1bb192c3eeecea1f90d57d3ee5882`. All exact-main Checks, both installer
 builds and combined verification pass. The [verified candidate](https://github.com/chonnakanch/yomimado/actions/runs/38930205981/artifacts/12060264675)
-is ready for exact-installer testing; the owner has been asked to check the
-new Windows setup in both modes and through Read with keyboard. Physical Windows
-rendering is still unconfirmed. The protected `desktop-release` publisher waits
+has an owner-reported Windows pass: **“Both modes and keyboard work”** after the
+fresh-launch Whole Screen, Selected Area and Read with keyboard → Enter check.
+This confirms the missing-overlay repair on the owner's setup; mixed-DPI and
+other hardware coverage remain open. The protected `desktop-release` publisher waits
 for separate approval; v0.2.0 remains published. See the
 [release record](desktop-release.md) for hashes, download lifetime and limits.
 
@@ -1195,3 +1196,11 @@ check; publication remains waiting in `desktop-release`. Preserve `31f51a7` on
 main until review. Local development UI automation was unavailable for the
 unbundled Mac process; only its successful launch is recorded, and its test
 launcher was stopped without stopping the existing OCR service.
+
+**Owner verification — 2026-10-17:** the exact Windows 0.2.1 candidate from run
+`38930205981`, source `31f51a7`, now passes both capture modes and keyboard/popup
+interaction by owner report: “Both modes and keyboard work.” The setup hash and
+test scope are recorded in [the Windows test record](windows-installed-test.md).
+This closes the reported missing-overlay regression on that Windows setup.
+Protected publication, exact macOS installer acceptance and untested hardware
+cases remain separate; no additional publication approval was supplied.
