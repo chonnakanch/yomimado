@@ -14,10 +14,12 @@ $Executable = Join-Path $Work 'synthetic-reader.exe'
 Add-Type -AssemblyName PresentationFramework
 Add-Type -AssemblyName PresentationCore
 Add-Type -AssemblyName WindowsBase
+Add-Type -AssemblyName System.Xaml
 $References = @(
     [System.Windows.Application].Assembly.Location,
     [System.Windows.Media.Visual].Assembly.Location,
-    [System.Windows.DependencyObject].Assembly.Location
+    [System.Windows.DependencyObject].Assembly.Location,
+    [System.Xaml.XamlReader].Assembly.Location
 )
 Add-Type -ReferencedAssemblies $References -OutputAssembly $Executable -OutputType WindowsApplication -TypeDefinition @'
 using System;
