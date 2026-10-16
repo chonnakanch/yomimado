@@ -1,5 +1,43 @@
 # Verified macOS runtime seed
 
+## Current 0.2.0 preparation — 2026-10-16
+
+Replacement source revision: `fae4d286619543014edb8aff6302fd3c864783a1`.
+The owner explicitly approved the refreshed **source/licence delivery only**, as
+`chonnakanch`, on 2026-10-16. See the [review summary](macos-runtime-review-0.2.0.md).
+This prepares the changed OCR geometry and exclusive-inference code for 0.2.0;
+no dependency version, native library, selected licence or model/data input changed.
+
+Private draft label: `macos-reviewed-seed-fae4d28`. All three uploaded SHA-256
+values independently match the local files in the signed-in browser. The exact
+[new private draft](https://github.com/chonnakanch/yomimado/releases/tag/untagged-1cd1cb337b8446f45a1d)
+is unpublished and contains only these three assets. Replacement pins are activated
+with this change; the runtime-reuse rejection remains intact. The 42edd4e records
+below remain historical.
+
+| Input                                   | SHA-256                                                            |
+| --------------------------------------- | ------------------------------------------------------------------ |
+| `YomiMado_0.2.0_aarch64.dmg`            | `54623c751236029039c7ea3911f35b4b1aa8f1d2127ca23b110473c12bb32d93` |
+| `YomiMado_0.2.0_notices_fae4d28.tar.gz` | `c5a59091204e9e2962141637b72b84312e21df045cd273015efa8be268c8f470` |
+| `YomiMado_0.2.0_sources_fae4d28.tar.gz` | `80d60cac588ab17a1521864afa4ebcc6c1130206586d712fc904a49902aee2b6` |
+
+The source delivery retains all 477 entries and 75 archives, including 74
+byte-identical dependency archives. Both exact third-party/native inventory hashes
+match 42edd4e. The project archive matches the exact tracked Git source; user-local
+references, manga screenshots and detector weights are excluded. The new DMG
+passes mounted source/notices/platform checks, app/all-Mach-O ad-hoc signatures,
+frozen-source comparison for seven modules, and offline health/vertical OCR,
+dictionary/kanji, translation and saved-data/cache restart smoke tests.
+
+Local evidence: ignored `services/ocr/build/macos-runtime-refresh-fae4d28/`.
+The three final input files are in `seed-reviewed/`; `seed-artifacts.json` records
+their exact sizes and hashes. Source approval does not approve new installers or
+publication. Existing dependency advisories and unverified full source-only
+rebuilding remain disclosed. Windows dictionary pins and historical installer
+acceptance remain unchanged.
+
+## Historical 42edd4e seed — 2026-10-13
+
 Refreshed **2026-10-13** from clean source
 `42edd4e3d05af293d53d9e0036a81e9586b2bfd8`. This prepared private CI input replaces the
 `5120506` frozen service and contains the Python security, translation/cache and

@@ -1062,3 +1062,15 @@ redesigned source and changed frozen OCR modules. Prepare and verify a refreshed
 runtime/source seed before activating new pins. Keep source/licence review and
 exact-installer publication approvals distinct. No new human approval or installed
 acceptance is inferred from the build request.
+
+The owner approved the refreshed source/licence delivery only on 2026-10-16,
+as `chonnakanch`, after reviewing the 477 entries/75 archives and retained limits.
+The replacement private seed uses `fae4d28`; all dependency/native inventories
+and 74 dependency archives match the reviewed baseline. Both private and
+approved-source macOS builds pass exact mounted/frozen/offline verification.
+PR [#7](https://github.com/chonnakanch/yomimado/pull/7) is drafted; required source
+[Checks 38839347283](https://github.com/chonnakanch/yomimado/actions/runs/38839347283)
+pass. All three private seed uploads now independently match the local SHA-256
+values in GitHub. Replacement source/hash pins are activated; the runtime-reuse
+rejection remains intact. Required Checks and the protected-main merge precede
+the hosted release build. No installed-app or publication approval is claimed.

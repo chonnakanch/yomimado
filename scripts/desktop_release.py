@@ -33,11 +33,11 @@ spec.loader.exec_module(macos)
 WINDOWS_SEED = "f8396ccd5e7352a62e526c68438cc7f3c9cedc60"
 INPUTS = {
     "macos": {
-        "tag": "macos-reviewed-seed-42edd4e",
+        "tag": "macos-reviewed-seed-fae4d28",
         "assets": {
-            "YomiMado_0.1.0_aarch64.dmg": "5b7fd0dc412abb370c341d25d2bbb696ad54488cdc3006f3bd662dc1b6a52b8b",
-            "YomiMado_0.1.0_sources_42edd4e.tar.gz": "3781bfa964a9a5c8362162a007323aa03bc912fdb54a6a33c72bf1769b7aa878",
-            "YomiMado_0.1.0_notices_42edd4e.tar.gz": "c5af0d218248cb3c46bfe4ffb402e11c2a2b42045fbaf83d7c2b6f30d0045ff9",
+            "YomiMado_0.2.0_aarch64.dmg": "54623c751236029039c7ea3911f35b4b1aa8f1d2127ca23b110473c12bb32d93",
+            "YomiMado_0.2.0_sources_fae4d28.tar.gz": "80d60cac588ab17a1521864afa4ebcc6c1130206586d712fc904a49902aee2b6",
+            "YomiMado_0.2.0_notices_fae4d28.tar.gz": "c5a59091204e9e2962141637b72b84312e21df045cd273015efa8be268c8f470",
         },
     },
     "windows": {
