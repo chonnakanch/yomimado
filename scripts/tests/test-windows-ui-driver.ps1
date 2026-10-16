@@ -69,7 +69,12 @@ public static class SyntheticYomiMado {
         var toolbar = new Window { Title="YomiMado toolbar", ShowInTaskbar=false, Width=600, Height=110, Left=80, Top=80 };
         toolbar.Closing += delegate(object sender, System.ComponentModel.CancelEventArgs e) { if (!quitting) e.Cancel=true; };
         var settings = new Window { Title="YomiMado - Settings", Width=600, Height=300 };
-        settings.Content = new Button { Content="Select detector model file", Width=250, Height=30 };
+        var settingsContent = new StackPanel();
+        settingsContent.Children.Add(new Button { Content="Select detector model file", Width=250, Height=30 });
+        settingsContent.Children.Add(new System.Windows.Controls.Primitives.ToggleButton {
+            Content="Selected Area", IsChecked=true, Width=150, Height=30
+        });
+        settings.Content = settingsContent;
         settings.Closing += delegate(object sender, System.ComponentModel.CancelEventArgs e) {
             if (!quitting) { e.Cancel=true; settings.Hide(); }
         };
@@ -112,6 +117,18 @@ try {
     Invoke-YomiMadoMenuAction $First 'Settings'
     $Settings = Wait-YomiMadoWindow $First 'YomiMado*Settings'
     Wait-YomiMadoUi $First { $null -ne (Get-YomiMadoAction $Settings 'Select detector model file') } 'Settings action was not found in its own window.'
+    $Scan = Get-YomiMadoAction $Settings 'Selected Area'
+    $Pattern = $null
+    if ($Scan.TryGetCurrentPattern([System.Windows.Automation.InvokePattern]::Pattern, [ref]$Pattern)) {
+        throw 'Toggle-only fixture unexpectedly exposes Invoke.'
+    }
+    if (-not $Scan.TryGetCurrentPattern([System.Windows.Automation.TogglePattern]::Pattern, [ref]$Pattern)) {
+        throw 'Toggle-only fixture does not expose Toggle.'
+    }
+    Invoke-YomiMadoAction $Settings 'Selected Area'
+    Wait-YomiMadoUi $First { $Pattern.Current.ToggleState -eq [System.Windows.Automation.ToggleState]::Off } 'Pressed scan action did not toggle.'
+    Invoke-YomiMadoAction $Settings 'Selected Area'
+    Wait-YomiMadoUi $First { $Pattern.Current.ToggleState -eq [System.Windows.Automation.ToggleState]::On } 'Unpressed scan action did not toggle.'
     if (-not [YomiMadoUiNative]::CloseWindow($Settings)) { throw 'Cannot send native Settings close.' }
     Wait-YomiMadoUi $First { -not [YomiMadoUiNative]::IsWindowVisible($Settings) } 'Native close did not hide Settings.'
     if (-not [YomiMadoUiNative]::IsWindowVisible($Toolbar)) { throw 'Settings close hid the toolbar.' }
@@ -122,7 +139,7 @@ try {
     $Other.Refresh()
     if ($Other.HasExited) { throw 'Quit affected a different process.' }
     Stop-YomiMadoViaMenu $Other
-    Write-Host 'Windows UI driver: ExpandCollapse/Invoke menus, PID-scoped discovery, Settings close/reopen and explicit Quit passed.'
+    Write-Host 'Windows UI driver: ExpandCollapse/Invoke menus, Toggle scan actions, PID-scoped discovery, Settings close/reopen and explicit Quit passed.'
 } catch {
     # Synthetic labels only: retain UIA/native diagnostics if the runner's
     # accessibility provider differs from the installed WebView2 provider.

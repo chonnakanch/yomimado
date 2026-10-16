@@ -118,10 +118,17 @@ function Invoke-YomiMadoAction {
     $Action = Get-YomiMadoAction $Window $Name
     if ($null -eq $Action -or -not $Action.Current.IsEnabled) { throw "Action is unavailable: $Name" }
     $Invoke = $null
-    if (-not $Action.TryGetCurrentPattern([System.Windows.Automation.InvokePattern]::Pattern, [ref]$Invoke)) {
-        throw "Action does not expose Invoke: $Name"
+    if ($Action.TryGetCurrentPattern([System.Windows.Automation.InvokePattern]::Pattern, [ref]$Invoke)) {
+        $Invoke.Invoke()
+        return
     }
-    $Invoke.Invoke()
+    # aria-pressed scan buttons expose Toggle rather than Invoke in WebView2.
+    $Toggle = $null
+    if ($Action.TryGetCurrentPattern([System.Windows.Automation.TogglePattern]::Pattern, [ref]$Toggle)) {
+        $Toggle.Toggle()
+        return
+    }
+    throw "Action does not expose Invoke or Toggle: $Name"
 }
 
 function Open-YomiMadoMenu {

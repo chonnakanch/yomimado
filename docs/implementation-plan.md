@@ -9,7 +9,10 @@ approvals. The owner subsequently authorized version `0.2.0`, integration into
 merged at `645ba088118f41880abfc37df1b595fa85e3ad42` after all required checks
 passed. The [0.2.0 installer build](https://github.com/chonnakanch/yomimado/actions/runs/38841492110)
 ran from that exact main commit; the macOS candidate passed, but the Windows
-installed-startup check exposed a UI Automation driver mismatch being repaired.
+installed-startup check exposed a UI Automation driver mismatch. The repair passed
+all checks and merged through [PR #8](https://github.com/chonnakanch/yomimado/pull/8)
+at `820a352f5d75216706f0ea35e9622e29a15a7e4c`; a corrected
+[build](https://github.com/chonnakanch/yomimado/actions/runs/38889738880) is running.
 All main source CI gates pass. Remaining
 native-platform verification and packaging are separate release-preparation work;
 closing implementation does not approve installers or publication.
@@ -1095,3 +1098,17 @@ peer as well as the ordinary Invoke button. Only this Windows test helper is add
 to the explicit macOS runtime-reuse scope; shared OCR and dependency rejection
 remain covered. Protected publication remains a separate owner review for the
 exact new installer bytes.
+
+The repair's push and PR gates pass, including the new Windows regression fixture.
+PR #8 merged at `820a352f5d75216706f0ea35e9622e29a15a7e4c`; corrected
+[Release 38889738880](https://github.com/chonnakanch/yomimado/actions/runs/38889738880)
+passes planning and is building a fresh candidate. Earlier installer hashes and
+unrecorded acceptance are not carried forward. All corrected main
+[Checks 38889739313](https://github.com/chonnakanch/yomimado/actions/runs/38889739313)
+jobs and the aggregate gate pass.
+
+Before the corrected Windows build completed, follow-up inspection identified
+Toggle-only `aria-pressed` scan buttons as another unsupported driver pattern.
+The helper now invokes Toggle when Invoke is unavailable, with a real WPF
+regression from both pressed states. Menu ExpandCollapse and ordinary Invoke
+remain covered; no app/runtime/dependency changes are involved.
