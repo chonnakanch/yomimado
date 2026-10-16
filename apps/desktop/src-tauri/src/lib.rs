@@ -1,7 +1,8 @@
 mod capture;
 mod detector_model;
 mod overlay;
-#[cfg(target_os = "windows")]
+mod toolbar;
+#[cfg(all(target_os = "windows", any(not(debug_assertions), test)))]
 mod windows_service;
 
 use std::process::Child;
@@ -11,20 +12,26 @@ use capture::{
     cleanup_legacy_captures, crop_detected_page, CaptureMetadata, CapturedImage, DisplayInfo,
     Rectangle, ScreenCapture, ViewportSize, XcapScreenCapture,
 };
-use serde::Serialize;
-use tauri::{AppHandle, Manager, PhysicalPosition, PhysicalSize, WebviewUrl, WebviewWindowBuilder};
+use serde::{Deserialize, Serialize};
+use tauri::{
+    AppHandle, Emitter, Manager, PhysicalPosition, PhysicalSize, WebviewUrl, WebviewWindowBuilder,
+};
 use tauri_plugin_global_shortcut::{
     Builder as GlobalShortcutBuilder, GlobalShortcutExt, Shortcut, ShortcutState,
 };
 
 const MANUAL_CAPTURE_SHORTCUT: &str = "CMDORCONTROL+SHIFT+O";
-const SAVED_AREA_SHORTCUT: &str = "CMDORCONTROL+SHIFT+S";
+const WHOLE_SCREEN_SHORTCUT: &str = "CMDORCONTROL+SHIFT+S";
 
 struct AppState {
     capture: Arc<dyn ScreenCapture>,
     overlay: overlay::OverlayStore,
+    overlay_input: overlay::input::InputRouter,
+    scans: toolbar::ScanStore,
+    toolbar_layout: Mutex<toolbar::ToolbarLayout>,
+    toolbar_menu: toolbar::ToolbarMenuStore,
     service: Mutex<Option<Child>>,
-    #[cfg(target_os = "windows")]
+    #[cfg(all(not(debug_assertions), target_os = "windows"))]
     windows_service: Mutex<Option<windows_service::Service>>,
 }
 
@@ -67,71 +74,58 @@ fn current_display(app: &AppHandle, window_label: &str) -> Result<DisplayInfo, S
         .current_monitor()
         .map_err(|error| error.to_string())?
         .ok_or("No active monitor")?;
-    let position = monitor.position();
-    let size = monitor.size();
-    let name = monitor.name().cloned();
-    Ok(DisplayInfo {
-        id: name
-            .clone()
-            .unwrap_or_else(|| format!("{},{}", position.x, position.y)),
-        name: name.unwrap_or_else(|| "Unnamed display".into()),
-        physical_bounds: Rectangle {
-            x: position.x as f64,
-            y: position.y as f64,
-            width: size.width as f64,
-            height: size.height as f64,
-        },
-        selector_physical_bounds: Rectangle {
-            x: position.x as f64,
-            y: position.y as f64,
-            width: size.width as f64,
-            height: size.height as f64,
-        },
-        scale_factor: monitor.scale_factor(),
-        viewport_width: size.width as f64 / monitor.scale_factor(),
-        viewport_height: size.height as f64 / monitor.scale_factor(),
-    })
+    Ok(toolbar::display_from_monitor(&monitor))
 }
 
 // WebView2 creation deadlocks inside Windows synchronous IPC/event handlers.
-// Keep macOS dispatch unchanged and use the async executor for Windows IPC.
-#[cfg_attr(target_os = "windows", tauri::command(async))]
-#[cfg_attr(not(target_os = "windows"), tauri::command)]
+// Both platforms also keep session coordination off the UI thread.
+#[tauri::command(async)]
 fn show_capture_selector(app: AppHandle) -> Result<(), String> {
     show_capture_window(app, "")
 }
 
-#[cfg_attr(target_os = "windows", tauri::command(async))]
-#[cfg_attr(not(target_os = "windows"), tauri::command)]
+#[tauri::command(async)]
 fn show_auto_scanner(app: AppHandle) -> Result<(), String> {
     show_capture_window(app, "scan=auto")
 }
 
-#[cfg_attr(target_os = "windows", tauri::command(async))]
-#[cfg_attr(not(target_os = "windows"), tauri::command)]
+#[tauri::command(async)]
 fn show_scan_area_selector(app: AppHandle) -> Result<(), String> {
     show_capture_window(app, "scan=configure")
 }
 
 fn dispatch_capture_shortcut(app: AppHandle, scan_query: &'static str) {
     let capture = move || {
-        if let Err(error) = show_capture_window(app.clone(), scan_query) {
-            eprintln!("YomiMado: {error}");
-            #[cfg(target_os = "windows")]
-            {
-                use tauri_plugin_dialog::DialogExt;
-                app.dialog()
-                    .message(error)
-                    .title("YomiMado capture unavailable")
-                    .show(|_| {});
+        let result = toolbar::pointer_display(&app).and_then(|display| {
+            let mode = if scan_query == "scan=whole" {
+                toolbar::ScanMode::WholeScreen
+            } else {
+                toolbar::ScanMode::SelectedArea
+            };
+            show_capture_window_on(app.clone(), scan_query, display, mode, None)
+        });
+        if let Err(error) = result {
+            let state = app.state::<AppState>();
+            if let Ok(mut session) = state.scans.lock() {
+                // A repeated hotkey must not reveal app chrome while an earlier
+                // capture is still waiting for the compositor/screenshot.
+                if session.active.is_some() {
+                    return;
+                }
+                session.revision += 1;
+                session.phase = "error";
+                session.message = error.clone();
+                if let Some(window) = app.get_webview_window("toolbar") {
+                    let _ = window.show();
+                }
             }
+            toolbar::emit_state(&app);
+            eprintln!("YomiMado: {error}");
         }
     };
-    // Shortcut callbacks also arrive on the Windows UI/event thread.
-    #[cfg(target_os = "windows")]
+    // Keep native window work and session locks off the UI thread on both
+    // platforms. Windows also requires this to avoid WebView2 creation deadlocks.
     tauri::async_runtime::spawn_blocking(capture);
-    #[cfg(not(target_os = "windows"))]
-    capture();
 }
 
 #[derive(Serialize)]
@@ -143,9 +137,9 @@ struct CaptureSurface {
     scale_factor: f64,
 }
 
-#[tauri::command]
-fn get_capture_surface(app: AppHandle) -> Result<CaptureSurface, String> {
-    let display = current_display(&app, "capture-selector")?;
+#[tauri::command(async)]
+fn get_capture_surface(app: AppHandle, session_id: Option<u64>) -> Result<CaptureSurface, String> {
+    let display = active_scan(&app, session_id)?.display;
     let selector = app
         .get_webview_window("capture-selector")
         .ok_or("Capture selector is unavailable")?;
@@ -167,6 +161,23 @@ fn get_capture_surface(app: AppHandle) -> Result<CaptureSurface, String> {
 }
 
 fn show_capture_window(app: AppHandle, scan_query: &str) -> Result<(), String> {
+    let display = current_display(&app, "main")?;
+    show_capture_window_on(
+        app,
+        scan_query,
+        display,
+        toolbar::ScanMode::SelectedArea,
+        None,
+    )
+}
+
+fn show_capture_window_on(
+    app: AppHandle,
+    scan_query: &str,
+    display: DisplayInfo,
+    mode: toolbar::ScanMode,
+    repeat: Option<toolbar::ScanSpec>,
+) -> Result<(), String> {
     detector_model::ensure_available(&app)?;
     #[cfg(target_os = "macos")]
     {
@@ -176,79 +187,200 @@ fn show_capture_window(app: AppHandle, scan_query: &str) -> Result<(), String> {
             return Err("Screen Recording access is required. Enable YomiMado (or your terminal when running `tauri dev`) in System Settings > Privacy & Security > Screen & System Audio Recording, then restart the app.".into());
         }
     }
-    let display = current_display(&app, "main")?;
-    let main = app
-        .get_webview_window("main")
-        .ok_or("Main window is unavailable")?;
-    if let Some(window) = app.get_webview_window("ocr-overlay") {
-        window.close().map_err(|error| error.to_string())?;
-    }
-    app.state::<AppState>().overlay.clear()?;
-    if let Some(window) = app.get_webview_window("translation-popup") {
-        window.close().map_err(|error| error.to_string())?;
-    }
-    let query = if scan_query.is_empty() {
-        "mode=capture".to_string()
-    } else {
-        format!("mode=capture&{scan_query}")
-    };
-    if let Some(window) = app.get_webview_window("capture-selector") {
-        let mut url = window.url().map_err(|error| error.to_string())?;
-        url.set_query(Some(&query));
-        window.navigate(url).map_err(|error| error.to_string())?;
+    toolbar::close_toolbar_menu(app.clone(), None)?;
+    let restore = toolbar::CAPTURE_WINDOW_LABELS
+        .iter()
+        .filter(|label| {
+            app.get_webview_window(label)
+                .is_some_and(|window| window.is_visible().unwrap_or(false))
+        })
+        .map(|label| (*label).to_string())
+        .collect();
+    let id = app
+        .state::<AppState>()
+        .scans
+        .lock()?
+        .begin(mode, display.clone(), repeat, restore)?;
+    app.state::<AppState>().scans.set_selector_id(id);
+    let result: Result<(), String> = (|| {
+        app.state::<AppState>().overlay_input.disable(&app)?;
+        for label in std::iter::once("toolbar-menu").chain(toolbar::CAPTURE_WINDOW_LABELS) {
+            if let Some(window) = app.get_webview_window(label) {
+                window.hide().map_err(|e| e.to_string())?;
+            }
+        }
+        let query = format!(
+            "mode=capture&session={id}{}",
+            if scan_query.is_empty() {
+                String::new()
+            } else {
+                format!("&{scan_query}")
+            }
+        );
+        let window = if let Some(window) = app.get_webview_window("capture-selector") {
+            let mut url = window.url().map_err(|e| e.to_string())?;
+            url.set_query(Some(&query));
+            window.navigate(url).map_err(|e| e.to_string())?;
+            window
+        } else {
+            WebviewWindowBuilder::new(
+                &app,
+                "capture-selector",
+                WebviewUrl::App(format!("index.html?{query}").into()),
+            )
+            // Whole Screen/Rescan may never show this webview. On macOS 14+
+            // WKWebView's inactive policy can suspend IPC/fetch continuations
+            // until a manual selection makes it visible for the first time.
+            .background_throttling(tauri::utils::config::BackgroundThrottlingPolicy::Disabled)
+            .transparent(true)
+            .decorations(false)
+            .always_on_top(true)
+            .skip_taskbar(true)
+            .visible(false)
+            .build()
+            .map_err(|e| e.to_string())?
+        };
         window
             .set_position(PhysicalPosition::new(
                 display.physical_bounds.x as i32,
                 display.physical_bounds.y as i32,
             ))
-            .map_err(|error| error.to_string())?;
+            .map_err(|e| e.to_string())?;
         window
             .set_size(PhysicalSize::new(
                 display.physical_bounds.width as u32,
                 display.physical_bounds.height as u32,
             ))
-            .map_err(|error| error.to_string())?;
-        main.minimize().map_err(|error| error.to_string())?;
-        window.show().map_err(|error| error.to_string())?;
-        window.set_focus().map_err(|error| error.to_string())?;
-        return Ok(());
+            .map_err(|e| e.to_string())?;
+        // Automatic/repeat requests can run in a hidden webview. Only selecting
+        // an area deliberately takes focus and blocks interaction with the reader.
+        if !scan_query.starts_with("scan=whole") && !scan_query.starts_with("scan=repeat") {
+            window.show().map_err(|e| e.to_string())?;
+            window.set_focus().map_err(|e| e.to_string())?;
+        }
+        toolbar::emit_state(&app);
+        Ok(())
+    })();
+    if let Err(ref error) = result {
+        let _ = toolbar::stop_scan(&app, Some(id), error, false);
     }
-    let window = WebviewWindowBuilder::new(
-        &app,
-        "capture-selector",
-        WebviewUrl::App(format!("index.html?{query}").into()),
+    result
+}
+
+fn active_scan(app: &AppHandle, id: Option<u64>) -> Result<toolbar::ActiveScan, String> {
+    let scan = app.state::<AppState>().scans.lock()?.active(id)?.clone();
+    toolbar::live_display(app, &scan.display)?;
+    Ok(scan)
+}
+
+async fn perform_capture(
+    app: AppHandle,
+    capture: Arc<dyn ScreenCapture>,
+    display: DisplayInfo,
+    selection: Rectangle,
+    id: u64,
+) -> Result<CapturedImage, String> {
+    {
+        let state = app.state::<AppState>();
+        let mut session = state.scans.lock()?;
+        session.active(Some(id))?;
+        session.revision += 1;
+        session.phase = "capturing";
+        session.message = "Capturing screen pixels…".into();
+        // Hiding the native selector, not just its DOM, keeps processing from
+        // trapping browser input and keeps all app chrome out of the screenshot.
+        for label in ["capture-selector", "toolbar-menu"]
+            .into_iter()
+            .chain(toolbar::CAPTURE_WINDOW_LABELS)
+        {
+            if let Some(window) = app.get_webview_window(label) {
+                window.hide().map_err(|e| e.to_string())?;
+            }
+        }
+    }
+    toolbar::emit_state(&app);
+    let captured = tauri::async_runtime::spawn_blocking(move || {
+        std::thread::sleep(std::time::Duration::from_millis(180));
+        capture.capture(&display, selection)
+    })
+    .await
+    .map_err(|e| e.to_string())?
+    .map_err(|e| e.to_string())?;
+    {
+        let state = app.state::<AppState>();
+        let mut session = state.scans.lock()?;
+        session.captured(id, captured.metadata.clone())?;
+        let scan = session.active(Some(id))?.clone();
+        toolbar::restore_windows(&app, &scan, false)?;
+    }
+    toolbar::emit_state(&app);
+    eprintln!(
+        "YomiMado: capture physical={:?} image={}x{}",
+        captured.metadata.selection_physical_bounds,
+        captured.metadata.image_width,
+        captured.metadata.image_height
+    );
+    Ok(captured)
+}
+
+fn full_display_selection(display: &mut DisplayInfo, area: Rectangle) -> Result<Rectangle, String> {
+    toolbar::validate_area(area, display)?;
+    if !display.scale_factor.is_finite() || display.scale_factor <= 0.0 {
+        return Err("Invalid display scale".into());
+    }
+    display.selector_physical_bounds = display.physical_bounds;
+    display.viewport_width = display.physical_bounds.width / display.scale_factor;
+    display.viewport_height = display.physical_bounds.height / display.scale_factor;
+    Ok(Rectangle {
+        x: (area.x - display.physical_bounds.x) / display.scale_factor,
+        y: (area.y - display.physical_bounds.y) / display.scale_factor,
+        width: area.width / display.scale_factor,
+        height: area.height / display.scale_factor,
+    })
+}
+
+#[tauri::command]
+async fn capture_whole_screen(
+    app: AppHandle,
+    state: tauri::State<'_, AppState>,
+    session_id: u64,
+) -> Result<Option<CapturedImage>, String> {
+    let scan = active_scan(&app, Some(session_id))?;
+    let mut display = scan.display;
+    let area = display.physical_bounds;
+    let selection = full_display_selection(&mut display, area)?;
+    let captured = perform_capture(
+        app.clone(),
+        Arc::clone(&state.capture),
+        display,
+        selection,
+        scan.id,
     )
-    .transparent(true)
-    .decorations(false)
-    .always_on_top(true)
-    .skip_taskbar(true)
-    .visible(false)
-    .build()
-    .map_err(|error| error.to_string())?;
-    window
-        .set_position(PhysicalPosition::new(
-            display.physical_bounds.x as i32,
-            display.physical_bounds.y as i32,
-        ))
-        .map_err(|error| error.to_string())?;
-    window
-        .set_size(PhysicalSize::new(
-            display.physical_bounds.width as u32,
-            display.physical_bounds.height as u32,
-        ))
-        .map_err(|error| error.to_string())?;
-    window.show().map_err(|error| error.to_string())?;
-    main.minimize().map_err(|error| error.to_string())?;
-    window.set_focus().map_err(|error| error.to_string())?;
-    Ok(())
+    .await?;
+    crop_captured_page(app, captured, scan.id).await
+}
+
+#[tauri::command]
+async fn capture_repeat_scan(
+    app: AppHandle,
+    state: tauri::State<'_, AppState>,
+    session_id: u64,
+) -> Result<CapturedImage, String> {
+    let scan = active_scan(&app, Some(session_id))?;
+    let spec = scan.repeat.ok_or("No repeat scan is available")?;
+    let mut display = scan.display;
+    let selection = full_display_selection(&mut display, spec.area)?;
+    perform_capture(app, Arc::clone(&state.capture), display, selection, scan.id).await
 }
 
 #[tauri::command]
 async fn capture_display(
     app: AppHandle,
     state: tauri::State<'_, AppState>,
+    session_id: Option<u64>,
 ) -> Result<CapturedImage, String> {
-    let mut display = current_display(&app, "capture-selector")?;
+    let scan = active_scan(&app, session_id)?;
+    let mut display = scan.display;
     let selector = app
         .get_webview_window("capture-selector")
         .ok_or("Capture selector is unavailable")?;
@@ -277,37 +409,36 @@ async fn capture_display(
         display.selector_physical_bounds,
         display.physical_bounds,
     );
-    let capture = Arc::clone(&state.capture);
-    let result = tauri::async_runtime::spawn_blocking(move || {
-        std::thread::sleep(std::time::Duration::from_millis(180));
-        capture.capture(&display, selection)
-    })
-    .await;
-    let captured = match result {
-        Ok(Ok(captured)) => captured,
-        Ok(Err(error)) => return Err(error.to_string()),
-        Err(error) => return Err(error.to_string()),
-    };
-    eprintln!(
-        "YomiMado: display capture physical={:?} image={}x{}",
-        captured.metadata.selection_physical_bounds,
-        captured.metadata.image_width,
-        captured.metadata.image_height,
-    );
-    Ok(captured)
+    perform_capture(app, Arc::clone(&state.capture), display, selection, scan.id).await
 }
 
 #[tauri::command]
 async fn capture_auto_page(
     app: AppHandle,
     state: tauri::State<'_, AppState>,
+    session_id: Option<u64>,
 ) -> Result<Option<CapturedImage>, String> {
-    let captured = capture_display(app, state).await?;
+    let id = active_scan(&app, session_id)?.id;
+    let captured = capture_display(app.clone(), state, session_id).await?;
+    crop_captured_page(app, captured, id).await
+}
+
+// Both entry points inspect pixels locally and publish only the detected page
+// to OCR. None deliberately requests the saved/drawn area fallback in the UI.
+async fn crop_captured_page(
+    app: AppHandle,
+    captured: CapturedImage,
+    id: u64,
+) -> Result<Option<CapturedImage>, String> {
     let result = tauri::async_runtime::spawn_blocking(move || crop_detected_page(captured))
         .await
         .map_err(|error| error.to_string())?
         .map_err(|error| error.to_string())?;
     if let Some(ref page) = result {
+        app.state::<AppState>()
+            .scans
+            .lock()?
+            .captured(id, page.metadata.clone())?;
         eprintln!(
             "YomiMado: automatic manga page physical={:?} image={}x{}",
             page.metadata.selection_physical_bounds,
@@ -372,16 +503,9 @@ fn visible_capture_bounds(screen: Rectangle, selector: Rectangle) -> Result<Rect
     })
 }
 
-#[tauri::command]
-fn cancel_capture_selector(app: AppHandle) -> Result<(), String> {
-    if let Some(selector) = app.get_webview_window("capture-selector") {
-        selector.close().map_err(|error| error.to_string())?;
-    }
-    let main = app
-        .get_webview_window("main")
-        .ok_or("Main window is unavailable")?;
-    main.unminimize().map_err(|error| error.to_string())?;
-    main.set_focus().map_err(|error| error.to_string())
+#[tauri::command(async)]
+fn cancel_capture_selector(app: AppHandle, session_id: Option<u64>) -> Result<(), String> {
+    toolbar::stop_scan(&app, session_id, "", false)
 }
 
 #[tauri::command]
@@ -390,8 +514,10 @@ async fn capture_selection(
     state: tauri::State<'_, AppState>,
     selection: Rectangle,
     viewport: ViewportSize,
+    session_id: Option<u64>,
 ) -> Result<CapturedImage, String> {
-    let mut display = current_display(&app, "capture-selector")?;
+    let scan = active_scan(&app, session_id)?;
+    let mut display = scan.display;
     let selector = app
         .get_webview_window("capture-selector")
         .ok_or("Capture selector is unavailable")?;
@@ -411,40 +537,33 @@ async fn capture_selection(
         "YomiMado: selector actual={:?} monitor={:?}",
         display.selector_physical_bounds, display.physical_bounds
     );
-    let capture = Arc::clone(&state.capture);
-    // Give the window compositor time to remove the selection UI before xcap
-    // snapshots the monitor. The blocking work stays off the Tauri UI thread.
-    let result = tauri::async_runtime::spawn_blocking(move || {
-        std::thread::sleep(std::time::Duration::from_millis(180));
-        capture.capture(&display, selection)
-    })
-    .await;
-    let captured = match result {
-        Ok(Ok(captured)) => captured,
-        Ok(Err(error)) => return Err(error.to_string()),
-        Err(error) => return Err(error.to_string()),
-    };
-    let bounds = &captured.metadata.selection_physical_bounds;
-    eprintln!(
-        "YomiMado: capture viewport={:.0}x{:.0} selection=({:.0},{:.0},{:.0},{:.0}) physical=({:.0},{:.0},{:.0},{:.0}) image={}x{}",
-        viewport.width,
-        viewport.height,
-        selection.x,
-        selection.y,
-        selection.width,
-        selection.height,
-        bounds.x,
-        bounds.y,
-        bounds.width,
-        bounds.height,
-        captured.metadata.image_width,
-        captured.metadata.image_height,
-    );
-    Ok(captured)
+    perform_capture(app, Arc::clone(&state.capture), display, selection, scan.id).await
 }
 
-#[cfg_attr(target_os = "windows", tauri::command(async))]
-#[cfg_attr(not(target_os = "windows"), tauri::command)]
+#[derive(Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
+enum OcrStage {
+    Requesting,
+    Recognized,
+    Publishing,
+}
+
+#[tauri::command(async)]
+fn report_ocr_stage(
+    window: tauri::WebviewWindow,
+    state: tauri::State<'_, AppState>,
+    session_id: u64,
+    stage: OcrStage,
+) -> Result<(), String> {
+    // Only log stage metadata for the current selector; never image/text data.
+    if window.label() == "capture-selector" && state.scans.lock()?.active(Some(session_id)).is_ok()
+    {
+        eprintln!("YomiMado: scan={session_id} OCR stage={stage:?}");
+    }
+    Ok(())
+}
+
+#[tauri::command(async)]
 fn show_ocr_overlay(
     app: AppHandle,
     state: tauri::State<'_, AppState>,
@@ -452,7 +571,16 @@ fn show_ocr_overlay(
     regions: serde_json::Value,
     engine: String,
     estimated_reading_order: bool,
+    session_id: Option<u64>,
 ) -> Result<(), String> {
+    let mut session = state.scans.lock()?;
+    let id = session.active(session_id)?.id;
+    toolbar::live_display(&app, &session.active(Some(id))?.display)?;
+    if session.active(Some(id))?.captured.is_none() {
+        return Err("No capture is available".into());
+    }
+    // Keep publication and cancellation mutually exclusive; old OCR replies
+    // cannot replace a later result after cancellation or a new scan.
     overlay::show_overlay(
         &app,
         &state.overlay,
@@ -460,7 +588,12 @@ fn show_ocr_overlay(
         regions,
         &engine,
         estimated_reading_order,
+        id,
     )?;
+    let scan = session.complete(id, estimated_reading_order)?;
+    toolbar::restore_windows(&app, &scan, false)?;
+    drop(session);
+    toolbar::emit_state(&app);
     eprintln!("YomiMado: OCR overlay displayed ({engine})");
     Ok(())
 }
@@ -470,16 +603,174 @@ fn get_overlay_state(state: tauri::State<'_, AppState>) -> Result<serde_json::Va
     state.overlay.get()
 }
 
-#[cfg_attr(target_os = "windows", tauri::command(async))]
-#[cfg_attr(not(target_os = "windows"), tauri::command)]
+#[tauri::command(async)]
+fn update_overlay_controls(
+    window: tauri::WebviewWindow,
+    session_id: u64,
+    revision: u64,
+    rectangles: Vec<Rectangle>,
+    viewport_width: f64,
+    viewport_height: f64,
+    view_query: String,
+) -> Result<(), String> {
+    if window.label() != "ocr-overlay"
+        || window.url().map_err(|e| e.to_string())?.query() != Some(view_query.as_str())
+    {
+        return Ok(());
+    }
+    #[cfg(debug_assertions)]
+    if std::env::var_os("YOMIMADO_OVERLAY_GEOMETRY_DEBUG").is_some() {
+        eprintln!(
+            "YomiMado viewport: {}",
+            serde_json::json!({
+                "sessionId": session_id, "width": viewport_width, "height": viewport_height,
+                "windowWidth": window.inner_size().map(|size| size.width).ok(),
+                "windowHeight": window.inner_size().map(|size| size.height).ok(),
+            })
+        );
+    }
+    let app = window.app_handle().clone();
+    let state = app.state::<AppState>();
+    let result = state.overlay_input.controls(
+        &app,
+        session_id,
+        revision,
+        rectangles,
+        viewport_width,
+        viewport_height,
+    );
+    if let Err(error) = &result {
+        let mut session = state.scans.lock()?;
+        if session.active.is_none() && session.completed_id == Some(session_id) {
+            state.overlay_input.disable(&app)?;
+            window.hide().map_err(|e| e.to_string())?;
+            session.overlay_visible = false;
+            session.phase = "error";
+            session.message = format!("Could not configure region navigation: {error}");
+            session.revision += 1;
+            drop(session);
+            toolbar::emit_state(&app);
+        }
+    }
+    result
+}
+
+#[tauri::command(async)]
+fn focus_ocr_regions(app: AppHandle) -> Result<(), String> {
+    let state = app.state::<AppState>();
+    let session = state.scans.lock()?;
+    if session.active.is_some() || !session.overlay_visible || !state.overlay_input.is_active() {
+        return Err("Show an OCR result before focusing its regions.".into());
+    }
+    let window = app
+        .get_webview_window("ocr-overlay")
+        .ok_or("OCR overlay is unavailable")?;
+    window.set_focus().map_err(|e| e.to_string())?;
+    window
+        .emit("focus-ocr-region", serde_json::json!({"regionId":null}))
+        .map_err(|e| e.to_string())
+}
+
+#[tauri::command(async)]
+fn hide_focused_overlay(app: AppHandle) -> Result<(), String> {
+    toolbar::set_overlay_visibility(app.clone(), false)?;
+    if let Some(window) = app.get_webview_window("toolbar") {
+        window.set_focus().map_err(|e| e.to_string())?;
+    }
+    Ok(())
+}
+
+#[tauri::command(async)]
+fn close_translation_popup(
+    app: AppHandle,
+    window: tauri::WebviewWindow,
+    view_query: String,
+    return_focus: bool,
+) -> Result<(), String> {
+    if window.label() != "translation-popup"
+        || window.url().map_err(|e| e.to_string())?.query() != Some(view_query.as_str())
+    {
+        return Ok(());
+    }
+    let state = app.state::<AppState>();
+    let return_region = state.overlay_input.take_popup_return();
+    let was_focused = window.is_visible().map_err(|e| e.to_string())?
+        && window.is_focused().map_err(|e| e.to_string())?;
+    window.hide().map_err(|e| e.to_string())?;
+    // Only explicit keyboard dismissal returns to the navigator that opened it.
+    // Blur dismissal never activates the overlay or steals focus from the reader.
+    if return_focus && was_focused {
+        let session = state.scans.lock()?;
+        if session.active.is_none() && session.overlay_visible {
+            if let (Some(region_id), Some(window)) =
+                (return_region, app.get_webview_window("ocr-overlay"))
+            {
+                window.set_focus().map_err(|e| e.to_string())?;
+                window
+                    .emit(
+                        "focus-ocr-region",
+                        serde_json::json!({"regionId":region_id}),
+                    )
+                    .map_err(|e| e.to_string())?;
+            }
+        }
+    }
+    Ok(())
+}
+
+#[tauri::command(async)]
 fn show_translation_popup(
     app: AppHandle,
     metadata: CaptureMetadata,
     text: String,
     polygon: Vec<overlay::OcrPoint>,
-    demo: bool,
+    region_id: Option<String>,
+    session_id: Option<u64>,
+    keyboard: Option<bool>,
 ) -> Result<(), String> {
-    overlay::show_translation_popup(&app, &metadata, &text, &polygon, demo)
+    let state = app.state::<AppState>();
+    let session = state.scans.lock()?;
+    if session.active.is_some()
+        || !session.overlay_visible
+        || (session_id.is_some() && session_id != session.completed_id)
+    {
+        return Err("This OCR result is no longer visible. Show it or rescan first.".into());
+    }
+    let overlay = state.overlay.get()?;
+    // The stored OCR result owns its engine; the frontend need not repeat it.
+    let demo = overlay["engine"].as_str() == Some("demo");
+    let region = overlay["regions"].as_array().and_then(|regions| {
+        regions
+            .iter()
+            .find(|region| region["id"].as_str() == region_id.as_deref())
+    });
+    let review = region
+        .filter(|region| region["needsReview"].as_bool().unwrap_or(false))
+        .map(|region| {
+            region["reviewReason"]
+                .as_str()
+                .unwrap_or("Check the OCR text against the page.")
+        });
+    let approximate = region.is_some_and(|region| region["geometrySource"].as_str().is_some());
+    let result = overlay::show_translation_popup(
+        &app,
+        &metadata,
+        &text,
+        &polygon,
+        demo,
+        review,
+        approximate,
+    );
+    if result.is_ok() {
+        state
+            .overlay_input
+            .remember_popup(if keyboard.unwrap_or(false) {
+                region_id
+            } else {
+                None
+            });
+    }
+    result
 }
 
 #[tauri::command]
@@ -487,12 +778,18 @@ fn resize_translation_popup(
     app: AppHandle,
     placement: overlay::PopupPlacement,
     logical_height: f64,
+    view_query: String,
 ) -> Result<(), String> {
-    overlay::resize_translation_popup(&app, placement, logical_height)
+    overlay::resize_translation_popup(&app, placement, logical_height, &view_query)
 }
 
-#[tauri::command]
+#[tauri::command(async)]
 fn close_ocr_overlay(app: AppHandle, state: tauri::State<'_, AppState>) -> Result<(), String> {
+    let mut session = state.scans.lock()?;
+    if session.active.is_some() {
+        return Err("Finish or cancel the scan before closing its overlay.".into());
+    }
+    state.overlay_input.disable(&app)?;
     if let Some(window) = app.get_webview_window("translation-popup") {
         window.close().map_err(|error| error.to_string())?;
     }
@@ -500,12 +797,65 @@ fn close_ocr_overlay(app: AppHandle, state: tauri::State<'_, AppState>) -> Resul
         window.close().map_err(|error| error.to_string())?;
     }
     state.overlay.clear()?;
+    session.overlay_visible = false;
+    session.revision += 1;
+    drop(session);
+    toolbar::emit_state(&app);
     Ok(())
 }
 
 pub fn run() {
     tauri::Builder::default()
         .on_window_event(|window, event| {
+            if window.label() == "ocr-overlay"
+                && matches!(
+                    event,
+                    tauri::WindowEvent::Moved(_)
+                        | tauri::WindowEvent::Resized(_)
+                        | tauri::WindowEvent::ScaleFactorChanged { .. }
+                )
+            {
+                let app = window.app_handle().clone();
+                tauri::async_runtime::spawn_blocking(move || {
+                    if let Err(error) = overlay::check_frame(&app) {
+                        eprintln!("YomiMado: could not validate OCR window geometry: {error}");
+                    }
+                });
+            }
+            if let tauri::WindowEvent::CloseRequested { api, .. } = event {
+                if window.label() == "toolbar" {
+                    api.prevent_close();
+                    return;
+                }
+                if toolbar::SECONDARY_WINDOW_LABELS.contains(&window.label())
+                    || window.label() == "capture-selector"
+                {
+                    api.prevent_close();
+                    if let Err(error) = window.hide() {
+                        eprintln!("YomiMado: could not hide window: {error}");
+                    }
+                    if window.label() == "capture-selector" {
+                        let app = window.app_handle().clone();
+                        let id = app.state::<AppState>().scans.selector_id();
+                        tauri::async_runtime::spawn_blocking(move || {
+                            if let Some(id) = id {
+                                if let Err(error) = toolbar::stop_scan(&app, Some(id), "", false) {
+                                    eprintln!("YomiMado: could not cancel scan: {error}");
+                                }
+                            }
+                        });
+                    }
+                }
+            }
+            if window.label() == "toolbar"
+                && matches!(
+                    event,
+                    tauri::WindowEvent::Moved(_) | tauri::WindowEvent::ScaleFactorChanged { .. }
+                )
+            {
+                let app = window.app_handle().clone();
+                tauri::async_runtime::spawn_blocking(move || toolbar::emit_state(&app));
+            }
             if window.label() == "translation-popup"
                 && matches!(event, tauri::WindowEvent::Focused(false))
             {
@@ -514,6 +864,29 @@ pub fn run() {
                 if let Err(error) = window.hide() {
                     eprintln!("YomiMado: failed to hide translation popup: {error}");
                 }
+            }
+            if matches!(window.label(), "toolbar" | "toolbar-menu")
+                && matches!(event, tauri::WindowEvent::Focused(false))
+            {
+                let app = window.app_handle().clone();
+                tauri::async_runtime::spawn(async move {
+                    // Query after the focus transition: clicking the toolbar
+                    // must leave the menu alive long enough for its toggle action.
+                    tauri::async_runtime::spawn_blocking(move || {
+                        let toolbar_focused = app
+                            .get_webview_window("toolbar")
+                            .is_some_and(|toolbar| toolbar.is_focused().unwrap_or(false));
+                        let menu_visible = app
+                            .get_webview_window("toolbar-menu")
+                            .is_some_and(|menu| menu.is_visible().unwrap_or(false));
+                        let menu_focused = app
+                            .get_webview_window("toolbar-menu")
+                            .is_some_and(|menu| menu.is_focused().unwrap_or(false));
+                        if !toolbar_focused && !menu_focused && menu_visible {
+                            let _ = toolbar::close_toolbar_menu(app, None);
+                        }
+                    });
+                });
             }
         })
         .plugin(GlobalShortcutBuilder::new().build())
@@ -532,13 +905,15 @@ pub fn run() {
                 Ok(service) => (Some(service), None),
                 Err(error) => (None, Some(error.to_string())),
             };
-            #[cfg(all(debug_assertions, target_os = "windows"))]
-            let windows_service = None;
             app.manage(AppState {
                 capture: Arc::new(XcapScreenCapture::new()),
                 overlay: overlay::OverlayStore::default(),
+                overlay_input: overlay::input::InputRouter::default(),
+                scans: toolbar::ScanStore::default(),
+                toolbar_layout: Mutex::new(toolbar::ToolbarLayout::default()),
+                toolbar_menu: toolbar::ToolbarMenuStore::default(),
                 service: Mutex::new(service),
-                #[cfg(target_os = "windows")]
+                #[cfg(all(not(debug_assertions), target_os = "windows"))]
                 windows_service: Mutex::new(windows_service),
             });
             #[cfg(all(not(debug_assertions), target_os = "windows"))]
@@ -548,6 +923,9 @@ pub fn run() {
                 // here deadlocks it; returning a setup error destroys it early.
                 if let Some(main) = app.get_webview_window("main") {
                     main.hide()?;
+                }
+                if let Some(toolbar) = app.get_webview_window("toolbar") {
+                    toolbar.hide()?;
                 }
                 let handle = app.handle().clone();
                 app.dialog()
@@ -563,17 +941,37 @@ pub fn run() {
                     dispatch_capture_shortcut(app.clone(), "");
                 }
             })?;
-            let saved_area =
-                Shortcut::try_from(SAVED_AREA_SHORTCUT).map_err(|error| error.to_string())?;
+            let whole_screen =
+                Shortcut::try_from(WHOLE_SCREEN_SHORTCUT).map_err(|error| error.to_string())?;
             app.global_shortcut()
-                .on_shortcut(saved_area, |app, _, event| {
+                .on_shortcut(whole_screen, |app, _, event| {
                     if event.state() == ShortcutState::Pressed {
-                        dispatch_capture_shortcut(app.clone(), "scan=auto");
+                        dispatch_capture_shortcut(app.clone(), "scan=whole");
                     }
                 })?;
+            toolbar::setup(app.handle())?;
+            app.state::<AppState>().overlay_input.start(app.handle());
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
+            toolbar::get_toolbar_state,
+            toolbar::start_toolbar_scan,
+            toolbar::rescan,
+            toolbar::set_overlay_visibility,
+            toolbar::show_secondary_window,
+            toolbar::show_toolbar_menu,
+            toolbar::close_toolbar_menu,
+            toolbar::position_toolbar_menu,
+            toolbar::resize_toolbar,
+            toolbar::move_toolbar,
+            toolbar::drag_toolbar,
+            toolbar::quit_app,
+            toolbar::finish_scan,
+            toolbar::hide_finished_selector,
+            toolbar::reveal_ocr_overlay,
+            toolbar::resume_capture_selection,
+            capture_whole_screen,
+            capture_repeat_scan,
             detector_model::detector_model_status,
             detector_model::install_detector_model,
             show_capture_selector,
@@ -584,8 +982,13 @@ pub fn run() {
             capture_selection,
             capture_display,
             capture_auto_page,
+            report_ocr_stage,
             show_ocr_overlay,
             get_overlay_state,
+            update_overlay_controls,
+            focus_ocr_regions,
+            hide_focused_overlay,
+            close_translation_popup,
             show_translation_popup,
             resize_translation_popup,
             close_ocr_overlay
@@ -594,7 +997,8 @@ pub fn run() {
         .expect("error while building YomiMado")
         .run(|app, event| {
             if matches!(event, tauri::RunEvent::Exit) {
-                #[cfg(target_os = "windows")]
+                app.state::<AppState>().overlay_input.stop();
+                #[cfg(all(not(debug_assertions), target_os = "windows"))]
                 if let Ok(mut service) = app.state::<AppState>().windows_service.lock() {
                     // Drop closes the job and terminates its entire service tree.
                     service.take();
@@ -614,10 +1018,71 @@ mod tests {
     use super::*;
 
     #[test]
-    fn manual_and_saved_area_shortcuts_are_distinct() {
+    fn manual_and_whole_screen_shortcuts_are_distinct() {
         let manual = Shortcut::try_from(MANUAL_CAPTURE_SHORTCUT).unwrap();
-        let saved_area = Shortcut::try_from(SAVED_AREA_SHORTCUT).unwrap();
-        assert_ne!(manual, saved_area);
+        let whole_screen = Shortcut::try_from(WHOLE_SCREEN_SHORTCUT).unwrap();
+        assert_ne!(manual, whole_screen);
+    }
+
+    #[test]
+    fn whole_screen_keeps_every_pixel_despite_a_retina_selector_menu_bar_inset() {
+        let bounds = Rectangle {
+            x: 0.0,
+            y: 0.0,
+            width: 2940.0,
+            height: 1912.0,
+        };
+        let mut display = DisplayInfo {
+            id: "retina".into(),
+            name: "Retina".into(),
+            physical_bounds: bounds,
+            selector_physical_bounds: Rectangle { y: 66.0, ..bounds },
+            scale_factor: 2.0,
+            viewport_width: 1470.0,
+            viewport_height: 956.0,
+        };
+        let selection = full_display_selection(&mut display, bounds).unwrap();
+        let physical = XcapScreenCapture::physical_selection(&display, selection).unwrap();
+        assert_eq!(
+            (physical.x, physical.y, physical.width, physical.height),
+            (0.0, 0.0, 2940.0, 1912.0)
+        );
+    }
+
+    #[test]
+    fn repeating_a_physical_area_on_a_left_monitor_preserves_fractional_scaling() {
+        for scale in [1.0, 1.25, 1.5, 2.0] {
+            let bounds = Rectangle {
+                x: -2560.0,
+                y: -1440.0,
+                width: 2560.0,
+                height: 1440.0,
+            };
+            let area = Rectangle {
+                x: -2300.0,
+                y: -1200.0,
+                width: 640.0,
+                height: 800.0,
+            };
+            let mut display = DisplayInfo {
+                id: "left".into(),
+                name: "Left".into(),
+                physical_bounds: bounds,
+                selector_physical_bounds: Rectangle {
+                    y: -1400.0,
+                    ..bounds
+                },
+                scale_factor: scale,
+                viewport_width: 1.0,
+                viewport_height: 1.0,
+            };
+            let selection = full_display_selection(&mut display, area).unwrap();
+            let physical = XcapScreenCapture::physical_selection(&display, selection).unwrap();
+            assert_eq!(
+                (physical.x, physical.y, physical.width, physical.height),
+                (area.x, area.y, area.width, area.height)
+            );
+        }
     }
 
     #[test]

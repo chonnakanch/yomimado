@@ -9,70 +9,7 @@ Set-StrictMode -Version Latest
 if ($env:GITHUB_ACTIONS -ne 'true' -or $env:PROCESSOR_ARCHITECTURE -ne 'AMD64') {
     throw 'UI automation is restricted to the disposable Windows x64 Actions runner.'
 }
-Add-Type -AssemblyName UIAutomationClient
-Add-Type -AssemblyName UIAutomationTypes
-Add-Type -AssemblyName System.Windows.Forms
-Add-Type @'
-using System;
-using System.Collections.Generic;
-using System.Runtime.InteropServices;
-using System.Text;
-public static class YomiMadoUiNative {
-    private delegate bool EnumCallback(IntPtr window, IntPtr parameter);
-    [DllImport("user32.dll")] private static extern bool EnumWindows(EnumCallback callback, IntPtr parameter);
-    [DllImport("user32.dll")] private static extern bool EnumChildWindows(IntPtr parent, EnumCallback callback, IntPtr parameter);
-    [DllImport("user32.dll")] private static extern uint GetWindowThreadProcessId(IntPtr window, out uint process);
-    [DllImport("user32.dll", CharSet=CharSet.Unicode)] private static extern int GetWindowText(IntPtr window, StringBuilder text, int count);
-    [DllImport("user32.dll")] private static extern int GetDlgCtrlID(IntPtr window);
-    [DllImport("user32.dll")] public static extern bool IsWindowVisible(IntPtr window);
-    [DllImport("user32.dll")] public static extern bool IsWindowEnabled(IntPtr window);
-    [DllImport("user32.dll")] public static extern bool IsIconic(IntPtr window);
-    [DllImport("user32.dll")] public static extern bool SetForegroundWindow(IntPtr window);
-    [DllImport("user32.dll")] public static extern IntPtr GetForegroundWindow();
-    [DllImport("user32.dll", SetLastError=true)] private static extern bool PostMessage(IntPtr window, uint message, IntPtr wParam, IntPtr lParam);
-    [DllImport("user32.dll", SetLastError=true)] private static extern IntPtr SendMessageTimeout(IntPtr window, uint message, IntPtr wParam, IntPtr lParam, uint flags, uint timeout, out IntPtr result);
-    public static IntPtr[] Windows(uint process) {
-        var windows = new List<IntPtr>();
-        EnumWindows((window, parameter) => {
-            uint owner; GetWindowThreadProcessId(window, out owner);
-            if (owner == process && IsWindowVisible(window)) windows.Add(window);
-            return true;
-        }, IntPtr.Zero);
-        return windows.ToArray();
-    }
-    public static string Text(IntPtr window) {
-        var text = new StringBuilder(512);
-        GetWindowText(window, text, text.Capacity);
-        return text.ToString();
-    }
-    public static IntPtr CancelButton(IntPtr dialog) {
-        IntPtr cancel = IntPtr.Zero;
-        EnumChildWindows(dialog, (window, parameter) => {
-            // IDCANCEL is the native common-dialog control ID. The runner is
-            // English; require its label and state before sending a click.
-            if (GetDlgCtrlID(window) == 2 && Text(window).Replace("&", "") == "Cancel"
-                && IsWindowVisible(window) && IsWindowEnabled(window)) cancel = window;
-            return true;
-        }, IntPtr.Zero);
-        return cancel;
-    }
-    public static string[] Controls(IntPtr dialog) {
-        var controls = new List<string>();
-        EnumChildWindows(dialog, (window, parameter) => {
-            controls.Add(GetDlgCtrlID(window) + ":" + Text(window));
-            return controls.Count < 100;
-        }, IntPtr.Zero);
-        return controls.ToArray();
-    }
-    public static bool ClickButton(IntPtr button) {
-        return PostMessage(button, 0x00F5, IntPtr.Zero, IntPtr.Zero); // BM_CLICK
-    }
-    public static bool Responding(IntPtr window) {
-        IntPtr result;
-        return SendMessageTimeout(window, 0, IntPtr.Zero, IntPtr.Zero, 2, 1000, out result) != IntPtr.Zero;
-    }
-}
-'@
+. (Join-Path $PSScriptRoot 'windows-ui-driver.ps1')
 $Root = Split-Path -Parent $PSScriptRoot
 $Data = Join-Path $env:APPDATA 'com.yomimado.desktop'
 $ModelPath = Join-Path $Data 'models/comictextdetector.pt.onnx'
@@ -84,6 +21,7 @@ if (Test-Path $ModelPath) { throw 'Expected a fresh Actions profile without a de
 $Process = $null
 $SecondProcess = $null
 $MainWindow = [IntPtr]::Zero
+$ToolbarWindow = [IntPtr]::Zero
 $ModelCreated = $false
 $Record = @{
     windows11HardwareVerified=$false; cases=@();
@@ -92,47 +30,37 @@ $Record = @{
 
 function Wait-Check {
     param([scriptblock]$Check, [string]$Failure, [int]$Seconds=40)
-    $Deadline = (Get-Date).AddSeconds($Seconds)
-    do {
-        $Process.Refresh()
-        if ($Process.HasExited) { throw "Installed desktop exited during UI check: $($Process.ExitCode)" }
-        if (& $Check) { return }
-        Start-Sleep -Milliseconds 200
-    } while ((Get-Date) -lt $Deadline)
-    throw $Failure
+    Wait-YomiMadoUi $Process $Check $Failure $Seconds
 }
 function Get-Button {
-    param([string]$Name)
-    $Window = [System.Windows.Automation.AutomationElement]::FromHandle($MainWindow)
-    $Condition = New-Object System.Windows.Automation.AndCondition -ArgumentList @(
-        (New-Object System.Windows.Automation.PropertyCondition -ArgumentList @([System.Windows.Automation.AutomationElement]::ControlTypeProperty, [System.Windows.Automation.ControlType]::Button)),
-        (New-Object System.Windows.Automation.PropertyCondition -ArgumentList @([System.Windows.Automation.AutomationElement]::NameProperty, $Name))
-    )
-    return $Window.FindFirst([System.Windows.Automation.TreeScope]::Descendants, $Condition)
+    param([string]$Name, [IntPtr]$Window=$script:MainWindow)
+    return Get-YomiMadoAction $Window $Name
 }
 function Start-TestApp {
     $script:Process = Start-Process (Join-Path $Installed 'yomimado.exe') -PassThru
-    Wait-Check { $Process.MainWindowHandle -ne [IntPtr]::Zero -and [YomiMadoUiNative]::Responding($Process.MainWindowHandle) } 'Main window never became responsive.' 75
-    $script:MainWindow = $Process.MainWindowHandle
-    Wait-Check { $null -ne (Get-Button 'Scan manga page') } 'Installed main UI did not load.'
+    $script:ToolbarWindow = Wait-YomiMadoWindow $Process 'YomiMado toolbar'
+    $script:MainWindow = $ToolbarWindow
+    Wait-Check { $null -ne (Get-Button 'Selected Area') -and $null -ne (Get-Button 'Whole Screen') } 'Installed toolbar did not load.'
+}
+function Open-TestSettings {
+    Invoke-YomiMadoMenuAction $Process 'Settings'
+    $script:MainWindow = Wait-YomiMadoWindow $Process 'YomiMado*Settings'
 }
 function Stop-TestApp {
-    if (-not $Process.CloseMainWindow()) { throw 'Main window did not accept normal close.' }
-    if (-not $Process.WaitForExit(15000)) { throw 'Main window froze during normal quit.' }
+    Stop-YomiMadoViaMenu $Process
 }
 function Invoke-Button {
     param([string]$Name)
-    $Button = Get-Button $Name
-    if ($null -eq $Button -or -not $Button.Current.IsEnabled) { throw "Button is unavailable: $Name" }
-    $Button.GetCurrentPattern([System.Windows.Automation.InvokePattern]::Pattern).Invoke()
+    Invoke-YomiMadoAction $MainWindow $Name
 }
 
 try {
     $Record.phase = 'missing model and startup conflict'
     Start-TestApp
+    Open-TestSettings
     Wait-Check { $null -ne (Get-Button 'Select detector model file') } 'Windows release hides detector import.'
-    foreach ($Name in @('Select screen region', 'Scan manga page', 'Set/adjust scan area')) {
-        if ((Get-Button $Name).Current.IsEnabled) { throw "Scan is enabled without a detector: $Name" }
+    foreach ($Name in @('Selected Area', 'Whole Screen')) {
+        if ((Get-Button $Name $ToolbarWindow).Current.IsEnabled) { throw "Scan is enabled without a detector: $Name" }
     }
     $Record.missingModelPanel = $true
     Write-Host 'Missing-model panel and disabled scan buttons passed.'
@@ -193,7 +121,7 @@ try {
         $Button = Get-Button 'Select detector model file'
         $null -ne $Button -and $Button.Current.IsEnabled
     } 'Cancelled model import did not finish in the frontend.'
-    if ((Get-Button 'Scan manga page').Current.IsEnabled) { throw 'Cancelled import incorrectly enables scanning.' }
+    if ((Get-Button 'Whole Screen' $ToolbarWindow).Current.IsEnabled) { throw 'Cancelled import incorrectly enables scanning.' }
     $Record.modelDialogCancellation = $true
     Write-Host 'Model import dialog cancellation passed.'
     Stop-TestApp
@@ -202,12 +130,20 @@ try {
     Copy-Item $DetectorModel $ModelPath
     $ModelCreated = $true
     Start-TestApp
+    Open-TestSettings
     Wait-Check { $null -ne (Get-Button 'Replace detector model') } 'Staged user model was not recognized.'
+    $SettingsWindow = $MainWindow
+    if (-not [YomiMadoUiNative]::CloseWindow($SettingsWindow)) { throw 'Cannot close Settings.' }
+    Wait-Check { -not [YomiMadoUiNative]::IsWindowVisible($SettingsWindow) -and [YomiMadoUiNative]::IsWindowVisible($ToolbarWindow) } 'Closing Settings did not leave the toolbar running.'
+    $Record.settingsCloseKeepsToolbar = $true
+    $script:MainWindow = $ToolbarWindow
+    Wait-Check {
+        (Get-Button 'Selected Area').Current.IsEnabled -and (Get-Button 'Whole Screen').Current.IsEnabled
+    } 'Installed detector did not enable the scan controls.'
     foreach ($Case in @(
-        @{name='manual selection button'; button='Select screen region'},
-        @{name='scan-area button'; button='Set/adjust scan area'},
+        @{name='manual selection button'; button='Selected Area'},
         @{name='manual shortcut'; keys='^+o'},
-        @{name='page-scan button'; button='Scan manga page'},
+        @{name='page-scan button'; button='Whole Screen'},
         @{name='page-scan shortcut'; keys='^+s'}
     )) {
         $Record.phase = $Case.name
@@ -216,7 +152,7 @@ try {
         else { [System.Windows.Forms.SendKeys]::SendWait($Case.keys) }
         Wait-Check {
             @([YomiMadoUiNative]::Windows($Process.Id) | Where-Object { $_ -ne $MainWindow }).Count -gt 0 -and
-            [YomiMadoUiNative]::IsIconic($MainWindow)
+            -not [YomiMadoUiNative]::IsWindowVisible($MainWindow)
         } "No selector appeared for $($Case.name); possible WebView2 deadlock."
         if (-not [YomiMadoUiNative]::Responding($MainWindow)) { throw "UI froze for $($Case.name)." }
         $script:Selector = [IntPtr]::Zero
@@ -225,10 +161,10 @@ try {
                 if ($Handle -eq $MainWindow) { continue }
                 $Element = [System.Windows.Automation.AutomationElement]::FromHandle($Handle)
                 $Names = ($Element.FindAll([System.Windows.Automation.TreeScope]::Descendants, [System.Windows.Automation.Condition]::TrueCondition) | ForEach-Object { $_.Current.Name }) -join ' '
-                # Page-scan's initial finding-page message precedes the
-                # transparent capture/repaint. Cancel the final selection UI,
-                # rather than sending a key while its WebView is still loading.
-                if ($Names -match 'Press Escape to (cancel|close)' -and $Names -notmatch 'Finding the manga page') {
+                # The disposable runner has no manga reader. Whole Screen
+                # should reach its draw-area fallback. Target the new edge
+                # hint, not the removed instruction card or a loading webview.
+                if ($Names -match 'Esc cancel' -and $Names -match 'Drag (to capture|around pages)') {
                     $script:Selector = $Handle
                     return $true
                 }
@@ -239,7 +175,7 @@ try {
         Wait-Check { [YomiMadoUiNative]::GetForegroundWindow() -eq $Selector } 'Capture selector did not receive foreground focus.'
         [System.Windows.Forms.SendKeys]::SendWait('{ESC}')
         Wait-Check {
-            -not [YomiMadoUiNative]::IsIconic($MainWindow) -and
+            [YomiMadoUiNative]::IsWindowVisible($MainWindow) -and
             -not [YomiMadoUiNative]::IsWindowVisible($Selector)
         } "Selector did not cancel for $($Case.name)."
         if (-not [YomiMadoUiNative]::Responding($MainWindow)) { throw 'Main window is unresponsive after cancellation.' }

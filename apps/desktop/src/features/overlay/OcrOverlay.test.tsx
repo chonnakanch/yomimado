@@ -2,14 +2,14 @@
 import { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { invoke } from "@tauri-apps/api/core";
+import { listen } from "@tauri-apps/api/event";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
-import {
-  readingOrderSettingKey,
-  saveReadingOrderEnabled,
-} from "../../lib/reading-order-setting";
 import { OcrOverlay } from "./OcrOverlay";
 
 vi.mock("@tauri-apps/api/core", () => ({ invoke: vi.fn() }));
+vi.mock("@tauri-apps/api/event", () => ({
+  listen: vi.fn().mockResolvedValue(vi.fn()),
+}));
 
 let container: HTMLDivElement;
 let root: Root;
@@ -28,90 +28,164 @@ afterEach(async () => {
   container.remove();
   window.history.replaceState({}, "", "/");
   vi.mocked(invoke).mockReset();
+  vi.unstubAllEnvs();
 });
 
-it("loads a text-heavy OCR result from native state instead of the URL", async () => {
-  const regions = Array.from({ length: 300 }, (_, index) => ({
-    id: `region-${index}`,
-    text: "日本語の長い文章".repeat(20),
-    polygon: [
-      { x: 10, y: 10 },
-      { x: 30, y: 10 },
-      { x: 30, y: 40 },
-      { x: 10, y: 40 },
-    ],
-    orientation: "vertical",
-    confidence: 0,
-    type: "dialogue",
-    tokens: [],
-    ...(index === 0
-      ? {
-          needsReview: true,
-          reviewReason: "Short text from detector mask; verify on page",
-        }
-      : {}),
-    ...(index === 1
-      ? {
-          geometrySource: "expandedCrop",
-          needsReview: true,
-          reviewReason: "Expanded short vertical crop; area approximate",
-        }
-      : {}),
-  }));
-  vi.mocked(invoke).mockResolvedValue({
-    metadata: {
-      displayId: "display",
-      displayName: "Display",
-      screenPhysicalBounds: { x: 0, y: 0, width: 1000, height: 800 },
-      selectionPhysicalBounds: { x: 0, y: 0, width: 1000, height: 800 },
-      selectionLogicalBounds: { x: 0, y: 0, width: 1000, height: 800 },
-      imageWidth: 1000,
-      imageHeight: 800,
-      scaleFactor: 1,
-    },
-    regions,
-    engine: "manga",
-    layout: {
-      windowWidth: 1000,
-      windowHeight: 800,
-      contentLeft: 0,
-      contentTop: 0,
-      contentWidth: 1000,
-      contentHeight: 800,
-      toolbarTop: 0,
-      toolbarHeight: 32,
-    },
-  });
+it.each([false, true])(
+  "loads OCR from native state, preserving accessible review labels with debug tooltips enabled=%s",
+  async (debug) => {
+    vi.stubEnv("VITE_CAPTURE_DEBUG", debug ? "1" : "0");
+    const regions = Array.from({ length: 300 }, (_, index) => ({
+      id: `region-${index}`,
+      text: "日本語の長い文章".repeat(20),
+      polygon: [
+        { x: 10, y: 10 },
+        { x: 30, y: 10 },
+        { x: 30, y: 40 },
+        { x: 10, y: 40 },
+      ],
+      orientation: "vertical",
+      confidence: 0,
+      type: "dialogue",
+      tokens: [],
+      ...(index === 0
+        ? {
+            needsReview: true,
+            reviewReason: "Short text from detector mask; verify on page",
+          }
+        : {}),
+      ...(index === 1
+        ? {
+            geometrySource: "expandedCrop",
+            needsReview: true,
+            reviewReason: "Expanded short vertical crop; area approximate",
+          }
+        : {}),
+    }));
+    vi.mocked(invoke).mockResolvedValue({
+      metadata: {
+        displayId: "display",
+        displayName: "Display",
+        screenPhysicalBounds: { x: 0, y: 0, width: 1000, height: 800 },
+        selectionPhysicalBounds: { x: 0, y: 0, width: 1000, height: 800 },
+        selectionLogicalBounds: { x: 0, y: 0, width: 1000, height: 800 },
+        imageWidth: 1000,
+        imageHeight: 800,
+        scaleFactor: 1,
+      },
+      regions,
+      engine: "manga",
+      layout: {
+        windowWidth: 1000,
+        windowHeight: 800,
+        contentLeft: 0,
+        contentTop: 0,
+        contentWidth: 1000,
+        contentHeight: 800,
+        toolbarTop: 0,
+        toolbarHeight: 32,
+      },
+    });
 
+    await act(async () => root.render(<OcrOverlay />));
+
+    expect(invoke).toHaveBeenCalledExactlyOnceWith("get_overlay_state");
+    expect(container.querySelectorAll("polygon.ocr-region")).toHaveLength(300);
+    const reviewRegion = container.querySelector(
+      "polygon.ocr-region.needs-review",
+    );
+    expect(reviewRegion).not.toBeNull();
+    if (debug)
+      expect(reviewRegion?.querySelector("title")?.textContent).toContain(
+        "verify on page",
+      );
+    else expect(container.querySelector("polygon title")).toBeNull();
+    expect(reviewRegion?.getAttribute("aria-label")).toContain("Review OCR");
+    expect(
+      container
+        .querySelector("polygon.approximate")
+        ?.getAttribute("aria-label"),
+    ).toContain("Approximate region");
+    expect(container.querySelector(".overlay-reading-order-panel")).toBeNull();
+    expect(
+      container.querySelectorAll("polygon.ocr-region.approximate"),
+    ).toHaveLength(1);
+    expect(window.location.search).toBe("?mode=overlay");
+
+    await act(async () => {
+      reviewRegion?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    });
+    expect(invoke).toHaveBeenCalledWith(
+      "show_translation_popup",
+      expect.objectContaining({ text: regions[0].text }),
+    );
+  },
+);
+
+it("mounts the current polygons before revealing a reused native overlay", async () => {
+  vi.mocked(invoke).mockImplementation(async (command) => {
+    if (command === "reveal_ocr_overlay") {
+      expect(container.querySelectorAll("polygon")).toHaveLength(1);
+      expect(
+        container.querySelector("polygon")?.getAttribute("aria-label"),
+      ).toContain("今日");
+      return {
+        windowWidth: 1000,
+        windowHeight: 800,
+        contentLeft: 0,
+        contentTop: 0,
+        contentWidth: 1000,
+        contentHeight: 800,
+        toolbarTop: 0,
+        toolbarHeight: 32,
+      };
+    }
+    return {
+      sessionId: 90,
+      metadata: {
+        displayId: "display",
+        displayName: "Display",
+        screenPhysicalBounds: { x: 0, y: 0, width: 1000, height: 800 },
+        selectionPhysicalBounds: { x: 0, y: 0, width: 1000, height: 800 },
+        selectionLogicalBounds: { x: 0, y: 0, width: 1000, height: 800 },
+        imageWidth: 1000,
+        imageHeight: 800,
+        scaleFactor: 1,
+      },
+      regions: [
+        {
+          id: "current",
+          text: "今日",
+          polygon: [
+            { x: 1, y: 1 },
+            { x: 20, y: 1 },
+            { x: 20, y: 40 },
+          ],
+          orientation: "vertical",
+          confidence: 0,
+          type: "other",
+          tokens: [],
+        },
+      ],
+      engine: "manga",
+      layout: {
+        windowWidth: 1000,
+        windowHeight: 800,
+        contentLeft: 0,
+        contentTop: 0,
+        contentWidth: 1000,
+        contentHeight: 800,
+        toolbarTop: 0,
+        toolbarHeight: 32,
+      },
+    };
+  });
   await act(async () => root.render(<OcrOverlay />));
-
-  expect(invoke).toHaveBeenCalledExactlyOnceWith("get_overlay_state");
-  expect(container.querySelectorAll("polygon.ocr-region")).toHaveLength(300);
-  const reviewRegion = container.querySelector(
-    "polygon.ocr-region.needs-review",
-  );
-  expect(reviewRegion).not.toBeNull();
-  expect(reviewRegion?.querySelector("title")?.textContent).toContain(
-    "verify on page",
-  );
-  expect(container.textContent).toContain("Dashed gold: check OCR text");
-  expect(container.textContent).toContain("Approximate OCR area");
-  expect(container.querySelector(".overlay-reading-order-panel")).toBeNull();
-  expect(
-    container.querySelectorAll("polygon.ocr-region.approximate"),
-  ).toHaveLength(1);
-  expect(window.location.search).toBe("?mode=overlay");
-
-  await act(async () => {
-    reviewRegion?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
-  });
-  expect(invoke).toHaveBeenCalledWith(
-    "show_translation_popup",
-    expect.objectContaining({ text: regions[0].text }),
-  );
+  expect(invoke).toHaveBeenCalledWith("reveal_ocr_overlay", { sessionId: 90 });
 });
 
-it("steps through estimated scan order and opens the selected region", async () => {
+it("replaces the old reading panel without auto-selecting or stealing focus", async () => {
+  window.localStorage.setItem("yomimado.reading-order.enabled.v1", "true");
   const metadata = {
     displayId: "display",
     displayName: "Display",
@@ -157,60 +231,181 @@ it("steps through estimated scan order and opens the selected region", async () 
   expect(container.querySelector(".overlay-reading-order-panel")).toBeNull();
   expect(container.querySelector("polygon.ocr-region.active")).toBeNull();
 
-  await act(async () => {
-    saveReadingOrderEnabled(true);
-    window.dispatchEvent(
-      new StorageEvent("storage", { key: readingOrderSettingKey }),
-    );
+  expect(document.activeElement).toBe(document.body);
+  expect(container.querySelectorAll("button")).toHaveLength(0);
+});
+
+it("opens only on explicit activation and provides keyboard navigation and hide", async () => {
+  let onFocus:
+    ((event: { payload: { regionId: string | null } }) => void) | undefined;
+  const unlisten = vi.fn();
+  vi.mocked(listen).mockImplementation(async (_name, callback) => {
+    onFocus = callback as typeof onFocus;
+    return unlisten;
   });
-  expect(
-    container.querySelector(".overlay-reading-order-panel"),
-  ).not.toBeNull();
-  expect(
-    container.querySelector(".overlay-reading-order-count")?.textContent,
-  ).toBe("1/2");
-  expect(
-    container.querySelector(".overlay-reading-order-text")?.textContent,
-  ).toBe("短い");
-  expect(
-    container.querySelector(
-      ".overlay-reading-order-nav .overlay-reading-order-text",
+  const metadata = {
+    displayId: "left",
+    displayName: "Left",
+    screenPhysicalBounds: { x: -1000, y: 0, width: 1000, height: 800 },
+    selectionPhysicalBounds: { x: -1000, y: 0, width: 1000, height: 800 },
+    selectionLogicalBounds: { x: -1000, y: 0, width: 1000, height: 800 },
+    imageWidth: 1000,
+    imageHeight: 800,
+    scaleFactor: 1,
+  };
+  const regions = ["今日", "学校"].map((text, index) => ({
+    id: String(index),
+    text,
+    polygon: [
+      { x: 10 + index * 100, y: 10 },
+      { x: 60 + index * 100, y: 10 },
+      { x: 60 + index * 100, y: 100 },
+      { x: 10 + index * 100, y: 100 },
+    ],
+    orientation: "vertical",
+    confidence: 0,
+    type: "dialogue",
+    tokens: [],
+  }));
+  vi.mocked(invoke).mockResolvedValue({
+    metadata,
+    regions,
+    engine: "manga",
+    layout: {
+      windowWidth: 1000,
+      windowHeight: 800,
+      contentLeft: 0,
+      contentTop: 0,
+      contentWidth: 1000,
+      contentHeight: 800,
+      toolbarTop: 0,
+      toolbarHeight: 32,
+    },
+  });
+  await act(async () => root.render(<OcrOverlay />));
+  const polygons = Array.from(
+    container.querySelectorAll<SVGPolygonElement>("polygon"),
+  );
+  const focusFirst = vi.fn();
+  const focusLast = vi.fn();
+  Object.defineProperty(polygons[0], "focus", { value: focusFirst });
+  Object.defineProperty(polygons[1], "focus", { value: focusLast });
+  expect(polygons[0].getAttribute("role")).toBe("button");
+  expect(polygons[0].getAttribute("tabindex")).toBe("0");
+  expect(polygons[1].getAttribute("tabindex")).toBe("-1");
+  await act(async () =>
+    polygons[0].dispatchEvent(new MouseEvent("mouseenter", { bubbles: true })),
+  );
+  expect(invoke).not.toHaveBeenCalledWith(
+    "show_translation_popup",
+    expect.anything(),
+  );
+  await act(async () => onFocus?.({ payload: { regionId: null } }));
+  expect(focusFirst).toHaveBeenCalledOnce();
+  const navigator = container.querySelector<HTMLElement>(".ocr-overlay")!;
+  expect(document.activeElement).toBe(navigator);
+  // A webview that cannot focus SVG must receive arrows through the HTML target.
+  await act(async () =>
+    navigator.dispatchEvent(
+      new KeyboardEvent("keydown", { key: "ArrowRight", bubbles: true }),
     ),
-  ).toBeNull();
-  expect(
-    container.querySelector("polygon.ocr-region.active title")?.textContent,
-  ).toContain("1. 短い");
-
-  await act(async () => {
-    container
-      .querySelector<HTMLButtonElement>('button[aria-label="Next text region"]')
-      ?.click();
-  });
-  expect(
-    container.querySelector(".overlay-reading-order-count")?.textContent,
-  ).toBe("2/2");
-  expect(
-    container.querySelector(".overlay-reading-order-text")?.textContent,
-  ).toBe("これは長い文章ですがボタンは動きません");
-
-  await act(async () => {
-    container
-      .querySelector<HTMLButtonElement>(
-        'button[aria-label="Open selected text region"]',
-      )
-      ?.click();
-  });
+  );
+  expect(polygons[1].getAttribute("aria-pressed")).toBe("true");
+  await act(async () =>
+    navigator.dispatchEvent(
+      new KeyboardEvent("keydown", { key: "ArrowLeft", bubbles: true }),
+    ),
+  );
+  expect(polygons[0].getAttribute("aria-pressed")).toBe("true");
+  await act(async () =>
+    polygons[0].dispatchEvent(
+      new KeyboardEvent("keydown", { key: "End", bubbles: true }),
+    ),
+  );
+  expect(focusLast).toHaveBeenCalledTimes(2);
+  expect(polygons[1].getAttribute("aria-pressed")).toBe("true");
+  await act(async () =>
+    navigator.dispatchEvent(
+      new KeyboardEvent("keydown", { key: "Enter", bubbles: true }),
+    ),
+  );
   expect(invoke).toHaveBeenCalledWith(
     "show_translation_popup",
-    expect.objectContaining({ text: "これは長い文章ですがボタンは動きません" }),
+    expect.objectContaining({ regionId: "1", text: "学校", keyboard: true }),
   );
+  // Native popup dismissal requests the selected region, not the first one.
+  await act(async () => onFocus?.({ payload: { regionId: "1" } }));
+  expect(polygons[1].getAttribute("aria-pressed")).toBe("true");
+  expect(document.activeElement).toBe(navigator);
+  await act(async () =>
+    navigator.dispatchEvent(
+      new KeyboardEvent("keydown", { key: "ArrowDown", bubbles: true }),
+    ),
+  );
+  expect(polygons[0].getAttribute("aria-pressed")).toBe("true");
+  await act(async () =>
+    window.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape" })),
+  );
+  expect(invoke).toHaveBeenCalledWith("hide_focused_overlay");
+  await act(async () => root.unmount());
+  expect(unlisten).toHaveBeenCalledOnce();
+  root = createRoot(container);
+  vi.mocked(listen).mockResolvedValue(vi.fn());
+});
 
-  await act(async () => {
-    saveReadingOrderEnabled(false);
-    window.dispatchEvent(
-      new StorageEvent("storage", { key: readingOrderSettingKey }),
-    );
+it("uses explicit demo labels and Space activation without inventing recognized text", async () => {
+  const metadata = {
+    displayId: "demo",
+    displayName: "Demo",
+    screenPhysicalBounds: { x: 0, y: 0, width: 100, height: 100 },
+    selectionPhysicalBounds: { x: 0, y: 0, width: 100, height: 100 },
+    selectionLogicalBounds: { x: 0, y: 0, width: 100, height: 100 },
+    imageWidth: 100,
+    imageHeight: 100,
+    scaleFactor: 1,
+  };
+  vi.mocked(invoke).mockResolvedValue({
+    metadata,
+    regions: [
+      {
+        id: "demo",
+        text: "Placeholder",
+        polygon: [
+          { x: 0, y: 0 },
+          { x: 100, y: 0 },
+          { x: 100, y: 100 },
+        ],
+        orientation: "horizontal",
+        confidence: 0,
+        type: "other",
+        tokens: [],
+      },
+    ],
+    engine: "demo",
+    layout: {
+      windowWidth: 100,
+      windowHeight: 100,
+      contentLeft: 0,
+      contentTop: 0,
+      contentWidth: 100,
+      contentHeight: 100,
+      toolbarTop: 0,
+      toolbarHeight: 32,
+    },
   });
-  expect(container.querySelector(".overlay-reading-order-panel")).toBeNull();
-  expect(container.querySelector("polygon.ocr-region.active")).toBeNull();
+  await act(async () => root.render(<OcrOverlay />));
+  const polygon = container.querySelector("polygon")!;
+  expect(polygon.getAttribute("aria-label")).toContain(
+    "Demo boundary — no recognized text",
+  );
+  expect(polygon.getAttribute("aria-label")).not.toContain("Placeholder");
+  await act(async () =>
+    polygon.dispatchEvent(
+      new KeyboardEvent("keydown", { key: " ", bubbles: true }),
+    ),
+  );
+  expect(invoke).toHaveBeenCalledWith(
+    "show_translation_popup",
+    expect.objectContaining({ keyboard: true }),
+  );
 });

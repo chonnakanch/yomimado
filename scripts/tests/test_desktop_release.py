@@ -4,6 +4,7 @@ import copy
 import io
 import json
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -620,9 +621,10 @@ class PublisherRehearsalTests(unittest.TestCase):
                         value["packages"][""]["version"] = version
                     text = json.dumps(value)
                 else:
-                    text = text.replace(
-                        'name = "yomimado"\nversion = "0.1.0"',
-                        f'name = "yomimado"\nversion = "{version}"',
+                    text = re.sub(
+                        r'(name = "yomimado"\nversion = )"[^"\n]+"',
+                        lambda match: match[1] + f'"{version}"',
+                        text,
                     )
                 target.write_text(text)
             env = {

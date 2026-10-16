@@ -3,10 +3,15 @@ use std::sync::Mutex;
 use tauri::{AppHandle, Manager, PhysicalPosition, PhysicalSize, WebviewUrl, WebviewWindowBuilder};
 
 use crate::capture::{CaptureMetadata, Rectangle};
+pub mod input;
 
-const POPUP_LOGICAL_WIDTH: f64 = 460.0;
+// Keep preferred width in sync with --popup-width; all dimensions here are
+// converted once into the target monitor's physical pixels.
+const POPUP_LOGICAL_WIDTH: f64 = 420.0;
 const INITIAL_POPUP_LOGICAL_HEIGHT: f64 = 320.0;
 const POPUP_SCREEN_INSET: f64 = 12.0;
+const POPUP_HEIGHT_FRACTION: f64 = 0.7;
+const POPUP_ANCHOR_GAP: f64 = 8.0;
 const OVERLAY_URL: &str = "index.html?mode=overlay";
 
 #[derive(Default)]
@@ -32,7 +37,7 @@ impl OverlayStore {
     }
 }
 
-#[derive(Serialize)]
+#[derive(Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 struct OverlayLayout {
     window_x: i32,
@@ -45,6 +50,73 @@ struct OverlayLayout {
     content_height: f64,
     toolbar_top: f64,
     toolbar_height: f64,
+}
+
+fn measured_layout(
+    metadata: &CaptureMetadata,
+    mut layout: OverlayLayout,
+    position: PhysicalPosition<i32>,
+    size: PhysicalSize<u32>,
+) -> OverlayLayout {
+    let scale = metadata.scale_factor;
+    let toolbar_screen_top = f64::from(layout.window_y) + layout.toolbar_top * scale;
+    layout.window_x = position.x;
+    layout.window_y = position.y;
+    layout.window_width = size.width;
+    layout.window_height = size.height;
+    layout.content_left = (metadata.selection_physical_bounds.x - f64::from(position.x)) / scale;
+    layout.content_top = (metadata.selection_physical_bounds.y - f64::from(position.y)) / scale;
+    layout.toolbar_top = ((toolbar_screen_top - f64::from(position.y)) / scale).clamp(
+        0.0,
+        (f64::from(size.height) / scale - layout.toolbar_height).max(0.0),
+    );
+    layout
+}
+
+pub fn reveal_overlay(app: &AppHandle, store: &OverlayStore) -> Result<serde_json::Value, String> {
+    let window = app
+        .get_webview_window("ocr-overlay")
+        .ok_or("OCR overlay is unavailable")?;
+    window
+        .set_ignore_cursor_events(true)
+        .map_err(|e| e.to_string())?;
+    window.show().map_err(|e| e.to_string())?;
+    let mut state = store.get()?;
+    let metadata: CaptureMetadata =
+        serde_json::from_value(state["metadata"].clone()).map_err(|e| e.to_string())?;
+    let planned: OverlayLayout =
+        serde_json::from_value(state["layout"].clone()).map_err(|e| e.to_string())?;
+    // Measure after showing: macOS may shift a borderless window below its
+    // menu bar. Keep image pixels at their physical origin, even when that
+    // requires a negative content offset inside the visible native window.
+    let actual = measured_layout(
+        &metadata,
+        planned,
+        window.inner_position().map_err(|e| e.to_string())?,
+        window.inner_size().map_err(|e| e.to_string())?,
+    );
+    app.state::<crate::AppState>()
+        .overlay_input
+        .install(app, &state, &actual)?;
+    let actual = serde_json::to_value(actual).map_err(|e| e.to_string())?;
+    #[cfg(debug_assertions)]
+    if std::env::var_os("YOMIMADO_OVERLAY_GEOMETRY_DEBUG").is_some() {
+        let polygons: Vec<_> = state["regions"]
+            .as_array()
+            .into_iter()
+            .flatten()
+            .map(|region| region["polygon"].clone())
+            .collect();
+        eprintln!(
+            "YomiMado geometry: {}",
+            serde_json::json!({
+                "metadata": state["metadata"], "layout": actual, "polygons": polygons,
+            })
+        );
+    }
+    state["layout"] = actual.clone();
+    store.set(state)?;
+    Ok(actual)
 }
 
 #[derive(Clone, Copy, Deserialize)]
@@ -133,9 +205,9 @@ fn popup_position(placement: PopupPlacement, logical_height: f64) -> Result<Popu
     let width = (POPUP_LOGICAL_WIDTH * scale).round().min(available_width);
     let height = (logical_height * scale)
         .round()
-        .min(available_height)
+        .min((available_height * POPUP_HEIGHT_FRACTION).round())
         .max(1.0);
-    let gap = (8.0 * scale).round();
+    let gap = (POPUP_ANCHOR_GAP * scale).round();
     let screen_left = screen.x + inset;
     let screen_top = screen.y + inset;
     let screen_right = screen.x + screen.width - inset;
@@ -158,8 +230,20 @@ fn popup_position(placement: PopupPlacement, logical_height: f64) -> Result<Popu
     })
 }
 
-fn translation_popup_query(text: &str, demo: bool, placement: PopupPlacement) -> String {
-    let state = serde_json::json!({ "text": text, "demo": demo, "placement": placement });
+fn translation_popup_query(
+    text: &str,
+    demo: bool,
+    placement: PopupPlacement,
+    review_reason: Option<&str>,
+    approximate: bool,
+) -> String {
+    let mut state = serde_json::json!({ "text": text, "demo": demo, "placement": placement });
+    if let Some(reason) = review_reason {
+        state["reviewReason"] = reason.into();
+    }
+    if approximate {
+        state["approximate"] = true.into();
+    }
     let serialized = state.to_string();
     let encoded = urlencoding::encode(&serialized);
     format!("mode=translation&state={encoded}")
@@ -231,50 +315,82 @@ pub fn show_overlay(
     regions: serde_json::Value,
     engine: &str,
     estimated_reading_order: bool,
+    session_id: u64,
 ) -> Result<(), String> {
-    if let Some(window) = app.get_webview_window("translation-popup") {
-        let _ = window.close();
-    }
-    if let Some(window) = app.get_webview_window("ocr-overlay") {
-        let _ = window.close();
-    }
+    app.state::<crate::AppState>().overlay_input.disable(app)?;
+    let previous = store.get().ok();
     let layout = layout(metadata);
     let state = serde_json::json!({
-        "metadata": metadata,
-        "regions": regions,
-        "engine": engine,
-        "layout": layout,
-        "estimatedReadingOrder": estimated_reading_order,
+        "metadata": metadata, "regions": regions, "engine": engine,
+        "layout": layout, "estimatedReadingOrder": estimated_reading_order,
+        "sessionId": session_id,
     });
-    store.set(state)?;
-    let builder =
-        WebviewWindowBuilder::new(app, "ocr-overlay", WebviewUrl::App(OVERLAY_URL.into()))
-            .transparent(true)
-            .decorations(false)
-            .always_on_top(true)
-            .accept_first_mouse(true)
-            .skip_taskbar(true)
-            .visible(false);
-    // Tao adds client-area insets to undecorated Windows windows with shadows.
-    // OCR uses the requested screen origin, so that frame would shift polygons.
-    #[cfg(target_os = "windows")]
-    let builder = builder.shadow(false);
-    let window = builder.build().map_err(|error| {
-        let _ = store.clear();
-        error.to_string()
-    })?;
-    let result = (|| {
+    if let Some(popup) = app.get_webview_window("translation-popup") {
+        popup.hide().map_err(|e| e.to_string())?;
+    }
+    // Reuse the overlay just like the learning popup: closing and immediately
+    // rebuilding the same label races asynchronous native destruction on Rescan.
+    let existing = app.get_webview_window("ocr-overlay");
+    let previous_frame = existing.as_ref().and_then(|window| {
+        Some((
+            window.inner_position().ok()?,
+            window.inner_size().ok()?,
+            window.url().ok()?,
+        ))
+    });
+    let window = if let Some(window) = existing {
+        window.hide().map_err(|e| e.to_string())?;
+        window
+    } else {
+        let builder =
+            WebviewWindowBuilder::new(app, "ocr-overlay", WebviewUrl::App(OVERLAY_URL.into()))
+                .transparent(true)
+                .decorations(false)
+                .resizable(false)
+                .always_on_top(true)
+                .focused(false)
+                .accept_first_mouse(true)
+                .skip_taskbar(true)
+                .visible(false);
+        // Windows shadows add client-area insets and shift image polygons.
+        #[cfg(target_os = "windows")]
+        let builder = builder.shadow(false);
+        builder.build().map_err(|e| e.to_string())?
+    };
+    let result: Result<(), String> = (|| {
+        // Establish the target monitor before converting the physical size;
+        // a new hidden window can still have the default monitor's scale.
         window
             .set_position(PhysicalPosition::new(layout.window_x, layout.window_y))
-            .map_err(|error| error.to_string())?;
+            .map_err(|e| e.to_string())?;
+        // macOS resizing preserves the bottom edge and shifts the top. Apply the
+        // position again after resizing so smaller selections are not clipped.
         window
             .set_size(PhysicalSize::new(layout.window_width, layout.window_height))
-            .map_err(|error| error.to_string())?;
-        window.show().map_err(|error| error.to_string())
+            .map_err(|e| e.to_string())?;
+        window
+            .set_position(PhysicalPosition::new(layout.window_x, layout.window_y))
+            .map_err(|e| e.to_string())?;
+        store.set(state)?;
+        let mut url = window.url().map_err(|e| e.to_string())?;
+        url.set_query(Some(&format!("mode=overlay&session={session_id}")));
+        window.navigate(url).map_err(|e| e.to_string())?;
+        // The React root reveals this generation after mounting its polygons.
+        // Repositioning a visible old DOM would briefly show incorrect geometry.
+        Ok(())
     })();
     if result.is_err() {
-        let _ = window.close();
-        let _ = store.clear();
+        if let Some(previous) = previous {
+            let _ = store.set(previous);
+        } else {
+            let _ = store.clear();
+        }
+        if let Some((position, size, url)) = previous_frame {
+            let _ = window.set_position(position);
+            let _ = window.set_size(size);
+            let _ = window.set_position(position);
+            let _ = window.navigate(url);
+        }
     }
     result
 }
@@ -285,6 +401,8 @@ pub fn show_translation_popup(
     text: &str,
     polygon: &[OcrPoint],
     demo: bool,
+    review_reason: Option<&str>,
+    approximate: bool,
 ) -> Result<(), String> {
     let screen = app
         .get_webview_window("ocr-overlay")
@@ -301,7 +419,7 @@ pub fn show_translation_popup(
         .unwrap_or(metadata.screen_physical_bounds);
     let placement = popup_placement(metadata, polygon, screen)?;
     let position = popup_position(placement, INITIAL_POPUP_LOGICAL_HEIGHT)?;
-    let query = translation_popup_query(text, demo, placement);
+    let query = translation_popup_query(text, demo, placement, review_reason, approximate);
     if let Some(window) = app.get_webview_window("translation-popup") {
         // Reuse the existing webview: close() can return before its label is
         // removed, so immediately rebuilding with the same label can fail.
@@ -313,6 +431,9 @@ pub fn show_translation_popup(
             .map_err(|error| error.to_string())?;
         window
             .set_size(PhysicalSize::new(position.width, position.height))
+            .map_err(|error| error.to_string())?;
+        window
+            .set_position(PhysicalPosition::new(position.x, position.y))
             .map_err(|error| error.to_string())?;
         window.show().map_err(|error| error.to_string())?;
         window.set_focus().map_err(|error| error.to_string())?;
@@ -337,6 +458,9 @@ pub fn show_translation_popup(
     window
         .set_size(PhysicalSize::new(position.width, position.height))
         .map_err(|error| error.to_string())?;
+    window
+        .set_position(PhysicalPosition::new(position.x, position.y))
+        .map_err(|error| error.to_string())?;
     window.show().map_err(|error| error.to_string())?;
     window.set_focus().map_err(|error| error.to_string())?;
     Ok(())
@@ -346,11 +470,21 @@ pub fn resize_translation_popup(
     app: &AppHandle,
     placement: PopupPlacement,
     logical_height: f64,
+    view_query: &str,
 ) -> Result<(), String> {
     let window = app
         .get_webview_window("translation-popup")
         .ok_or("Translation popup is unavailable")?;
+    // A reused webview can still deliver a resize from its previous sentence.
+    if !window.is_visible().map_err(|error| error.to_string())?
+        || window.url().map_err(|error| error.to_string())?.query() != Some(view_query)
+    {
+        return Ok(());
+    }
     let position = popup_position(placement, logical_height)?;
+    window
+        .set_position(PhysicalPosition::new(position.x, position.y))
+        .map_err(|error| error.to_string())?;
     window
         .set_size(PhysicalSize::new(position.width, position.height))
         .map_err(|error| error.to_string())?;
@@ -359,10 +493,163 @@ pub fn resize_translation_popup(
         .map_err(|error| error.to_string())
 }
 
+fn frame_matches_capture(
+    planned: &OverlayLayout,
+    position: PhysicalPosition<i32>,
+    size: PhysicalSize<u32>,
+    captured_scale: Option<f64>,
+    current_scale: f64,
+) -> bool {
+    position.x == planned.window_x
+        && position.y == planned.window_y
+        && size.width == planned.window_width
+        && size.height == planned.window_height
+        && captured_scale == Some(current_scale)
+}
+
+pub fn check_frame(app: &AppHandle) -> Result<(), String> {
+    let state = app.state::<crate::AppState>();
+    let mut session = state.scans.lock()?;
+    if session.active.is_some() || !session.overlay_visible || !state.overlay_input.is_active() {
+        return Ok(());
+    }
+    let window = app
+        .get_webview_window("ocr-overlay")
+        .ok_or("OCR overlay is unavailable")?;
+    let data = state.overlay.get()?;
+    let planned: OverlayLayout =
+        serde_json::from_value(data["layout"].clone()).map_err(|e| e.to_string())?;
+    let position = window.inner_position().map_err(|e| e.to_string())?;
+    let size = window.inner_size().map_err(|e| e.to_string())?;
+    let scale = window.scale_factor().map_err(|e| e.to_string())?;
+    if !frame_matches_capture(
+        &planned,
+        position,
+        size,
+        data["metadata"]["scaleFactor"].as_f64(),
+        scale,
+    ) {
+        state.overlay_input.disable(app)?;
+        window.hide().map_err(|e| e.to_string())?;
+        if let Some(popup) = app.get_webview_window("translation-popup") {
+            popup.hide().map_err(|e| e.to_string())?;
+        }
+        session.overlay_visible = false;
+        session.phase = "error";
+        session.message = "Display layout changed. Rescan before using these OCR regions.".into();
+        session.revision += 1;
+        drop(session);
+        crate::toolbar::emit_state(app);
+    }
+    Ok(())
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
     use crate::capture::Rectangle;
+
+    #[test]
+    fn frame_guard_rejects_mixed_dpi_transitions_and_shifted_or_clipped_windows() {
+        let scales = [1.0, 1.25, 1.5, 2.0];
+        let planned = OverlayLayout {
+            window_x: -3840,
+            window_y: -2160,
+            window_width: 1600,
+            window_height: 900,
+            content_left: 0.0,
+            content_top: 0.0,
+            content_width: 1600.0,
+            content_height: 900.0,
+            toolbar_top: 0.0,
+            toolbar_height: 0.0,
+        };
+        let position = PhysicalPosition::new(planned.window_x, planned.window_y);
+        let size = PhysicalSize::new(planned.window_width, planned.window_height);
+        for captured_scale in scales {
+            for current_scale in scales {
+                // A DPI transition invalidates old hits even if the physical
+                // frame happens to be unchanged on the destination monitor.
+                assert_eq!(
+                    frame_matches_capture(
+                        &planned,
+                        position,
+                        size,
+                        Some(captured_scale),
+                        current_scale,
+                    ),
+                    captured_scale == current_scale
+                );
+            }
+            for moved in [
+                PhysicalPosition::new(position.x + 1, position.y),
+                PhysicalPosition::new(position.x, position.y + 1),
+            ] {
+                assert!(!frame_matches_capture(
+                    &planned,
+                    moved,
+                    size,
+                    Some(captured_scale),
+                    captured_scale,
+                ));
+            }
+            for resized in [
+                PhysicalSize::new(size.width - 1, size.height),
+                PhysicalSize::new(size.width, size.height - 1),
+            ] {
+                assert!(!frame_matches_capture(
+                    &planned,
+                    position,
+                    resized,
+                    Some(captured_scale),
+                    captured_scale,
+                ));
+            }
+        }
+        assert!(!frame_matches_capture(&planned, position, size, None, 1.0));
+    }
+
+    #[test]
+    fn measured_window_origin_keeps_whole_screen_pixels_aligned_below_menu_bar() {
+        let bounds = Rectangle {
+            x: 0.0,
+            y: 0.0,
+            width: 2940.0,
+            height: 1912.0,
+        };
+        let metadata = CaptureMetadata {
+            display_id: "retina".into(),
+            display_name: "Retina".into(),
+            screen_physical_bounds: bounds,
+            selection_physical_bounds: bounds,
+            selection_logical_bounds: Rectangle {
+                x: 0.0,
+                y: 0.0,
+                width: 1470.0,
+                height: 956.0,
+            },
+            image_width: 2940,
+            image_height: 1912,
+            scale_factor: 2.0,
+        };
+        let measured = measured_layout(
+            &metadata,
+            layout(&metadata),
+            PhysicalPosition::new(0, 66),
+            PhysicalSize::new(2940, 1912),
+        );
+        assert_eq!(measured.content_top, -33.0);
+        assert_eq!(measured.content_height, 956.0);
+        assert_eq!(
+            f64::from(measured.window_y) + measured.content_top * 2.0,
+            0.0
+        );
+        // An image-space point at physical y=666 lands at screen y=666.
+        assert_eq!(
+            f64::from(measured.window_y) + (measured.content_top + 333.0) * 2.0,
+            666.0
+        );
+    }
 
     #[test]
     fn large_ocr_state_is_kept_out_of_the_webview_url() {
@@ -403,6 +690,8 @@ mod tests {
             "たまにはいいでしょ",
             false,
             placement,
+            Some("Check short text"),
+            true,
         )));
 
         let state = url
@@ -413,6 +702,8 @@ mod tests {
         let state: serde_json::Value = serde_json::from_str(&state).expect("JSON popup state");
         assert_eq!(state["text"], "たまにはいいでしょ");
         assert_eq!(state["demo"], false);
+        assert_eq!(state["reviewReason"], "Check short text");
+        assert_eq!(state["approximate"], true);
         assert_eq!(state["placement"]["anchorLeft"], 100.0);
     }
 
@@ -560,7 +851,7 @@ mod tests {
             PopupPosition {
                 x: 1416,
                 y: 666,
-                width: 920,
+                width: 840,
                 height: 640
             }
         );
@@ -581,8 +872,8 @@ mod tests {
             scale_factor: 2.0,
         };
         let position = popup_position(placement, 800.0).unwrap();
-        assert_eq!(position.width, 920);
-        assert_eq!(position.height, 852);
+        assert_eq!(position.width, 840);
+        assert_eq!(position.height, 596);
         assert!(position.x >= -1576);
         assert!(position.x + position.width as i32 <= -24);
         assert!(position.y >= 54);
@@ -604,7 +895,7 @@ mod tests {
             scale_factor: 1.0,
         };
         let position = popup_position(placement, 680.0).unwrap();
-        assert_eq!((position.width, position.height), (460, 680));
+        assert_eq!((position.width, position.height), (420, 680));
         assert_eq!((position.x, position.y), (208, 120));
     }
 
@@ -623,7 +914,38 @@ mod tests {
             scale_factor: 1.0,
         };
         let position = popup_position(placement, 900.0).unwrap();
-        assert_eq!((position.width, position.height), (336, 476));
-        assert_eq!((position.x, position.y), (12, 12));
+        assert_eq!((position.width, position.height), (336, 333));
+        assert_eq!((position.x, position.y), (12, 155));
+    }
+
+    #[test]
+    fn compact_popup_scales_once_and_caps_height_on_fractional_displays() {
+        for scale in [1.0, 1.25, 1.5, 2.0] {
+            let placement = PopupPlacement {
+                screen: Rectangle {
+                    x: -2400.0,
+                    y: -300.0,
+                    width: 1920.0,
+                    height: 1080.0,
+                },
+                anchor_left: -600.0,
+                anchor_right: -500.0,
+                anchor_top: 700.0,
+                scale_factor: scale,
+            };
+            let position = popup_position(placement, 2000.0).unwrap();
+            let inset = (12.0 * scale).round();
+            assert_eq!(position.width, (420.0 * scale).round() as u32);
+            assert_eq!(
+                position.height,
+                ((1080.0 - 2.0 * inset) * 0.7).round() as u32
+            );
+            assert!(f64::from(position.x) >= -2400.0 + inset);
+            assert!(f64::from(position.x) + f64::from(position.width) <= -480.0 - inset);
+            assert!(f64::from(position.y) >= -300.0 + inset);
+            assert!(f64::from(position.y) + f64::from(position.height) <= 780.0 - inset);
+            let collapsed = popup_position(placement, 180.0).unwrap();
+            assert_eq!(collapsed.height, (180.0 * scale).round() as u32);
+        }
     }
 }

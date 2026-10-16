@@ -1,11 +1,19 @@
 //! Windows-only frozen service lifecycle. No changes to the reviewed macOS runtime.
 use std::ffi::c_void;
 use std::io;
+#[cfg(not(debug_assertions))]
 use std::net::TcpListener;
 use std::os::windows::{io::AsRawHandle, process::CommandExt};
-use std::path::{Path, PathBuf};
-use std::process::{Child, Command, Stdio};
-use std::time::{Duration, Instant, SystemTime, UNIX_EPOCH};
+use std::path::Path;
+#[cfg(not(debug_assertions))]
+use std::path::PathBuf;
+#[cfg(not(debug_assertions))]
+use std::process::Stdio;
+use std::process::{Child, Command};
+use std::time::{Duration, Instant};
+#[cfg(not(debug_assertions))]
+use std::time::{SystemTime, UNIX_EPOCH};
+#[cfg(not(debug_assertions))]
 use tauri::Manager;
 
 // Windows SDK winnt.h layouts. Keep the small kernel32 boundary local instead
@@ -139,11 +147,13 @@ fn resume_primary_thread(pid: u32) -> io::Result<()> {
     Ok(())
 }
 
+#[cfg(not(debug_assertions))]
 pub struct Service {
     child: Child,
     job: Option<Job>,
     ready: PathBuf,
 }
+#[cfg(not(debug_assertions))]
 impl Drop for Service {
     fn drop(&mut self) {
         self.job.take();
@@ -164,6 +174,7 @@ fn ready_matches(path: &Path, pid: u32, instance: &str) -> bool {
         })
 }
 
+#[cfg(not(debug_assertions))]
 pub fn start(app: &tauri::App) -> Result<Service, Box<dyn std::error::Error>> {
     // Never adopt another app's service or a previous developer process.
     let probe = TcpListener::bind(("127.0.0.1", 8766))

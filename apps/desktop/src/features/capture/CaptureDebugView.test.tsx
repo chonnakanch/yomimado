@@ -166,18 +166,22 @@ it("shows the exact captured image and OCR text with image-space polygons", () =
   expect(container.textContent).toContain("approximate expanded-crop box");
   expect(container.textContent).toContain("review suggested");
   expect(
-    container.querySelector(".capture-debug-final-region.needs-review title")
-      ?.textContent,
-  ).toContain("verify on page");
+    Array.from(
+      container.querySelectorAll(
+        ".capture-debug-final-region.needs-review title",
+      ),
+    ).some((title) => title.textContent?.includes("verify on page")),
+  ).toBe(true);
   expect(container.textContent).toContain("Whole-selection retry");
   expect(container.textContent).toContain("tile retry");
   expect(container.textContent).toContain("Tile retry: 2 overlapping crop(s)");
   expect(container.textContent).toContain(
     "Text-mask retry: up to 2 tile(s) checked",
   );
-  expect(container.textContent).toContain(
-    "text-mask retry · recognized · みて",
-  );
+  expect(container.textContent).toContain("text-mask retry · recognized");
+  expect(
+    container.querySelector('.capture-debug-detection-text[lang="ja"]'),
+  ).not.toBeNull();
   expect(container.textContent).toContain(
     "Kept: Short Japanese-looking text from detector mask",
   );
@@ -189,6 +193,20 @@ it("shows the exact captured image and OCR text with image-space polygons", () =
     "Filtered: No Japanese characters in the recognized text",
   );
   expect(container.textContent).toContain("no PNG saved to disk");
+  expect(
+    container.querySelector(".capture-debug-detector-results")?.tagName,
+  ).toBe("DETAILS");
+  expect(
+    container
+      .querySelector(".capture-debug-detector-results")
+      ?.hasAttribute("open"),
+  ).toBe(false);
+  expect(
+    container.querySelector(".capture-debug-geometry summary")?.textContent,
+  ).toBe("Geometry");
+  expect(container.querySelectorAll(".capture-debug-legend li")).toHaveLength(
+    4,
+  );
 });
 
 it("keeps the captured image visible when OCR fails", () => {
@@ -207,6 +225,9 @@ it("keeps the captured image visible when OCR fails", () => {
 
   expect(container.querySelector("img")).not.toBeNull();
   expect(container.textContent).toContain("OCR service unavailable");
+  expect(container.querySelector('[role="alert"]')?.textContent).toBe(
+    "OCR service unavailable",
+  );
   expect(
     container.querySelector<HTMLButtonElement>(".capture-debug-actions button")
       ?.disabled,

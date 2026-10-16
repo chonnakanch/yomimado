@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState, type PointerEvent } from "react";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import { invoke } from "@tauri-apps/api/core";
 import { requestOcr } from "../../lib/ocr-client";
+import { captureDebugEnabled } from "../../lib/debug-mode";
 import {
   normalizeRectangle,
   type CaptureMetadata,
@@ -10,6 +11,7 @@ import type { Point } from "../../lib/ocr-types";
 import type { OcrResponse } from "../../lib/ocr-types";
 import { CaptureDebugView } from "./CaptureDebugView";
 import { orderMangaRegions } from "./reading-order";
+import "./capture.css";
 import {
   loadScanArea,
   physicalToSelection,
@@ -23,15 +25,31 @@ interface CaptureResult {
   metadata: CaptureMetadata;
 }
 
-const debugCaptureEnabled = import.meta.env.VITE_CAPTURE_DEBUG === "1";
-
 export function CaptureSelector() {
-  const scanMode = new URLSearchParams(window.location.search).get("scan");
-  const scanArea = scanMode === "auto" || scanMode === "configure";
+  const debugCaptureEnabled = captureDebugEnabled();
+  const params = new URLSearchParams(window.location.search);
+  const scanMode = params.get("scan");
+  const sessionId = params.has("session")
+    ? Number(params.get("session"))
+    : null;
+  const invokeCapture = <T,>(
+    command: string,
+    args?: Record<string, unknown>,
+  ) =>
+    sessionId !== null
+      ? invoke<T>(command, { ...args, sessionId })
+      : args
+        ? invoke<T>(command, args)
+        : invoke<T>(command);
+  const automaticScan = scanMode === "auto" || scanMode === "whole";
+  const scanArea = automaticScan || scanMode === "configure";
+  const estimatedOrder =
+    scanArea || scanMode === "whole" || params.get("order") === "1";
   const [start, setStart] = useState<Point | null>(null);
   const [end, setEnd] = useState<Point | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [needsArea, setNeedsArea] = useState(scanMode === "configure");
+  const [dragging, setDragging] = useState(false);
   const [scanSource, setScanSource] = useState<
     "automatic" | "saved" | "manual"
   >("manual");
@@ -50,7 +68,7 @@ export function CaptureSelector() {
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
-        void invoke("cancel_capture_selector");
+        void invokeCapture("cancel_capture_selector");
       }
     };
     window.addEventListener("keydown", handleKeyDown);
@@ -58,19 +76,27 @@ export function CaptureSelector() {
   }, []);
 
   useEffect(() => {
-    if (scanMode !== "auto" || scanChecked.current) return;
+    if (
+      !["auto", "whole", "repeat"].includes(scanMode ?? "") ||
+      scanChecked.current
+    )
+      return;
     scanChecked.current = true;
     void (async () => {
       captureStarted.current = true;
       await captureAndRecognize(async () => {
-        const automatic = await invoke<CaptureResult | null>(
-          "capture_auto_page",
+        if (scanMode === "repeat")
+          return invokeCapture<CaptureResult>("capture_repeat_scan");
+        const automatic = await invokeCapture<CaptureResult | null>(
+          scanMode === "whole" ? "capture_whole_screen" : "capture_auto_page",
         );
         if (automatic) {
           setScanSource("automatic");
           return automatic;
         }
-        const surface = await invoke<CaptureSurface>("get_capture_surface");
+        const surface = await invokeCapture<CaptureSurface>(
+          "get_capture_surface",
+        );
         const viewport = {
           width: document.documentElement.clientWidth,
           height: document.documentElement.clientHeight,
@@ -78,14 +104,12 @@ export function CaptureSelector() {
         const area = loadScanArea(surface);
         const selection = area && physicalToSelection(area, viewport, surface);
         if (!selection) {
-          setError(
-            "Automatic page detection was uncertain. Drag around the manga area to save it for future scans.",
-          );
+          setError(null);
           setNeedsArea(true);
           return null;
         }
         setScanSource("saved");
-        return invoke<CaptureResult>("capture_selection", {
+        return invokeCapture<CaptureResult>("capture_selection", {
           selection,
           viewport,
         });
@@ -106,19 +130,32 @@ export function CaptureSelector() {
     captured: CaptureResult,
     response: OcrResponse,
   ) => {
-    await invoke("show_ocr_overlay", {
+    await invokeCapture("show_ocr_overlay", {
       metadata: captured.metadata,
       regions: response.regions,
       engine: response.engine,
-      estimatedReadingOrder: scanArea && response.engine === "manga",
+      estimatedReadingOrder: estimatedOrder && response.engine === "manga",
     });
-    await getCurrentWindow().close();
+    if (sessionId !== null) {
+      await invoke("hide_finished_selector", { sessionId });
+    } else {
+      await getCurrentWindow().close();
+    }
   };
 
   const captureAndRecognize = async (
     capture: () => Promise<CaptureResult | null>,
   ) => {
+    const reportOcrStage = (
+      stage: "requesting" | "recognized" | "publishing",
+    ) => {
+      if (sessionId !== null)
+        void invoke("report_ocr_stage", { sessionId, stage }).catch(() => {
+          // Optional diagnostics must not interrupt recognition or publication.
+        });
+    };
     document.documentElement.dataset.capturing = "true";
+    let canReviewDebugCapture = false;
     try {
       // Let the transparent selector repaint before xcap takes its screenshot.
       // WebView2 may suspend animation frames while this newly created window
@@ -136,17 +173,24 @@ export function CaptureSelector() {
       const captured = await capture();
       if (!captured) {
         document.documentElement.dataset.capturing = "false";
+        if (sessionId !== null)
+          await invoke("resume_capture_selection", { sessionId, debug: false });
         return;
       }
       if (debugCaptureEnabled) {
+        canReviewDebugCapture = true;
         setDebugCapture({ captured, response: null, error: null });
         document.documentElement.dataset.capturing = "false";
+        if (sessionId !== null)
+          await invoke("resume_capture_selection", { sessionId, debug: true });
       }
+      reportOcrStage("requesting");
       const rawResponse: OcrResponse = await requestOcr(captured.imageDataUrl, {
         debug: debugCaptureEnabled,
       });
+      reportOcrStage("recognized");
       const response =
-        scanArea && rawResponse.engine === "manga"
+        estimatedOrder && rawResponse.engine === "manga"
           ? {
               ...rawResponse,
               regions: orderMangaRegions(rawResponse.regions),
@@ -159,23 +203,45 @@ export function CaptureSelector() {
         setError(
           "Area scanning needs the local OCR models. Press Escape to close.",
         );
+        if (sessionId !== null)
+          await invoke("finish_scan", {
+            sessionId,
+            message:
+              "Scanning needs the local OCR models. Configure them before retrying.",
+          });
       } else if (response.regions.length === 0) {
         document.documentElement.dataset.capturing = "false";
-        if (scanMode === "auto") setNeedsArea(true);
+        if (automaticScan) setNeedsArea(true);
         setError(
-          `No text was detected in this ${scanArea ? "scan area" : "selection"}. ${scanMode === "auto" ? "Drag a reading area to retry, or press Escape to close." : "Press Escape to close."}`,
+          `No text was detected in this ${scanArea ? "scan area" : "selection"}. ${automaticScan ? "Drag a reading area to retry, or press Escape to close." : "Press Escape to close."}`,
         );
+        if (sessionId !== null)
+          await invoke("finish_scan", {
+            sessionId,
+            message:
+              "No text was detected. Try Selected Area or rescan the previous area.",
+            noText: true,
+          });
       } else {
+        reportOcrStage("publishing");
         await showOverlay(captured, response);
       }
     } catch (captureError) {
       document.documentElement.dataset.capturing = "false";
-      if (scanMode === "auto") setNeedsArea(true);
+      if (automaticScan) setNeedsArea(true);
       const message = `Capture or OCR failed: ${String(captureError)}`;
       setDebugCapture((current) =>
         current ? { ...current, error: message } : null,
       );
       setError(message);
+      if (sessionId !== null) {
+        const recovery = canReviewDebugCapture
+          ? invoke("resume_capture_selection", { sessionId, debug: true })
+          : invoke("finish_scan", { sessionId, message });
+        await recovery.catch((failure) => {
+          console.error("YomiMado: could not finish failed scan", failure);
+        });
+      }
     }
   };
 
@@ -191,7 +257,9 @@ export function CaptureSelector() {
     };
     if (scanArea) {
       try {
-        const surface = await invoke<CaptureSurface>("get_capture_surface");
+        const surface = await invokeCapture<CaptureSurface>(
+          "get_capture_surface",
+        );
         const physical = selectionToPhysical(selection, viewport, surface);
         if (!physical) {
           setError(
@@ -209,7 +277,10 @@ export function CaptureSelector() {
       }
     }
     await captureAndRecognize(() =>
-      invoke<CaptureResult>("capture_selection", { selection, viewport }),
+      invokeCapture<CaptureResult>("capture_selection", {
+        selection,
+        viewport,
+      }),
     );
     captureStarted.current = false;
   };
@@ -236,7 +307,7 @@ export function CaptureSelector() {
               ),
           );
         }}
-        onCancel={() => void invoke("cancel_capture_selector")}
+        onCancel={() => void invokeCapture("cancel_capture_selector")}
       />
     );
   }
@@ -245,34 +316,64 @@ export function CaptureSelector() {
     <div
       className="capture-selector"
       onPointerDown={
-        scanMode === "auto" && !needsArea
+        automaticScan && !needsArea
           ? undefined
           : (event) => {
               event.currentTarget.setPointerCapture(event.pointerId);
+              setDragging(true);
               const next = point(event);
               setStart(next);
               setEnd(next);
             }
       }
       onPointerMove={
-        scanMode === "auto" && !needsArea
+        automaticScan && !needsArea
           ? undefined
           : (event) => start && setEnd(point(event))
       }
       onPointerUp={
-        scanMode === "auto" && !needsArea
+        automaticScan && !needsArea
           ? undefined
-          : (event) => void finish(event)
+          : (event) => {
+              setDragging(false);
+              void finish(event);
+            }
       }
+      onPointerCancel={() => {
+        setDragging(false);
+        setStart(null);
+        setEnd(null);
+      }}
     >
-      <p>
-        {scanMode === "auto" && !needsArea
-          ? "Finding the manga page… Press Escape to cancel."
-          : scanArea
-            ? "Drag around the manga reading area. It will be reused on future scans. Press Escape to cancel."
-            : "Drag to capture a region. Press Escape to cancel."}
-      </p>
-      {error && <p className="capture-error">{error}</p>}
+      {scanMode !== "repeat" && (!automaticScan || needsArea) ? (
+        <div
+          className="capture-edge-guidance"
+          style={{ visibility: dragging ? "hidden" : undefined }}
+        >
+          {error && (
+            <p className="capture-edge-error" role="alert">
+              {error}
+            </p>
+          )}
+          <div className="capture-edge-hint" role="status">
+            <span>{scanArea ? "Drag around pages" : "Drag to capture"}</span>
+            <kbd>Esc cancel</kbd>
+          </div>
+        </div>
+      ) : (
+        <>
+          <p>
+            {scanMode === "repeat"
+              ? "Capturing and recognizing Japanese text…"
+              : automaticScan && !needsArea
+                ? "Finding the manga page… Press Escape to cancel."
+                : scanArea
+                  ? "Drag around the manga reading area. It will be reused on future scans. Press Escape to cancel."
+                  : "Drag to capture a region. Press Escape to cancel."}
+          </p>
+          {error && <p className="capture-error">{error}</p>}
+        </>
+      )}
       {selection && (
         <div
           className="selection"

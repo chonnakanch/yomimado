@@ -150,8 +150,8 @@ jobs:
         run: |
           set -euo pipefail
           python scripts/desktop_release.py verify-inputs --platform macos --directory "$RUNNER_TEMP/yomimado-input"
-          tar -xzf "$RUNNER_TEMP/yomimado-input/YomiMado_0.1.0_sources_42edd4e.tar.gz" -C "$RUNNER_TEMP/yomimado-input"
-          echo "YOMIMADO_SOURCE_DIR=$RUNNER_TEMP/yomimado-input/source-delivery-42edd4e" >> "$GITHUB_ENV"
+          tar -xzf "$RUNNER_TEMP/yomimado-input/YomiMado_0.2.0_sources_fae4d28.tar.gz" -C "$RUNNER_TEMP/yomimado-input"
+          echo "YOMIMADO_SOURCE_DIR=$RUNNER_TEMP/yomimado-input/source-delivery-fae4d28" >> "$GITHUB_ENV"
       - name: Install smoke-only detector from the original publisher
         shell: bash
         run: |
@@ -165,7 +165,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          seed="$RUNNER_TEMP/yomimado-input/YomiMado_0.1.0_aarch64.dmg"
+          seed="$RUNNER_TEMP/yomimado-input/YomiMado_0.2.0_aarch64.dmg"
           bash scripts/verify-macos-dmg.sh "$seed" "$(command -v python)" --hobby-release
           mount_dir="$(mktemp -d /private/tmp/yomimado-seed.XXXXXX)"
           trap 'hdiutil detach "$mount_dir"; rmdir "$mount_dir"' EXIT
@@ -187,9 +187,9 @@ jobs:
           python scripts/macos-release.py verify-sources "$notices" \
             --source-dir "$source_dir" --revision "$SOURCE_REVISION"
           echo "YOMIMADO_SOURCE_DIR=$source_dir" >> "$GITHUB_ENV"
-          rm -rf "$RUNNER_TEMP/yomimado-input/source-delivery-42edd4e"
-          rm "$RUNNER_TEMP/yomimado-input/YomiMado_0.1.0_sources_42edd4e.tar.gz"
-          rm "$RUNNER_TEMP/yomimado-input/YomiMado_0.1.0_notices_42edd4e.tar.gz"
+          rm -rf "$RUNNER_TEMP/yomimado-input/source-delivery-fae4d28"
+          rm "$RUNNER_TEMP/yomimado-input/YomiMado_0.2.0_sources_fae4d28.tar.gz"
+          rm "$RUNNER_TEMP/yomimado-input/YomiMado_0.2.0_notices_fae4d28.tar.gz"
       - name: Build and verify the new hobby DMG
         env:
           APP_VERSION: ${{ needs.plan.outputs.version }}
@@ -324,7 +324,13 @@ jobs:
           $python = 'services/ocr/build/windows/venv/Scripts/python.exe'
           & $python scripts/windows_release.py verify --resources "$installed/ocr"
           if ($LASTEXITCODE) { throw 'Installed resource verification failed' }
-          ./scripts/verify-windows-install.ps1 -Installed $installed
+          # UI Automation requires Windows PowerShell's Framework assemblies.
+          $modules = $env:PSModulePath
+          Remove-Item Env:PSModulePath -ErrorAction SilentlyContinue
+          try {
+            & "$env:SystemRoot/System32/WindowsPowerShell/v1.0/powershell.exe" -NoProfile -File scripts/verify-windows-install.ps1 -Installed $installed
+            if ($LASTEXITCODE) { throw 'Installed Windows startup/quit verification failed' }
+          } finally { $env:PSModulePath = $modules }
           & $python scripts/windows_release.py installer-inventory --installer $setup[0].FullName --installed $installed
           if ($LASTEXITCODE) { throw 'Desktop/installer native input verification failed' }
           "YOMIMADO_INSTALLED=$installed" | Add-Content $env:GITHUB_ENV

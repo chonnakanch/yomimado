@@ -3,6 +3,7 @@
 import copy
 import importlib.util
 import json
+import re
 import shutil
 import subprocess
 import tarfile
@@ -35,9 +36,10 @@ class VersionTests(unittest.TestCase):
             if path.endswith("package-lock.json"):
                 data["packages"][""]["version"] = version
             return json.dumps(data)
-        return text.replace(
-            'name = "yomimado"\nversion = "0.1.0"',
-            f'name = "yomimado"\nversion = "{version}"',
+        return re.sub(
+            r'(name = "yomimado"\nversion = )"[^"\n]+"',
+            lambda match: match[1] + f'"{version}"',
+            text,
         )
 
     def setUp(self):
@@ -56,7 +58,7 @@ class VersionTests(unittest.TestCase):
             shutil.copyfile(ci.ROOT / "apps/desktop" / name, target)
 
     def test_matching_release_and_prerelease_versions(self):
-        self.assertEqual(ci.version(self.root), "0.1.0")
+        self.assertEqual(ci.version(self.root), ci.version(ci.ROOT))
         originals = {p: p.read_text() for p in self.root.rglob("*") if p.is_file()}
         for app_version in ("0.1.0-alpha.1", "1.0.0", "1.0.0-beta.2", "2.1.3"):
             with self.subTest(version=app_version):
@@ -95,7 +97,9 @@ class VersionTests(unittest.TestCase):
 
     def test_mismatched_version_is_rejected(self):
         path = self.root / "apps/desktop/package.json"
-        path.write_text(path.read_text().replace('"0.1.0"', '"0.2.0"'))
+        value = json.loads(path.read_text())
+        value["version"] = "9.9.8" if value["version"] == "9.9.9" else "9.9.9"
+        path.write_text(json.dumps(value))
         with self.assertRaisesRegex(ValueError, "must agree"):
             ci.version(self.root)
 

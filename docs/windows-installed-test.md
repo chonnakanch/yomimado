@@ -1,5 +1,21 @@
 # Windows candidate test record
 
+Latest automated release — **2026-10-13**: [run `38378686892`](https://github.com/chonnakanch/yomimado/actions/runs/38378686892)
+at `b188b05dd42ac5553cfbc0c1188c9646e2ce29ca` passes the Windows build in
+**47 minutes 2 seconds**, combined verification and protected publication.
+The six-file [public pre-release](https://github.com/chonnakanch/yomimado/releases/tag/v0.1.0)
+contains setup SHA-256
+`61bbd7aefa46d895c1afae9d549e0d357d364bc647341d32ef08fe0957f74b59`.
+GitHub's uploaded digest matches the independently downloaded public provenance
+and checksum record. The installer ZIP/EXE and nested archives were not downloaded
+locally by the agent; hosted installed-runtime/content checks passed.
+
+**Local acceptance for this new hash is not recorded.** The confirmed Windows 11
+x64 PC specification and earlier six-check passes below remain historical; they
+do not establish acceptance for this setup. No additional test is requested under
+the owner's current direction. Hardware limitations remain unchanged, and no
+new pass or waiver is inferred from publication.
+
 Published — 2026-10-12: [YomiMado v0.1.0](https://github.com/chonnakanch/yomimado/releases/tag/v0.1.0)
 is public as a pre-release. Both exact-hash local installer gates pass. The owner
 approves protected recovery `38257468295`; verification and publication succeed
@@ -9,7 +25,7 @@ publicly downloaded combined provenance/checksum bytes also verify. Retain the
 existing platform waivers, untested hardware and source-only rebuild limitation.
 The historical preparation/open-gate statements below describe earlier stages.
 
-Latest verified main candidate — 2026-10-12: owner-authorized PR #3 merges at
+Historical verified main candidate — 2026-10-12: owner-authorized PR #3 merges at
 `5159473da21c952f1a4dc87c457bba82edf5edde`.
 [Joint run `38201230907`](https://github.com/chonnakanch/yomimado/actions/runs/38201230907)
 passes the Windows build in **36 minutes 18 seconds**, with installed terms/model/UI/

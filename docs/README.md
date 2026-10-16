@@ -7,6 +7,7 @@
 - [Script roles](../scripts/README.md): release entrypoints, runtime dependencies and manual rebuild tools.
 - [Implementation plan](implementation-plan.md): completed milestone and current maintenance scope.
 - [Code quality review](code-review-2026-10-13.md): fixed boundary/state issues, duplication and refactor follow-ups.
+- [Redesign quality review](ui-redesign-review.md) and [Windows UI checklist](ui-redesign-windows-checklist.md): current source checks and remaining interactive acceptance.
 - [Security review](security-review-2026-10-13.md): browser/input guards, dependency advisories and remaining runtime work.
 - [Product and architecture design](initial-design.md): domain boundaries and coordinate rules.
 - [App icon](app-icon.md): the current icon's origin and generation record.
@@ -19,8 +20,8 @@
 - [Release notes template](desktop-release-notes.md): generated notes for future versions.
 - [macOS release guide](macos-release.md) and [Windows release guide](windows-release.md):
   platform packaging and retained preparation evidence.
-- [Prepared macOS runtime seed](macos-runtime-seed.md): private input hashes,
-  source-only approval, exact frozen-service verification and the upload blocker.
+- [Verified macOS runtime seed](macos-runtime-seed.md): private input hashes,
+  source-only approval, exact frozen-service verification and completed input recovery.
 - [macOS installed-app record](macos-clean-mac-test.md) and
   [Windows installed-app record](windows-installed-test.md): exact tested hashes,
   owner reports, waivers and untested hardware.

@@ -1,0 +1,528 @@
+import { useEffect, useRef, useState } from "react";
+import { invoke } from "@tauri-apps/api/core";
+import { listen, type UnlistenFn } from "@tauri-apps/api/event";
+import { ScanModeButton, type ScanMode } from "./ScanModeButton";
+import { ToolbarIcon } from "./ToolbarIcon";
+import { debugTooltip } from "../../lib/debug-mode";
+import "./toolbar.css";
+
+export interface ToolbarState {
+  revision: number;
+  sessionId: number | null;
+  scanMode: ScanMode;
+  phase:
+    | "idle"
+    | "selecting"
+    | "capturing"
+    | "recognizing"
+    | "reviewing"
+    | "ready"
+    | "noText"
+    | "error";
+  message: string;
+  canRescan: boolean;
+  hasOverlay: boolean;
+  overlayVisible: boolean;
+  displayName: string;
+  availableWidth: number;
+  detectorModel: { required: boolean; installed: boolean };
+}
+
+const collapseKey = "yomimado.toolbar.collapsed.v1";
+interface ToolbarLayout {
+  rowOffset: number;
+  rowHeight: number;
+  totalHeight: number;
+  panelAbove: boolean;
+  panelMaxExtent: number;
+  panelOpen: boolean;
+}
+const progressLabels: Partial<Record<ToolbarState["phase"], string>> = {
+  selecting: "Selecting…",
+  capturing: "Capturing…",
+  recognizing: "Recognizing…",
+  reviewing: "Reviewing…",
+};
+
+export function FloatingToolbar() {
+  const [state, setState] = useState<ToolbarState | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [collapsed, setCollapsed] = useState(() => {
+    try {
+      return window.localStorage.getItem(collapseKey) === "true";
+    } catch {
+      return false;
+    }
+  });
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [pending, setPending] = useState(false);
+  const [pendingScanMode, setPendingScanMode] = useState<ScanMode | null>(null);
+  const [feedbackOpen, setFeedbackOpen] = useState(false);
+  const statusButton = useRef<HTMLButtonElement>(null);
+  const feedback = useRef<HTMLDivElement>(null);
+  const content = useRef<HTMLDivElement>(null);
+  const row = useRef<HTMLDivElement>(null);
+  const resizeQueue = useRef<Promise<void>>(Promise.resolve());
+  const resizeGeneration = useRef(0);
+  const [layout, setLayout] = useState<ToolbarLayout>({
+    rowOffset: 0,
+    rowHeight: 56,
+    totalHeight: 56,
+    panelAbove: false,
+    panelMaxExtent: 600,
+    panelOpen: false,
+  });
+  const menuButton = useRef<HTMLButtonElement>(null);
+  const busy = pending || state?.sessionId != null;
+  const compact = collapsed || (state?.availableWidth ?? 536) < 536;
+  const scanBusy = pendingScanMode !== null || state?.sessionId != null;
+  const scanMode =
+    state?.sessionId != null
+      ? (state.scanMode ?? "selectedArea")
+      : (pendingScanMode ?? state?.scanMode ?? "selectedArea");
+  const progress = scanBusy
+    ? (progressLabels[state?.phase ?? "idle"] ?? "Scanning…")
+    : null;
+  const missingModel =
+    state?.detectorModel.required && !state.detectorModel.installed;
+
+  useEffect(() => {
+    let mounted = true;
+    let unlisten: UnlistenFn | undefined;
+    const update = (next: ToolbarState) => {
+      if (mounted)
+        setState((previous) =>
+          !previous || next.revision >= previous.revision ? next : previous,
+        );
+    };
+    const refresh = () => {
+      void invoke<ToolbarState>("get_toolbar_state")
+        .then(update)
+        .catch((e) => {
+          if (mounted) setError(String(e));
+        });
+    };
+    void listen<ToolbarState>("toolbar-state-changed", (event) =>
+      update(event.payload),
+    )
+      .then((stop) => {
+        if (!mounted) {
+          stop();
+          return;
+        }
+        unlisten = stop;
+        refresh();
+      })
+      .catch((e) => {
+        if (mounted) {
+          setError(String(e));
+          refresh();
+        }
+      });
+    const blur = () => {
+      setFeedbackOpen(false);
+    };
+    window.addEventListener("focus", refresh);
+    window.addEventListener("blur", blur);
+    return () => {
+      mounted = false;
+      unlisten?.();
+      window.removeEventListener("focus", refresh);
+      window.removeEventListener("blur", blur);
+    };
+  }, []);
+
+  useEffect(() => {
+    const element = content.current;
+    if (!element) return;
+    let lastSize = "";
+    let disposed = false;
+    const resize = () => {
+      const { width } = element.getBoundingClientRect();
+      const rowHeight = row.current?.getBoundingClientRect().height ?? 0;
+      const panel = feedback.current;
+      const margins = panel ? getComputedStyle(panel) : null;
+      const gap = margins
+        ? (parseFloat(margins.marginTop) || 0) +
+          (parseFloat(margins.marginBottom) || 0)
+        : 0;
+      const height =
+        rowHeight + (panel ? panel.getBoundingClientRect().height + gap : 0);
+      if (!width || !rowHeight) return;
+      const logicalWidth = Math.ceil(width);
+      const logicalHeight = Math.ceil(height);
+      const logicalRowHeight = Math.ceil(rowHeight);
+      const size = `${logicalWidth}:${logicalHeight}:${logicalRowHeight}`;
+      if (size === lastSize) return;
+      lastSize = size;
+      const generation = ++resizeGeneration.current;
+      resizeQueue.current = resizeQueue.current.then(async () => {
+        if (disposed || generation !== resizeGeneration.current) return;
+        try {
+          const next = await invoke<Omit<ToolbarLayout, "panelOpen">>(
+            "resize_toolbar",
+            {
+              logicalWidth,
+              logicalHeight,
+              logicalRowHeight,
+            },
+          );
+          if (!disposed && generation === resizeGeneration.current && next) {
+            setLayout({ ...next, panelOpen: feedbackOpen });
+          }
+        } catch (e) {
+          if (!disposed) setError(String(e));
+        }
+      });
+    };
+    const observer =
+      typeof ResizeObserver === "undefined" ? null : new ResizeObserver(resize);
+    observer?.observe(element);
+    if (row.current) observer?.observe(row.current);
+    if (feedback.current) observer?.observe(feedback.current);
+    resize();
+    return () => {
+      disposed = true;
+      observer?.disconnect();
+    };
+  }, [compact, feedbackOpen, error, state?.sessionId, missingModel]);
+
+  useEffect(() => {
+    let disposed = false;
+    let stop: UnlistenFn | undefined;
+    void listen<{ restoreFocus: boolean }>("toolbar-menu-closed", (event) => {
+      setMenuOpen(false);
+      if (event.payload.restoreFocus) menuButton.current?.focus();
+    })
+      .then((unlisten) => {
+        if (disposed) unlisten();
+        else stop = unlisten;
+      })
+      .catch((reason) => setError(String(reason)));
+    return () => {
+      disposed = true;
+      stop?.();
+    };
+  }, []);
+
+  useEffect(() => {
+    let disposed = false;
+    const update = async () => {
+      if (menuOpen) await resizeQueue.current;
+      if (disposed) return;
+      await invoke(menuOpen ? "show_toolbar_menu" : "close_toolbar_menu");
+    };
+    void update().catch((reason) => {
+      if (!disposed) {
+        setError(String(reason));
+        setMenuOpen(false);
+      }
+    });
+    return () => {
+      disposed = true;
+    };
+  }, [menuOpen]);
+
+  useEffect(() => {
+    let disposed = false;
+    let stop: UnlistenFn | undefined;
+    void listen<string>("toolbar-action-error", (event) => {
+      if (!disposed) setError(event.payload);
+    })
+      .then((unlisten) => {
+        if (disposed) unlisten();
+        else stop = unlisten;
+      })
+      .catch((reason) => {
+        if (!disposed) setError(String(reason));
+      });
+    return () => {
+      disposed = true;
+      stop?.();
+    };
+  }, []);
+
+  const run = async (
+    command: string,
+    args?: Record<string, unknown>,
+    mode?: ScanMode,
+  ) => {
+    setError(null);
+    setPending(true);
+    setPendingScanMode(mode ?? null);
+    setMenuOpen(false);
+    setFeedbackOpen(false);
+    try {
+      await invoke(command, args);
+      const snapshot = await invoke<ToolbarState>("get_toolbar_state");
+      setState((previous) =>
+        !previous || snapshot.revision >= previous.revision
+          ? snapshot
+          : previous,
+      );
+    } catch (e) {
+      setError(String(e).replace(/^Error: /, ""));
+    } finally {
+      setPending(false);
+      setPendingScanMode(null);
+    }
+  };
+
+  const collapse = () => {
+    const next = !collapsed;
+    setCollapsed(next);
+    setMenuOpen(false);
+    setFeedbackOpen(false);
+    try {
+      window.localStorage.setItem(collapseKey, String(next));
+    } catch {
+      setError(
+        "Toolbar size preference could not be saved. You can still use it.",
+      );
+    }
+  };
+
+  const scan = (mode: ScanMode) => {
+    void run("start_toolbar_scan", { mode }, mode);
+  };
+  const status =
+    error ??
+    (missingModel
+      ? "Install the detector model in Scan & OCR to start reading."
+      : (state?.message ?? "Connecting to YomiMado…"));
+  const attention =
+    !!error ||
+    !!missingModel ||
+    state?.phase === "error" ||
+    state?.phase === "noText";
+  useEffect(() => {
+    if (!attention) setFeedbackOpen(false);
+  }, [attention]);
+  useEffect(() => {
+    if (feedbackOpen)
+      (
+        feedback.current?.querySelector<HTMLButtonElement>(
+          "button:not(:disabled)",
+        ) ?? feedback.current
+      )?.focus();
+  }, [feedbackOpen, layout.panelOpen]);
+  const cancelScan =
+    state?.sessionId != null
+      ? () =>
+          void run("cancel_capture_selector", { sessionId: state.sessionId })
+      : undefined;
+
+  return (
+    <div
+      className={`floating-toolbar${collapsed ? " collapsed" : ""}${compact ? " compact" : ""}${layout.panelAbove ? " panel-above" : ""}`}
+      ref={content}
+      style={{
+        width: Math.min(compact ? 244 : 536, state?.availableWidth ?? 536),
+        minHeight: layout.totalHeight,
+      }}
+    >
+      <div
+        className="floating-toolbar-row"
+        ref={row}
+        aria-label="YomiMado reading toolbar"
+      >
+        <button
+          className="utility-button utility-icon-button toolbar-drag"
+          aria-label="Move toolbar"
+          aria-description="Drag to move. Arrow keys move the focused handle."
+          title={debugTooltip(
+            "Drag to move. Arrow keys move the focused handle.",
+          )}
+          onPointerDown={(event) => {
+            if (event.button === 0) {
+              setMenuOpen(false);
+              setFeedbackOpen(false);
+              void invoke("drag_toolbar").catch((e) => setError(String(e)));
+            }
+          }}
+          onKeyDown={(event) => {
+            const direction = {
+              ArrowLeft: [-8, 0],
+              ArrowRight: [8, 0],
+              ArrowUp: [0, -8],
+              ArrowDown: [0, 8],
+            }[event.key];
+            if (!direction) return;
+            event.preventDefault();
+            setMenuOpen(false);
+            setFeedbackOpen(false);
+            void invoke("move_toolbar", {
+              dx: direction[0],
+              dy: direction[1],
+            }).catch((e) => setError(String(e)));
+          }}
+        >
+          ⠿
+        </button>
+        {!compact && (
+          <span className="toolbar-brand" aria-label="YomiMado">
+            <ToolbarIcon name="book" />
+          </span>
+        )}
+        {(["selectedArea", "wholeScreen"] as const).map((mode) => {
+          const onCancel =
+            scanBusy && mode === scanMode ? cancelScan : undefined;
+          return (
+            <ScanModeButton
+              key={mode}
+              mode={mode}
+              selected={mode === scanMode}
+              compact={compact}
+              loadingLabel={mode === scanMode ? progress : null}
+              disabled={!state || ((busy || !!missingModel) && !onCancel)}
+              displayName={state?.displayName ?? "current monitor"}
+              onScan={scan}
+              onCancel={onCancel}
+            />
+          );
+        })}
+        <button
+          className="utility-button utility-icon-button"
+          aria-label="Rescan"
+          title={debugTooltip(
+            state?.canRescan
+              ? "Rescan the last successful area or screen"
+              : "Scan an area or screen first",
+          )}
+          disabled={!state?.canRescan || busy || !!missingModel}
+          onClick={() =>
+            void run("rescan", undefined, state?.scanMode ?? "selectedArea")
+          }
+        >
+          <ToolbarIcon name="rescan" />
+        </button>
+        <button
+          className={`utility-button utility-icon-button toolbar-overlay-status${state?.overlayVisible ? " is-visible" : ""}${attention ? " needs-attention" : ""}`}
+          aria-label={
+            attention
+              ? "Scan status"
+              : state?.overlayVisible
+                ? "Hide OCR overlays"
+                : "Show OCR overlays"
+          }
+          aria-pressed={
+            attention ? undefined : (state?.overlayVisible ?? false)
+          }
+          aria-expanded={attention ? feedbackOpen : undefined}
+          aria-controls={attention ? "toolbar-feedback" : undefined}
+          disabled={attention ? busy : !state?.hasOverlay || busy}
+          ref={statusButton}
+          title={debugTooltip(
+            attention
+              ? `${status} · Click for details`
+              : !state?.hasOverlay
+                ? "No OCR result yet. Scan Japanese text first."
+                : state.overlayVisible
+                  ? "OCR overlays shown · Click to hide"
+                  : "OCR overlays hidden · Click to show",
+          )}
+          onClick={() => {
+            if (attention) {
+              setMenuOpen(false);
+              setFeedbackOpen((previous) => !previous);
+            } else {
+              void run("set_overlay_visibility", {
+                visible: !state?.overlayVisible,
+              });
+            }
+          }}
+        >
+          <ToolbarIcon
+            name={
+              attention
+                ? "warning"
+                : state?.overlayVisible
+                  ? "visible"
+                  : "hidden"
+            }
+          />
+        </button>
+        {!compact && (
+          <button
+            className="utility-button utility-icon-button"
+            aria-label="More actions"
+            aria-expanded={menuOpen}
+            aria-haspopup="menu"
+            ref={menuButton}
+            onClick={() => {
+              setFeedbackOpen(false);
+              setMenuOpen((previous) => !previous);
+            }}
+          >
+            <ToolbarIcon name="menu" />
+          </button>
+        )}
+        <button
+          className="utility-button utility-icon-button"
+          aria-label={collapsed ? "Expand toolbar" : "Collapse toolbar"}
+          title={debugTooltip(
+            collapsed ? "Expand toolbar" : "Collapse toolbar",
+          )}
+          onClick={collapse}
+        >
+          <ToolbarIcon name={collapsed ? "expand" : "collapse"} />
+        </button>
+      </div>
+      <div
+        className="visually-hidden"
+        role={error || state?.phase === "error" ? "alert" : "status"}
+      >
+        {status}
+      </div>
+      {attention && feedbackOpen && (
+        <div
+          className="toolbar-feedback"
+          id="toolbar-feedback"
+          role="region"
+          aria-label="Scan status details"
+          tabIndex={-1}
+          ref={feedback}
+          style={{
+            maxHeight: layout.panelOpen
+              ? Math.min(600, Math.max(0, layout.panelMaxExtent - 4))
+              : 600,
+            visibility: layout.panelOpen ? undefined : "hidden",
+          }}
+          onKeyDown={(event) => {
+            if (event.key === "Escape") {
+              event.preventDefault();
+              setFeedbackOpen(false);
+              statusButton.current?.focus();
+            }
+          }}
+        >
+          <p>{status}</p>
+          {missingModel && (
+            <button
+              className="toolbar-status-action"
+              disabled={busy}
+              onClick={() =>
+                void run("show_secondary_window", { view: "settings" })
+              }
+            >
+              Scan & OCR
+            </button>
+          )}
+          {state?.hasOverlay && (
+            <button
+              className="toolbar-status-action"
+              disabled={busy}
+              onClick={() =>
+                void run("set_overlay_visibility", {
+                  visible: !state.overlayVisible,
+                })
+              }
+            >
+              {state.overlayVisible ? "Hide OCR overlays" : "Show OCR overlays"}
+            </button>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}

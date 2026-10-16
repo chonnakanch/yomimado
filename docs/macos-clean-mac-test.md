@@ -1,5 +1,20 @@
 # Apple Silicon installed-app release test
 
+Latest automated release — **2026-10-13**: [run `38378686892`](https://github.com/chonnakanch/yomimado/actions/runs/38378686892)
+at `b188b05dd42ac5553cfbc0c1188c9646e2ce29ca` passes the macOS build in
+**11 minutes 49 seconds**, combined verification and protected publication.
+The [public pre-release](https://github.com/chonnakanch/yomimado/releases/tag/v0.1.0)
+contains DMG SHA-256
+`1d6cadbff7e454d09c790bc002b259ea0f8a2997392e6034bda8f9cb698df462`.
+GitHub's uploaded digest matches the independently downloaded public provenance
+and checksum record. The mounted/source/runtime gates passed in Actions; the
+large published DMG and source archives were not downloaded locally by the agent.
+
+**Local acceptance for this new hash is not recorded.** The earlier human passes
+below remain bound to their original DMGs. Fresh-Mac and other hardware limitations
+are retained; publication does not establish a new installed-app pass. No
+additional test is requested under the owner's current direction.
+
 Published — 2026-10-12: [YomiMado v0.1.0](https://github.com/chonnakanch/yomimado/releases/tag/v0.1.0)
 is public as a pre-release. Both exact-hash local installer gates pass. The owner
 approves protected recovery `38257468295`; verification and publication succeed
@@ -9,7 +24,7 @@ publicly downloaded combined provenance/checksum bytes also verify. Retain the
 existing platform waivers, untested hardware and source-only rebuild limitation.
 The historical preparation/open-gate statements below describe earlier stages.
 
-Current main candidate — 2026-10-12: source
+Historical main candidate — 2026-10-12: source
 `5159473da21c952f1a4dc87c457bba82edf5edde`, [run `38201230907`](https://github.com/chonnakanch/yomimado/actions/runs/38201230907).
 The downloaded `macos-candidate-for-transfer` folder passes the exact seven-file
 artifact verifier: provenance hash matches the hosted combined summary, source

@@ -30,12 +30,15 @@ showing the overlay, start the desktop app with capture debug mode enabled:
 
 ```sh
 cd apps/desktop
-VITE_CAPTURE_DEBUG=1 npm run tauri dev
+rtk proxy env VITE_CAPTURE_DEBUG=1 npm run tauri -- dev --no-watch
 ```
 
 After selecting a region or scanning a page, the debug view shows the captured
-image, final OCR polygons, detector candidate boxes, and their individual crops
-and recognitions. Medium and large captures receive a bounded retry on
+image and recognized text using the shared design-system surfaces and controls.
+Orange marks final regions; dashed orange marks review/approximate geometry.
+Thin cyan dashes identify detector candidates; muted dots identify filtered boxes.
+Expand **Geometry** or **Detector stage** for coordinates, individual crops,
+recognitions and filter reasons. Medium and large captures receive a bounded retry on
 overlapping image tiles; duplicate boxes are merged, and the detector list
 labels tile results.
 Gray boxes were filtered; their reasons appear in the detector list. The first
@@ -47,7 +50,10 @@ as PNG files. On the first launch after this change, YomiMado removes its older
 with one incomplete or missing detector region, the service also tries Manga OCR
 on the whole selected crop. If it recovers plausible text, the overlay uses a
 dashed, approximate selection-area box rather than claiming precise text
-geometry. Choose **Show overlay** to continue or **Close** to cancel. This flag is read when Vite
+geometry. Choose **Show overlay** to continue or **Close** to cancel. Hover tooltips
+on OCR boxes, toolbar buttons and the popup's Check OCR indicator also require this
+flag; accessible labels and review details remain available in normal mode.
+This flag is read when Vite
 starts; restart both the desktop app and OCR service after updating them, and
 restart the desktop app without the flag to return to the normal flow. On Windows
 PowerShell, set `$env:VITE_CAPTURE_DEBUG="1"` before running `npm run tauri dev`.
@@ -214,8 +220,8 @@ Group, provided under [CC BY-SA 4.0 and the EDRDG dictionary licence](https://ww
 [Checks](../.github/workflows/checks.yml) runs on develop/main pushes and main
 pull requests. Frontend formatting, TypeScript, Vitest and the Vite production
 build run alongside the Python service and release-tool tests. Native formatting,
-tests and debug compilation run on macOS and Windows with Rust 1.98.1. These
-checks build no installer and require no detector/model downloads.
+tests, strict Clippy and debug compilation run on macOS and Windows with Rust
+1.98.1. These checks build no installer and require no detector/model downloads.
 
 Service CI uses Python 3.11.17 and
 [requirements-ci.txt](../scripts/requirements-ci.txt), with exact wheel hashes

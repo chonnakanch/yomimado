@@ -1,0 +1,81 @@
+# Phase 2 native overlay checks
+
+This development-only check uses synthetic Japanese text and ordinary browser
+controls. No manga image, model download or service/API change is needed.
+
+Run the existing local OCR service with its configured offline models, then run
+`rtk npm run tauri -- dev --no-watch` from `apps/desktop`. Open
+`http://localhost:1420/src/features/overlay/fixtures/reader.html` in Safari or a
+Windows browser. The fixture is not a production Vite entry or public asset.
+On macOS, grant capture access to the actual development launcher when required;
+this session used normal command-based development after temporary ad-hoc bundles
+proved inconvenient for repeated grants.
+
+## Check the native interaction
+
+1. Whole Screen detects/crops the manga page/spread before OCR; menu-bar, browser
+   tabs/address and surrounding app text must not become OCR regions. When the
+   boundary is uncertain, verify saved-area reuse, then missing/invalid saved-area
+   drawing and cancellation. Selected Area still scans exactly what is dragged.
+   Whole Screen and Selected Area produce aligned polygons for the horizontal and
+   vertical fixture text. Switch from Whole Screen to a smaller Selected Area, then
+   select a different-size area and use Rescan and Hide/Show. All polygon edges must
+   remain visible: establish the target monitor, resize, then reapply the position
+   of the reused overlay. Also verify the first Retina scan's physical window size.
+   Capture must exclude the toolbar, result and popup. Check the leading `一` and
+   ending `。` of the horizontal sentence and the outer strokes of both vertical
+   columns. Compare a tight reader-panel selection, a whole-display manual selection
+   and the Whole Screen button: downsampled detection must not lose a disconnected
+   leading thin stroke. Image-derived boundary corrections use dashed approximate/review
+   regions; their popup must retain the original Japanese and review guidance.
+   Start a fresh app process and choose Whole Screen **before** any Selected Area
+   scan. Repeat with cold local models: recognition must complete while the capture
+   selector stays hidden, without bringing it to the foreground. A stalled OCR
+   upload or response must end with an error after three minutes. Native logs show
+   session-bound OCR stages (`Requesting`, `Recognized`, `Publishing`) without
+   screenshot bytes or recognized text. Restart the app when testing a native
+   scheduling change; frontend hot reload alone does not apply it.
+2. With the overlay visibly present, click **Test reader click**, drag-select the
+   input text and scroll in the blank side margin. The browser must receive them.
+   Start a drag outside a polygon and cross it; verify mouse-up stays with the browser.
+3. Hover a polygon, then activate it explicitly. Hover must not perform dictionary,
+   tokenization or translation work. A click opens the existing learning popup.
+4. Choose **Read with keyboard** in toolbar overflow. Arrows/Home/End change focus;
+   Enter/Space open a popup, and Escape returns to its originating region. Escape
+   in region navigation hides results; Show restores them without another OCR call.
+   Clicking elsewhere dismisses the popup without moving focus back to the overlay.
+5. Read with keyboard is disabled without a visible completed result and during
+   scans. Settings → Reading explains the controls; no old toggle or Previous/Next
+   text panel remains. Keyboard entry must work without moving the pointer over
+   a polygon. Navigation must not perform OCR or translation.
+6. Rescan, cancel, hide/show and close/reopen must not retain stale hit polygons.
+   Disconnect/change a monitor or its DPI; stale geometry must hide with guidance.
+7. Try fast pointer entries and immediate clicks at multiple speeds. Record missed
+   clicks and response latency; the macOS 8 ms sampler is a fallback and its interval
+   is not a measured end-to-end latency guarantee. Measure active/idle app CPU.
+8. Repeat on Windows (100%, 125%, 150%, 200%), Retina and mixed-scale monitors,
+   including a negative monitor origin. Check window-region clipping/focus borders
+   and actual browser input rather than relying only on SVG pointer events.
+
+## Adapter and evidence limits
+
+Windows uses the union of the original polygons and any measured navigator control
+bounds through native `SetWindowRgn`; owned GDI handles are released on failure.
+macOS uses read-only Quartz cursor/button state and whole-window mouse ignore.
+It samples at 8 ms while active, 80 ms while disabled, and preserves the recipient
+of a held drag. No event tap, replay, Accessibility/Input Monitoring grant or new
+native dependency was added. The native physical transform matches the same OCR
+image/selection ratios used by the frontend, including an OS-adjusted client origin.
+
+Recorded evidence and open acceptance gates are in
+[implementation status](implementation-plan.md#ui-redesign--phase-2-review).
+Source builds/tests are distinct from native manual checks and installer acceptance.
+The [Windows redesign checklist](ui-redesign-windows-checklist.md) records scale,
+multi-monitor, secondary-window and recovery cases for the current development UI.
+
+For frame diagnosis only, set `YOMIMADO_OVERLAY_GEOMETRY_DEBUG=1` when launching
+the debug app. Each reveal writes capture metadata, measured native frame and OCR
+polygons to stderr; navigator updates also report CSS viewport and physical window
+dimensions. It omits screenshot bytes and recognized text, is off by
+default and is excluded from release builds. Compare the measured window bounds
+with the selected physical rectangle when investigating clipped edges.

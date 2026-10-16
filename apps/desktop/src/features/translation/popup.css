@@ -1,0 +1,325 @@
+.translation-popup {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-window);
+  box-sizing: border-box;
+  color: var(--color-text-primary);
+  height: 100vh;
+  overflow: hidden;
+  width: 100vw;
+  font-size: var(--font-size-definition);
+  line-height: 1.55;
+}
+.translation-content {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  height: 100%;
+  padding: var(--popup-padding);
+}
+.translation-popup p,
+.translation-popup h2,
+.translation-popup h3,
+.translation-popup dl {
+  margin: 0;
+}
+.popup-context {
+  display: flex;
+  flex: none;
+  flex-direction: column;
+  gap: var(--space-2);
+  overflow-y: auto;
+  min-height: 0;
+}
+.translation-heading {
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-label);
+}
+.translation-heading-labels {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1) var(--space-2);
+}
+.popup-ocr-status {
+  align-items: center;
+  display: inline-flex;
+  gap: calc(var(--space-1) / 2);
+  font-size: var(--font-size-caption);
+  line-height: 1.4;
+  white-space: nowrap;
+}
+.popup-ocr-status svg {
+  color: var(--color-accent);
+  flex: none;
+  height: 12px;
+  width: 12px;
+}
+.translation-popup .utility-button {
+  box-sizing: border-box;
+  font-size: var(--font-size-label);
+  height: var(--control-compact);
+  font-weight: 500;
+  opacity: 1;
+}
+.translation-popup .translation-close {
+  font-size: 24px;
+  line-height: 1;
+}
+.sentence-scroll {
+  overflow-y: auto;
+  flex: none;
+}
+.tokenization-text {
+  font-size: var(--font-size-sentence);
+  line-height: 1.75;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+  padding: var(--space-1);
+}
+.translation-popup .tokenization-word {
+  background: transparent;
+  border-radius: var(--radius-small);
+  color: var(--color-text-primary);
+  font: inherit;
+  padding: 0;
+  white-space: pre-wrap;
+}
+.translation-popup .tokenization-word:hover {
+  background: var(--color-surface-elevated);
+  text-decoration: underline;
+  text-decoration-color: var(--color-accent);
+}
+.translation-popup .tokenization-word[aria-pressed="true"] {
+  background: var(--color-selected);
+  color: var(--color-on-accent);
+}
+.sentence-save-actions,
+.popup-actions,
+.popup-secondary-actions {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+.sentence-feedback:empty {
+  display: none;
+}
+.sentence-feedback {
+  font-size: var(--font-size-label);
+}
+.popup-details {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-gutter: stable;
+}
+.popup-details-content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  padding: var(--space-1);
+  overflow-wrap: anywhere;
+}
+.tokenization-status,
+.popup-metadata,
+.word-metadata {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-label);
+}
+.word-definition,
+.tokenization-selected {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+.translation-popup .selected-word {
+  font-size: var(--font-size-word);
+  line-height: 1.35;
+  font-weight: 600;
+}
+.translation-popup .selected-reading {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-reading);
+  line-height: 1.5;
+  margin-top: calc(-1 * var(--space-2));
+}
+.word-metadata {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-4);
+}
+.word-metadata div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+}
+.word-metadata dd {
+  color: var(--color-text-primary);
+  margin: 0;
+}
+.word-entry {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+.dictionary-match {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+.dictionary-match span {
+  color: var(--color-text-secondary);
+}
+.word-entry ol {
+  margin: 0;
+  padding-left: var(--space-6);
+}
+.word-entry li + li {
+  margin-top: var(--space-1);
+}
+.translation-popup .save-word-button {
+  align-self: flex-start;
+}
+.popup-disclosure,
+.kanji-section,
+.popup-secondary-actions {
+  border-top: 1px solid var(--color-border);
+  padding-top: var(--space-3);
+}
+.popup-disclosure summary {
+  cursor: pointer;
+  font-size: var(--font-size-label);
+  font-weight: 500;
+  padding: var(--space-2) 0;
+}
+.alternative-matches .word-entry {
+  background: var(--color-surface-elevated);
+  border-radius: var(--radius-control);
+  margin-top: var(--space-2);
+  padding: var(--space-3);
+}
+.popup-attribution {
+  color: var(--color-text-muted);
+  font-size: var(--font-size-metadata);
+}
+.translation-popup a {
+  color: var(--color-accent-hover);
+}
+.kanji-section,
+.kanji-detail,
+.kanji-examples {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+.translation-popup h3 {
+  font-size: 14px;
+  line-height: 1.4;
+  font-weight: 600;
+}
+.kanji-choices {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+.translation-popup .kanji-choices button {
+  height: var(--control-default);
+  min-width: var(--control-default);
+  font-size: var(--font-size-sentence);
+}
+.translation-popup .kanji-choices button[aria-pressed="true"] {
+  background: var(--color-selected);
+  color: var(--color-on-accent);
+}
+.kanji-character {
+  font-size: 32px;
+  line-height: 1.35;
+  font-weight: 500;
+}
+.translation-popup .disclosure-button,
+.translation-popup .inline-action {
+  background: transparent;
+  color: var(--color-text-primary);
+  font-size: var(--font-size-label);
+  font-weight: 500;
+  text-align: left;
+  padding: var(--space-1);
+}
+.translation-popup .disclosure-button {
+  display: flex;
+  gap: var(--space-2);
+  align-items: center;
+  min-height: var(--control-compact);
+}
+.translation-popup .inline-action {
+  color: var(--color-accent-hover);
+  text-decoration: underline;
+}
+.kanji-examples ul {
+  list-style: none;
+  margin: 0 0 var(--space-3);
+  padding: 0;
+}
+.kanji-examples li {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1) var(--space-2);
+  padding: var(--space-2) 0;
+}
+.kanji-examples li > span:last-child {
+  flex-basis: 100%;
+}
+.compound-reading {
+  color: var(--color-text-secondary);
+}
+.ocr-editor {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+.ocr-editor label {
+  font-size: var(--font-size-label);
+}
+.translation-popup textarea {
+  background: var(--color-background);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-control);
+  box-sizing: border-box;
+  color: var(--color-text-primary);
+  font-family: var(--font-japanese);
+  font-size: var(--font-size-sentence);
+  line-height: 1.75;
+  min-height: 100px;
+  padding: var(--space-2);
+  resize: vertical;
+  width: 100%;
+}
+.translation-output {
+  background: var(--color-surface-elevated);
+  border-radius: var(--radius-control);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-3);
+}
+.translation-error {
+  color: var(--color-status-error);
+}
+.popup-success {
+  color: var(--color-success);
+}
+@media (max-width: 360px) {
+  .word-metadata {
+    flex-direction: column;
+  }
+  .translation-content {
+    padding: var(--space-3);
+  }
+}
