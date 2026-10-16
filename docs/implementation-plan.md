@@ -2,6 +2,16 @@
 
 ## Current status
 
+**0.2.1 candidate update — 2026-10-17:** the Windows missing-overlay startup repair
+merged through [PR #11](https://github.com/chonnakanch/yomimado/pull/11) at
+`31f51a7c4fe1bb192c3eeecea1f90d57d3ee5882`. All exact-main Checks, both installer
+builds and combined verification pass. The [verified candidate](https://github.com/chonnakanch/yomimado/actions/runs/38930205981/artifacts/12060264675)
+is ready for exact-installer testing; the owner has been asked to check the
+new Windows setup in both modes and through Read with keyboard. Physical Windows
+rendering is still unconfirmed. The protected `desktop-release` publisher waits
+for separate approval; v0.2.0 remains published. See the
+[release record](desktop-release.md) for hashes, download lifetime and limits.
+
 Updated **2026-10-16**. The owner closed the UI redesign implementation on tracked
 `develop`, through source commit `cd2d202`. Phases 3, 4 and 5 retain their recorded
 approvals. The owner subsequently authorized version `0.2.0`, integration into
@@ -1175,3 +1185,13 @@ Windows visual/keyboard verification and protected publication remain pending.
 Pre-commit checks also pass all 172 frontend tests, the TypeScript/production
 frontend build, all 229 release-tool tests, desktop/document formatting and the
 frozen-runtime reuse guard. OCR service/model/dependency inputs are unchanged.
+
+The exact 0.2.1 main Checks and release build/verification now pass. The Windows
+installed UI tests cover startup, model setup, scan controls and cancellation;
+they do not establish the reported region rendering fix on the owner's hardware.
+Both installer candidates and their exact provenance/hashes passed combined
+verification. The Windows-only artifact is available for the owner's fresh-launch
+check; publication remains waiting in `desktop-release`. Preserve `31f51a7` on
+main until review. Local development UI automation was unavailable for the
+unbundled Mac process; only its successful launch is recorded, and its test
+launcher was stopped without stopping the existing OCR service.

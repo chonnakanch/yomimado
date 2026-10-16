@@ -1,5 +1,28 @@
 # Windows candidate test record
 
+Current 0.2.1 automated candidate — **2026-10-17**:
+[Release 38930205981](https://github.com/chonnakanch/yomimado/actions/runs/38930205981)
+at `31f51a7c4fe1bb192c3eeecea1f90d57d3ee5882` passes Windows in **46 minutes 45 seconds**
+and combined verification. Exact-setup terms/rejection, startup/Quit, staged-model
+UI, scan buttons/shortcuts/cancellation, frozen learning and persistence all pass.
+[Main source Checks](https://github.com/chonnakanch/yomimado/actions/runs/38930206019)
+pass too. This candidate contains the repair for the owner-reported missing OCR
+regions in 0.2.0; source tests do not prove that visual behavior on a physical PC.
+
+The [Windows test candidate](https://github.com/chonnakanch/yomimado/actions/runs/38930205981/artifacts/12060463340)
+contains the setup, `SHA256SUMS.txt` and platform records. Its files are inputs to
+the [verified combined candidate](https://github.com/chonnakanch/yomimado/actions/runs/38930205981/artifacts/12060264675).
+ZIP digests and expiry are in [the shared release record](desktop-release.md).
+No installer/archive was downloaded locally. The owner has been asked to quit
+0.2.0, install this exact 0.2.1 setup, then test a fresh Whole Screen scan before
+Selected Area, visible outlines, keyboard region entry and popup activation.
+Exact setup SHA-256 from the successful combined verification summary:
+`b0aecb9d8d43d8ad30bf8350c56ae77fc3c17939a9aba1ab40e637c309d31933`.
+
+**That visual result is pending**; physical mixed-DPI and the other hardware
+limitations remain open. Publication is waiting for separate owner approval in
+`desktop-release`. Do not transfer old human reports to these new installer bytes.
+
 Current 0.2.0 automated candidate — **2026-10-16**:
 [Release 38892964547](https://github.com/chonnakanch/yomimado/actions/runs/38892964547)
 at `c03ee1edba4e0f545cb7ed85a7552c544a4bfcdc` passes the Windows job in
