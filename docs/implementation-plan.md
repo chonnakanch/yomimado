@@ -1009,3 +1009,9 @@ workflow invokes the driver under the required Framework PowerShell runtime.
 Actual installed-app and physical mixed-DPI results remain unrecorded; no installer
 or release workflow was run. Future macOS packaging must refresh/review the frozen
 OCR runtime seed for the changed service source; its mismatch rejection remains.
+
+On 2026-10-16, source commit `e0ebe97` passed all jobs and the aggregate gate in
+[Checks run 38836706682](https://github.com/chonnakanch/yomimado/actions/runs/38836706682),
+including the real Windows UI Automation driver against the synthetic WPF fixture.
+Frontend/service/release-tool checks, strict Clippy, native tests and debug builds
+passed on both supported native CI platforms.

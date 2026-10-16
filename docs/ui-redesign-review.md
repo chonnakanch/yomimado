@@ -94,8 +94,11 @@ is a Python 3.11 API. Rerunning the entire suite with 3.11.17 passed all 93 test
 no compatibility shim, skipped test, model download or dependency change was used.
 OCR tests ran with Hugging Face and Transformers offline flags enabled.
 The follow-up reran all 97 service tests and 229 release-tool tests, service/script
-lint and formatting, and workflow formatting. Native Windows driver execution is
-recorded separately by the exact-commit Checks run.
+lint and formatting, and workflow formatting. On 2026-10-16,
+[Checks run 38836706682](https://github.com/chonnakanch/yomimado/actions/runs/38836706682)
+passed for `e0ebe97`: frontend, service, release tools, strict Clippy, native tests
+and debug builds on macOS/Windows, and the synthetic Windows UI driver test.
+The aggregate gate also passed. No release workflow was dispatched.
 
 ## Remaining acceptance boundaries
 
