@@ -15,20 +15,56 @@ Add-Type -AssemblyName PresentationFramework
 Add-Type -AssemblyName PresentationCore
 Add-Type -AssemblyName WindowsBase
 Add-Type -AssemblyName System.Xaml
+Add-Type -AssemblyName UIAutomationProvider
 $References = @(
     [System.Windows.Application].Assembly.Location,
     [System.Windows.Media.Visual].Assembly.Location,
     [System.Windows.DependencyObject].Assembly.Location,
-    [System.Xaml.XamlReader].Assembly.Location
+    [System.Xaml.XamlReader].Assembly.Location,
+    [System.Windows.Automation.Provider.IExpandCollapseProvider].Assembly.Location,
+    [System.Windows.Automation.ExpandCollapseState].Assembly.Location
 )
 Add-Type -ReferencedAssemblies $References -OutputAssembly $Executable -OutputType WindowsApplication -TypeDefinition @'
 using System;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Automation;
+using System.Windows.Automation.Peers;
+using System.Windows.Automation.Provider;
+// Match WebView2's aria-expanded menu button: ExpandCollapse, without Invoke.
+public sealed class ExpandMenuButton : Button {
+    public Action OpenMenu;
+    public Action CloseMenu;
+    public Func<bool> IsMenuOpen;
+    protected override AutomationPeer OnCreateAutomationPeer() { return new ExpandMenuPeer(this); }
+}
+public sealed class ExpandMenuPeer : ButtonAutomationPeer, IExpandCollapseProvider {
+    public ExpandMenuPeer(ExpandMenuButton owner) : base(owner) { }
+    public override object GetPattern(PatternInterface pattern) {
+        if (pattern == PatternInterface.Invoke) return null;
+        if (pattern == PatternInterface.ExpandCollapse) return this;
+        return base.GetPattern(pattern);
+    }
+    public ExpandCollapseState ExpandCollapseState {
+        get {
+            var button = (ExpandMenuButton)Owner;
+            return (ExpandCollapseState)button.Dispatcher.Invoke(new Func<ExpandCollapseState>(() =>
+                button.IsMenuOpen() ? ExpandCollapseState.Expanded : ExpandCollapseState.Collapsed));
+        }
+    }
+    public void Expand() {
+        var button = (ExpandMenuButton)Owner;
+        button.Dispatcher.BeginInvoke(button.OpenMenu);
+    }
+    public void Collapse() {
+        var button = (ExpandMenuButton)Owner;
+        button.Dispatcher.BeginInvoke(button.CloseMenu);
+    }
+}
 public static class SyntheticYomiMado {
     private static bool quitting;
     [STAThread]
-    public static void Main() {
+    public static void Main(string[] args) {
         var app = new Application { ShutdownMode=ShutdownMode.OnExplicitShutdown };
         var toolbar = new Window { Title="YomiMado toolbar", ShowInTaskbar=false, Width=600, Height=110, Left=80, Top=80 };
         toolbar.Closing += delegate(object sender, System.ComponentModel.CancelEventArgs e) { if (!quitting) e.Cancel=true; };
@@ -46,7 +82,10 @@ public static class SyntheticYomiMado {
         choices.Items.Add(open);
         choices.Items.Add(quit);
         menu.Content = choices;
-        var more = new Button { Content="More actions", Width=150, Height=30 };
+        Button more = args.Length > 0 ? new ExpandMenuButton {
+            OpenMenu=() => menu.Show(), CloseMenu=() => menu.Hide(), IsMenuOpen=() => menu.IsVisible
+        } : new Button();
+        more.Content="More actions"; more.Width=150; more.Height=30;
         more.Click += delegate { menu.Show(); };
         toolbar.Content = more;
         app.Run(toolbar);
@@ -56,11 +95,20 @@ public static class SyntheticYomiMado {
 $First = $null
 $Other = $null
 try {
-    $First = Start-Process $Executable -PassThru
+    $First = Start-Process $Executable -ArgumentList 'expand-only' -PassThru
     $Other = Start-Process $Executable -PassThru
     $Toolbar = Wait-YomiMadoWindow $First 'YomiMado toolbar'
     $OtherToolbar = Wait-YomiMadoWindow $Other 'YomiMado toolbar'
     if ($Toolbar -eq $OtherToolbar) { throw 'Window discovery escaped its process.' }
+    Wait-YomiMadoUi $First { $null -ne (Get-YomiMadoAction $Toolbar 'More actions') } 'Expand-only menu button did not load.'
+    $ExpandOnly = Get-YomiMadoAction $Toolbar 'More actions'
+    $Pattern = $null
+    if ($ExpandOnly.TryGetCurrentPattern([System.Windows.Automation.InvokePattern]::Pattern, [ref]$Pattern)) {
+        throw 'Expand-only fixture unexpectedly exposes Invoke.'
+    }
+    if (-not $ExpandOnly.TryGetCurrentPattern([System.Windows.Automation.ExpandCollapsePattern]::Pattern, [ref]$Pattern)) {
+        throw 'Expand-only fixture does not expose ExpandCollapse.'
+    }
     Invoke-YomiMadoMenuAction $First 'Settings'
     $Settings = Wait-YomiMadoWindow $First 'YomiMado*Settings'
     Wait-YomiMadoUi $First { $null -ne (Get-YomiMadoAction $Settings 'Select detector model file') } 'Settings action was not found in its own window.'
@@ -74,7 +122,7 @@ try {
     $Other.Refresh()
     if ($Other.HasExited) { throw 'Quit affected a different process.' }
     Stop-YomiMadoViaMenu $Other
-    Write-Host 'Windows UI driver: PID-scoped toolbar/menu discovery, Settings close/reopen and explicit Quit passed.'
+    Write-Host 'Windows UI driver: ExpandCollapse/Invoke menus, PID-scoped discovery, Settings close/reopen and explicit Quit passed.'
 } catch {
     # Synthetic labels only: retain UIA/native diagnostics if the runner's
     # accessibility provider differs from the installed WebView2 provider.

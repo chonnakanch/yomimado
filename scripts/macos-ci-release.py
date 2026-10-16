@@ -168,6 +168,7 @@ def verify_reuse(root: Path = ROOT) -> None:
         "scripts/build-windows-prerelease.ps1",
         "scripts/verify-windows-install.ps1",
         "scripts/verify-windows-ui.ps1",
+        "scripts/windows-ui-driver.ps1",
         "scripts/release_dictionaries.py",
         "scripts/windows_release.py",
         "scripts/release_api.py",

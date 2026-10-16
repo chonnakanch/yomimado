@@ -1,5 +1,25 @@
 # Shared desktop release checklist
 
+Version 0.2.0 preparation — **2026-10-16**: the owner authorized the version bump,
+protected-main merge and installer build. [PR #7](https://github.com/chonnakanch/yomimado/pull/7)
+merged at `645ba088118f41880abfc37df1b595fa85e3ad42` after all required
+[Checks 38840926023](https://github.com/chonnakanch/yomimado/actions/runs/38840926023)
+passed. All five version files agree on `0.2.0`, with no dependency changes.
+The refreshed [macOS source/runtime seed](macos-runtime-review-0.2.0.md) has explicit
+source/licence-only approval and exact uploaded-hash verification. Release
+[38841492110](https://github.com/chonnakanch/yomimado/actions/runs/38841492110)
+is building both platforms from the merged main commit. All main
+[Checks 38841491986](https://github.com/chonnakanch/yomimado/actions/runs/38841491986)
+pass. The macOS installer job passes in **10 minutes 50 seconds**; Windows
+packaging produced a setup, but the installed-startup gate failed because the UI
+driver required Invoke on the toolbar's ExpandCollapse menu button. Later Windows
+tests, combined verification and publication were skipped. A focused driver repair
+adds pattern-aware menu opening and a synthetic ExpandCollapse-only regression
+fixture; ordinary Invoke actions remain covered. The Windows-only helper is
+explicitly scoped outside the unchanged macOS frozen runtime. No new exact-installer
+acceptance or publication approval is recorded. Historical v0.1.0 evidence below
+remains unchanged.
+
 Latest publication — **2026-10-13**: [PR #6](https://github.com/chonnakanch/yomimado/pull/6)
 is merged at `b188b05dd42ac5553cfbc0c1188c9646e2ce29ca` after all 12 PR checks pass.
 [Checks `38378686824`](https://github.com/chonnakanch/yomimado/actions/runs/38378686824)
