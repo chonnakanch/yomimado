@@ -1131,9 +1131,10 @@ frozen learning/persistence all pass. The
 [verified candidate](https://github.com/chonnakanch/yomimado/actions/runs/38892964547/artifacts/12045450534)
 is retained until 2026-10-30; its ZIP digest and delivery scope are recorded in
 [the shared release record](desktop-release.md). Public API metadata confirms the
-successful jobs and waiting publisher; the large artifact was not downloaded
-locally. New exact-installer human acceptance, physical Windows/mixed-DPI checks
-and protected publication remain open. Keep main at `c03ee1e` for this candidate.
+successful jobs and, at that point, a waiting publisher; the large artifact was
+not downloaded locally. The owner subsequently approved publication, as recorded
+in Current status. Physical Windows/mixed-DPI checks and a detailed local
+installed-app report remain unrecorded; the published tag stays at `c03ee1e`.
 
 ### Shared publication environment name — 2026-10-16
 
@@ -1145,3 +1146,9 @@ the old protected environment remains for historical runs. Validation rejects th
 old name and still rejects missing reviewers, administrator bypass and broad or
 tag deployment rules. This changes release workflow metadata, not application
 code, dependencies or the published 0.2.0 installers.
+
+The live GitHub environment passes the updated validator. API comparison confirms
+identical reviewer identity, self-review setting, administrator bypass and branch
+policies; the comparison is retained under ignored
+`services/ocr/build/release-environment-rename/`. All 229 release-tool tests, Ruff
+lint/format, Prettier and diff checks pass; the develop push CI also passes.

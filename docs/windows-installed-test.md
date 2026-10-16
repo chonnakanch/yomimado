@@ -14,9 +14,10 @@ The [combined candidate](https://github.com/chonnakanch/yomimado/actions/runs/38
 and its ZIP digest are recorded in [the shared release record](desktop-release.md).
 Hosted gates verify the exact member hashes. The ZIP/EXE and nested archives were
 not downloaded locally. **No new local Windows 11/hardware acceptance is recorded**;
-physical mixed-DPI and the other untested cases remain open. Publication is waiting
-for the separate protected owner review. Earlier v0.1.0 passes below remain bound
-to their original installer hashes.
+physical mixed-DPI and the other untested cases remain open. The owner subsequently
+approved the protected publisher; [v0.2.0](https://github.com/chonnakanch/yomimado/releases/tag/v0.2.0)
+is public as a pre-release. Earlier v0.1.0 passes below remain bound to their
+original installer hashes.
 
 Latest automated release — **2026-10-13**: [run `38378686892`](https://github.com/chonnakanch/yomimado/actions/runs/38378686892)
 at `b188b05dd42ac5553cfbc0c1188c9646e2ce29ca` passes the Windows build in

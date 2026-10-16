@@ -12,8 +12,10 @@ and its ZIP digest are recorded in [the shared release record](desktop-release.m
 Hosted gates verify the exact member hashes; the new DMG/archives were not
 downloaded locally. **No new existing-Mac installed-app acceptance is recorded**.
 The fresh-Mac waiver and other untested cases remain; prior human passes below do
-not transfer to these bytes. Protected publication is waiting for separate owner
-review, and the source-only approval does not supply that review.
+not transfer to these bytes. The owner subsequently approved the protected
+publisher; [v0.2.0](https://github.com/chonnakanch/yomimado/releases/tag/v0.2.0)
+is public as a pre-release. That protected review is separate from source-only
+approval; no detailed local installed-app report is inferred.
 
 Latest automated release — **2026-10-13**: [run `38378686892`](https://github.com/chonnakanch/yomimado/actions/runs/38378686892)
 at `b188b05dd42ac5553cfbc0c1188c9646e2ce29ca` passes the macOS build in
