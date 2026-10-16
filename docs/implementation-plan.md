@@ -1015,3 +1015,17 @@ On 2026-10-16, source commit `e0ebe97` passed all jobs and the aggregate gate in
 including the real Windows UI Automation driver against the synthetic WPF fixture.
 Frontend/service/release-tool checks, strict Clippy, native tests and debug builds
 passed on both supported native CI platforms.
+
+### Toolbar launch placement
+
+On 2026-10-16 the owner requested bottom-screen startup instead of the fixed
+top-left coordinates. The toolbar now starts centered near the bottom of the
+primary display's usable work area, with the existing 12 logical px inset above
+system UI. Native setup positions it before showing it; the first frontend
+measurement accounts for the saved compact preference, then normal drag/resize
+anchoring resumes. A geometry regression covers both widths, 100/125/150/200%
+scales, offset/negative work areas and a constrained work area.
+Local verification passes 61 native tests, strict all-target Clippy, Cargo
+formatting and the locked macOS debug build; 25 toolbar/menu frontend tests,
+TypeScript/Vite production build and changed-file Prettier checks also pass.
+Physical Windows placement remains part of the prepared acceptance checklist.

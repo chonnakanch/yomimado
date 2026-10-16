@@ -5,8 +5,7 @@ use std::sync::{
 
 use serde::{Deserialize, Serialize};
 use tauri::{
-    AppHandle, Emitter, LogicalSize, Manager, PhysicalPosition, PhysicalSize, WebviewUrl,
-    WebviewWindowBuilder,
+    AppHandle, Emitter, Manager, PhysicalPosition, PhysicalSize, WebviewUrl, WebviewWindowBuilder,
 };
 
 use crate::capture::{CaptureMetadata, DisplayInfo, Rectangle};
@@ -849,6 +848,17 @@ fn clamped_position(
     )
 }
 
+fn startup_toolbar_position(width: f64, height: f64, area: Rectangle, scale: f64) -> (i32, i32) {
+    clamped_position(
+        area.x + (area.width - width) / 2.0,
+        area.y + area.height - height - SCREEN_INSET * scale,
+        width,
+        height,
+        area,
+        scale,
+    )
+}
+
 #[derive(Clone, Copy, Debug, Default, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ToolbarLayout {
@@ -926,11 +936,24 @@ pub fn resize_toolbar(
     let position = window.outer_position().map_err(|e| e.to_string())?;
     let state = app.state::<crate::AppState>();
     let mut previous = state.toolbar_layout.lock().map_err(|e| e.to_string())?;
-    let ((x, y), layout) = toolbar_frame(
+    // The first frontend measurement includes the saved compact preference.
+    // Center that measured row once; subsequent resizes retain its dragged anchor.
+    let anchor = if previous.row_height == 0.0 {
+        let (x, y) = startup_toolbar_position(
+            width,
+            (logical_row_height * scale).ceil().min(area.height),
+            area,
+            scale,
+        );
+        (f64::from(x), f64::from(y))
+    } else {
         (
             f64::from(position.x),
             f64::from(position.y) + previous.row_offset * scale,
-        ),
+        )
+    };
+    let ((x, y), layout) = toolbar_frame(
+        anchor,
         width,
         logical_row_height,
         logical_height - logical_row_height,
@@ -1032,16 +1055,70 @@ pub fn setup(app: &AppHandle) -> Result<(), String> {
         .ok_or("Toolbar is unavailable")?;
     #[cfg(target_os = "windows")]
     window.set_shadow(false).map_err(|e| e.to_string())?;
-    // Start within the work area; later resizing also clamps restored dimensions.
+    let monitor = window
+        .primary_monitor()
+        .map_err(|e| e.to_string())?
+        .ok_or("No primary monitor")?;
+    let scale = monitor.scale_factor();
+    let work = monitor.work_area();
+    let area = Rectangle {
+        x: f64::from(work.position.x),
+        y: f64::from(work.position.y),
+        width: f64::from(work.size.width),
+        height: f64::from(work.size.height),
+    };
+    let width = (536.0 * scale).ceil().min(area.width);
+    let height = (56.0 * scale).ceil().min(area.height);
+    let (x, y) = startup_toolbar_position(width, height, area, scale);
+    // Position while hidden to avoid flashing at the OS's default location.
     window
-        .set_size(LogicalSize::new(560.0, 56.0))
+        .set_size(PhysicalSize::new(width as u32, height as u32))
         .map_err(|e| e.to_string())?;
-    resize_toolbar(app.clone(), 560.0, 56.0, 56.0).map(|_| ())
+    window
+        .set_position(PhysicalPosition::new(x, y))
+        .map_err(|e| e.to_string())?;
+    window.show().map_err(|e| e.to_string())
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn startup_toolbar_centers_above_work_area_bottom_at_supported_scales() {
+        // Work-area offsets reserve system UI; negative origins model a display
+        // left/above another. Compact and expanded startup must both fit.
+        for scale in [1.0, 1.25, 1.5, 2.0] {
+            for (x, y) in [(0.0, 30.0), (-2560.0, -1000.0)] {
+                let area = Rectangle {
+                    x,
+                    y,
+                    width: 1920.0,
+                    height: 1000.0,
+                };
+                for logical_width in [244.0, 536.0] {
+                    let width = logical_width * scale;
+                    let height = 56.0 * scale;
+                    let (x, y) = startup_toolbar_position(width, height, area, scale);
+                    assert!(
+                        (f64::from(x) + width / 2.0 - (area.x + area.width / 2.0)).abs() <= 0.5
+                    );
+                    assert!(
+                        (f64::from(y) + height + SCREEN_INSET * scale - (area.y + area.height))
+                            .abs()
+                            <= 0.5
+                    );
+                }
+            }
+        }
+        let tiny = Rectangle {
+            x: -300.0,
+            y: 20.0,
+            width: 300.0,
+            height: 44.0,
+        };
+        assert_eq!(startup_toolbar_position(300.0, 44.0, tiny, 2.0), (-300, 20));
+    }
 
     #[test]
     fn closing_a_menu_invalidates_pending_measurements_and_new_opens_replace_old_ones() {

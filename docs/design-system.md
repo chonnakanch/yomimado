@@ -49,12 +49,12 @@ styles consume roles, never repeat hex values. The palette below is implemented 
 | `--color-on-accent`            | `var(--color-background)`   | Text/icon on filled orange or blue action.              |
 | `--color-focus`                | `var(--color-selected)`     | Keyboard outline independent of hover.                  |
 | `--color-status-error`         | `var(--color-accent-hover)` | Error text/icon with explicit message, not color alone. |
-| `--color-region-default`       | `#F56B00`                  | Vivid orange for ordinary OCR polygons.                  |
-| `--color-region-hover`         | `#FF7900`                  | Brighter orange for hovered OCR polygons.                |
+| `--color-region-default`       | `#F56B00`                   | Vivid orange for ordinary OCR polygons.                 |
+| `--color-region-hover`         | `#FF7900`                   | Brighter orange for hovered OCR polygons.               |
 | `--color-region-selected`      | `var(--color-selected)`     | Selected OCR polygon.                                   |
 | `--color-region-hover-fill`    | `rgb(245 107 0 / 0.08)`     | Minimal orange hover wash above manga.                  |
 | `--color-region-selected-fill` | `rgb(117 165 235 / 0.10)`   | Minimal selected wash above manga.                      |
-| `--color-debug-candidate`      | `#58D5E8`                  | Detector candidates in the debug preview only.          |
+| `--color-debug-candidate`      | `#58D5E8`                   | Detector candidates in the debug preview only.          |
 
 Filled accents use dark text, not small white labels. Secondary controls use
 primary text on elevated/surface backgrounds. Verify normal text contrast ≥4.5:1
@@ -135,6 +135,10 @@ until their work-area cap (roughly 70% height), then scroll the details. At narr
 widths stack reading/metadata below the word, wrap footer actions and retain
 Japanese type size. Clamp native positions to actual work area with a 12 logical
 px screen inset and 8 logical px anchor gap, reusing tested placement behavior.
+On launch, center the toolbar near the bottom of the primary display's work area,
+above the Dock/taskbar with the same 12 logical px inset. Place the native window
+before showing it, and center the first measured compact/expanded row once.
+Later resizing preserves the user's dragged position.
 
 Both toolbar forms retain a 56 px row and 36 px controls; collapsing changes width
 and labels rather than control height. Overflow uses its own small native popover,
