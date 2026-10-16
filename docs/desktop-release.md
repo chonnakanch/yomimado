@@ -1,5 +1,16 @@
 # Shared desktop release checklist
 
+0.2.1 preparation — **2026-10-16**: investigate the owner-reported Windows 0.2.0
+scan completion without outlines in either capture mode. Read with keyboard reports
+that no interactive result is available. Native source repair removes the new
+WebView2 URL race, publishes OCR state before window creation and navigates reused
+overlays from the already loaded selector page. Two new native regression cases
+cover app origins/capture-query replacement and rejection of blank navigation bases.
+The candidate uses matching app version `0.2.1` with no dependency/model changes.
+Native tests, strict Clippy, formatting and debug compilation passed for the repair;
+Windows visual verification and the new exact-installer acceptance remain open.
+The published v0.2.0 tag/assets are retained; no 0.2.1 publication is approved.
+
 Verified 0.2.0 candidate — **2026-10-16**: all checks pass for final main
 `c03ee1edba4e0f545cb7ed85a7552c544a4bfcdc`, after
 [PR #9](https://github.com/chonnakanch/yomimado/pull/9) completed native control-pattern

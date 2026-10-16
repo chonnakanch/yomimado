@@ -28,6 +28,11 @@ proved inconvenient for repeated grants.
    and the Whole Screen button: downsampled detection must not lose a disconnected
    leading thin stroke. Image-derived boundary corrections use dashed approximate/review
    regions; their popup must retain the original Japanese and review guidance.
+   On Windows, start fresh and complete both capture modes: the first overlay
+   must render without toggling visibility or performing another scan. Verify
+   Read with keyboard immediately, then repeated scans and Hide/Show. The new
+   overlay must load the app page even when WebView2 initially reports
+   `about:blank`; OCR state must exist before React requests it.
    Start a fresh app process and choose Whole Screen **before** any Selected Area
    scan. Repeat with cold local models: recognition must complete while the capture
    selector stays hidden, without bringing it to the foreground. A stalled OCR

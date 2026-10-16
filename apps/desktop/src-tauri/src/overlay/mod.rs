@@ -12,7 +12,20 @@ const INITIAL_POPUP_LOGICAL_HEIGHT: f64 = 320.0;
 const POPUP_SCREEN_INSET: f64 = 12.0;
 const POPUP_HEIGHT_FRACTION: f64 = 0.7;
 const POPUP_ANCHOR_GAP: f64 = 8.0;
-const OVERLAY_URL: &str = "index.html?mode=overlay";
+
+fn overlay_navigation_url(
+    mut capture_url: tauri::Url,
+    session_id: u64,
+) -> Result<tauri::Url, String> {
+    // Use the already loaded selector's app entry point. A new WebView2's
+    // current URL can still be about:blank while its first navigation is pending.
+    if capture_url.cannot_be_a_base() {
+        return Err("The capture app page has not loaded".into());
+    }
+    capture_url.set_query(Some(&format!("mode=overlay&session={session_id}")));
+    capture_url.set_fragment(None);
+    Ok(capture_url)
+}
 
 #[derive(Default)]
 pub struct OverlayStore(Mutex<Option<serde_json::Value>>);
@@ -328,6 +341,13 @@ pub fn show_overlay(
     if let Some(popup) = app.get_webview_window("translation-popup") {
         popup.hide().map_err(|e| e.to_string())?;
     }
+    let target_url = overlay_navigation_url(
+        app.get_webview_window("capture-selector")
+            .ok_or("Capture selector is unavailable")?
+            .url()
+            .map_err(|e| e.to_string())?,
+        session_id,
+    )?;
     // Reuse the overlay just like the learning popup: closing and immediately
     // rebuilding the same label races asynchronous native destruction on Rescan.
     let existing = app.get_webview_window("ocr-overlay");
@@ -338,26 +358,32 @@ pub fn show_overlay(
             window.url().ok()?,
         ))
     });
-    let window = if let Some(window) = existing {
-        window.hide().map_err(|e| e.to_string())?;
-        window
-    } else {
-        let builder =
-            WebviewWindowBuilder::new(app, "ocr-overlay", WebviewUrl::App(OVERLAY_URL.into()))
-                .transparent(true)
-                .decorations(false)
-                .resizable(false)
-                .always_on_top(true)
-                .focused(false)
-                .accept_first_mouse(true)
-                .skip_taskbar(true)
-                .visible(false);
-        // Windows shadows add client-area insets and shift image polygons.
-        #[cfg(target_os = "windows")]
-        let builder = builder.shadow(false);
-        builder.build().map_err(|e| e.to_string())?
-    };
     let result: Result<(), String> = (|| {
+        // Publish the data before the new React root can request it.
+        store.set(state)?;
+        let reused = existing.is_some();
+        let window = if let Some(window) = existing {
+            window.hide().map_err(|e| e.to_string())?;
+            window
+        } else {
+            let builder = WebviewWindowBuilder::new(
+                app,
+                "ocr-overlay",
+                WebviewUrl::External(target_url.clone()),
+            )
+            .transparent(true)
+            .decorations(false)
+            .resizable(false)
+            .always_on_top(true)
+            .focused(false)
+            .accept_first_mouse(true)
+            .skip_taskbar(true)
+            .visible(false);
+            // Windows shadows add client-area insets and shift image polygons.
+            #[cfg(target_os = "windows")]
+            let builder = builder.shadow(false);
+            builder.build().map_err(|e| e.to_string())?
+        };
         // Establish the target monitor before converting the physical size;
         // a new hidden window can still have the default monitor's scale.
         window
@@ -371,10 +397,11 @@ pub fn show_overlay(
         window
             .set_position(PhysicalPosition::new(layout.window_x, layout.window_y))
             .map_err(|e| e.to_string())?;
-        store.set(state)?;
-        let mut url = window.url().map_err(|e| e.to_string())?;
-        url.set_query(Some(&format!("mode=overlay&session={session_id}")));
-        window.navigate(url).map_err(|e| e.to_string())?;
+        if reused {
+            // Never derive this from the overlay's current URL: it can still
+            // be blank if a new scan overtook the initial page load.
+            window.navigate(target_url).map_err(|e| e.to_string())?;
+        }
         // The React root reveals this generation after mounting its polygons.
         // Repositioning a visible old DOM would briefly show incorrect geometry.
         Ok(())
@@ -385,11 +412,15 @@ pub fn show_overlay(
         } else {
             let _ = store.clear();
         }
-        if let Some((position, size, url)) = previous_frame {
-            let _ = window.set_position(position);
-            let _ = window.set_size(size);
-            let _ = window.set_position(position);
-            let _ = window.navigate(url);
+        if let Some(window) = app.get_webview_window("ocr-overlay") {
+            if let Some((position, size, url)) = previous_frame {
+                let _ = window.set_position(position);
+                let _ = window.set_size(size);
+                let _ = window.set_position(position);
+                let _ = window.navigate(url);
+            } else {
+                let _ = window.hide();
+            }
         }
     }
     result
@@ -661,13 +692,43 @@ mod tests {
             .set(serde_json::json!({ "regions": regions }))
             .unwrap();
 
-        assert_eq!(OVERLAY_URL, "index.html?mode=overlay");
+        let url = overlay_navigation_url(
+            tauri::Url::parse("http://tauri.localhost/index.html?mode=capture&session=42").unwrap(),
+            42,
+        )
+        .unwrap();
+        assert_eq!(url.query(), Some("mode=overlay&session=42"));
         assert_eq!(
             store.get().unwrap()["regions"].as_array().unwrap().len(),
             300
         );
         store.clear().unwrap();
         assert!(store.get().is_err());
+    }
+
+    #[test]
+    fn overlay_navigation_uses_the_loaded_app_origin_and_replaces_capture_options() {
+        for base in [
+            "http://localhost:1420/index.html",
+            "http://tauri.localhost/index.html",
+            "tauri://localhost/index.html",
+        ] {
+            let source = tauri::Url::parse(&format!(
+                "{base}?mode=capture&session=6&scan=whole#selection"
+            ))
+            .unwrap();
+            let target = overlay_navigation_url(source.clone(), 7).unwrap();
+            assert_eq!(target.as_str(), format!("{base}?mode=overlay&session=7"));
+            assert_eq!(target.query(), Some("mode=overlay&session=7"));
+            assert_eq!(target.fragment(), None);
+        }
+    }
+
+    #[test]
+    fn an_initial_blank_webview_cannot_be_used_as_an_app_navigation_base() {
+        for source in ["about:blank", "about:blank?mode=overlay&session=1"] {
+            assert!(overlay_navigation_url(tauri::Url::parse(source).unwrap(), 2).is_err());
+        }
     }
 
     #[test]

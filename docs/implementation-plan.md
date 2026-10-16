@@ -1152,3 +1152,26 @@ identical reviewer identity, self-review setting, administrator bypass and branc
 policies; the comparison is retained under ignored
 `services/ocr/build/release-environment-rename/`. All 229 release-tool tests, Ruff
 lint/format, Prettier and diff checks pass; the develop push CI also passes.
+
+### Windows missing OCR regions — 2026-10-16
+
+The owner reports that 0.2.0 scans finish without boxes in both capture modes,
+including after restart. Read with keyboard reports “Show an OCR result before
+focusing its regions,” consistent with the stored result not reaching native
+interaction setup. Production Capture debug is intentionally absent; do not ask
+users to enable a nonexistent Settings control.
+
+The repaired publication path derives its URL from the loaded capture-selector
+page, sets the session-specific destination at window creation, and stores OCR
+state before the new root can request it. Reused overlays also navigate from this
+loaded app URL, avoiding persistence of an initial `about:blank` source. Existing
+frame/coordinate mapping, input routing and generation guards remain in place.
+Regression cases cover development/macOS/Windows origins and blank-URL rejection.
+All 63 native tests and strict Clippy pass locally; native debug compilation passes.
+The app version advances to 0.2.1 for a new candidate. This is source verification,
+not confirmation that the owner's installed Windows rendering is fixed. New
+Windows visual/keyboard verification and protected publication remain pending.
+
+Pre-commit checks also pass all 172 frontend tests, the TypeScript/production
+frontend build, all 229 release-tool tests, desktop/document formatting and the
+frozen-runtime reuse guard. OCR service/model/dependency inputs are unchanged.

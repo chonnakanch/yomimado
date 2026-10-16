@@ -5,6 +5,15 @@ screen: capture a region, recognize Japanese locally, then click to view reading
 dictionary/kanji information and an on-demand local translation. Saved words,
 sentences and translation cache stay on the computer.
 
+## Changes in 0.2.1
+
+- Fix Windows scans completing without visible or interactive OCR regions. The
+  overlay now starts from the loaded capture page's app URL, with its OCR state
+  available before page initialization; it never navigates from a new WebView2's
+  temporary blank URL. This applies to Selected Area, Whole Screen and rescans.
+- Shared publication approval uses the clearer `desktop-release` environment name
+  for both platforms, with the existing reviewer and branch protections.
+
 ## Changes in 0.2.0
 
 - Redesigned floating toolbar starts at the bottom center of the screen, with
