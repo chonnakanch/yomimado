@@ -83,23 +83,39 @@ loading. The runtime does not download missing resources.
 
 ## Try the existing local experiment
 
-Run from the repository root. Keep the usual OCR, translation and dictionary
-environment from [development setup](development.md) when testing the full UI.
-These commands select only the experimental tokenizer and local service paths:
+Stop the previous Uvicorn service with Ctrl+C first, then run:
 
 ```sh
-rtk env \
-  PYTHONPATH="$PWD/services/ocr:$PWD/services/ocr/build/lindera-experiment-20261017/site" \
-  YOMIMADO_TOKENIZER=lindera \
-  YOMIMADO_LINDERA_DICTIONARY="$PWD/services/ocr/build/lindera-experiment-20261017/dictionary/lindera-ipadic" \
-  services/ocr/build/release-venv/bin/python -m uvicorn app.main:app \
-  --host 127.0.0.1 --port 8765
+rtk /Users/chonnakan/Projects/yomimado/services/ocr/build/release-venv/bin/python \
+  /Users/chonnakan/Projects/yomimado/scripts/dev_lindera_service.py
 ```
 
-Use the normal desktop development launch in another terminal. Tokenization alone
-can be tested without configuring OCR models. Stop that service and omit
-`YOMIMADO_TOKENIZER` on the next launch to return to Sudachi. Do not run a second
-service on a port already used by your development session.
+The [development launcher](../scripts/dev_lindera_service.py) resolves paths from
+the checkout rather than the terminal's working directory. It configures the
+detector code, user-local detector weights, Manga OCR, Lindera, translation and
+learning dictionaries using existing local inputs. It checks required OCR paths
+before starting, so missing configuration cannot silently start the demo engine.
+Explicit existing model/dictionary environment overrides remain supported. Use
+`--check` to verify paths without launching, or `--port` to choose another port.
+These example absolute paths are for the current local checkout; substitute your
+checkout and Python paths when reproducing elsewhere.
+
+Use the normal desktop development launch in another terminal:
+
+```sh
+rtk proxy npm --prefix /Users/chonnakan/Projects/yomimado/apps/desktop run tauri -- dev
+```
+
+The packaged runtime is not involved. The local service's `GET /health` should
+report `{"status":"ok","ocr":"manga"}`. A service launched with only the Lindera
+variables reports `"ocr":"demo"` because it lacks `YOMIMADO_DETECTOR_REPO`; the
+page scanner rejects that response with **Scanning needs the local OCR models**.
+Health identifies the configured engine, not a completed inference test.
+
+Generated dictionary indexes, translation cache and saved test entries use the
+experiment's `dev-data/` directory unless explicitly overridden. No installed-app
+learning database is replaced. To return to Sudachi, stop this service and use
+the usual [development launch with OCR model paths](development.md).
 
 For a fresh checkout, install the hash-pinned optional wheel into an isolated
 target, rather than changing the reviewed release environment:
@@ -144,6 +160,13 @@ translation databases are not modified.
 - Four real native-backed ASGI checks preserve the API contract.
 - A temporary loopback-only Uvicorn server handles **100 concurrent HTTP requests
   across eight clients** with stable outputs and exact source spans, then stops.
+- The corrected development launcher passes three path/configuration tests and
+  a separate real HTTP smoke launched from outside the checkout: health reports
+  `manga`, both synthetic horizontal/vertical OCR fixtures retain geometry,
+  Lindera tokenization and JMdict/KANJIDIC2 lookup pass, and local translation
+  returns text. Its ignored evidence is `full-service-smoke.json` and
+  `full-service-smoke.log` in the experiment directory. That temporary service
+  stops afterward; an existing development service on port 8765 is untouched.
 - The frontend typecheck/production build passes. Changed Python lint/format and
   documentation formatting/link checks pass.
 - Windows x64 package availability/hashes are recorded, but native Windows,

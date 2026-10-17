@@ -2,6 +2,16 @@
 
 ## Current status
 
+**Lindera development launch repair — 2026-10-17:** the tokenizer-only service
+example omitted OCR model paths, so page scanning received the demo engine and
+rejected it. `scripts/dev_lindera_service.py` now resolves existing local OCR,
+Lindera and learning assets independently of the terminal directory, checks the
+required paths and starts the full development service. Three launcher tests
+and a temporary-port real HTTP smoke pass horizontal/vertical OCR geometry,
+tokenization, word/kanji lookup and local translation. The
+[experiment guide](lindera-tokenizer-experiment.md) contains the corrected command.
+No packaged runtime, release input or installer evidence is changed.
+
 **Lindera development experiment — 2026-10-17:** branch
 `codex/lindera-tokenizer-experiment` adds an opt-in, hash-pinned Lindera 6.0.0/IPADIC
 adapter. Its 45.33 MiB dictionary saves 161.73 MiB versus Sudachi Core, before

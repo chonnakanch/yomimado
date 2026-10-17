@@ -67,6 +67,11 @@ use those paths. The pinned input manifest retains its existing name.
 
 ## Manual rebuild and licence maintenance
 
+`dev_lindera_service.py` starts the existing local Lindera experiment with complete
+OCR/model/dictionary paths, independent of the terminal working directory. It
+checks required files, enables offline model loading and uses isolated development
+data. It downloads nothing; `--check` performs path validation without serving.
+
 `benchmark_lindera_tokenizer.py` compares the optional development Lindera/IPADIC
 adapter with Sudachi Core, including source offsets, fixed learning checks,
 JMdict matches, payload sizes and warm adapter timings. It downloads nothing and
