@@ -121,8 +121,12 @@ equivalent default Windows manifest through the MSVC linker for every artifact,
 including unit tests, and disables Tauri's binary-only manifest resource to
 avoid duplication. This follows the
 [upstream diagnosis](https://github.com/tauri-apps/tauri/issues/13419) and keeps
-the same app manifest dependency. Windows CI must execute the tests and build
-the app with this repair; the original failed run is retained as evidence.
+the same app manifest dependency. The
+[repaired Checks run](https://github.com/chonnakanch/yomimado/actions/runs/38995496517)
+passes at source `74bb75e`, including both platforms' native lint/tests/debug
+builds and the Windows synthetic UI-driver check. Frontend, service, release
+tools and the final required gate also pass. The original failed run is retained
+as evidence; installed/native-interaction acceptance remains separate.
 
 Automated checks should cover menu ID routing, visibility labels, active-scan
 guards, idempotent show, tray-failure fallback and disconnected-display recovery.

@@ -26,6 +26,12 @@ repair embeds the Common Controls v6 manifest in tests as well as app binaries;
 the app retains the equivalent default dependency. See the tray plan for the
 upstream diagnosis and remaining native acceptance.
 
+Hosted [Checks run `38995496517`](https://github.com/chonnakanch/yomimado/actions/runs/38995496517)
+passes for repaired source `74bb75e`: frontend, service, release tools, macOS and
+Windows native lint/tests/debug builds, Windows synthetic UI-driver checks and
+the required shared gate. This confirms the Windows test-startup repair; the
+native tray acceptance limits above remain open.
+
 **Windows taskbar follow-up — 2026-10-17:** after accepting the 0.2.1 overlay
 startup repair, the owner reported automatic manga detection including the
 Windows taskbar. The source follow-up restricts both Windows automatic entry
