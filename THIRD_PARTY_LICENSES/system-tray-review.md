@@ -30,6 +30,15 @@ full packaged-source inventory remains a future Windows release check; it was
 not regenerated as an installer in this change. Keep the existing notice/source
 gates on both release builders.
 
+For 0.2.2 preparation, the local approved `fae4d28` source delivery and its Rust
+notice inventory were compared with the current macOS Cargo metadata. All 280
+registry package names/versions match, including tray-icon, muda and Tauri; no
+package was added or removed. The approved delivery already contains their
+notices and checksum-verified sources in `cargo-sources.tar.gz` (delivery SHA-256
+`41f91e3ba3d29a5600e260bbaf3a02b57f77805e69377e461009736424f5cd9b`).
+The release preflight permits only the tray feature addition and the named native
+tray inputs; other dependency, build-input and shared OCR changes still fail.
+
 The two tray images are original geometric application assets generated from
 `scripts/generate_tray_icons.py`, using only the Python standard library. No
 third-party logo, font, manga, screenshot or model input is bundled. Their

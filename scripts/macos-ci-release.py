@@ -91,6 +91,20 @@ def normalized(path: str, text: str) -> dict:
     return data
 
 
+def runtime_compatible_config(path: str, before: str, after: str) -> bool:
+    old = normalized(path, before)
+    new = normalized(path, after)
+    if path == "apps/desktop/src-tauri/Cargo.toml":
+        # The 0.2.2 tray review confirms identical locked registry packages,
+        # sources and notices to the approved seed. The native app is rebuilt;
+        # this one feature does not change the reused frozen Python runtime.
+        old_features = old["dependencies"]["tauri"].get("features", [])
+        new_features = new["dependencies"]["tauri"].get("features", [])
+        if "tray-icon" not in old_features and "tray-icon" in new_features:
+            new_features.remove("tray-icon")
+    return old == new
+
+
 def verify_reuse(root: Path = ROOT) -> None:
     configs = {
         "apps/desktop/package.json",
@@ -115,6 +129,15 @@ def verify_reuse(root: Path = ROOT) -> None:
         ".gitignore",
         "scripts/README.md",
         "scripts/update_version.py",
+        # Reviewed 0.2.2 native tray inputs; none enter the frozen OCR runtime.
+        # Keep this exact file list rather than allowing arbitrary icon/build
+        # changes or relaxing the dependency/lock comparison below.
+        "apps/desktop/src-tauri/build.rs",
+        "apps/desktop/src-tauri/windows-app-manifest.xml",
+        "apps/desktop/src-tauri/icons/tray-template.png",
+        "apps/desktop/src-tauri/icons/tray-windows.png",
+        "scripts/generate_tray_icons.py",
+        "THIRD_PARTY_LICENSES/system-tray-review.md",
         ".github/workflows/release.yml",
         ".github/workflows/checks.yml",
         ".github/workflows/macos-prerelease.yml",
@@ -201,7 +224,7 @@ def verify_reuse(root: Path = ROOT) -> None:
         if path in configs:
             before = git("show", f"{SEED_REVISION}:{path}", root=root)
             after = git("show", f"HEAD:{path}", root=root)
-            if normalized(path, before) == normalized(path, after):
+            if runtime_compatible_config(path, before, after):
                 continue
         elif path in allowed_files or path.startswith(allowed_prefixes):
             continue

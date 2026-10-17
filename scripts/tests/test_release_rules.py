@@ -133,6 +133,52 @@ class VersionTests(unittest.TestCase):
         ):
             ci.verify_reuse()
 
+    def test_tray_feature_alone_preserves_reviewed_runtime_dependencies(self):
+        path = "apps/desktop/src-tauri/Cargo.toml"
+        after = (ci.ROOT / path).read_text()
+        before = after.replace(', "tray-icon"', "")
+        self.assertNotEqual(ci.normalized(path, before), ci.normalized(path, after))
+        with patch.object(ci, "git", side_effect=[path, before, after]):
+            ci.verify_reuse()
+        for changed in (
+            after.replace('"tray-icon"', '"tray-icon", "image-png"'),
+            after.replace('"tray-icon"', '"tray-icon", "tray-icon"'),
+            after.replace('version = "2.11"', 'version = "2.12"'),
+            after.replace('base64 = "0.22"', 'base64 = "0.23"'),
+            after.replace('"macos-private-api", ', ""),
+        ):
+            with (
+                self.subTest(config=changed),
+                patch.object(ci, "git", side_effect=[path, before, changed]),
+                self.assertRaisesRegex(ValueError, "new seed"),
+            ):
+                ci.verify_reuse()
+
+    def test_tray_source_file_scope_does_not_allow_unreviewed_build_inputs(self):
+        for path in (
+            "apps/desktop/src-tauri/build.rs",
+            "apps/desktop/src-tauri/windows-app-manifest.xml",
+            "apps/desktop/src-tauri/icons/tray-template.png",
+            "apps/desktop/src-tauri/icons/tray-windows.png",
+            "scripts/generate_tray_icons.py",
+            "THIRD_PARTY_LICENSES/system-tray-review.md",
+        ):
+            with self.subTest(path=path), patch.object(ci, "git", return_value=path):
+                ci.verify_reuse()
+        for path in (
+            "apps/desktop/src-tauri/icons/unreviewed.png",
+            "apps/desktop/src-tauri/tauri.release.conf.json",
+            "scripts/build-macos-prerelease.sh",
+            "services/ocr/app/pipeline.py",
+            "services/ocr/requirements-macos-release.txt",
+        ):
+            with (
+                self.subTest(path=path),
+                patch.object(ci, "git", return_value=path),
+                self.assertRaisesRegex(ValueError, "new seed"),
+            ):
+                ci.verify_reuse()
+
     def test_windows_only_preparation_does_not_change_macos_runtime_scope(self):
         for path in (
             "services/ocr/windows-inputs.json",

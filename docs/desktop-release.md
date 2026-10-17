@@ -1,5 +1,21 @@
 # Shared desktop release checklist
 
+0.2.2 release preparation — **2026-10-17**: the owner requested release of the
+system tray work as `0.2.2`. All five app version files agree. This candidate
+includes native tray/menu bar controls, the Windows Common Controls test-manifest
+repair and automatic Windows taskbar exclusion. Runtime/dependency/model/data
+versions are unchanged. The tray feature's resolved Rust packages, sources and
+notices match the approved seed; the reuse preflight permits that feature alone
+and the explicitly reviewed native tray files. Shared OCR code, other dependency
+or lock changes and unrelated build inputs still require seed review.
+
+The owner request authorizes release preparation and protected-main integration.
+Exact new installers and their checksums do not yet exist; source/debug passes
+and previous installer reports do not supply their installed acceptance. Preserve
+the separate protected publication review and all historical evidence below.
+Public v0.2.1 is now available at `31f51a7`; its earlier waiting status below is
+historical. No tag or installer from that release is replaced by 0.2.2 preparation.
+
 Source follow-up — **2026-10-17**: the owner subsequently reported Windows
 automatic page detection including the taskbar. The `develop` follow-up excludes
 the monitor's reported taskbar work-area inset before automatic capture. It is

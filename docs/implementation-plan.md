@@ -2,6 +2,15 @@
 
 ## Current status
 
+**0.2.2 release preparation — 2026-10-17:** the owner requested release of the
+tray work as `0.2.2`. The version updater changes the five app metadata files;
+release notes include the tray controls, Windows manifest repair and taskbar
+exclusion. The native-only reuse preflight adjustment retains the approved
+frozen OCR runtime and exact dependency sources/notices. Protected-main checks,
+both new installers and exact-installer acceptance/publication follow the
+[shared release checklist](desktop-release.md). Historical installer hashes and
+reports are preserved.
+
 **System tray source implementation — 2026-10-17:** the owner authorized the
 [system tray plan](system-tray-plan.md). Native macOS menu bar / Windows tray
 integration now provides toolbar show/hide, Saved/settings/sources access and
