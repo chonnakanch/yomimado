@@ -2,6 +2,17 @@
 
 ## Current status
 
+**Lindera development experiment — 2026-10-17:** branch
+`codex/lindera-tokenizer-experiment` adds an opt-in, hash-pinned Lindera 6.0.0/IPADIC
+adapter. Its 45.33 MiB dictionary saves 161.73 MiB versus Sudachi Core, before
+native package costs. Source offsets pass over 39 sentences; 20 have different
+words/readings/base forms. Lindera passes seven of eight focused learning checks
+versus Sudachi's eight; strict parity fails on the whole-word `お兄ちゃん` case.
+All 110 service tests, a 100-request concurrent native HTTP smoke and the frontend
+production build pass. See the [experiment](lindera-tokenizer-experiment.md).
+Sudachi remains the default. Release locks, reviewed runtime seeds and installer
+evidence are unchanged; Windows/frozen-service and release-source review remain.
+
 **Tokenizer resource investigation — 2026-10-17:** an isolated source probe
 preserves the 6,144-entry OCR vocabulary, 12,804 decoding cases, ten synthetic
 recognitions, tokenizer serialization and Sudachi learning analysis without

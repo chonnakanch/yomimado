@@ -7,6 +7,10 @@ interpreters and dependencies.
 
 ## Start the app
 
+An optional [Lindera/IPADIC experiment](lindera-tokenizer-experiment.md) is available
+on its development branch. It is explicitly selected with `YOMIMADO_TOKENIZER`;
+the normal service and packaged apps continue to use Sudachi Core.
+
 Start the OCR service in one terminal (Python 3.9+):
 
 ```sh

@@ -1,0 +1,5 @@
+# Optional development experiment: macOS Apple Silicon / Windows x64, Python 3.10+.
+# Not consumed by either release builder. Install into an isolated --target.
+lindera==6.0.0 \
+    --hash=sha256:761d47a79cddd0154d993c100a8fbf015f0a5f3885ddb84d71b91d0dad76297a \
+    --hash=sha256:059476fee9f6975a2eb687c9d032c912b6bfbf77c58933beefff2a5bc0c71a05

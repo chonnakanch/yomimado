@@ -67,6 +67,13 @@ use those paths. The pinned input manifest retains its existing name.
 
 ## Manual rebuild and licence maintenance
 
+`benchmark_lindera_tokenizer.py` compares the optional development Lindera/IPADIC
+adapter with Sudachi Core, including source offsets, fixed learning checks,
+JMdict matches, payload sizes and warm adapter timings. It downloads nothing and
+keeps derived lookup data in its output directory. The strict
+`--require-learning-parity` mode currently fails the whole-word compatibility
+check documented in [the experiment](../docs/lindera-tokenizer-experiment.md).
+
 `investigate_tokenizer_resources.py` is an offline, source-only diagnostic, not
 an imported runtime module or release gate. It compares existing OCR tokenization
 with a decoding configuration that avoids UniDic/Fugashi, runs synthetic OCR and
