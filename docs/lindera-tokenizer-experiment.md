@@ -10,6 +10,11 @@ changed, and no installer is built or approved.
 
 ## Measured results
 
+The [scan-stage comparison](scan-performance-comparison.md) additionally measures
+90 OCR scans, detector retries and synthetic ground-truth text/geometry. OCR
+outputs are identical between tokenizers; detection dominates scan time, and
+both share the observed short-text/low-contrast failures.
+
 The local macOS ARM64 test uses Python 3.11.17, Lindera Python 6.0.0 and its pinned
 v6.0.0 IPADIC archive, compared with SudachiPy 0.6.10/Core 20250515 in Split Mode C.
 Lindera uses normal mode with no character or token filters, preserving source

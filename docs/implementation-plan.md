@@ -2,6 +2,16 @@
 
 ## Current status
 
+**Scan performance comparison — 2026-10-17:** 90 synthetic CPU scans return
+identical OCR text/geometry with Sudachi and Lindera. Median service scan times
+are 836/840 ms; the mixed page takes 4.37/4.53 seconds with five detector passes.
+Both share seven exact pipeline strings out of ten, 9.3% character error rate
+and the short-kana/low-contrast failures; supplied true-crop recognition is
+10/10 exact. The [report](scan-performance-comparison.md) separates detector,
+recognizer and learning quality and discloses the small synthetic scope. Seven
+metric tests pass. This adds benchmark/evidence only; production OCR, runtime
+inputs and installer acceptance are unchanged.
+
 **Lindera development launch repair — 2026-10-17:** the tokenizer-only service
 example omitted OCR model paths, so page scanning received the demo engine and
 rejected it. `scripts/dev_lindera_service.py` now resolves existing local OCR,

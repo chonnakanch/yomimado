@@ -67,6 +67,13 @@ use those paths. The pinned input manifest retains its existing name.
 
 ## Manual rebuild and licence maintenance
 
+`benchmark_scan_pipeline.py` times detector passes, recognition and subsequent
+tokenization on generated local fixtures for both development tokenizer profiles.
+It verifies OCR-output parity and scores supplied geometry/text ground truth,
+including full-pipeline losses rather than only clean-crop recognition. It does
+not capture user screenshots or change production behavior. See the
+[speed/accuracy report](../docs/scan-performance-comparison.md).
+
 `dev_lindera_service.py` starts the existing local Lindera experiment with complete
 OCR/model/dictionary paths, independent of the terminal working directory. It
 checks required files, enables offline model loading and uses isolated development
