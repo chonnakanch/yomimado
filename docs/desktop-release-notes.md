@@ -5,6 +5,20 @@ screen: capture a region, recognize Japanese locally, then click to view reading
 dictionary/kanji information and an on-demand local translation. Saved words,
 sentences and translation cache stay on the computer.
 
+## Changes in 0.2.2
+
+- Native macOS menu bar and Windows notification-area icons provide toolbar
+  show/hide, Saved, Settings, Sources & licenses and Quit. On Windows, left-click
+  restores the toolbar and right-click opens the menu. Hiding the toolbar keeps
+  OCR overlays, results and shortcuts available.
+- Tray window actions are guarded during scans. The toolbar remains available
+  if the tray cannot start, and Quit uses the existing OCR service cleanup.
+- Automatic Windows manga-page scans exclude the monitor area reserved for the
+  taskbar while preserving physical/logical coordinate mapping. Manual selections
+  remain exact.
+- Windows native tests include the Common Controls manifest needed by tray/menu
+  code; the installed app retains the same system-component dependency.
+
 ## Changes in 0.2.1
 
 - Fix Windows scans completing without visible or interactive OCR regions. The

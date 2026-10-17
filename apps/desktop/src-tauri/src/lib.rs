@@ -2,6 +2,7 @@ mod capture;
 mod detector_model;
 mod overlay;
 mod toolbar;
+mod tray;
 #[cfg(all(target_os = "windows", any(not(debug_assertions), test)))]
 mod windows_service;
 
@@ -30,6 +31,7 @@ struct AppState {
     scans: toolbar::ScanStore,
     toolbar_layout: Mutex<toolbar::ToolbarLayout>,
     toolbar_menu: toolbar::ToolbarMenuStore,
+    tray: tray::TrayState,
     service: Mutex<Option<Child>>,
     #[cfg(all(not(debug_assertions), target_os = "windows"))]
     windows_service: Mutex<Option<windows_service::Service>>,
@@ -187,6 +189,9 @@ fn show_capture_window_on(
             return Err("Screen Recording access is required. Enable YomiMado (or your terminal when running `tauri dev`) in System Settings > Privacy & Security > Screen & System Audio Recording, then restart the app.".into());
         }
     }
+    let state = app.state::<AppState>();
+    let mut session = state.scans.lock()?;
+    toolbar::require_idle(&session)?;
     toolbar::close_toolbar_menu(app.clone(), None)?;
     let restore = toolbar::CAPTURE_WINDOW_LABELS
         .iter()
@@ -196,11 +201,9 @@ fn show_capture_window_on(
         })
         .map(|label| (*label).to_string())
         .collect();
-    let id = app
-        .state::<AppState>()
-        .scans
-        .lock()?
-        .begin(mode, display.clone(), repeat, restore)?;
+    let id = session.begin(mode, display.clone(), repeat, restore)?;
+    drop(session);
+    tray::refresh(&app);
     app.state::<AppState>().scans.set_selector_id(id);
     let result: Result<(), String> = (|| {
         app.state::<AppState>().overlay_input.disable(&app)?;
@@ -339,6 +342,41 @@ fn full_display_selection(display: &mut DisplayInfo, area: Rectangle) -> Result<
     })
 }
 
+fn automatic_display_selection(
+    display: &mut DisplayInfo,
+    work_area: Rectangle,
+) -> Result<Rectangle, String> {
+    let area = visible_capture_bounds(display.physical_bounds, work_area)?;
+    full_display_selection(display, area)
+}
+
+fn automatic_work_area(_app: &AppHandle, display: &DisplayInfo) -> Result<Rectangle, String> {
+    #[cfg(target_os = "windows")]
+    {
+        // Use Windows' per-monitor work area, not a guessed taskbar height or
+        // color. This also handles taskbars on the top/left/right and scales.
+        let monitor = _app
+            .available_monitors()
+            .map_err(|error| error.to_string())?
+            .into_iter()
+            .find(|monitor| {
+                toolbar::validate_display(display, &toolbar::display_from_monitor(monitor)).is_ok()
+            })
+            .ok_or("The scan's display changed. Choose Whole Screen again.")?;
+        let work = monitor.work_area();
+        Ok(Rectangle {
+            x: f64::from(work.position.x),
+            y: f64::from(work.position.y),
+            width: f64::from(work.size.width),
+            height: f64::from(work.size.height),
+        })
+    }
+    #[cfg(not(target_os = "windows"))]
+    {
+        Ok(display.physical_bounds)
+    }
+}
+
 #[tauri::command]
 async fn capture_whole_screen(
     app: AppHandle,
@@ -347,8 +385,8 @@ async fn capture_whole_screen(
 ) -> Result<Option<CapturedImage>, String> {
     let scan = active_scan(&app, Some(session_id))?;
     let mut display = scan.display;
-    let area = display.physical_bounds;
-    let selection = full_display_selection(&mut display, area)?;
+    let area = automatic_work_area(&app, &display)?;
+    let selection = automatic_display_selection(&mut display, area)?;
     let captured = perform_capture(
         app.clone(),
         Arc::clone(&state.capture),
@@ -419,8 +457,15 @@ async fn capture_auto_page(
     session_id: Option<u64>,
 ) -> Result<Option<CapturedImage>, String> {
     let id = active_scan(&app, session_id)?.id;
-    let captured = capture_display(app.clone(), state, session_id).await?;
-    crop_captured_page(app, captured, id).await
+    #[cfg(target_os = "windows")]
+    {
+        capture_whole_screen(app, state, id).await
+    }
+    #[cfg(not(target_os = "windows"))]
+    {
+        let captured = capture_display(app.clone(), state, session_id).await?;
+        crop_captured_page(app, captured, id).await
+    }
 }
 
 // Both entry points inspect pixels locally and publish only the detected page
@@ -912,6 +957,7 @@ pub fn run() {
                 scans: toolbar::ScanStore::default(),
                 toolbar_layout: Mutex::new(toolbar::ToolbarLayout::default()),
                 toolbar_menu: toolbar::ToolbarMenuStore::default(),
+                tray: tray::TrayState::default(),
                 service: Mutex::new(service),
                 #[cfg(all(not(debug_assertions), target_os = "windows"))]
                 windows_service: Mutex::new(windows_service),
@@ -950,6 +996,10 @@ pub fn run() {
                     }
                 })?;
             toolbar::setup(app.handle())?;
+            if let Err(error) = tray::setup(app.handle()) {
+                let handle = app.handle().clone();
+                tauri::async_runtime::spawn_blocking(move || tray::report_error(&handle, format!("Tray icon unavailable: {error}. The toolbar stays available; use More actions to quit.")));
+            }
             app.state::<AppState>().overlay_input.start(app.handle());
             Ok(())
         })
@@ -966,6 +1016,7 @@ pub fn run() {
             toolbar::move_toolbar,
             toolbar::drag_toolbar,
             toolbar::quit_app,
+            toolbar::hide_toolbar,
             toolbar::finish_scan,
             toolbar::hide_finished_selector,
             toolbar::reveal_ocr_overlay,
@@ -1041,12 +1092,108 @@ mod tests {
             viewport_width: 1470.0,
             viewport_height: 956.0,
         };
-        let selection = full_display_selection(&mut display, bounds).unwrap();
+        let selection = automatic_display_selection(&mut display, bounds).unwrap();
         let physical = XcapScreenCapture::physical_selection(&display, selection).unwrap();
         assert_eq!(
             (physical.x, physical.y, physical.width, physical.height),
             (0.0, 0.0, 2940.0, 1912.0)
         );
+    }
+
+    #[test]
+    fn automatic_capture_excludes_reserved_taskbar_edges_at_each_scale_and_monitor_origin() {
+        for scale in [1.0, 1.25, 1.5, 2.0] {
+            for (x, y) in [(0.0, 0.0), (-2560.0, -1440.0), (2560.0, 200.0)] {
+                let screen = Rectangle {
+                    x,
+                    y,
+                    width: 2560.0,
+                    height: 1440.0,
+                };
+                let taskbar = 48.0 * scale;
+                for work in [
+                    Rectangle {
+                        height: screen.height - taskbar,
+                        ..screen
+                    },
+                    Rectangle {
+                        y: y + taskbar,
+                        height: screen.height - taskbar,
+                        ..screen
+                    },
+                    Rectangle {
+                        x: x + taskbar,
+                        width: screen.width - taskbar,
+                        ..screen
+                    },
+                    Rectangle {
+                        width: screen.width - taskbar,
+                        ..screen
+                    },
+                    screen, // Auto-hidden taskbar: use the full reported work area.
+                ] {
+                    let mut display = DisplayInfo {
+                        id: "monitor".into(),
+                        name: "Monitor".into(),
+                        physical_bounds: screen,
+                        selector_physical_bounds: Rectangle {
+                            y: y + 20.0,
+                            ..screen
+                        },
+                        scale_factor: scale,
+                        viewport_width: 1.0,
+                        viewport_height: 1.0,
+                    };
+                    let logical = automatic_display_selection(&mut display, work).unwrap();
+                    let physical =
+                        XcapScreenCapture::physical_selection(&display, logical).unwrap();
+                    assert_eq!(
+                        (physical.x, physical.y, physical.width, physical.height),
+                        (work.x, work.y, work.width, work.height)
+                    );
+                    assert_eq!(logical.x, (work.x - x) / scale);
+                    assert_eq!(logical.y, (work.y - y) / scale);
+                    assert_eq!(logical.width, work.width / scale);
+                    assert_eq!(logical.height, work.height / scale);
+                    assert_eq!(display.physical_bounds.height, 1440.0);
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn automatic_capture_rejects_invalid_work_areas_without_using_the_full_monitor() {
+        let screen = Rectangle {
+            x: 0.0,
+            y: 0.0,
+            width: 2560.0,
+            height: 1440.0,
+        };
+        let mut display = DisplayInfo {
+            id: "monitor".into(),
+            name: "Monitor".into(),
+            physical_bounds: screen,
+            selector_physical_bounds: screen,
+            scale_factor: 1.25,
+            viewport_width: 2048.0,
+            viewport_height: 1152.0,
+        };
+        for work in [
+            Rectangle {
+                height: 0.0,
+                ..screen
+            },
+            Rectangle {
+                x: 2560.0,
+                ..screen
+            },
+            Rectangle {
+                y: f64::NAN,
+                ..screen
+            },
+        ] {
+            assert!(automatic_display_selection(&mut display, work).is_err());
+        }
     }
 
     #[test]

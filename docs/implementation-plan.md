@@ -2,6 +2,72 @@
 
 ## Current status
 
+**0.2.2 release preparation — 2026-10-17:** the owner requested release of the
+tray work as `0.2.2`. The version updater changes the five app metadata files;
+release notes include the tray controls, Windows manifest repair and taskbar
+exclusion. The native-only reuse preflight adjustment retains the approved
+frozen OCR runtime and exact dependency sources/notices. Protected-main checks,
+both new installers and exact-installer acceptance/publication follow the
+[shared release checklist](desktop-release.md). Historical installer hashes and
+reports are preserved.
+
+**System tray source implementation — 2026-10-17:** the owner authorized the
+[system tray plan](system-tray-plan.md). Native macOS menu bar / Windows tray
+integration now provides toolbar show/hide, Saved/settings/sources access and
+shared Quit cleanup. Windows left-click restores the toolbar; right-click opens
+the menu. Capture guards prevent window actions while a scan is active. A tray
+startup failure keeps the toolbar available and reports an error. Dedicated
+icons, a reproducible generator and a [license review](../THIRD_PARTY_LICENSES/system-tray-review.md)
+are included; dependency versions and the app version are unchanged.
+
+Local verification passes 70 native tests, 177 frontend tests, strict Clippy,
+Cargo/Prettier/Ruff formatting and the macOS debug app bundle build. The macOS
+debug smoke confirms toolbar launch, the Hide Toolbar action/hint, hiding and
+normal OS Quit; the UI automation surface did not expose the native status item
+for menu-click/restore checks. Full native tray interaction, appearance/scaling,
+Explorer restart and bundled service cleanup still need platform acceptance.
+Existing candidate hashes and acceptance records are unchanged; no new installer
+has been built or approved by this source work.
+
+The first hosted tray run passed macOS/frontend/service/release-tool checks but
+Windows unit-test startup failed with `STATUS_ENTRYPOINT_NOT_FOUND`. The source
+repair embeds the Common Controls v6 manifest in tests as well as app binaries;
+the app retains the equivalent default dependency. See the tray plan for the
+upstream diagnosis and remaining native acceptance.
+
+Hosted [Checks run `38995496517`](https://github.com/chonnakanch/yomimado/actions/runs/38995496517)
+passes for repaired source `74bb75e`: frontend, service, release tools, macOS and
+Windows native lint/tests/debug builds, Windows synthetic UI-driver checks and
+the required shared gate. This confirms the Windows test-startup repair; the
+native tray acceptance limits above remain open.
+
+**Windows taskbar follow-up — 2026-10-17:** after accepting the 0.2.1 overlay
+startup repair, the owner reported automatic manga detection including the
+Windows taskbar. The source follow-up restricts both Windows automatic entry
+points to the selected monitor's OS-reported work area before page detection and
+OCR. It preserves full-monitor physical/logical coordinate mapping and exact
+manual selections. This follow-up is separate from the already built and tested
+`31f51a7` candidate; that candidate's hashes and acceptance are unchanged.
+
+Local verification passes 65 native tests, the 22 capture-selector frontend
+tests, strict Clippy, Cargo/document formatting and the macOS debug build.
+Regression coverage checks bottom/top/left/right taskbar work-area insets,
+100%, 125%, 150% and 200% scales, negative/secondary monitor origins, unchanged
+full work areas and invalid-area rejection. Windows-specific compilation and
+physical taskbar exclusion require Windows checks; no new installer is built or
+accepted by these local results.
+
+**0.2.1 candidate update — 2026-10-17:** the Windows missing-overlay startup repair
+merged through [PR #11](https://github.com/chonnakanch/yomimado/pull/11) at
+`31f51a7c4fe1bb192c3eeecea1f90d57d3ee5882`. All exact-main Checks, both installer
+builds and combined verification pass. The [verified candidate](https://github.com/chonnakanch/yomimado/actions/runs/38930205981/artifacts/12060264675)
+has an owner-reported Windows pass: **“Both modes and keyboard work”** after the
+fresh-launch Whole Screen, Selected Area and Read with keyboard → Enter check.
+This confirms the missing-overlay repair on the owner's setup; mixed-DPI and
+other hardware coverage remain open. The protected `desktop-release` publisher waits
+for separate approval; v0.2.0 remains published. See the
+[release record](desktop-release.md) for hashes, download lifetime and limits.
+
 Updated **2026-10-16**. The owner closed the UI redesign implementation on tracked
 `develop`, through source commit `cd2d202`. Phases 3, 4 and 5 retain their recorded
 approvals. The owner subsequently authorized version `0.2.0`, integration into
@@ -1175,3 +1241,21 @@ Windows visual/keyboard verification and protected publication remain pending.
 Pre-commit checks also pass all 172 frontend tests, the TypeScript/production
 frontend build, all 229 release-tool tests, desktop/document formatting and the
 frozen-runtime reuse guard. OCR service/model/dependency inputs are unchanged.
+
+The exact 0.2.1 main Checks and release build/verification now pass. The Windows
+installed UI tests cover startup, model setup, scan controls and cancellation;
+they do not establish the reported region rendering fix on the owner's hardware.
+Both installer candidates and their exact provenance/hashes passed combined
+verification. The Windows-only artifact is available for the owner's fresh-launch
+check; publication remains waiting in `desktop-release`. Preserve `31f51a7` on
+main until review. Local development UI automation was unavailable for the
+unbundled Mac process; only its successful launch is recorded, and its test
+launcher was stopped without stopping the existing OCR service.
+
+**Owner verification — 2026-10-17:** the exact Windows 0.2.1 candidate from run
+`38930205981`, source `31f51a7`, now passes both capture modes and keyboard/popup
+interaction by owner report: “Both modes and keyboard work.” The setup hash and
+test scope are recorded in [the Windows test record](windows-installed-test.md).
+This closes the reported missing-overlay regression on that Windows setup.
+Protected publication, exact macOS installer acceptance and untested hardware
+cases remain separate; no additional publication approval was supplied.

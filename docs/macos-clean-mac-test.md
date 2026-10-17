@@ -1,5 +1,18 @@
 # Apple Silicon installed-app release test
 
+Current 0.2.1 automated candidate — **2026-10-17**:
+[Release 38930205981](https://github.com/chonnakanch/yomimado/actions/runs/38930205981)
+at `31f51a7c4fe1bb192c3eeecea1f90d57d3ee5882` passes macOS in **12 minutes 24 seconds**
+and combined verification. The corresponding runtime/source/notice and frozen
+checks pass. Download and ZIP hash details are in [the shared release record](desktop-release.md).
+Exact DMG SHA-256 from the combined verification summary:
+`5643b7fa1ee3a1fd9169bc1c8e0ed89a1931ae15b2c5f2347de41d5ab58124c8`.
+The native overlay startup repair is shared with macOS. Its normal development
+process launched, but computer-use could not attach to that unbundled app;
+**no new native visual or exact installed-DMG pass is recorded**. The fresh-Mac
+waiver remains unchanged. Publication waits for separate owner approval in
+`desktop-release`; source-only approval does not supply installer acceptance.
+
 Current 0.2.0 automated candidate — **2026-10-16**:
 [Release 38892964547](https://github.com/chonnakanch/yomimado/actions/runs/38892964547)
 at `c03ee1edba4e0f545cb7ed85a7552c544a4bfcdc` passes the macOS job in

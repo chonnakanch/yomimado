@@ -26,6 +26,20 @@ Copy only the top-level desktop files from that output into
 outside YomiMado's scope. Keep the master at its original resolution and
 preserve its alpha channel. Review the 32px export after any design change.
 
+## Tray marks
+
+The tray uses separate small geometric exports of the same capture-window/page
+idea, drawn by `scripts/generate_tray_icons.py`. This source defines the shapes
+and colors directly; it uses no fonts, third-party artwork or extra libraries.
+Run `python3 scripts/generate_tray_icons.py` from the repository root to regenerate:
+
+- `tray-template.png`: transparent 36 × 36 black mark, displayed by the native
+  macOS status item at 18 logical points with template adaptation.
+- `tray-windows.png`: transparent 32 × 32 copper/ivory mark for Windows.
+
+These assets are embedded in Rust and do not replace the desktop app icons.
+Inspect the actual icons in light/dark system UI at supported display scales.
+
 ## Generation prompt
 
 ```text

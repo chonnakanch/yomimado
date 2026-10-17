@@ -26,6 +26,8 @@ export interface ToolbarState {
   displayName: string;
   availableWidth: number;
   detectorModel: { required: boolean; installed: boolean };
+  trayAvailable: boolean;
+  trayError: string | null;
 }
 
 const collapseKey = "yomimado.toolbar.collapsed.v1";
@@ -185,7 +187,14 @@ export function FloatingToolbar() {
       disposed = true;
       observer?.disconnect();
     };
-  }, [compact, feedbackOpen, error, state?.sessionId, missingModel]);
+  }, [
+    compact,
+    feedbackOpen,
+    error,
+    state?.trayError,
+    state?.sessionId,
+    missingModel,
+  ]);
 
   useEffect(() => {
     let disposed = false;
@@ -287,11 +296,13 @@ export function FloatingToolbar() {
   };
   const status =
     error ??
+    state?.trayError ??
     (missingModel
       ? "Install the detector model in Scan & OCR to start reading."
       : (state?.message ?? "Connecting to YomiMado…"));
   const attention =
     !!error ||
+    !!state?.trayError ||
     !!missingModel ||
     state?.phase === "error" ||
     state?.phase === "noText";
@@ -470,7 +481,11 @@ export function FloatingToolbar() {
       </div>
       <div
         className="visually-hidden"
-        role={error || state?.phase === "error" ? "alert" : "status"}
+        role={
+          error || state?.trayError || state?.phase === "error"
+            ? "alert"
+            : "status"
+        }
       >
         {status}
       </div>

@@ -1,5 +1,77 @@
 # Shared desktop release checklist
 
+0.2.2 release preparation — **2026-10-17**: the owner requested release of the
+system tray work as `0.2.2`. All five app version files agree. This candidate
+includes native tray/menu bar controls, the Windows Common Controls test-manifest
+repair and automatic Windows taskbar exclusion. Runtime/dependency/model/data
+versions are unchanged. The tray feature's resolved Rust packages, sources and
+notices match the approved seed; the reuse preflight permits that feature alone
+and the explicitly reviewed native tray files. Shared OCR code, other dependency
+or lock changes and unrelated build inputs still require seed review.
+
+The owner request authorizes release preparation and protected-main integration.
+Exact new installers and their checksums do not yet exist; source/debug passes
+and previous installer reports do not supply their installed acceptance. Preserve
+the separate protected publication review and all historical evidence below.
+Public v0.2.1 is now available at `31f51a7`; its earlier waiting status below is
+historical. No tag or installer from that release is replaced by 0.2.2 preparation.
+
+Source follow-up — **2026-10-17**: the owner subsequently reported Windows
+automatic page detection including the taskbar. The `develop` follow-up excludes
+the monitor's reported taskbar work-area inset before automatic capture. It is
+not included in the `31f51a7` candidate below. Preserve that candidate's exact
+hashes and owner report; any rebuilt installer needs its own verification.
+
+Verified 0.2.1 candidate — **2026-10-17**: [PR #11](https://github.com/chonnakanch/yomimado/pull/11)
+merged the overlay startup repair at `31f51a7c4fe1bb192c3eeecea1f90d57d3ee5882`.
+All exact-main [Checks](https://github.com/chonnakanch/yomimado/actions/runs/38930206019)
+and [Release build/verification jobs](https://github.com/chonnakanch/yomimado/actions/runs/38930205981)
+pass. macOS finishes in **12 minutes 24 seconds**, Windows in **46 minutes 45 seconds**,
+and combined verification in **1 minute 50 seconds**. The Windows exact-setup
+terms/rejection, startup/Quit, model setup/buttons/shortcuts and frozen
+learning/persistence gates pass. The protected publisher is **waiting** in
+`desktop-release`. The owner confirmed the Windows capture/keyboard check below;
+0.2.1 publication still requires separate approval.
+
+Download the [verified desktop candidate](https://github.com/chonnakanch/yomimado/actions/runs/38930205981/artifacts/12060264675),
+artifact `12060264675` (**4,361,552,015 bytes**), retained until
+**2026-10-31 00:03 Bangkok time**. GitHub artifact ZIP SHA-256:
+`53fc5bef3e7a354973575eb16d43929a3f150374bacb49590794874df40d1a0b`.
+Its six-file layout, exact source/version/classification, platform provenance and
+member hashes pass the hosted gate. Member hashes are in
+`desktop-SHA256SUMS.txt` and `desktop-release-candidate.json`; the large ZIP was
+not downloaded locally. Metadata and local checks are retained under ignored
+`services/ocr/build/release-0.2.1-31f51a7/`.
+
+For the immediate Windows check, the smaller [Windows candidate](https://github.com/chonnakanch/yomimado/actions/runs/38930205981/artifacts/12060463340)
+contains `YomiMado_0.2.1_x64-setup.exe`, `SHA256SUMS.txt`, platform sources/notices
+and provenance. It is **2,456,862,457 bytes**, retained until
+**2026-10-18 00:01 Bangkok time**, with artifact ZIP SHA-256
+`3b033fe51ef55af54f331c765a0b7708c8e24475e6b2fadc7617ed1dfb047447`.
+These are the same Windows files consumed by combined verification.
+
+Exact installer hashes read from the successful `verify-transfer` job summary:
+
+- `YomiMado_0.2.1_x64-setup.exe`:
+  `b0aecb9d8d43d8ad30bf8350c56ae77fc3c17939a9aba1ab40e637c309d31933`.
+- `YomiMado_0.2.1_aarch64.dmg`:
+  `5643b7fa1ee3a1fd9169bc1c8e0ed89a1931ae15b2c5f2347de41d5ab58124c8`.
+
+Combined source, notice and provenance hashes are retained in the local metadata
+record and the downloadable checksums. Reading the summary does not constitute
+an independent local installer hash/download or an installed-app visual test.
+
+On **2026-10-17**, the owner answered **“Both modes and keyboard work”** to the
+exact-candidate check: quit 0.2.0, install the linked 0.2.1 setup, then test Whole
+Screen first on a fresh launch, Selected Area, and Read with keyboard → Enter.
+This records visible outlines and popup activation working on the owner's Windows
+setup for the installer hash above. It does not establish mixed-DPI coverage or
+other untested hardware cases. Local macOS development launch
+succeeded, but computer-use could not attach to the unbundled app, so it supplies
+no visual pass. Exact macOS installer acceptance remains separate. Preserve the
+existing fresh-Mac waiver, hardware limitations and source-only-rebuild/advisory
+disclosures. Main must stay at `31f51a7` while this candidate awaits review.
+
 0.2.1 preparation — **2026-10-16**: investigate the owner-reported Windows 0.2.0
 scan completion without outlines in either capture mode. Read with keyboard reports
 that no interactive result is available. Native source repair removes the new

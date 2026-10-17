@@ -8,10 +8,30 @@ Rescan, overlay visibility/status and Expand; the native window shrinks too. The
 overflow menu opens Saved, Settings (including detector import), Sources and Quit.
 Closing the secondary main window keeps the app running.
 
+### Tray / menu bar (development source)
+
+The macOS menu bar icon opens a native menu with **Show Toolbar / Hide Toolbar**,
+**Saved**, **Settings**, **Sources & licenses** and **Quit YomiMado**. On Windows,
+left-click the notification-area icon to show and focus the toolbar; right-click
+for the same menu. Windows may place the icon inside its notification-area
+overflow; use Windows settings to keep it visible if desired.
+
+Choose **More actions → Hide Toolbar** or the tray menu's **Hide Toolbar** to hide
+only the floating toolbar. Restore it from the icon. OCR overlays stay visible,
+results stay available, and scan shortcuts keep working. The toolbar starts
+visible again on the next launch. Tray window actions wait until any active scan
+finishes or is canceled; Quit stays available. If the tray cannot start, the
+toolbar stays available, its status control reports the error, and Hide Toolbar
+is omitted. **Quit YomiMado** exits the app and stops its bundled OCR service.
+
+### Scanning
+
 **Selected Area** scans exactly the region you drag. **Whole Screen** finds manga
 pages on the toolbar's monitor and sends only the detected page/spread to local
-OCR. If the page boundary is uncertain, it uses the saved manga area for that
-display layout, or asks you to draw one. It does not send the entire monitor to
+OCR. On Windows, automatic detection excludes the monitor area reserved for the
+taskbar, using the work area reported by Windows. If the page boundary is uncertain,
+it uses the saved manga area for that display layout, or asks you to draw one.
+It does not send the entire monitor to
 OCR as an uncertainty fallback. **Rescan** takes new pixels from the last
 successful area, including a detected crop; use Whole Screen again if the page
 has moved. Rescan is disabled until there is a successful scan.

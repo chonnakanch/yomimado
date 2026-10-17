@@ -9,6 +9,7 @@ const items = [
   { label: "Saved", view: "saved" },
   { label: "Settings", view: "settings" },
   { label: "Sources & licenses", view: "sources" },
+  { label: "Hide Toolbar", view: "hideToolbar" },
   { label: "Quit YomiMado", view: null },
 ] as const;
 
@@ -113,6 +114,7 @@ export function ToolbarMenu() {
     try {
       await invoke("close_toolbar_menu");
       if (view === "regions") await invoke("focus_ocr_regions");
+      else if (view === "hideToolbar") await invoke("hide_toolbar");
       else
         await invoke(
           view ? "show_secondary_window" : "quit_app",
@@ -140,22 +142,33 @@ export function ToolbarMenu() {
       onPointerMove={() => setKeyboardFocus(false)}
       style={{ maxHeight }}
     >
-      {items.map(({ label, view }) => (
-        <button
-          role="menuitem"
-          key={label}
-          disabled={
-            view !== null &&
-            (!state ||
-              state.sessionId !== null ||
-              (view === "regions" &&
-                (!state.hasOverlay || !state.overlayVisible)))
-          }
-          onClick={() => void run(view)}
-        >
-          {label}
-        </button>
-      ))}
+      {items
+        .filter(({ view }) => view !== "hideToolbar" || state?.trayAvailable)
+        .map(({ label, view }) => (
+          <button
+            role="menuitem"
+            key={label}
+            aria-describedby={
+              view === "hideToolbar" ? "hide-toolbar-hint" : undefined
+            }
+            disabled={
+              view !== null &&
+              (!state ||
+                state.sessionId !== null ||
+                (view === "regions" &&
+                  (!state.hasOverlay || !state.overlayVisible)))
+            }
+            onClick={() => void run(view)}
+          >
+            {label}
+          </button>
+        ))}
+      {state?.trayAvailable && (
+        <p id="hide-toolbar-hint" className="toolbar-menu-hint">
+          Restore the toolbar from the YomiMado tray or menu bar icon. Hiding it
+          keeps OCR overlays visible.
+        </p>
+      )}
       {error && (
         <p className="toolbar-menu-error" role="alert">
           {error}

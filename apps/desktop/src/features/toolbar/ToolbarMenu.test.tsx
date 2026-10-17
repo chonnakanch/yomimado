@@ -113,6 +113,54 @@ it("blocks secondary views during scans but keeps Quit available", async () => {
   await act(async () => button("Quit YomiMado").click());
   expect(invoke).toHaveBeenCalledWith("quit_app", undefined);
 });
+
+it("hides the toolbar only when tray recovery is available and explains how to restore it", async () => {
+  vi.mocked(invoke).mockImplementation(async (command) =>
+    command === "get_toolbar_state"
+      ? { sessionId: null, trayAvailable: true }
+      : undefined,
+  );
+  await mount();
+  expect(button("Hide Toolbar").disabled).toBe(false);
+  expect(container.querySelector("#hide-toolbar-hint")?.textContent).toContain(
+    "keeps OCR overlays visible",
+  );
+  await act(async () => button("Hide Toolbar").click());
+  expect(invoke).toHaveBeenCalledWith("hide_toolbar");
+  const calls = vi.mocked(invoke).mock.calls.map(([command]) => command);
+  expect(calls.indexOf("close_toolbar_menu")).toBeLessThan(
+    calls.indexOf("hide_toolbar"),
+  );
+});
+
+it("omits hiding when the native tray could not be created", async () => {
+  await mount();
+  expect(button("Hide Toolbar")).toBeUndefined();
+  expect(button("Quit YomiMado").disabled).toBe(false);
+});
+
+it("blocks hiding during capture", async () => {
+  vi.mocked(invoke).mockResolvedValue({ sessionId: 3, trayAvailable: true });
+  await mount();
+  expect(button("Hide Toolbar").disabled).toBe(true);
+  await act(async () => button("Hide Toolbar").click());
+  expect(invoke).not.toHaveBeenCalledWith("hide_toolbar");
+});
+
+it("reports a native hide failure to the toolbar", async () => {
+  vi.mocked(invoke).mockImplementation(async (command) => {
+    if (command === "get_toolbar_state")
+      return { sessionId: null, trayAvailable: true };
+    if (command === "hide_toolbar") throw new Error("A scan has started");
+  });
+  await mount();
+  await act(async () => button("Hide Toolbar").click());
+  expect(emitTo).toHaveBeenCalledWith(
+    "toolbar",
+    "toolbar-action-error",
+    "More actions failed: A scan has started",
+  );
+});
 it("reports a failed destination to the visible toolbar after dismissing the menu", async () => {
   vi.mocked(invoke).mockImplementation(async (command) => {
     if (command === "get_toolbar_state") return { sessionId: null };

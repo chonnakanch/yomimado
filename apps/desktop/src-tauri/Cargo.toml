@@ -1,6 +1,6 @@
 [package]
 name = "yomimado"
-version = "0.2.1"
+version = "0.2.2"
 description = "A local-first Japanese manga reading assistant"
 license = "GPL-3.0-only"
 edition = "2021"
@@ -20,7 +20,7 @@ serde_json = "1"
 sha2 = "0.10.9"
 # Required for transparent overlay/selection windows on macOS. This uses
 # platform-private window APIs, so release distribution needs separate review.
-tauri = { version = "2.11", features = ["macos-private-api"] }
+tauri = { version = "2.11", features = ["macos-private-api", "tray-icon"] }
 tauri-plugin-global-shortcut = "2.3"
 tauri-plugin-dialog = "=2.7.0"
 thiserror = "2"
