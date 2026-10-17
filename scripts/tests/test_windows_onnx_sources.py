@@ -1,11 +1,15 @@
 """Source delivery keeps code and licences while rejecting unsafe archives."""
 
+import hashlib
 import io
+import json
 import tarfile
 import tempfile
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
+import windows_onnx_sources as sources
 from windows_onnx_sources import source_tree
 from windows_release import digest
 
@@ -93,6 +97,75 @@ class PreferredSourceTests(unittest.TestCase):
         with tarfile.open(target) as out:
             self.assertTrue(out.getmember("root/python/LICENSE").issym())
             self.assertEqual(out.extractfile("root/python/LICENSE").read(), b"terms")
+
+
+class PortSourceTests(unittest.TestCase):
+    def setUp(self):
+        temporary = tempfile.TemporaryDirectory()
+        self.addCleanup(temporary.cleanup)
+        self.root = Path(temporary.name)
+        self.build = self.root / "build"
+        self.resources = self.root / "resources"
+        (self.resources / "notices/onnx-native").mkdir(parents=True)
+        self.manifest = self.root / "inputs.json"
+        self.data = b"original port recipe\r\n"
+        self.url = (
+            "https://raw.githubusercontent.com/microsoft/vcpkg/"
+            + "a" * 40
+            + "/ports/flatbuffers/portfile.cmake"
+        )
+        self.entry = {
+            "filename": "portfile.cmake",
+            "url": self.url,
+            "sha256": hashlib.sha256(self.data).hexdigest(),
+        }
+        self.manifest.write_text(
+            json.dumps({"archives": [], "portFiles": [self.entry]})
+        )
+        self.target = self.build / "sources/onnxruntime/flatbuffers-port/portfile.cmake"
+
+    def collect(self):
+        with (
+            patch.object(sources, "BUILD", self.build),
+            patch.object(sources, "MANIFEST", self.manifest),
+        ):
+            sources.collect(self.resources)
+
+    def test_raw_port_bytes_and_valid_cache_are_verified_without_api_reads(self):
+        with patch(
+            "windows_release.urlopen", return_value=io.BytesIO(self.data)
+        ) as download:
+            self.collect()
+        download.assert_called_once_with(self.url, timeout=120)
+        self.assertEqual(self.target.read_bytes(), self.data)
+        record = json.loads(
+            (self.target.parent.parent / "source-preparation.json").read_text()
+        )
+        self.assertEqual(record["manifestSha256"], digest(self.manifest))
+        self.assertFalse(record["publicDistributionApproved"])
+        with patch(
+            "windows_release.urlopen",
+            side_effect=AssertionError("valid cache must not download"),
+        ):
+            self.collect()
+
+    def test_changed_upstream_bytes_do_not_replace_cached_original_or_leave_partial_files(
+        self,
+    ):
+        self.target.parent.mkdir(parents=True)
+        self.target.write_bytes(b"corrupt cache")
+        with (
+            patch(
+                "windows_release.urlopen", return_value=io.BytesIO(b"changed upstream")
+            ),
+            self.assertRaisesRegex(ValueError, "checksum changed"),
+        ):
+            self.collect()
+        self.assertEqual(self.target.read_bytes(), b"corrupt cache")
+        self.assertFalse(self.target.with_name(self.target.name + ".download").exists())
+        self.assertFalse(
+            (self.target.parent.parent / "source-preparation.json").exists()
+        )
 
 
 if __name__ == "__main__":

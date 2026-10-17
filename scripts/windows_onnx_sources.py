@@ -7,15 +7,12 @@ from source delivery with a retained content-hash record.
 
 from __future__ import annotations
 
-import base64
 import hashlib
-import json
 import posixpath
 import shutil
 import tarfile
 import tempfile
 from pathlib import Path, PurePosixPath
-from urllib.request import urlopen
 
 from windows_release import BUILD, RESOURCES, ROOT, digest, fetch, read_json, write_json
 
@@ -170,15 +167,10 @@ def collect(resources: Path = RESOURCES) -> None:
             }
         )
     for entry in manifest["portFiles"]:
-        # Git blobs bind the older FlatBuffers override missing from root ports.
-        with urlopen(entry["url"], timeout=30) as response:
-            blob = json.load(response)
-        data = base64.b64decode(blob["content"], validate=False)
-        if hashlib.sha256(data).hexdigest() != entry["sha256"]:
-            raise ValueError("Original ONNX port bytes differ")
+        # Commit-pinned raw files avoid the public Git blob API quota. Preserve
+        # the reviewed byte hashes and verify cached files on every run.
         path = destination / "flatbuffers-port" / entry["filename"]
-        path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_bytes(data)
+        fetch(entry, path)
     record = {
         "manifestSha256": digest(MANIFEST),
         "recipeSha256": digest(Path(__file__)),

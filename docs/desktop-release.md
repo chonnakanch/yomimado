@@ -1,5 +1,29 @@
 # Shared desktop release checklist
 
+0.2.2 build follow-up — **2026-10-17**: [PR #12](https://github.com/chonnakanch/yomimado/pull/12)
+merged at `32b5117cc93a934ff6adcbd41de0efa868cc3f33` after all 12 required/source
+checks passed. [Exact-main Checks](https://github.com/chonnakanch/yomimado/actions/runs/38996949735)
+also pass. [Release `38996949671`](https://github.com/chonnakanch/yomimado/actions/runs/38996949671)
+passes planning, private-input verification and the macOS installer in 15 minutes
+26 seconds, but Windows fails after 27 minutes 24 seconds while collecting three
+original vcpkg port files: the unauthenticated Git blob API returned HTTP 403
+rate-limit exceeded. No Windows installer/installed checks, combined candidate
+or publisher passed in that run.
+
+The focused repair downloads those same files from original vcpkg commit
+`c6ba8a18a1513f0697a83cf88bd5e21300fc3fff` through raw URLs. All three bytes/hashes
+match the already reviewed port inputs; original Git blob URLs remain as
+provenance. Cached data is rechecked and changed downloads still fail closed.
+No credentials, runtime/dependency/model versions or source omissions change.
+
+The superseded macOS candidate is retained as historical build evidence:
+`YomiMado_0.2.2_aarch64.dmg` SHA-256
+`62826255d92a21947f950989081fb4164173ba1eb669ccfa4197bfa8f9892003`, in
+[artifact `12088281223`](https://github.com/chonnakanch/yomimado/actions/runs/38996949671/artifacts/12088281223).
+Its ZIP SHA-256 is `b444658555e4ca49365532fcf9c232edbdc5677a0526880e3207bcb86b63e892`.
+This installer is not the repaired future candidate and has no owner acceptance
+record. New main source will rebuild both installers with new hashes.
+
 0.2.2 release preparation — **2026-10-17**: the owner requested release of the
 system tray work as `0.2.2`. All five app version files agree. This candidate
 includes native tray/menu bar controls, the Windows Common Controls test-manifest

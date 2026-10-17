@@ -474,17 +474,20 @@
   "portFiles": [
     {
       "filename": "fix-uwp-build.patch",
-      "url": "https://api.github.com/repos/microsoft/vcpkg/git/blobs/d1846547fe75c753bd87093163ead104b5e3ca92",
+      "url": "https://raw.githubusercontent.com/microsoft/vcpkg/c6ba8a18a1513f0697a83cf88bd5e21300fc3fff/ports/flatbuffers/fix-uwp-build.patch",
+      "gitBlobUrl": "https://api.github.com/repos/microsoft/vcpkg/git/blobs/d1846547fe75c753bd87093163ead104b5e3ca92",
       "sha256": "8a363f9e6052511d97a477795304bd14f0009f2ee9ba0423dedc4032d98351de"
     },
     {
       "filename": "portfile.cmake",
-      "url": "https://api.github.com/repos/microsoft/vcpkg/git/blobs/4adaf46459806bba9cec4295a7ad6e2a07526a3e",
+      "url": "https://raw.githubusercontent.com/microsoft/vcpkg/c6ba8a18a1513f0697a83cf88bd5e21300fc3fff/ports/flatbuffers/portfile.cmake",
+      "gitBlobUrl": "https://api.github.com/repos/microsoft/vcpkg/git/blobs/4adaf46459806bba9cec4295a7ad6e2a07526a3e",
       "sha256": "e62979f89d3d8bb0e85d9ca3c405e043cadfd6a0f4d808d970ac6e6680c905ba"
     },
     {
       "filename": "vcpkg.json",
-      "url": "https://api.github.com/repos/microsoft/vcpkg/git/blobs/f52dbbb3c04148a6355a653f806833825b32af8c",
+      "url": "https://raw.githubusercontent.com/microsoft/vcpkg/c6ba8a18a1513f0697a83cf88bd5e21300fc3fff/ports/flatbuffers/vcpkg.json",
+      "gitBlobUrl": "https://api.github.com/repos/microsoft/vcpkg/git/blobs/f52dbbb3c04148a6355a653f806833825b32af8c",
       "sha256": "71eb624e166c3a202fcfeed1bd24282e0a232a33f2ccababefd44a2313e57c13"
     }
   ],

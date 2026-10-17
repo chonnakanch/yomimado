@@ -2,6 +2,15 @@
 
 ## Current status
 
+**0.2.2 packaging repair — 2026-10-17:** [PR #12](https://github.com/chonnakanch/yomimado/pull/12)
+merged at `32b5117`, with all source gates passing. The macOS installer passes,
+but Windows packaging stops at a GitHub API rate limit while collecting three
+already pinned vcpkg port files. The repair uses commit-pinned raw downloads of
+the identical bytes/hashes, retains the old blob URLs and adds corruption/cache
+regressions. Both new installers and their combined verification must run again
+from the repaired main commit. The [release record](desktop-release.md) retains
+the failed run and superseded macOS candidate without claiming acceptance.
+
 **0.2.2 release preparation — 2026-10-17:** the owner requested release of the
 tray work as `0.2.2`. The version updater changes the five app metadata files;
 release notes include the tray controls, Windows manifest repair and taskbar
