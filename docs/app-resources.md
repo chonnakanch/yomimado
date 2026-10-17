@@ -192,10 +192,13 @@ an indexed database might occupy more installed space than the compressed XML.
 Such a database must preserve word restrictions, readings, attribution and source
 provenance. It would not replace Sudachi's morphological analysis dictionary.
 
-The larger candidates for investigation are removing unnecessary UniDic
-initialization from OCR decoding, using the Windows ONNX approach on macOS, and
-separately evaluating model quantization. Their net size, output quality and
-performance effects are unverified. Existing bundles and release evidence remain
+The [tokenizer resource investigation](tokenizer-resource-investigation.md) now
+shows source-level OCR decoding/recognition parity without UniDic imports and
+documents behavior changes with Sudachi Small. It recommends retaining Sudachi
+Core and investigating removal of UniDic from the packaged OCR runtime first.
+Frozen-service/platform parity and final size/performance effects remain
+unverified. Other candidates are using the Windows ONNX approach on macOS and
+separately evaluating model quantization. Existing bundles and release evidence remain
 the baseline; dependency/model changes require updated source/notices and new
 candidate verification under the [shared release checklist](desktop-release.md).
 

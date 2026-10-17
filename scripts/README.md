@@ -67,6 +67,13 @@ use those paths. The pinned input manifest retains its existing name.
 
 ## Manual rebuild and licence maintenance
 
+`investigate_tokenizer_resources.py` is an offline, source-only diagnostic, not
+an imported runtime module or release gate. It compares existing OCR tokenization
+with a decoding configuration that avoids UniDic/Fugashi, runs synthetic OCR and
+Sudachi checks in isolated workers, and optionally compares an explicitly supplied
+Sudachi Small dictionary. It does not download inputs or modify model/runtime
+files. See [the investigation and reproduction command](../docs/tokenizer-resource-investigation.md).
+
 - `build-macos-prerelease.sh`, `verify-python-release-lock.py`,
   `build-opencv-macos.py`, `opencv_release.py`, `generate-macos-notices.py`,
   `verify-macos-bundle.py` and `smoke-macos-bundle.py` support macOS runtime

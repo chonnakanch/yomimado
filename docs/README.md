@@ -11,6 +11,7 @@
 - [Security review](security-review-2026-10-13.md): browser/input guards, dependency advisories and remaining runtime work.
 - [Product and architecture design](initial-design.md): domain boundaries and coordinate rules.
 - [App resources and data flow](app-resources.md): how detection, recognition, tokenizer dictionaries, learning dictionaries, translation and local storage work together.
+- [Tokenizer resource investigation](tokenizer-resource-investigation.md): tested UniDic-free OCR decoding and the size/behavior tradeoff of Sudachi Small.
 - [App icon](app-icon.md): the current icon's origin and generation record.
 - [Dictionary updates](dictionary-updates.md): snapshot replacement and attribution.
 

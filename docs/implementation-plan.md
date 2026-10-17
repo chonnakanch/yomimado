@@ -2,6 +2,17 @@
 
 ## Current status
 
+**Tokenizer resource investigation — 2026-10-17:** an isolated source probe
+preserves the 6,144-entry OCR vocabulary, 12,804 decoding cases, ten synthetic
+recognitions, tokenizer serialization and Sudachi learning analysis without
+UniDic/Fugashi imports. Sudachi Small `20250515` saves 89.81 MiB versus Core's
+dictionary but changes ten of 32 analyzed sentences, including `お兄ちゃん`.
+The [investigation](tokenizer-resource-investigation.md) recommends keeping Core
+and pursuing removal of the approximately 248.4 MiB UniDic dependency from OCR.
+Production code, dependency locks, runtime seeds and installer evidence are
+unchanged. Frozen services and native Windows ONNX parity remain unverified;
+this investigation does not complete a packaging/release milestone.
+
 **0.2.2 packaging repair — 2026-10-17:** [PR #12](https://github.com/chonnakanch/yomimado/pull/12)
 merged at `32b5117`, with all source gates passing. The macOS installer passes,
 but Windows packaging stops at a GitHub API rate limit while collecting three
