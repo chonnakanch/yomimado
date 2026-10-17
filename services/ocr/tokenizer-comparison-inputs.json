@@ -1,0 +1,127 @@
+{
+  "schemaVersion": 1,
+  "scope": "development benchmark only; not a release lock or model approval",
+  "versions": {
+    "SudachiPy": "0.6.10",
+    "SudachiDict-core": "20250515",
+    "lindera": "6.0.0",
+    "fugashi": "1.5.2",
+    "unidic-lite": "1.0.8",
+    "vaporetto": "0.3.3",
+    "zstandard": "0.25.0"
+  },
+  "downloads": [
+    {
+      "filename": "ipadic-1.0.0.tar.gz",
+      "url": "https://files.pythonhosted.org/packages/e7/4e/c459f94d62a0bef89f866857bc51b9105aff236b83928618315b41a26b7b/ipadic-1.0.0.tar.gz",
+      "sha256": "f5923d31eca6131acaaf18ed28d8998665b1347b640d3a6476f64650e9a71c07"
+    },
+    {
+      "filename": "vaporetto-0.3.3-cp311-cp311-macosx_10_12_x86_64.macosx_11_0_arm64.macosx_10_12_universal2.whl",
+      "url": "https://files.pythonhosted.org/packages/ec/61/2db9f2e13d216ac4b3e798f1327934f13394cebfa54456a4c0ef20747d7c/vaporetto-0.3.3-cp311-cp311-macosx_10_12_x86_64.macosx_11_0_arm64.macosx_10_12_universal2.whl",
+      "sha256": "077560b692a105b8326afb5bc243f7123e2a320832e299f5eb28f1f8ef9204b4"
+    },
+    {
+      "filename": "bccwj-suw+unidic_pos+kana.tar.xz",
+      "url": "https://github.com/daac-tools/vaporetto-models/releases/download/v0.5.0/bccwj-suw%2Bunidic_pos%2Bkana.tar.xz",
+      "sha256": "179680b4f82cd6034325e73c8d36a250db66d3f2b8d8a991b90128fd2d32eadc",
+      "checksumSource": "observed downloaded bytes; publisher release has no checksum"
+    },
+    {
+      "filename": "bccwj-suw+unidic_pos+pron.tar.xz",
+      "url": "https://github.com/daac-tools/vaporetto-models/releases/download/v0.5.0/bccwj-suw%2Bunidic_pos%2Bpron.tar.xz",
+      "sha256": "034bc8af4ec6a23f614dc04bef201e09486686ba57859b163ed39b91a4a28810",
+      "checksumSource": "observed downloaded bytes; publisher release has no checksum"
+    },
+    {
+      "filename": "zstandard-0.25.0-cp311-cp311-macosx_11_0_arm64.whl",
+      "url": "https://files.pythonhosted.org/packages/ac/4d/e66465c5411a7cf4866aeadc7d108081d8ceba9bc7abe6b14aa21c671ec3/zstandard-0.25.0-cp311-cp311-macosx_11_0_arm64.whl",
+      "sha256": "a3f79487c687b1fc69f19e487cd949bf3aae653d181dfb5fde3bf6d18894706f"
+    }
+  ],
+  "resources": {
+    "sudachi-core": {
+      "files": {
+        "system.dic": "cd6ee0d3d4f038314b16ddf611a776db97c1813f42068a9354b1c17e966aee53"
+      }
+    },
+    "sudachi-small": {
+      "files": {
+        "sudachi-small-20250515.dic": "2cc37253779a4668815c9c2c019057de8f698675fb57d85ddd7731ab3f6d90b3"
+      }
+    },
+    "lindera-ipadic": {
+      "files": {
+        "NOTICE.txt": "2cf235bf0842d6d61eb0244fb22e645a321b12408a3cf75feb3a53577d885bde",
+        "char_def.bin": "ef37cf70d7e72ec023bec8e632783a6fe255b2d5fd1bce22600b595fccae48b1",
+        "dict.trie": "b176188057bbd78fa73c2161db1f00fbabf9afbc3471732c4b549bf707413dfb",
+        "dict.vals": "62af946542a17c4f16cf1122cb069b5d26f7cf652066b3b846cc4c230b6a8aa1",
+        "dict.valsidx": "f1b17f1c4682a5bd42dabe95ab7cefb461c888b839a18d213dd5c7133d3a1a76",
+        "dict.words": "fc1d924e12af84a352feccce35b772383322760ee2b3da4be0e173ad82953938",
+        "dict.wordsidx": "a38e0b55d6e0fa67555078f8beb6f634f264b2a6b2ea2c9a7aa111f085ada721",
+        "matrix.mtx": "915733be6589bee90b8f2af5cd314c384a1f9a2fc3af498384555986447b168b",
+        "metadata.json": "305addfbf05e41d985a1541035c79a7b6f8ae254e4bc94f1721be21adf31068f",
+        "unk.bin": "3eeebe0ef3f8907be325aa3acb0ccbd4ccb6f5ac20ff3dd0742ff1af1c468da6"
+      }
+    },
+    "mecab-ipadic": {
+      "files": {
+        "COPYING": "fca02d9adb601d101eccdf3131119abfff2d9c825ef5c759d7a89ebbaa972099",
+        "char.bin": "81bba502ae48fa005a374819f15e44452eb68086a8b323ec20a044d514400832",
+        "dicrc": "add6bb131a75e69478961ea59712541ace3779f7c5daa4da80d281f097c9d4d1",
+        "matrix.bin": "ee44d7350cdcb680ebd699f83e121be1dc63310f8832d55bcb537a068177611a",
+        "mecabrc": "cf91ca4aec6bbf596eda5034aefb73ae90999678b59f20ce3deb35d91fddb009",
+        "sys.dic": "223af63996d5d9a104d8c8baaf32029fbbf6a370d7dff33fe19fda2e92ac0ac1",
+        "unk.dic": "f0bf15e3e28259f4470b9c1e775d98bef53207d4b09afcd6d8545209b7b53f88",
+        "version": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    "mecab-unidic": {
+      "files": {
+        "AUTHORS": "a05bfdd3a9db36d9c64495f4a3d1824d05b95fbb4fc6dc07c660e91bc191c481",
+        "BSD": "7917ecfaf95a5ba7b4f45aa9a845ac931d79c90f39b7e711442dbc21c612560f",
+        "COPYING": "178ffb7cbc2beadb0b87a14497e58222b484076ba7cfc8938a07ac7627fa22c4",
+        "ChangeLog": "48035977a308fbb65326e4d81f15186cc241013b360ad161d82c7a151a5bd8a0",
+        "GPL": "a137434196f5e39d8836de895866fcfea074ad1b28243174ca1c4a585a1229b0",
+        "INSTALL": "7b4f980a88e9e33e96ce57b75ace60bc936138ec7edac0b03ebbd9c9e3be7250",
+        "LGPL": "512d2d21b6b3384ba64781abb0208a1b87740bc31e2df48e2b206ddb7e4d5779",
+        "README.md": "c2797d1bb416d9cb2f4f2d47e3ff8eb3e91a6bc35974a02ecc4ffcd4441607f7",
+        "char.bin": "dd31396563d8924645b80fd3c9aa7b13ca089d7748f25553a1d6bc3f9b511ae8",
+        "dicrc": "fcd17f35752de1417859a15e2e1f043d666da03f36dc632e8c0ed46887883a59",
+        "left-id.def": "c5ecfbe47a7d2d9f0404b6f9746e4ab96fc7f2f37e16224f0325a530ab67adf7",
+        "matrix.bin": "88fb99efe1075d9b8b40e01bb2751e4095f1612618f2490af776eb5ed39190a9",
+        "mecabrc": "72021ae17e5680bb4bb3b570e7e792b567e4c6758c7b17b39fbc7c8c499229b3",
+        "rewrite.def": "1e50193f2f8c3e0fbef2759cd78cb756ee3b93bfdf51cb66c85fddc243298bdb",
+        "right-id.def": "c5ecfbe47a7d2d9f0404b6f9746e4ab96fc7f2f37e16224f0325a530ab67adf7",
+        "sys.dic": "122c4c91f026bf4b65bbe2dfd8b9f8eeb6ab56d8eb2a7287a68bca75708ba513",
+        "unidic-mecab.pdf": "6e5ecc4770881cfe2bca6c3b74ba20f1b07bba757c864548cb79f62b0550cc5b",
+        "unk.dic": "e3b92803feeb6c2712c796b905317ec192a59729d2c1e92b2728d454169541c4",
+        "version": "9f6271951edca02e0c8a669a79930626717b77f0443ad8a327b93a52e4194829"
+      }
+    },
+    "vaporetto-kana": {
+      "files": {
+        "bccwj-suw+unidic_pos+kana.model.zst": "99888ea8f7b8a5b953c135fb7f70d362c0ba6217f27f4868f7944b9224b6c7a2"
+      }
+    },
+    "vaporetto-pron": {
+      "files": {
+        "bccwj-suw+unidic_pos+pron.model.zst": "9705d407cc2d297a32632442ac22da6a62dd64e4dd519518eaec75bd6505dda3"
+      }
+    }
+  },
+  "noticeHashes": {
+    "IPADIC-COPYING.txt": "fca02d9adb601d101eccdf3131119abfff2d9c825ef5c759d7a89ebbaa972099",
+    "UniDicLite-BSD.txt": "7917ecfaf95a5ba7b4f45aa9a845ac931d79c90f39b7e711442dbc21c612560f",
+    "UniDicLite-COPYING.txt": "178ffb7cbc2beadb0b87a14497e58222b484076ba7cfc8938a07ac7627fa22c4",
+    "bccwj-suw+unidic_pos+kana-BSD.txt": "c31cc4fb1dda4812d88a06144878f2be38125e37ccb48518a51e74dee7e661e6",
+    "bccwj-suw+unidic_pos+pron-BSD.txt": "c31cc4fb1dda4812d88a06144878f2be38125e37ccb48518a51e74dee7e661e6",
+    "fugashi-1.5.2-LICENSE.mecab.txt": "62f4b23450a9ad40e4db8063d45c1d13c78d07ca27c9ada62c4ca9c11c1f3e7b",
+    "fugashi-1.5.2-LICENSE.txt": "e4b9056f1fb6434c407a0f18e0354198190504d7f3debbd74c6ea17947705da7",
+    "unidic_lite-1.0.8-LICENSE.txt": "34565936df8ff50715b729c065d0b2a475231da79efc4c2279e2bccee5f02a33",
+    "unidic_lite-1.0.8-LICENSE.unidic.txt": "d2cfdec25d7acb59b7aee2c9b36fd52470773cee58a2c340c179f435ab053bf2",
+    "vaporetto-LICENSE-APACHE.txt": "62c7a1e35f56406896d7aa7ca52d0cc0d272ac022b5d2796e7d6905db8a3636a",
+    "vaporetto-LICENSE-MIT.txt": "23f18e03dc49df91622fe2a76176497404e46ced8a715d9d2b67a7446571cca3",
+    "zstandard-LICENSE.txt": "788fe85e53724a40b299051c4abc9cf74d42b27e7968325b80891c25f79adb4b"
+  }
+}

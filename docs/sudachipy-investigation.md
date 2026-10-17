@@ -1,5 +1,9 @@
 # SudachiPy investigation — 2026-10-17
 
+The [expanded candidate comparison](tokenizer-candidate-comparison.md) additionally
+tests MeCab/IPADIC, OCR UniDic reuse and two Vaporetto models against this baseline,
+using 53 shared sentences and 24 focused learning targets.
+
 **YomiMado already uses SudachiPy 0.6.10 with Sudachi Core 20250515.** It is
 the baseline in the Lindera comparison, not another image-recognition model.
 Sudachi Small is a smaller dictionary for that same engine. The three-way local

@@ -2,6 +2,17 @@
 
 ## Current status
 
+**All suggested tokenizer candidates compared — 2026-10-17:** seven local native
+profiles cover Core, Small, Lindera/IPADIC, MeCab/IPADIC, existing UniDic Lite and
+Vaporetto kana/pronunciation. All source spans pass over 53 shared sentences plus
+six stress cases. Across 24 focused learning targets, Core matches 23; Lindera
+and MeCab/IPADIC match 20, UniDic Lite 19, Small 18, and Vaporetto 5/1 because
+the selected models lack base forms and pronunciation differs from dictionary
+readings. The [report](tokenizer-candidate-comparison.md) records 9,275 warm calls,
+resource sizes, limitations and exact retained inputs/notices. Seven new boundary
+tests and all 17 existing tokenizer tests pass. No production provider, default,
+release input or installer changes.
+
 **SudachiPy investigation — 2026-10-17:** confirms the current baseline is already
 Rust-backed SudachiPy 0.6.10. A same-corpus 39-sentence benchmark adds hash-verified
 Sudachi Small 20250515: 117.25 MiB versus Core's 207.06 MiB and Lindera's 45.33 MiB;

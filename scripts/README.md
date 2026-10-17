@@ -88,6 +88,14 @@ see the [SudachiPy investigation](../docs/sudachipy-investigation.md). The stric
 `--require-learning-parity` mode currently fails the whole-word compatibility
 check documented in [the experiment](../docs/lindera-tokenizer-experiment.md).
 
+`compare_tokenizer_candidates.py` covers every previously suggested engine using
+seven pinned local profiles: Core, Small, Lindera/IPADIC, MeCab/IPADIC,
+MeCab/UniDic Lite and Vaporetto kana/pronunciation models. It preserves unknown
+fields as fallbacks, separates missing base forms from reading compatibility,
+validates source offsets and retains all timing samples. It downloads nothing
+and registers no production providers. See [the comparison](../docs/tokenizer-candidate-comparison.md)
+for optional isolated inputs and reproduction.
+
 `investigate_tokenizer_resources.py` is an offline, source-only diagnostic, not
 an imported runtime module or release gate. It compares existing OCR tokenization
 with a decoding configuration that avoids UniDic/Fugashi, runs synthetic OCR and
