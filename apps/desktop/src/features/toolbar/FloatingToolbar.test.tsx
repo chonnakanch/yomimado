@@ -21,6 +21,8 @@ const initial: ToolbarState = {
   displayName: "Left display",
   availableWidth: 536,
   detectorModel: { required: false, installed: false },
+  trayAvailable: true,
+  trayError: null,
 };
 let container: HTMLDivElement;
 let root: Root;
@@ -75,6 +77,20 @@ const update = (changes: Partial<ToolbarState>) =>
       payload: { ...snapshot, ...changes },
     }),
   );
+
+it("keeps tray startup failures visible through the toolbar status control", async () => {
+  snapshot = {
+    ...initial,
+    trayAvailable: false,
+    trayError: "Tray icon unavailable. Use More actions to quit.",
+  };
+  await mount();
+  expect(button("Scan status")).toBeDefined();
+  await act(async () => button("Scan status").click());
+  expect(container.querySelector("#toolbar-feedback")?.textContent).toContain(
+    "Tray icon unavailable",
+  );
+});
 
 it("keeps menu action failures accessible after the popover has closed", async () => {
   await mount();

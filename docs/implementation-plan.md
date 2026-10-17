@@ -2,12 +2,23 @@
 
 ## Current status
 
-**System tray planning — 2026-10-17:** the owner requested a plan for a macOS menu
-bar icon and Windows notification-area icon. The
-[system tray plan](system-tray-plan.md) proposes native toolbar show/hide,
-Saved/settings/sources access and shared Quit cleanup, with capture guards,
-platform icon assets and installed-app checks. Implementation has not started;
-existing candidate hashes and acceptance records are unchanged.
+**System tray source implementation — 2026-10-17:** the owner authorized the
+[system tray plan](system-tray-plan.md). Native macOS menu bar / Windows tray
+integration now provides toolbar show/hide, Saved/settings/sources access and
+shared Quit cleanup. Windows left-click restores the toolbar; right-click opens
+the menu. Capture guards prevent window actions while a scan is active. A tray
+startup failure keeps the toolbar available and reports an error. Dedicated
+icons, a reproducible generator and a [license review](../THIRD_PARTY_LICENSES/system-tray-review.md)
+are included; dependency versions and the app version are unchanged.
+
+Local verification passes 70 native tests, 177 frontend tests, strict Clippy,
+Cargo/Prettier/Ruff formatting and the macOS debug app bundle build. The macOS
+debug smoke confirms toolbar launch, the Hide Toolbar action/hint, hiding and
+normal OS Quit; the UI automation surface did not expose the native status item
+for menu-click/restore checks. Full native tray interaction, appearance/scaling,
+Explorer restart and bundled service cleanup still need platform acceptance.
+Existing candidate hashes and acceptance records are unchanged; no new installer
+has been built or approved by this source work.
 
 **Windows taskbar follow-up — 2026-10-17:** after accepting the 0.2.1 overlay
 startup repair, the owner reported automatic manga detection including the

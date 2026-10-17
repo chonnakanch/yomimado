@@ -326,6 +326,8 @@ pub struct ToolbarState {
     display_name: String,
     available_width: f64,
     detector_model: crate::detector_model::DetectorModelStatus,
+    tray_available: bool,
+    tray_error: Option<String>,
 }
 
 #[tauri::command(async)]
@@ -373,10 +375,13 @@ pub fn get_toolbar_state(app: AppHandle) -> Result<ToolbarState, String> {
         display_name,
         available_width,
         detector_model: crate::detector_model::detector_model_status(app.clone())?,
+        tray_available: state.tray.available(),
+        tray_error: state.tray.error(),
     })
 }
 
 pub fn emit_state(app: &AppHandle) {
+    crate::tray::refresh(app);
     match get_toolbar_state(app.clone()).and_then(|snapshot| {
         app.emit_to("toolbar", TOOLBAR_EVENT, snapshot)
             .map_err(|e| e.to_string())
@@ -796,15 +801,11 @@ impl SecondaryView {
 
 #[tauri::command(async)]
 pub fn show_secondary_window(app: AppHandle, view: SecondaryView) -> Result<(), String> {
-    if app
-        .state::<crate::AppState>()
-        .scans
-        .lock()?
-        .active
-        .is_some()
-    {
-        return Err("Finish or cancel the scan before opening another window.".into());
-    }
+    let state = app.state::<crate::AppState>();
+    // Keep the guard through window creation/show so a concurrent hotkey cannot
+    // begin capture between the busy check and revealing app chrome.
+    let session = state.scans.lock()?;
+    require_idle(&session)?;
     let (label, name, title) = view.destination();
     let window = if let Some(window) = app.get_webview_window(label) {
         let mut url = window.url().map_err(|e| e.to_string())?;
@@ -857,6 +858,110 @@ fn startup_toolbar_position(width: f64, height: f64, area: Rectangle, scale: f64
         area,
         scale,
     )
+}
+
+pub fn require_idle(session: &Session) -> Result<(), String> {
+    if session.active.is_some() {
+        Err("Finish or cancel the scan before using this action.".into())
+    } else {
+        Ok(())
+    }
+}
+
+fn require_toolbar_visibility(
+    session: &Session,
+    tray_available: bool,
+    visible: bool,
+) -> Result<(), String> {
+    require_idle(session)?;
+    if !visible && !tray_available {
+        Err("The tray icon is unavailable. Keep the toolbar open to access YomiMado.".into())
+    } else {
+        Ok(())
+    }
+}
+
+fn recovery_frame(
+    position: (f64, f64),
+    logical_size: (f64, f64),
+    area: Rectangle,
+    scale: f64,
+) -> ((i32, i32), (u32, u32)) {
+    let width = (logical_size.0 * scale).ceil().min(area.width).max(1.0);
+    let height = (logical_size.1 * scale).ceil().min(area.height).max(1.0);
+    (
+        clamped_position(position.0, position.1, width, height, area, scale),
+        (width as u32, height as u32),
+    )
+}
+
+pub fn set_toolbar_visible(app: &AppHandle, visible: bool) -> Result<(), String> {
+    let state = app.state::<crate::AppState>();
+    let mut session = state.scans.lock()?;
+    require_toolbar_visibility(&session, state.tray.available(), visible)?;
+    let window = app
+        .get_webview_window("toolbar")
+        .ok_or("Toolbar is unavailable")?;
+    close_toolbar_menu(app.clone(), None)?;
+    if visible {
+        let position = window.outer_position().map_err(|e| e.to_string())?;
+        let size = window.inner_size().map_err(|e| e.to_string())?;
+        let old_scale = window.scale_factor().map_err(|e| e.to_string())?;
+        let center = (
+            f64::from(position.x) + f64::from(size.width) / 2.0,
+            f64::from(position.y) + f64::from(size.height) / 2.0,
+        );
+        let monitor = app
+            .available_monitors()
+            .map_err(|e| e.to_string())?
+            .into_iter()
+            .find(|monitor| {
+                let origin = monitor.position();
+                let size = monitor.size();
+                center.0 >= f64::from(origin.x)
+                    && center.1 >= f64::from(origin.y)
+                    && center.0 < f64::from(origin.x) + f64::from(size.width)
+                    && center.1 < f64::from(origin.y) + f64::from(size.height)
+            })
+            .or(app.primary_monitor().map_err(|e| e.to_string())?)
+            .ok_or("No display is available to restore the toolbar")?;
+        let work = monitor.work_area();
+        let area = Rectangle {
+            x: f64::from(work.position.x),
+            y: f64::from(work.position.y),
+            width: f64::from(work.size.width),
+            height: f64::from(work.size.height),
+        };
+        let ((x, y), (width, height)) = recovery_frame(
+            (f64::from(position.x), f64::from(position.y)),
+            (
+                f64::from(size.width) / old_scale,
+                f64::from(size.height) / old_scale,
+            ),
+            area,
+            monitor.scale_factor(),
+        );
+        window
+            .set_position(PhysicalPosition::new(x, y))
+            .map_err(|e| e.to_string())?;
+        window
+            .set_size(PhysicalSize::new(width, height))
+            .map_err(|e| e.to_string())?;
+        window.unminimize().map_err(|e| e.to_string())?;
+        window.show().map_err(|e| e.to_string())?;
+        window.set_focus().map_err(|e| e.to_string())?;
+    } else {
+        window.hide().map_err(|e| e.to_string())?;
+    }
+    session.revision += 1;
+    drop(session);
+    emit_state(app);
+    Ok(())
+}
+
+#[tauri::command(async)]
+pub fn hide_toolbar(app: AppHandle) -> Result<(), String> {
+    set_toolbar_visible(&app, false)
 }
 
 #[derive(Clone, Copy, Debug, Default, Serialize)]
@@ -1083,6 +1188,69 @@ pub fn setup(app: &AppHandle) -> Result<(), String> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn toolbar_recovery_requires_an_idle_scan_and_a_tray_before_hiding() {
+        let mut session = Session::default();
+        assert!(require_toolbar_visibility(&session, false, true).is_ok());
+        assert!(require_toolbar_visibility(&session, false, false).is_err());
+        assert!(require_toolbar_visibility(&session, true, false).is_ok());
+        let id = session
+            .begin(ScanMode::SelectedArea, display(), None, vec![])
+            .unwrap();
+        for visible in [true, false] {
+            assert!(require_toolbar_visibility(&session, true, visible).is_err());
+        }
+        session.captured(id, metadata()).unwrap();
+        assert!(require_toolbar_visibility(&session, true, true).is_err());
+        session.stop(Some(id), "", false).unwrap();
+        assert!(require_toolbar_visibility(&session, true, true).is_ok());
+        session
+            .begin(ScanMode::WholeScreen, display(), None, vec![])
+            .unwrap();
+        assert!(require_toolbar_visibility(&session, true, true).is_err());
+    }
+
+    #[test]
+    fn toolbar_recovery_preserves_logical_size_and_is_idempotent_after_display_loss() {
+        for scale in [1.0, 1.25, 1.5, 2.0] {
+            for origin in [(0.0, 30.0), (-2560.0, -1200.0)] {
+                let area = Rectangle {
+                    x: origin.0,
+                    y: origin.1,
+                    width: 1920.0,
+                    height: 1000.0,
+                };
+                for width in [244.0, 536.0] {
+                    let (position, size) =
+                        recovery_frame((6000.0, -5000.0), (width, 56.0), area, scale);
+                    assert_eq!(size, ((width * scale) as u32, (56.0 * scale) as u32));
+                    assert!(f64::from(position.0) >= area.x && f64::from(position.1) >= area.y);
+                    assert!(f64::from(position.0) + f64::from(size.0) <= area.x + area.width);
+                    assert!(f64::from(position.1) + f64::from(size.1) <= area.y + area.height);
+                    assert_eq!(
+                        recovery_frame(
+                            (f64::from(position.0), f64::from(position.1)),
+                            (width, 56.0),
+                            area,
+                            scale
+                        ),
+                        (position, size)
+                    );
+                }
+            }
+        }
+        let area = Rectangle {
+            x: -100.0,
+            y: 20.0,
+            width: 200.0,
+            height: 44.0,
+        };
+        assert_eq!(
+            recovery_frame((0.0, 0.0), (536.0, 56.0), area, 2.0),
+            ((-100, 20), (200, 44))
+        );
+    }
 
     #[test]
     fn startup_toolbar_centers_above_work_area_bottom_at_supported_scales() {

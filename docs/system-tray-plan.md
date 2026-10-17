@@ -1,6 +1,8 @@
 # System tray / menu bar plan
 
-Status: **Planned, 2026-10-17. Implementation has not started.**
+Status: **Implemented in development source, 2026-10-17; native platform
+acceptance remains open.** The owner authorized implementation after reviewing
+the menu/click behavior.
 
 Add a native macOS menu bar icon and Windows notification-area icon so the
 running app is easy to find, the floating toolbar can be hidden and recovered,
@@ -99,6 +101,18 @@ Quit from the tray, toolbar and normal OS app-quit routes must share cleanup.
    next version separately through the existing version/release workflow.
 
 ## Verification and acceptance
+
+Recorded source verification on 2026-10-17: 70 native and 177 frontend tests
+pass, along with strict Clippy, Cargo formatting, frontend Prettier/type/build
+checks, the icon generator's Ruff checks and the macOS debug app bundle build.
+The macOS debug smoke confirms normal startup, the overflow Hide Toolbar action
+and hint, successful hiding, and OS Quit. The UI automation surface could not
+expose the native status item for menu-click/restore verification. This debug
+bundle does not run the frozen OCR service; installed cleanup is unverified.
+The acceptance matrix below remains a checklist, not a report of passing cases.
+
+The [tray source/license review](../THIRD_PARTY_LICENSES/system-tray-review.md)
+records the unchanged package graph and complete local macOS Rust notices.
 
 Automated checks should cover menu ID routing, visibility labels, active-scan
 guards, idempotent show, tray-failure fallback and disconnected-display recovery.

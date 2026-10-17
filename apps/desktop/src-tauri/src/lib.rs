@@ -2,6 +2,7 @@ mod capture;
 mod detector_model;
 mod overlay;
 mod toolbar;
+mod tray;
 #[cfg(all(target_os = "windows", any(not(debug_assertions), test)))]
 mod windows_service;
 
@@ -30,6 +31,7 @@ struct AppState {
     scans: toolbar::ScanStore,
     toolbar_layout: Mutex<toolbar::ToolbarLayout>,
     toolbar_menu: toolbar::ToolbarMenuStore,
+    tray: tray::TrayState,
     service: Mutex<Option<Child>>,
     #[cfg(all(not(debug_assertions), target_os = "windows"))]
     windows_service: Mutex<Option<windows_service::Service>>,
@@ -187,6 +189,9 @@ fn show_capture_window_on(
             return Err("Screen Recording access is required. Enable YomiMado (or your terminal when running `tauri dev`) in System Settings > Privacy & Security > Screen & System Audio Recording, then restart the app.".into());
         }
     }
+    let state = app.state::<AppState>();
+    let mut session = state.scans.lock()?;
+    toolbar::require_idle(&session)?;
     toolbar::close_toolbar_menu(app.clone(), None)?;
     let restore = toolbar::CAPTURE_WINDOW_LABELS
         .iter()
@@ -196,11 +201,9 @@ fn show_capture_window_on(
         })
         .map(|label| (*label).to_string())
         .collect();
-    let id = app
-        .state::<AppState>()
-        .scans
-        .lock()?
-        .begin(mode, display.clone(), repeat, restore)?;
+    let id = session.begin(mode, display.clone(), repeat, restore)?;
+    drop(session);
+    tray::refresh(&app);
     app.state::<AppState>().scans.set_selector_id(id);
     let result: Result<(), String> = (|| {
         app.state::<AppState>().overlay_input.disable(&app)?;
@@ -954,6 +957,7 @@ pub fn run() {
                 scans: toolbar::ScanStore::default(),
                 toolbar_layout: Mutex::new(toolbar::ToolbarLayout::default()),
                 toolbar_menu: toolbar::ToolbarMenuStore::default(),
+                tray: tray::TrayState::default(),
                 service: Mutex::new(service),
                 #[cfg(all(not(debug_assertions), target_os = "windows"))]
                 windows_service: Mutex::new(windows_service),
@@ -992,6 +996,10 @@ pub fn run() {
                     }
                 })?;
             toolbar::setup(app.handle())?;
+            if let Err(error) = tray::setup(app.handle()) {
+                let handle = app.handle().clone();
+                tauri::async_runtime::spawn_blocking(move || tray::report_error(&handle, format!("Tray icon unavailable: {error}. The toolbar stays available; use More actions to quit.")));
+            }
             app.state::<AppState>().overlay_input.start(app.handle());
             Ok(())
         })
@@ -1008,6 +1016,7 @@ pub fn run() {
             toolbar::move_toolbar,
             toolbar::drag_toolbar,
             toolbar::quit_app,
+            toolbar::hide_toolbar,
             toolbar::finish_scan,
             toolbar::hide_finished_selector,
             toolbar::reveal_ocr_overlay,
