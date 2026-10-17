@@ -82,7 +82,9 @@ data. It downloads nothing; `--check` performs path validation without serving.
 `benchmark_lindera_tokenizer.py` compares the optional development Lindera/IPADIC
 adapter with Sudachi Core, including source offsets, fixed learning checks,
 JMdict matches, payload sizes and warm adapter timings. It downloads nothing and
-keeps derived lookup data in its output directory. The strict
+keeps derived lookup data in its output directory. Optional `--sudachi-small`
+adds the hash-verified Small 20250515 dictionary to the same-corpus comparison;
+see the [SudachiPy investigation](../docs/sudachipy-investigation.md). The strict
 `--require-learning-parity` mode currently fails the whole-word compatibility
 check documented in [the experiment](../docs/lindera-tokenizer-experiment.md).
 

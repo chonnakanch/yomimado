@@ -2,6 +2,15 @@
 
 ## Current status
 
+**SudachiPy investigation — 2026-10-17:** confirms the current baseline is already
+Rust-backed SudachiPy 0.6.10. A same-corpus 39-sentence benchmark adds hash-verified
+Sudachi Small 20250515: 117.25 MiB versus Core's 207.06 MiB and Lindera's 45.33 MiB;
+focused learning checks pass 7/8, 8/8 and 7/8 respectively. Small differs from
+Core on ten sentences; Lindera differs on twenty. All source offsets pass.
+The [report](sudachipy-investigation.md) separates tokenizer quality from image
+OCR, records newer-version compatibility and keeps the production default.
+Only the benchmark and documentation change; release inputs remain unchanged.
+
 **Scan performance comparison — 2026-10-17:** 90 synthetic CPU scans return
 identical OCR text/geometry with Sudachi and Lindera. Median service scan times
 are 836/840 ms; the mixed page takes 4.37/4.53 seconds with five detector passes.

@@ -13,6 +13,7 @@
 - [App resources and data flow](app-resources.md): how detection, recognition, tokenizer dictionaries, learning dictionaries, translation and local storage work together.
 - [Tokenizer resource investigation](tokenizer-resource-investigation.md): tested UniDic-free OCR decoding and the size/behavior tradeoff of Sudachi Small.
 - [Lindera tokenizer experiment](lindera-tokenizer-experiment.md): opt-in IPADIC adapter, measured size/learning differences and reproduction commands.
+- [SudachiPy investigation](sudachipy-investigation.md): current Rust-backed engine, Core/Small/Lindera comparison and newer-version compatibility.
 - [Scan performance and accuracy](scan-performance-comparison.md): stage timings and ground-truth synthetic detection/recognition results for both tokenizers.
 - [App icon](app-icon.md): the current icon's origin and generation record.
 - [Dictionary updates](dictionary-updates.md): snapshot replacement and attribution.

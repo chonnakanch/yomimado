@@ -10,6 +10,10 @@ changed, and no installer is built or approved.
 
 ## Measured results
 
+The [SudachiPy investigation](sudachipy-investigation.md) adds a same-corpus
+three-way comparison with Sudachi Small and explains the current Rust-backed
+SudachiPy engine and newer dictionary-format compatibility.
+
 The [scan-stage comparison](scan-performance-comparison.md) additionally measures
 90 OCR scans, detector retries and synthetic ground-truth text/geometry. OCR
 outputs are identical between tokenizers; detection dominates scan time, and

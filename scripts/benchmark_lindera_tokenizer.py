@@ -1,4 +1,4 @@
-"""Offline development A/B test: Sudachi Core versus pinned Lindera/IPADIC.
+"""Offline development comparison: Sudachi Core, optional Small and Lindera/IPADIC.
 
 Requires the isolated Lindera site on PYTHONPATH and a verified dictionary.
 Writes synthetic-text reports and a rebuildable JMdict index under --output.
@@ -16,7 +16,9 @@ import statistics
 import subprocess
 import sys
 import time
+from contextlib import nullcontext
 from pathlib import Path
+from unittest.mock import patch
 
 from investigate_tokenizer_resources import SUDACHI_TEXTS
 
@@ -48,12 +50,25 @@ def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--dictionary", type=Path, required=True)
     parser.add_argument("--jmdict", type=Path, required=True)
+    parser.add_argument(
+        "--sudachi-small", type=Path, help="Optional exact 20250515 Small dictionary"
+    )
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--repeats", type=int, default=25)
     parser.add_argument("--require-learning-parity", action="store_true")
     args = parser.parse_args()
     if args.repeats < 1:
         parser.error("--repeats must be positive")
+    if args.sudachi_small:
+        expected_small = (
+            "2cc37253779a4668815c9c2c019057de8f698675fb57d85ddd7731ab3f6d90b3"
+        )
+        if digest(args.sudachi_small) != expected_small:
+            parser.error(
+                "--sudachi-small must be the verified Sudachi Small 20250515 dictionary"
+            )
+        if importlib.metadata.version("SudachiPy") != "0.6.10":
+            parser.error("The Small comparison requires the baseline SudachiPy 0.6.10")
     args.output.mkdir(parents=True, exist_ok=True)
     os.environ.update(
         {
@@ -70,59 +85,85 @@ def main() -> None:
     from app.tokenizer.sudachi import SudachiTokenizer
 
     providers = {"sudachi": SudachiTokenizer(), "lindera": LinderaTokenizer()}
+    small_resource = None
+    if args.sudachi_small:
+        providers["sudachi-small"] = SudachiTokenizer()
     corpus = tuple(dict.fromkeys((*SUDACHI_TEXTS, *(x[0] for x in CHECKS))))
     results = {}
     for name, tokenizer in providers.items():
-        start = time.perf_counter()
-        tokenizer.tokenize(corpus[0])
-        initialization = time.perf_counter() - start
-        analyzed = {
-            text: [token.model_dump() for token in tokenizer.tokenize(text)]
-            for text in corpus
-        }
-        offsets = all(
-            text[x["start"] : x["end"]] == x["surface"]
-            for text, tokens in analyzed.items()
-            for x in tokens
+        load_seconds = 0.0
+        if name == "sudachi-small":
+            from sudachipy import dictionary
+
+            start = time.perf_counter()
+            small_resource = dictionary.Dictionary(
+                dict=str(args.sudachi_small.resolve())
+            )
+            load_seconds = time.perf_counter() - start
+        context = (
+            patch(
+                "app.tokenizer.sudachi._dictionary",
+                new=lambda resource=small_resource: resource,
+            )
+            if name == "sudachi-small"
+            else nullcontext()
         )
-        golden = [
-            {
-                "text": text,
-                "expected": {
-                    "surface": surface,
-                    "reading": reading,
-                    "dictionaryForm": base,
-                },
-                "passed": any(
-                    (x["surface"], x["reading"], x["dictionaryForm"])
-                    == (surface, reading, base)
-                    for x in analyzed[text]
-                ),
+        with context:
+            start = time.perf_counter()
+            tokenizer.tokenize(corpus[0])
+            initialization = load_seconds + time.perf_counter() - start
+            analyzed = {
+                text: [token.model_dump() for token in tokenizer.tokenize(text)]
+                for text in corpus
             }
-            for text, surface, reading, base in CHECKS
-        ]
-        durations = []
-        for _ in range(args.repeats):
-            for text in corpus:
-                start = time.perf_counter()
-                tokenizer.tokenize(text)
-                durations.append((time.perf_counter() - start) * 1000)
-        words = [token for tokens in analyzed.values() for token in tokens]
-        found = [lookup(x["surface"], x["dictionaryForm"], x["reading"]) for x in words]
-        results[name] = {
-            "sentences": analyzed,
-            "validOffsets": offsets,
-            "learningChecks": golden,
-            "tokenCount": len(words),
-            "tokensWithDictionaryMatch": sum(bool(x) for x in found),
-            "tokensWithReadingMatch": sum(
-                any(e.readingMatch for e in x) for x in found
-            ),
-            "initializationSeconds": initialization,
-            "warmMedianMs": statistics.median(durations),
-            "warmP95Ms": sorted(durations)[int(0.95 * (len(durations) - 1))],
-            "timingCalls": len(durations),
-        }
+            offsets = all(
+                text[x["start"] : x["end"]] == x["surface"]
+                for text, tokens in analyzed.items()
+                for x in tokens
+            )
+            golden = [
+                {
+                    "text": text,
+                    "expected": {
+                        "surface": surface,
+                        "reading": reading,
+                        "dictionaryForm": base,
+                    },
+                    "passed": any(
+                        (x["surface"], x["reading"], x["dictionaryForm"])
+                        == (surface, reading, base)
+                        for x in analyzed[text]
+                    ),
+                }
+                for text, surface, reading, base in CHECKS
+            ]
+            durations = []
+            for _ in range(args.repeats):
+                for text in corpus:
+                    start = time.perf_counter()
+                    tokenizer.tokenize(text)
+                    durations.append((time.perf_counter() - start) * 1000)
+            words = [token for tokens in analyzed.values() for token in tokens]
+            found = [
+                lookup(x["surface"], x["dictionaryForm"], x["reading"]) for x in words
+            ]
+            results[name] = {
+                "sentences": analyzed,
+                "validOffsets": offsets,
+                "learningChecks": golden,
+                "tokenCount": len(words),
+                "tokensWithDictionaryMatch": sum(bool(x) for x in found),
+                "tokensWithReadingMatch": sum(
+                    any(e.readingMatch for e in x) for x in found
+                ),
+                "initializationSeconds": initialization,
+                "warmMedianMs": statistics.median(durations),
+                "warmP95Ms": sorted(durations)[int(0.95 * (len(durations) - 1))],
+                "timingCalls": len(durations),
+                "timingSamplesMs": durations,
+            }
+    if small_resource is not None:
+        small_resource.close()
     differences = {
         text: {key: results[key]["sentences"][text] for key in providers}
         for text in corpus
@@ -145,6 +186,24 @@ def main() -> None:
         "sudachiDictionaryBytes": size(Path(sudachidict_core.__file__).parent),
         "sudachiPackageBytes": size(Path(sudachipy.__file__).parent),
     }
+    if args.sudachi_small:
+        sizes["sudachiSmallDictionaryBytes"] = args.sudachi_small.stat().st_size
+    differences_by_provider = {}
+    for name in providers:
+        if name == "sudachi":
+            continue
+        differences_by_provider[name] = {
+            text: {key: results[key]["sentences"][text] for key in ("sudachi", name)}
+            for text in corpus
+            if [
+                (x["surface"], x["reading"], x["dictionaryForm"])
+                for x in results["sudachi"]["sentences"][text]
+            ]
+            != [
+                (x["surface"], x["reading"], x["dictionaryForm"])
+                for x in results[name]["sentences"][text]
+            ]
+        }
     pins = ROOT / "services/ocr/lindera-experiment-inputs.json"
     report = {
         "scope": "development experiment; no frozen-service or installed-app claim",
@@ -164,12 +223,23 @@ def main() -> None:
             "manifest": digest(pins),
             "jmdict": digest(args.jmdict),
             "benchmark": digest(Path(__file__)),
+            "corpusSource": digest(ROOT / "scripts/investigate_tokenizer_resources.py"),
             "adapter": digest(ROOT / "services/ocr/app/tokenizer/lindera.py"),
+            "sudachiAdapter": digest(ROOT / "services/ocr/app/tokenizer/sudachi.py"),
+            "sudachiCoreDictionary": digest(
+                Path(sudachidict_core.__file__).parent / "resources/system.dic"
+            ),
+            **(
+                {"sudachiSmallDictionary": digest(args.sudachi_small)}
+                if args.sudachi_small
+                else {}
+            ),
         },
         "sizes": sizes,
         "corpusSentences": len(corpus),
         "changedSentences": len(differences),
         "differences": differences,
+        "differencesByProvider": differences_by_provider,
         "results": results,
         "learningParity": all(
             x["passed"] for result in results.values() for x in result["learningChecks"]
@@ -182,12 +252,15 @@ def main() -> None:
         "learningParity": report["learningParity"],
         "corpusSentences": len(corpus),
         "changedSentences": len(differences),
+        "changedSentencesByProvider": {
+            name: len(cases) for name, cases in differences_by_provider.items()
+        },
         "sizes": sizes,
         "providers": {
             k: {
                 field: value
                 for field, value in v.items()
-                if field not in ("sentences", "learningChecks")
+                if field not in ("sentences", "learningChecks", "timingSamplesMs")
             }
             | {
                 "passedLearningChecks": sum(x["passed"] for x in v["learningChecks"]),
