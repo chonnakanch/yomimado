@@ -20,6 +20,12 @@ Explorer restart and bundled service cleanup still need platform acceptance.
 Existing candidate hashes and acceptance records are unchanged; no new installer
 has been built or approved by this source work.
 
+The first hosted tray run passed macOS/frontend/service/release-tool checks but
+Windows unit-test startup failed with `STATUS_ENTRYPOINT_NOT_FOUND`. The source
+repair embeds the Common Controls v6 manifest in tests as well as app binaries;
+the app retains the equivalent default dependency. See the tray plan for the
+upstream diagnosis and remaining native acceptance.
+
 **Windows taskbar follow-up — 2026-10-17:** after accepting the 0.2.1 overlay
 startup repair, the owner reported automatic manga detection including the
 Windows taskbar. The source follow-up restricts both Windows automatic entry
