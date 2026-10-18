@@ -46,6 +46,7 @@ fn start_bundled_service(app: &tauri::App) -> Result<Child, Box<dyn std::error::
     let data = app.path().app_data_dir()?;
     std::fs::create_dir_all(&data)?;
     let child = Command::new(resources.join("runtime/yomimado-ocr"))
+        .env_remove("YOMIMADO_TRANSLATION_MODEL")
         .env("YOMIMADO_OCR_PORT", "8766")
         .env("YOMIMADO_DETECTOR_REPO", assets.join("comic-text-detector"))
         .env(
@@ -53,7 +54,14 @@ fn start_bundled_service(app: &tauri::App) -> Result<Child, Box<dyn std::error::
             detector_model::installed_path(app.handle())?,
         )
         .env("YOMIMADO_MANGA_OCR_MODEL", assets.join("manga-ocr-base"))
-        .env("YOMIMADO_TRANSLATION_MODEL", assets.join("opus-mt-ja-en"))
+        .env(
+            "YOMIMADO_TRANSLATION_MANIFEST",
+            resources.join("notices/translation-component.json"),
+        )
+        .env(
+            "YOMIMADO_TRANSLATION_RESOURCES",
+            data.join("models/translation"),
+        )
         .env("YOMIMADO_TOKENIZER", "lindera")
         .env("YOMIMADO_LINDERA_DICTIONARY", assets.join("lindera-ipadic"))
         .env("YOMIMADO_JMDICT", assets.join("JMdict_e.gz"))

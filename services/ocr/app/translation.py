@@ -24,15 +24,9 @@ class LocalMarianProvider:
 
     @property
     def model_path(self) -> Path:
-        configured = environ.get("YOMIMADO_TRANSLATION_MODEL")
-        if not configured:
-            raise FileNotFoundError(
-                "Set YOMIMADO_TRANSLATION_MODEL to a local Japanese-to-English model directory"
-            )
-        path = Path(configured).expanduser()
-        if not path.is_dir():
-            raise FileNotFoundError(f"Translation model directory does not exist: {path}")
-        return path
+        from app.translation_resources import local_model_path
+
+        return local_model_path()
 
     @property
     def identity(self) -> str:

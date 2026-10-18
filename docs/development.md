@@ -112,6 +112,12 @@ outside this repository until their distribution terms are reviewed.
 
 ## Local translation model (optional)
 
+Packaged source builds now omit translation weights from the installer and offer
+an explicit **Settings → Reading → Download local translation** action. The
+original Torch model is a macOS component; Windows uses a separate ONNX component.
+See [resource reduction and component delivery](optional-translation-and-ocr-size.md).
+The source-service override below continues to use an existing local model.
+
 The on-demand popup can translate Japanese text to English with the free,
 user-installed [Helsinki-NLP/opus-mt-ja-en](https://huggingface.co/Helsinki-NLP/opus-mt-ja-en)
 model. This is a baseline model, not a manga-specific or contextual translator.

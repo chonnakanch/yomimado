@@ -1,5 +1,22 @@
 # Shared desktop release checklist
 
+Resource reduction source update — **2026-10-18**: future builds from the
+Lindera/resource-reduction branch exclude OCR's UniDic/Fugashi resources and
+make local translation an explicit optional download. See the
+[implementation and checks](optional-translation-and-ocr-size.md). The new
+`combined-optional-translation-v1` layout contains **eight uploaded files**:
+the six historical files plus `YomiMado_<version>_translation_torch.zip` and
+`YomiMado_<version>_translation_onnx.zip`. Platform and combined candidates and
+checksums bind both archives; original six-file and legacy validation is retained.
+
+Publish both exact component filenames alongside the matching new installers
+before their embedded download descriptors can work. Each archive carries the
+model card and Apache-2.0 terms. Exact-candidate smoke verifies absent-model OCR,
+verified offline component installation, translation and persistence. Native
+Windows, installer acceptance, refreshed source/notices/macOS runtime seed and
+explicit publication approval remain required. No installer/component was
+published or approved by this source update. Records below remain historical.
+
 0.2.2 build follow-up — **2026-10-17**: [PR #12](https://github.com/chonnakanch/yomimado/pull/12)
 merged at `32b5117cc93a934ff6adcbd41de0efa868cc3f33` after all 12 required/source
 checks passed. [Exact-main Checks](https://github.com/chonnakanch/yomimado/actions/runs/38996949735)
@@ -383,7 +400,8 @@ The required main status context remains `gates`. Packaging scripts and historic
 source/licence/test evidence are preserved. Retirement is prepared on `develop`
 for a future authorized main merge; no release assets or run history are deleted.
 
-Future shared releases package **six uploaded files**:
+The October 13 consolidation uses **six uploaded files** (historical; future
+optional-component builds add the two ZIPs described above):
 
 | File                                | Contents                                                                                                     |
 | ----------------------------------- | ------------------------------------------------------------------------------------------------------------ |

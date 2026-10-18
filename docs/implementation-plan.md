@@ -2,6 +2,20 @@
 
 ## Current status
 
+**OCR resources and optional translation — 2026-10-18:** at the owner's request,
+OCR uses a shared decode-only tokenizer without UniDic/Fugashi in frozen
+runtimes. Local translation becomes an explicit Settings → Reading download,
+verified against packaged archive/file pins and installed atomically in app data.
+macOS Torch and Windows ONNX components remain separate from installers and are
+bound by a new eight-file release layout; historical layouts remain supported.
+All 127 service, 180 frontend, 259 release-tool and 70 Rust tests pass. A private
+frozen macOS service matches all nine previous synthetic OCR results, and the
+ONNX CPU source path passes without Torch/dictionary imports. Measured macOS
+runtime reduction is 249.11 MiB plus 292.20 MiB of optional model data. See the
+[implementation and evidence](optional-translation-and-ocr-size.md). Native
+Windows/installer acceptance, a fresh macOS seed and publication remain future
+release work; no installer/component was published or approved.
+
 **Lindera/IPADIC migration — 2026-10-18:** at the owner's request, Lindera 6.0.0
 is now the default learning tokenizer. Both packaging recipes and native service
 launchers use a separate hash-pinned IPADIC resource and exclude Sudachi. The

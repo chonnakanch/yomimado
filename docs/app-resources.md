@@ -5,7 +5,7 @@ information as the user explores it. Models recognize images or translate text;
 tokenizer dictionaries analyze Japanese; learning dictionaries provide definitions.
 These resources serve different stages even when some contain overlapping readings.
 
-This describes the source implementation after the Lindera migration on
+This describes the source implementation after the resource reductions on
 2026-10-18. Published v0.1.0 packages retain their historical Sudachi inputs.
 The size baseline below predates this migration.
 
@@ -59,11 +59,11 @@ sentence also works without translating it first.
 | comic-text-detector code                               | Detection and geometry/postprocessing logic                                                 | Bundled                                                                               |
 | `comictextdetector.pt.onnx`                            | Learned detector weights: where text is in an image                                         | Installed separately by the user                                                      |
 | Manga OCR model, vocabulary and configuration          | Recognition: what the cropped Japanese text says                                            | Bundled; backend differs by platform                                                  |
-| UniDic Lite and Fugashi/MeCab support                  | Dictionary and binding used by the configured Japanese OCR tokenizer                        | Bundled in the current tokenizer setup                                                |
+| OCR vocabulary and decode-only Japanese tokenizer      | Decode generated model IDs into the original Japanese text                                  | Bundled; UniDic/Fugashi/MeCab excluded from frozen runtime                            |
 | Lindera 6.0.0 and its pinned IPADIC dictionary         | Japanese word segmentation, readings, dictionary forms and parts of speech                  | Binding in frozen runtime; dictionary in `assets/lindera-ipadic`                      |
 | `JMdict_e.gz`                                          | English word meanings, word readings, spelling/reading restrictions and compound candidates | Bundled                                                                               |
 | `kanjidic2.xml.gz`                                     | Individual kanji meanings, on'yomi and kun'yomi                                             | Bundled                                                                               |
-| OPUS-MT Japanese-to-English model and tokenizer assets | Local sentence translation                                                                  | Bundled; backend differs by platform                                                  |
+| OPUS-MT Japanese-to-English model and tokenizer assets | Local sentence translation                                                                  | Optional explicit download; macOS Torch / Windows ONNX                                |
 | OpenCV, NumPy, Pillow and supporting libraries         | Image decoding, preprocessing, arrays and geometry                                          | Bundled                                                                               |
 | Licences, notices, checksums and source/build records  | Attribution and provenance for distributed resources                                        | Bundled notices/records; corresponding-source archives are separate release downloads |
 
@@ -74,17 +74,16 @@ copies it into the application's writable data directory under
 The current release policy excludes these detector weights from installers and
 public source/artifact delivery. See the [reading guide](usage.md) for setup.
 
-## Why there are two tokenizer dictionaries
+## OCR decoding and learning tokenization
 
 The OCR model tokenizer and the learning tokenizer serve different code paths.
 
-**Manga OCR's tokenizer** converts model token IDs into Japanese output text. Its
-model configuration selects `BertJapaneseTokenizer` with MeCab and `unidic_lite`.
-The current packaging carries that dependency setup. In the Windows ONNX adapter,
-the tokenizer is initialized and used to decode generated IDs; the application
-does not explicitly ask this OCR tokenizer to split recognized sentences for the
-learning UI. Removing UniDic would require verifying a replacement initialization
-and decoding path against the existing output.
+**Manga OCR's tokenizer** converts model token IDs into Japanese output text.
+The original model configuration selects MeCab and `unidic_lite`, but the app now
+constructs this OCR-only tokenizer with word tokenization disabled. Its original
+vocabulary, special tokens and decoding stay intact. Frozen runtimes exclude the
+large UniDic dictionary and Fugashi/MeCab bindings. The same helper serves the
+macOS recognizer and Windows ONNX path. Translation's text tokenizer is separate.
 
 **Lindera/IPADIC** analyzes the recognized sentence when its learning popup opens. It
 provides the word boundaries and base forms needed to select a word and find an
@@ -93,7 +92,7 @@ resource in normal mode. UTF-8 byte offsets are converted to Unicode code-point
 offsets referring to the original text, so
 the UI can preserve punctuation and highlight the selected span.
 
-UniDic is not the dictionary queried by the word popup. IPADIC does not supply
+The OCR vocabulary is not the dictionary queried by the word popup. IPADIC does not supply
 English word definitions, and JMdict does not perform sentence segmentation.
 
 ## Where the displayed readings and meanings come from
@@ -114,13 +113,13 @@ opening example compounds asks JMdict for short words containing `学`.
 
 ## macOS and Windows use different inference backends
 
-| Stage                              | macOS Apple Silicon package                                             | Windows x64 package                                                                                                |
-| ---------------------------------- | ----------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
-| Detector                           | comic-text-detector adapter; user-installed ONNX weights use OpenCV DNN | Adapted detector code with NumPy/OpenCV DNN; same user-installed detector input                                    |
-| Recognition                        | Manga OCR through Torch and Transformers, with original PyTorch weights | CPU ONNX Runtime, exported OCR encoder/decoder graphs and matching preprocessing/decoding                          |
-| Translation                        | Local Marian/OPUS-MT through Torch and Transformers                     | CPU ONNX Runtime, exported translation encoder/decoder graphs and matching text tokenizer                          |
-| Learning analysis and dictionaries | Lindera/IPADIC, JMdict and KANJIDIC2                                    | Same roles and API contracts                                                                                       |
-| Model delivery                     | Original recognition and translation weights                            | Four exported graphs; original export-only PyTorch weights are removed from installer resources after verification |
+| Stage                              | macOS Apple Silicon package                                             | Windows x64 package                                                                                         |
+| ---------------------------------- | ----------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
+| Detector                           | comic-text-detector adapter; user-installed ONNX weights use OpenCV DNN | Adapted detector code with NumPy/OpenCV DNN; same user-installed detector input                             |
+| Recognition                        | Manga OCR through Torch and Transformers, with original PyTorch weights | CPU ONNX Runtime, exported OCR encoder/decoder graphs and matching preprocessing/decoding                   |
+| Translation                        | Local Marian/OPUS-MT through Torch and Transformers                     | CPU ONNX Runtime, exported translation encoder/decoder graphs and matching text tokenizer                   |
+| Learning analysis and dictionaries | Lindera/IPADIC, JMdict and KANJIDIC2                                    | Same roles and API contracts                                                                                |
+| Model delivery                     | Recognition weights bundled; translation weights downloaded on request  | OCR graphs bundled; translation graphs downloaded on request; original export-only PyTorch weights excluded |
 
 The Windows build uses Torch in a separate export/reference environment. Torch,
 Torchvision and the original Manga OCR Python package are excluded from its
@@ -201,9 +200,11 @@ binding costs. Word boundaries differ; this does not improve image detection or
 recognition. A private frozen macOS service passes OCR and learning smoke checks;
 native Windows and exact installers still require release verification.
 
-The earlier [tokenizer resource investigation](tokenizer-resource-investigation.md)
-also shows source-level OCR decoding/recognition parity without UniDic imports.
-Removing UniDic, adopting the Windows ONNX approach on macOS and quantization
+The [implemented resource reduction](optional-translation-and-ocr-size.md) removes
+UniDic from frozen OCR and makes translation an optional download. The private
+macOS runtime is 249.11 MiB smaller; the optional Torch model is 292.20 MiB.
+An explicit Settings action downloads only pinned model files, while all reading
+and translation inference stays local. Adopting ONNX on macOS and quantization
 remain separate proposals. Existing installer evidence remains historical;
 dependency/model changes require updated source/notices and new candidate
 verification under the [shared release checklist](desktop-release.md).

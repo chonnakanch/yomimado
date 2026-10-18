@@ -57,11 +57,21 @@ def _models(repo: Path, detector_model: Path, recognizer_model: Path) -> tuple[A
     sys.path.insert(0, str(repo))
     from inference import TextDetector  # type: ignore[import-not-found]
     from manga_ocr import MangaOcr  # type: ignore[import-not-found]
+    from manga_ocr import ocr as manga
+
+    from app.pipeline.ocr_tokenizer import load_ocr_tokenizer
 
     detector = TextDetector(
         model_path=str(detector_model), input_size=DETECTOR_INPUT_SIZE, device="cpu"
     )
-    recognizer = MangaOcr(pretrained_model_name_or_path=str(recognizer_model), force_cpu=True)
+    # Manga OCR constructs a tokenizer internally. Restrict this override to its
+    # constructor; translation and Transformers' global loader stay untouched.
+    original = manga.AutoTokenizer
+    manga.AutoTokenizer = SimpleNamespace(from_pretrained=load_ocr_tokenizer)
+    try:
+        recognizer = MangaOcr(pretrained_model_name_or_path=str(recognizer_model), force_cpu=True)
+    finally:
+        manga.AutoTokenizer = original
     return detector, recognizer
 
 

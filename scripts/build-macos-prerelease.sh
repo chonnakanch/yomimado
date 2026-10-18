@@ -330,7 +330,7 @@ require_sha256 "$translation_model/pytorch_model.bin" \
   --hidden-import inference \
   --hidden-import backports.tarfile \
   --collect-all manga_ocr \
-  --collect-all unidic_lite \
+  --exclude-module unidic_lite --exclude-module unidic --exclude-module fugashi --exclude-module MeCab \
   --collect-all lindera \
   --add-data "$service_dir/app/tokenizer/lindera-inputs.json:app/tokenizer" \
   --exclude-module app.tokenizer.sudachi \
@@ -354,6 +354,7 @@ mkdir -p "$staging/runtime" "$staging/assets/comic-text-detector" \
 "$python_bin" "$repo_root/scripts/prepare_lindera.py" --download \
   --target "$staging/assets/lindera-ipadic" --notices "$staging/notices/lindera"
 cp -R "$service_dir/dist/yomimado-ocr/." "$staging/runtime/"
+"$python_bin" "$repo_root/scripts/translation_component.py" --resources "$staging" --prune-ocr
 # Manga OCR warms up by reading this path. Replace its sample artwork with
 # an original, generated blank image so no third-party example is distributed.
 "$python_bin" "$repo_root/scripts/create-manga-ocr-warmup.py" \
@@ -368,6 +369,9 @@ for name in README.md config.json generation_config.json pytorch_model.bin \
   source.spm target.spm tokenizer_config.json vocab.json; do
   cp "$translation_model/$name" "$staging/assets/opus-mt-ja-en/"
 done
+"$python_bin" "$repo_root/scripts/translation_component.py" --resources "$staging" \
+  --output "$service_dir/build/translation-components" \
+  --version "$("$python_bin" -c 'import json,sys; print(json.load(open(sys.argv[1]))["version"])' "$repo_root/apps/desktop/src-tauri/tauri.conf.json")" --backend torch
 cp "$dictionary_dir/JMdict_e.gz" "$dictionary_dir/kanjidic2.xml.gz" \
   "$staging/assets/"
 cp "$repo_root/LICENSE" "$repo_root/THIRD_PARTY_LICENSES/README.md" \
@@ -385,7 +389,7 @@ cp "$service_dir/build/opencv-source/source-changes.diff" "$staging/notices/open
 (
   cd "$staging/assets"
   shasum -a 256 manga-ocr-base/pytorch_model.bin \
-    opus-mt-ja-en/pytorch_model.bin JMdict_e.gz kanjidic2.xml.gz lindera-ipadic/*
+    JMdict_e.gz kanjidic2.xml.gz lindera-ipadic/*
 ) > "$staging/notices/asset-checksums.txt"
 "$python_bin" "$repo_root/scripts/generate-macos-notices.py" \
   "$staging/notices" --strict

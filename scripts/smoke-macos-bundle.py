@@ -61,6 +61,12 @@ def main() -> None:
             }
         )
 
+        component = resources / "notices/translation-component.json"
+        if component.is_file():
+            env.pop("YOMIMADO_TRANSLATION_MODEL", None)
+            env["YOMIMADO_TRANSLATION_MANIFEST"] = str(component)
+            env["YOMIMADO_TRANSLATION_RESOURCES"] = str(data / "translation-models")
+
         def request(
             path: str,
             payload: dict | None = None,
@@ -195,6 +201,32 @@ def main() -> None:
                         bool(kanji["meanings"]) and bool(kanji["onReadings"]),
                         "KANJIDIC2 lookup failed",
                     )
+                    if component.is_file():
+                        from translation_component import install_smoke_component
+
+                        check(
+                            request("/api/v1/translation-model")["state"]
+                            == "notInstalled",
+                            "Translation must be optional on first launch",
+                        )
+                        try:
+                            request(
+                                "/api/v1/translate", {"text": "今日は学校に行きます。"}
+                            )
+                        except RuntimeError as error:
+                            check(
+                                "503" in str(error),
+                                "Missing optional translation must give a setup error",
+                            )
+                        else:
+                            raise RuntimeError(
+                                "Translation unexpectedly ran before model installation"
+                            )
+                        install_smoke_component(component, data)
+                        check(
+                            request("/api/v1/translation-model")["state"] == "ready",
+                            "Verified optional model did not become ready",
+                        )
                     translation = request(
                         "/api/v1/translate", {"text": "今日は学校に行きます。"}
                     )

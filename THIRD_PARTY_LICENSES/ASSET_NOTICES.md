@@ -5,6 +5,11 @@ retains its original Sudachi inputs and evidence. Exact file SHA-256
 digests are recorded in `asset-checksums.txt` alongside the packaged app. They
 are not covered by YomiMado's GPL-3.0-only source licence.
 
+New source builds deliver translation as a separate optional component. Its
+archive and individual file hashes are recorded in
+`notices/translation-component.json`; the model card and Apache-2.0 text travel
+inside the component. Its model data is absent from the installer.
+
 | Asset                              | Source and revision                                                                                                                                                            | Terms                                                                                                                                                                                                    |
 | ---------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Manga OCR model                    | [kha-white/manga-ocr-base](https://huggingface.co/kha-white/manga-ocr-base/tree/aa6573bd10b0d446cbf622e29c3e084914df9741), revision `aa6573bd10b0d446cbf622e29c3e084914df9741` | Model card identifies Apache-2.0; see `assets/Apache-2.0.txt` and `assets/manga-ocr-model-card.md`.                                                                                                      |

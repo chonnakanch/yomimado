@@ -12,6 +12,7 @@
 - [Product and architecture design](initial-design.md): domain boundaries and coordinate rules.
 - [App resources and data flow](app-resources.md): how detection, recognition, tokenizer dictionaries, learning dictionaries, translation and local storage work together.
 - [Lindera migration and tokenizer port](lindera-migration.md): current default, adapter contract, resource preparation and release limits.
+- [OCR resource reduction and optional translation](optional-translation-and-ocr-size.md): UniDic-free decoding, explicit local model downloads, measured sizes and new component delivery.
 - [Tokenizer resource investigation](tokenizer-resource-investigation.md): tested UniDic-free OCR decoding and the size/behavior tradeoff of Sudachi Small.
 - [Lindera tokenizer experiment](lindera-tokenizer-experiment.md): historical opt-in adapter, measured size/learning differences and reproduction commands.
 - [SudachiPy investigation](sudachipy-investigation.md): former Rust-backed engine, Core/Small/Lindera comparison and newer-version compatibility.

@@ -11,7 +11,7 @@ interactive overlay to explore Japanese without replacing the original image.
 - Select a screen region or scan a manga page with a reusable area fallback.
 - Recognize horizontal and vertical Japanese and show aligned text regions.
 - Explore word readings, dictionary meanings, kanji, and example compounds.
-- Request local Japanese-to-English translation when needed.
+- Download the optional Japanese-to-English model and request local translation when needed.
 - Save and review words and sentences locally.
 
 Screenshots stay local. Translation and saving require an explicit action.

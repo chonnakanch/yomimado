@@ -463,7 +463,7 @@ jobs:
         with:
           name: windows-candidate-for-transfer
           path: windows-candidate
-      - name: Verify both platforms and package six public release files
+      - name: Verify both platforms and package public release files and optional components
         id: combine
         env:
           MACOS_RECORD: ${{ needs.build.outputs.record }}

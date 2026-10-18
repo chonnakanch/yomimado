@@ -51,6 +51,15 @@ def test_export_manifest_cannot_select_extra_or_escaping_files(tmp_path):
         backend.verified_exports(path.parent)
 
 
+def test_ocr_runs_without_optional_translation_graphs(tmp_path):
+    graphs(tmp_path / "onnx")
+    for name in ("translation-encoder.onnx", "translation-decoder.onnx"):
+        (tmp_path / "onnx" / name).unlink()
+    assert backend.verified_exports(tmp_path / "onnx", "ocr")
+    with pytest.raises(FileNotFoundError):
+        backend.verified_exports(tmp_path / "onnx", "translation")
+
+
 def test_translator_is_lazy_and_rejects_missing_configuration(monkeypatch):
     monkeypatch.delenv("YOMIMADO_TRANSLATION_MODEL", raising=False)
     provider = backend.WindowsOnnxTranslator()

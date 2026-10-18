@@ -67,6 +67,15 @@ use those paths. The pinned input manifest retains its existing name.
 
 ## Manual rebuild and licence maintenance
 
+`translation_component.py` verifies and separates translation model data from
+generated installer resources. It creates versioned Torch/ONNX ZIPs outside the
+installer and a hash-pinned `notices/translation-component.json` descriptor,
+retains model terms, verifies deliberate asset omissions and rejects leftover
+OCR dictionary/binding files. Exact-candidate smoke can install the component
+offline with `YOMIMADO_SMOKE_TRANSLATION_ARCHIVE`. Future release delivery adds
+the two component ZIPs as separate hash-bound assets; historical layouts remain
+supported. See [the implementation](../docs/optional-translation-and-ocr-size.md).
+
 `benchmark_scan_pipeline.py` times detector passes, recognition and subsequent
 tokenization on generated local fixtures for both development tokenizer profiles.
 It verifies OCR-output parity and scores supplied geometry/text ground truth,

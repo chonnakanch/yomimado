@@ -14,6 +14,7 @@ from opencv_release import VIDEO_LIBRARY, verify_record
 from PIL import Image
 from prepare_lindera import INPUTS as LINDERA_INPUTS
 from prepare_lindera import verify_packaged as verify_lindera
+from translation_component import verify_ocr_runtime, verify_omissions
 
 MACHO = {
     b"\xfe\xed\xfa\xce",
@@ -28,7 +29,6 @@ MACHO = {
 
 EXPECTED_ASSETS = (
     "manga-ocr-base/pytorch_model.bin",
-    "opus-mt-ja-en/pytorch_model.bin",
     "JMdict_e.gz",
     "kanjidic2.xml.gz",
     *(
@@ -61,6 +61,7 @@ REQUIRED_NOTICES = (
     "lindera/lindera-inputs.json",
     "lindera/lindera-LICENSE.txt",
     "lindera/IPADIC-NOTICE.txt",
+    "translation-component.json",
 )
 
 
@@ -202,6 +203,9 @@ def verify(app: Path) -> list[str]:
     notices = resources / "notices"
     try:
         verify_lindera(resources)
+        verify_ocr_runtime(resources / "runtime")
+        if not verify_omissions(resources):
+            raise ValueError("Missing optional translation component")
     except (OSError, RuntimeError, ValueError) as error:
         errors.append(str(error))
     info = app / "Contents/Info.plist"

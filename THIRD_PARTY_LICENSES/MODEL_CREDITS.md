@@ -16,6 +16,13 @@ Japanese text recognition uses
 uses [Helsinki-NLP/opus-mt-ja-en](https://huggingface.co/Helsinki-NLP/opus-mt-ja-en)
 (model card: Apache-2.0).
 
+New source builds deliver translation as a separate, optional download for macOS
+Torch or Windows CPU ONNX inference. Each component includes the exact model card
+and Apache-2.0 licence; translation remains local after installation. OCR's
+decode-only adapter preserves the original model vocabulary while omitting
+UniDic/Fugashi from frozen inference. Upstream build-only dependencies and
+corresponding notices/sources remain recorded separately.
+
 Word and kanji information comes from JMdict and KANJIDIC2, copyright James
 William Breen and the Electronic Dictionary Research and Development Group,
 under [CC BY-SA 4.0 and the EDRDG dictionary licence](https://www.edrdg.org/edrdg/licence.html).

@@ -44,14 +44,16 @@ MAIN_RULES = [
 ]
 
 
-def fixtures(root, version="0.1.0"):
+def fixtures(root, version="0.1.0", components=False):
     mac, win = root / "mac", root / "win"
     mac.mkdir()
     win.mkdir()
-    for name in release.macos_names(version) - {"release-candidate.json"}:
+    for name in release.macos_names(version, components) - {"release-candidate.json"}:
         (mac / name).write_bytes(b"mac fixture " + name.encode())
     primary = sorted(
-        n for n in release.macos_names(version) if n.endswith((".dmg", ".tar.gz"))
+        n
+        for n in release.macos_names(version, components)
+        if n.endswith((".dmg", ".tar.gz", ".zip"))
     )
     mac_record = {
         "sourceRevision": REVISION,
@@ -62,10 +64,12 @@ def fixtures(root, version="0.1.0"):
         "installedAppVerified": False,
         "assets": {n: release.digest(mac / n) for n in primary},
     }
+    if components:
+        mac_record["optionalTranslation"] = True
     for name, sha in mac_record["assets"].items():
         (mac / (name + ".sha256")).write_text(f"{sha}  {name}\n")
     release.write_json(mac / "release-candidate.json", mac_record)
-    for name in release.windows_names(version) - {
+    for name in release.windows_names(version, components) - {
         "windows-candidate.json",
         "SHA256SUMS.txt",
     }:
@@ -150,6 +154,20 @@ class ArtifactTests(unittest.TestCase):
         self.assertIs(record["installedAppVerified"], False)
         self.assertEqual(record["platforms"], ["macos-aarch64", "windows-x64"])
         release.verify_combined(self.out, record)
+
+    def test_optional_translation_downloads_are_separate_hash_bound_assets(self):
+        directory = self.root / "optional"
+        directory.mkdir()
+        mac, win, mac_record, win_record = fixtures(directory, components=True)
+        record = release.combine(mac, win, self.out, mac_record, win_record)
+        self.assertEqual(len(list(self.out.iterdir())), 8)
+        self.assertEqual(set(record["assets"]), release.public_names("0.1.0", True))
+        release.verify_combined(self.out, record)
+        with tarfile.open(self.out / "YomiMado_0.1.0_notices.tar.gz") as archive:
+            self.assertFalse(any(m.name.endswith(".zip") for m in archive))
+        (self.out / "YomiMado_0.1.0_translation_onnx.zip").write_bytes(b"changed")
+        with self.assertRaisesRegex(ValueError, "hash differs"):
+            release.verify_combined(self.out, record)
 
     def test_all_original_sources_data_notices_and_records_are_preserved(self):
         record = self.combine()

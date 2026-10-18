@@ -99,6 +99,12 @@ ready based on the packaged model status.
 **Reading** explains **More actions → Read with keyboard**, which replaces the
 old Reading-order controls preference and Previous/Next text panel. No preference
 needs to be enabled before using keyboard reading.
+It also offers **Download local translation** for the optional offline
+Japanese-to-English model. The model is separate from the installer. Download it
+once while connected; progress and retry guidance appear here. OCR and word/kanji
+lookup work without it. After installation, return to the learning popup and
+choose **Translate locally**; no restart is needed. Opening settings or scanning
+never starts a download, and the download does not send text or screenshots.
 **More actions → Sources & licenses** opens a separate attribution window with
 dictionary/model links and packaged notice guidance.
 Use Left/Right or Home/End on category tabs to navigate by keyboard.
