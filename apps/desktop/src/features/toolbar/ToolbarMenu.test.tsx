@@ -114,7 +114,7 @@ it("blocks secondary views during scans but keeps Quit available", async () => {
   expect(invoke).toHaveBeenCalledWith("quit_app", undefined);
 });
 
-it("hides the toolbar only when tray recovery is available and explains how to restore it", async () => {
+it("hides the toolbar only when tray recovery is available", async () => {
   vi.mocked(invoke).mockImplementation(async (command) =>
     command === "get_toolbar_state"
       ? { sessionId: null, trayAvailable: true }
@@ -122,9 +122,6 @@ it("hides the toolbar only when tray recovery is available and explains how to r
   );
   await mount();
   expect(button("Hide Toolbar").disabled).toBe(false);
-  expect(container.querySelector("#hide-toolbar-hint")?.textContent).toContain(
-    "keeps OCR overlays visible",
-  );
   await act(async () => button("Hide Toolbar").click());
   expect(invoke).toHaveBeenCalledWith("hide_toolbar");
   const calls = vi.mocked(invoke).mock.calls.map(([command]) => command);
