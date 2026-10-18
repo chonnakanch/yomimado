@@ -1,5 +1,13 @@
 # Shared desktop release checklist
 
+0.3.0 preparation — **2026-10-18**: the owner requests the version bump,
+protected-main merge and release build. Version fields now agree on `0.3.0`,
+with release notes for the resource reduction and user-selected local models.
+The old macOS seed is incompatible; prepare and review its replacement without
+weakening reuse/source guards. Windows acceptance will use the new real installer
+build. Previous private candidate hashes do not establish acceptance of the new
+0.3.0 installers. Protected publication remains a separate exact-candidate review.
+
 Private resource-reduction verification — **2026-10-18**: macOS candidate
 `907636e` passes mounted/platform/signature, copied frozen-service learning,
 absent-translation OCR, explicit Marian import/restart and fresh native startup/UI

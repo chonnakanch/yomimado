@@ -5,6 +5,31 @@ screen: capture a region, recognize Japanese locally, then click to view reading
 dictionary/kanji information and an on-demand local translation. Saved words,
 sentences and translation cache stay on the computer.
 
+## Changes in 0.3.0
+
+- Smaller local learning resources: Lindera/IPADIC replaces Sudachi, retaining
+  word readings, dictionary forms and source-text offsets. Some word boundaries
+  differ from earlier versions. JMdict word meanings and KANJIDIC2 kanji
+  information remain available offline.
+- OCR no longer carries an unused UniDic dictionary or its binding. Exactly
+  uniform captures and blank recovery tiles avoid unnecessary inference;
+  repeated identical recognition crops can reuse their result within a scan.
+- Translation models are separate from the installer. Settings → Reading starts
+  unconfigured and supports importing a compatible Japanese-to-English Marian
+  model or selecting/downloading a local text model through Ollama. Translation
+  runs only on request. Existing model files and saved learning data are preserved.
+- Imported models are copied, checked and selected explicitly; model selection
+  persists across restarts and translation caches stay separate between models.
+  Setup failures show recovery guidance instead of a permanent checking state.
+- macOS retains its Torch OCR backend; Windows retains ONNX CPU inference.
+  Experimental macOS ONNX/CoreML comparisons are not enabled in this release.
+
+Local Marian import formats differ by platform: macOS accepts compatible single
+Torch/Safetensors weights with tokenizer files; Windows requires the compatible
+Marian ONNX export folder. GGUF and other model families use Ollama. See
+[translation model setup](https://github.com/chonnakanch/yomimado/blob/main/docs/translation-model-selection.md).
+Ollama must be installed separately on the same computer.
+
 ## Changes in 0.2.2
 
 - Native macOS menu bar and Windows notification-area icons provide toolbar

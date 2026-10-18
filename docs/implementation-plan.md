@@ -2,6 +2,17 @@
 
 ## Current status
 
+**Version 0.3.0 release preparation — 2026-10-18:** the owner requests the
+version bump, merge into protected `main` and new release. App/npm/Tauri/Cargo
+versions agree on `0.3.0`; release notes describe Lindera, smaller OCR resources,
+user-installed translation and conservative scan work avoidance. The request
+authorizes preparation and protected-main integration. The old macOS runtime
+seed still rejects these changed inputs; new corresponding-source/native review
+and a verified replacement seed are required before its release build. Native
+Windows verification will use the real installer build, as requested. Exact
+installer acceptance and protected publication remain separate; no new hash or
+source approval is inferred from previous private tests.
+
 **Private packaging and real-page verification — 2026-10-18:** fresh macOS
 candidate `907636e` passes mounted/platform/signature verification, all 29 frozen
 application modules match source, and copied-app OCR/Lindera/dictionaries work
