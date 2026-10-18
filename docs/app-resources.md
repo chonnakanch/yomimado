@@ -39,6 +39,8 @@ sentence also works without translating it first.
    combines the resulting strings with detector geometry. Bounded retries and a
    small-selection fallback can recover text; approximate geometry is marked for
    review. Recognition confidence is currently unknown, represented by `0`.
+   Exactly uniform RGB captures/tiles skip inference; identical crop bounds can
+   reuse recognition within one scan. See [retry/crop measurements](detector-retry-optimization.md).
 4. **Overlay:** the frontend maps image polygons into logical overlay coordinates
    using capture metadata, preserving the original manga underneath. The current
    OCR response has empty `tokens` arrays; word analysis happens separately.

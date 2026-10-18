@@ -2,6 +2,20 @@
 
 ## Current status
 
+**Priority 4: detector retries and crop reuse — 2026-10-18:** exactly uniform RGB
+captures/tiles skip inference, and identical crop bounds reuse recognition only
+within one scan. All content-bearing tiles retain the existing bounded recovery
+path. In 78 alternating synthetic benchmark scans (baseline, optimized and a
+non-shipped no-tiles ablation), optimized responses preserve complete baseline
+outputs. Sparse pages drop from five to two detector passes and about 4.75–5.49 s
+to 2.00–2.21 s; uniform images drop to 6–24 ms. The mixed page retains five
+passes and similar timing. Crop-cache correctness has focused checks; measured
+fixtures do not hit that cache. All 169 service and 264 tooling tests, Ruff and
+documentation checks pass; Torch-free ONNX source smoke preserves nine original
+outputs. Native Windows/new frozen installer acceptance remains pending. No model,
+dependency bundle, runtime seed or release artifact changes. See
+[measurements and limits](detector-retry-optimization.md).
+
 **Priority 3 follow-up: cached ONNX and CoreML — 2026-10-18:** 216 isolated
 synthetic scans preserve identical complete OCR outputs across Torch, full-prefix
 ONNX CPU, cached ONNX CPU and CoreML encoder/cached CPU decoder profiles. Cached

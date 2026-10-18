@@ -119,6 +119,20 @@ def _retry_tiles(width: int, height: int) -> list[tuple[int, int, int, int]]:
     return []
 
 
+def _is_uniform_image(image: Any) -> bool:
+    # Images are RGB here. Check every channel: equal luminance does not mean
+    # equal pixels. Any variation, even one channel by one level, keeps OCR.
+    return all(low == high for low, high in image.getextrema())
+
+
+def _content_retry_tiles(image: Any) -> list[tuple[int, int, int, int]]:
+    tiles = []
+    for x, y, width, height in _retry_tiles(image.width, image.height):
+        if not _is_uniform_image(image.crop((x, y, x + width, y + height))):
+            tiles.append((x, y, width, height))
+    return tiles
+
+
 def _mask_candidate_boxes(mask: Any, cv2: Any) -> list[tuple[int, int, int, int]]:
     if mask is None:
         return []
@@ -362,9 +376,22 @@ def recognize_with_models(image_bytes: bytes, *, debug: bool = False) -> OcrResp
         validate_capture_dimensions(*source.size)
         image = source.convert("RGB")
     repo, detector_path, recognizer_path = _configured_paths()
+    if _is_uniform_image(image):
+        return OcrResponse(
+            regions=[], engine="manga", debug=OcrDebug(detections=[]) if debug else None
+        )
     detector, recognizer = _models(repo, detector_path, recognizer_path)
     bgr = cv2.cvtColor(np.asarray(image), cv2.COLOR_RGB2BGR)
-    retry_tiles = _retry_tiles(image.width, image.height)
+    retry_tiles = _content_retry_tiles(image)
+    recognized_crops: dict[tuple[int, int, int, int], str] = {}
+
+    def recognize_crop(box: tuple[int, int, int, int], crop: Any) -> str:
+        # Only exact image-space bounds share a result, and only in this request.
+        # Failed recognition is not cached: optional recovery can still retry.
+        if box not in recognized_crops:
+            recognized_crops[box] = recognizer(crop).strip()
+        return recognized_crops[box]
+
     regions: list[TextRegion] = []
     region_boxes: list[tuple[int, int, int, int]] = []
     region_debug_indices: list[int | None] = []
@@ -426,7 +453,7 @@ def recognize_with_models(image_bytes: bytes, *, debug: bool = False) -> OcrResp
             )
         crop = image.crop(box)
         filter_reason = _crop_filter_reason(crop)
-        text = "" if filter_reason else recognizer(crop).strip()
+        text = "" if filter_reason else recognize_crop(box, crop)
         if not filter_reason:
             filter_reason = _text_filter_reason(text)
         if (
@@ -525,7 +552,7 @@ def recognize_with_models(image_bytes: bytes, *, debug: bool = False) -> OcrResp
                 continue
             short_retries += 1
             try:
-                expanded_text = recognizer(image.crop(expanded_box)).strip()
+                expanded_text = recognize_crop(expanded_box, image.crop(expanded_box))
             except Exception as error:  # noqa: BLE001 - optional retry must preserve the original
                 logger.warning("Short vertical OCR retry failed: %s", type(error).__name__)
                 continue
@@ -556,7 +583,7 @@ def recognize_with_models(image_bytes: bytes, *, debug: bool = False) -> OcrResp
         and (bool(regions) or _has_visible_ink(image))
     )
     if retry_selection:
-        selection_text = recognizer(image).strip()
+        selection_text = recognize_crop((0, 0, image.width, image.height), image)
         regions, fallback_used = _apply_selection_fallback(
             regions, image.width, image.height, selection_text
         )

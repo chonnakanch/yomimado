@@ -238,6 +238,10 @@ def test_large_capture_tile_retry_recovers_missed_text_without_duplicate_boxes(m
     draw = image_draw.Draw(image)
     draw.rectangle((105, 155, 140, 225), fill="black")
     draw.rectangle((305, 1035, 335, 1095), fill="black")
+    # This case exercises the eight-pass bound; uniform-tile omission is tested
+    # separately. Give every planned tile a pixel of real image variation.
+    for x, y, width, height in real_ocr._retry_tiles(830, 1340):
+        draw.point((x + width // 2, y + height // 2), fill=(254, 255, 255))
     image_bytes = BytesIO()
     image.save(image_bytes, format="PNG")
     first = SimpleNamespace(lines=[], xyxy=[100, 150, 145, 230], vertical=True)
@@ -577,6 +581,8 @@ def test_model_adapter_skips_nearly_uniform_detector_crop(monkeypatch) -> None:
     from app.pipeline import real_ocr
 
     image = image_module.new("RGB", (160, 160), "black")
+    # Keep the capture nonuniform while the detector's crop remains flat.
+    image.putpixel((159, 159), (255, 255, 255))
     image_bytes = BytesIO()
     image.save(image_bytes, format="PNG")
     block = SimpleNamespace(lines=[], xyxy=[20, 20, 60, 100], vertical=True)

@@ -46,6 +46,11 @@ Expand **Geometry** or **Detector stage** for coordinates, individual crops,
 recognitions and filter reasons. Medium and large captures receive a bounded retry on
 overlapping image tiles; duplicate boxes are merged, and the detector list
 labels tile results.
+Exactly uniform RGB captures and retry tiles skip model inference; any pixel
+variation retains the existing detection path. Debug retry counts reflect the
+nonuniform tiles attempted. Identical crop bounds can reuse recognition within
+one scan; results are never reused across captures. See the
+[retry/crop optimization measurements](detector-retry-optimization.md).
 Gray boxes were filtered; their reasons appear in the detector list. The first
 filter only removes nearly uniform crops and recognized text
 without Japanese characters. It does not reliably distinguish manga artwork
