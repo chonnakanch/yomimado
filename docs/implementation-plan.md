@@ -2,6 +2,17 @@
 
 ## Current status
 
+**CI regression coverage — 2026-10-18:** Checks now collects the model-free
+decoder-cache and scan/benchmark metric suites alongside the service tests.
+Explicit pytest configuration and script import paths collect both unittest
+classes and pytest functions. A clean Python 3.11.17 environment using the
+existing hashed CI lock passes all 184 combined tests without skips, with no
+Torch, Manga OCR, ONNX Runtime or Transformers installed. The three existing
+release-gate suites pass 56 tests, and pinned actionlint validates both workflows.
+Push/PR filters, required `gates`, permissions and Release remain unchanged;
+feature-branch verification uses the existing manual Checks dispatch. No model,
+runtime seed or installer changes are involved.
+
 **Priority 4: detector retries and crop reuse — 2026-10-18:** exactly uniform RGB
 captures/tiles skip inference, and identical crop bounds reuse recognition only
 within one scan. All content-bearing tiles retain the existing bounded recovery

@@ -262,7 +262,11 @@ tests, strict Clippy and debug compilation run on macOS and Windows with Rust
 
 Service CI uses Python 3.11.17 and
 [requirements-ci.txt](../scripts/requirements-ci.txt), with exact wheel hashes
-and all image/tokenizer dependencies installed. It rejects skipped service tests.
+and all image/tokenizer dependencies installed. It runs service tests alongside
+the model-free decoder-cache, scan-accuracy and benchmark-comparison contracts,
+using pytest so both unittest classes and pytest functions are collected. It
+rejects skipped tests across this combined suite. The tests use synthetic data
+and fake inference sessions; CI does not install Torch or inference models.
 CI explicitly prepares the pinned IPADIC dictionary before testing.
 The lock supports Ubuntu x64 CI and local macOS Apple Silicon verification;
 Linux is a test runner, not a supported desktop distribution. Dependency/source
