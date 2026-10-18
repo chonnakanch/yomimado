@@ -2,14 +2,21 @@
 
 ## Current status
 
-**Private packaging follow-up — 2026-10-18:** a fresh macOS freeze exposed
-obsolete Sudachi distribution metadata copied by Transformers' freezer hook,
-despite the excluded binding and dictionary. The existing bundle gate correctly
-rejects it. Shared packaging now removes that metadata alongside UniDic/Fugashi
-metadata, while retaining rejection of accidentally collected modules. All 265
-release-tool tests pass, including the cleanup regression. Fresh installer and
-user-local manga-page verification are in progress; no runtime seed or release
-approval changes.
+**Private packaging and real-page verification — 2026-10-18:** fresh macOS
+candidate `907636e` passes mounted/platform/signature verification, all 29 frozen
+application modules match source, and copied-app OCR/Lindera/dictionaries work
+without translation installed. Explicit Marian import and saved-data/cache restart
+pass. The native app starts its own service with isolated fresh app data, shows
+the unconfigured translation state and quits cleanly. Actual DMG/app file content
+is 625.63/1,205.22 MiB, versus 999.39/1,907.15 MiB for the retained older private
+test DMG. A rejected first build exposed obsolete Sudachi metadata; shared cleanup
+now fixes it, with 265 release-tool tests passing. Twenty-four alternating scans
+on one owner-selected manga screenshot and five variants/crops preserve all six
+complete outputs; the frozen app reproduces them. Dense-page speed is similar;
+existing merging/contrast/crop failures remain. Native Windows installers,
+runtime/source review and exact capture/installed acceptance remain open. No
+publication or seed approval changes. See the
+[evidence and limitations](resource-reduction-acceptance.md).
 
 **CI regression coverage — 2026-10-18:** Checks now collects the model-free
 decoder-cache and scan/benchmark metric suites alongside the service tests.

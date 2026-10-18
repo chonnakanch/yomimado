@@ -1,0 +1,589 @@
+{
+  "date": "2026-10-18",
+  "candidateSourceRevision": "907636e25f361432606e92b752a738f35d9bc1a7",
+  "distribution": "private-test; ad-hoc signed and unnotarized; no publication or seed approval",
+  "platform": "macOS-26.6.2-arm64-arm-64bit",
+  "packagedSize": {
+    "baseline": {
+      "sourceRevision": "fae4d286619543014edb8aff6302fd3c864783a1",
+      "dmgBytes": 1047940631,
+      "dmgSha256": "e804cce042c16e3eb1a392861e4c3a75e9f2acb9b7df557794b20e66c0afef02",
+      "app": {
+        "fileBytesExcludingSymlinks": 1999793158,
+        "filesExcludingSymlinks": 5260,
+        "duKiB": 1964680
+      },
+      "runtime": {
+        "fileBytesExcludingSymlinks": 1208699271,
+        "filesExcludingSymlinks": 4516,
+        "duKiB": 1190324
+      },
+      "assets": {
+        "fileBytesExcludingSymlinks": 762934927,
+        "filesExcludingSymlinks": 44,
+        "duKiB": 745144
+      },
+      "notices": {
+        "fileBytesExcludingSymlinks": 13019996,
+        "filesExcludingSymlinks": 696,
+        "duKiB": 14420
+      },
+      "componentDirectories": {
+        "comic-text-detector": {
+          "fileBytesExcludingSymlinks": 248305,
+          "filesExcludingSymlinks": 28,
+          "duKiB": 296
+        },
+        "manga-ocr-base": {
+          "fileBytesExcludingSymlinks": 444237919,
+          "filesExcludingSymlinks": 6,
+          "duKiB": 433840
+        },
+        "opus-mt-ja-en": {
+          "fileBytesExcludingSymlinks": 306381800,
+          "filesExcludingSymlinks": 8,
+          "duKiB": 299220
+        }
+      }
+    },
+    "candidate": {
+      "sourceRevision": "907636e25f361432606e92b752a738f35d9bc1a7",
+      "dmgBytes": 656021949,
+      "dmgSha256": "7fb480db4b350bb2744de4050c2614217a1a410c51f02e9e904e9641de4b9360",
+      "app": {
+        "fileBytesExcludingSymlinks": 1263761953,
+        "filesExcludingSymlinks": 5216,
+        "duKiB": 1250956
+      },
+      "runtime": {
+        "fileBytesExcludingSymlinks": 730988725,
+        "filesExcludingSymlinks": 4464,
+        "duKiB": 723676
+      },
+      "assets": {
+        "fileBytesExcludingSymlinks": 504082067,
+        "filesExcludingSymlinks": 46,
+        "duKiB": 497544
+      },
+      "notices": {
+        "fileBytesExcludingSymlinks": 13035637,
+        "filesExcludingSymlinks": 702,
+        "duKiB": 14440
+      },
+      "componentDirectories": {
+        "comic-text-detector": {
+          "fileBytesExcludingSymlinks": 248305,
+          "filesExcludingSymlinks": 28,
+          "duKiB": 296
+        },
+        "lindera-ipadic": {
+          "fileBytesExcludingSymlinks": 47528940,
+          "filesExcludingSymlinks": 10,
+          "duKiB": 46436
+        },
+        "manga-ocr-base": {
+          "fileBytesExcludingSymlinks": 444237919,
+          "filesExcludingSymlinks": 6,
+          "duKiB": 439024
+        }
+      }
+    },
+    "scope": "Retained 0.2.0 private test DMG before source approval versus private feature 0.2.2 build; not published installers or a matched-version controlled experiment. No detector or translator installed in the new app. du reflects this APFS host."
+  },
+  "sizeSavings": {
+    "dmgBytes": 391918682,
+    "dmgPercent": 37.39893944430903,
+    "appFileBytes": 736031205,
+    "appFilePercent": 36.80536669782926
+  },
+  "pageValidation": {
+    "scope": "One user-local screenshot; three full-page variants and three overlapping crops, not independent pages. Subset dialogue/narration accuracy excludes decorative SFX/furigana and unmatched regions; raw outputs retained privately.",
+    "screenshotSha256": "b5e1db358c9bc71319deed4aa55c09c297202748c9d891960dfd3e37a94e93af",
+    "baselineRef": "7cf0154",
+    "baselineSourceSha256": "bc40af4c02d86fa5cc6586f3a1f73360c34cf829a6a03717d90a65702c4f2ba0",
+    "candidatePipelineSha256": "778cda6c23aa8cb6b76906c6405f33276ed47d16383f61902abf19880a1db6b6",
+    "privateMeasuredScriptSha256": "e9e8ded1f007ef6627dfbd22b1c533ef7a35a322b921ca7fe315471d1b57ec29",
+    "sourceScans": 24,
+    "repeatsPerProfilePerFixture": 2,
+    "fixtures": {
+      "page": {
+        "sha256": "f7378945e64860ef2977180c9e39a1c61e0d98ef28de45a661aa87e557bcea5d",
+        "size": [2399, 1695],
+        "profiles": {
+          "baseline": {
+            "medianMs": 3147.38831249997,
+            "detectCalls": 1,
+            "recognizeCalls": 23,
+            "regions": 21,
+            "sameCompleteOutputAsBaseline": true,
+            "rawSubsetScore": {
+              "references": 22,
+              "detected": 21,
+              "exact": 12,
+              "edits": 30,
+              "characters": 206
+            },
+            "normalizedContentScore": {
+              "policy": "NFKC, remove Unicode punctuation and whitespace; preserve kana, including prolonged sound marks. Secondary to exact raw-string score.",
+              "exact": 20,
+              "references": 22,
+              "edits": 12,
+              "characters": 195
+            }
+          },
+          "optimized": {
+            "medianMs": 3145.632645999285,
+            "detectCalls": 1,
+            "recognizeCalls": 23,
+            "regions": 21,
+            "sameCompleteOutputAsBaseline": true,
+            "rawSubsetScore": {
+              "references": 22,
+              "detected": 21,
+              "exact": 12,
+              "edits": 30,
+              "characters": 206
+            },
+            "normalizedContentScore": {
+              "policy": "NFKC, remove Unicode punctuation and whitespace; preserve kana, including prolonged sound marks. Secondary to exact raw-string score.",
+              "exact": 20,
+              "references": 22,
+              "edits": 12,
+              "characters": 195
+            }
+          }
+        }
+      },
+      "page-small": {
+        "sha256": "f3c3fb36a8a195cb9f836263264e9cce14551a3fbf96bdd2e413bc7dd08c868a",
+        "size": [1607, 1136],
+        "profiles": {
+          "baseline": {
+            "medianMs": 7251.339354002994,
+            "detectCalls": 7,
+            "recognizeCalls": 26,
+            "regions": 24,
+            "sameCompleteOutputAsBaseline": true,
+            "rawSubsetScore": {
+              "references": 22,
+              "detected": 21,
+              "exact": 11,
+              "edits": 33,
+              "characters": 206
+            },
+            "normalizedContentScore": {
+              "policy": "NFKC, remove Unicode punctuation and whitespace; preserve kana, including prolonged sound marks. Secondary to exact raw-string score.",
+              "exact": 19,
+              "references": 22,
+              "edits": 15,
+              "characters": 195
+            }
+          },
+          "optimized": {
+            "medianMs": 7426.7339580001135,
+            "detectCalls": 7,
+            "recognizeCalls": 26,
+            "regions": 24,
+            "sameCompleteOutputAsBaseline": true,
+            "rawSubsetScore": {
+              "references": 22,
+              "detected": 21,
+              "exact": 11,
+              "edits": 33,
+              "characters": 206
+            },
+            "normalizedContentScore": {
+              "policy": "NFKC, remove Unicode punctuation and whitespace; preserve kana, including prolonged sound marks. Secondary to exact raw-string score.",
+              "exact": 19,
+              "references": 22,
+              "edits": 15,
+              "characters": 195
+            }
+          }
+        }
+      },
+      "page-low-contrast": {
+        "sha256": "f1c6ac18c4b8f75ab8e039172b728b2453df69ab7798ed6ac26a519b31ee2a4c",
+        "size": [2399, 1695],
+        "profiles": {
+          "baseline": {
+            "medianMs": 3377.8320210039965,
+            "detectCalls": 1,
+            "recognizeCalls": 23,
+            "regions": 22,
+            "sameCompleteOutputAsBaseline": true,
+            "rawSubsetScore": {
+              "references": 22,
+              "detected": 21,
+              "exact": 10,
+              "edits": 56,
+              "characters": 206
+            },
+            "normalizedContentScore": {
+              "policy": "NFKC, remove Unicode punctuation and whitespace; preserve kana, including prolonged sound marks. Secondary to exact raw-string score.",
+              "exact": 17,
+              "references": 22,
+              "edits": 35,
+              "characters": 195
+            }
+          },
+          "optimized": {
+            "medianMs": 3323.597938000603,
+            "detectCalls": 1,
+            "recognizeCalls": 23,
+            "regions": 22,
+            "sameCompleteOutputAsBaseline": true,
+            "rawSubsetScore": {
+              "references": 22,
+              "detected": 21,
+              "exact": 10,
+              "edits": 56,
+              "characters": 206
+            },
+            "normalizedContentScore": {
+              "policy": "NFKC, remove Unicode punctuation and whitespace; preserve kana, including prolonged sound marks. Secondary to exact raw-string score.",
+              "exact": 17,
+              "references": 22,
+              "edits": 35,
+              "characters": 195
+            }
+          }
+        }
+      },
+      "small-kana": {
+        "sha256": "07705c165b21cd00ec05930d274aa432a5852d3f76c4dc42f7a23a84975e5188",
+        "size": [248, 391],
+        "profiles": {
+          "baseline": {
+            "medianMs": 981.4132499996049,
+            "detectCalls": 1,
+            "recognizeCalls": 4,
+            "regions": 4,
+            "sameCompleteOutputAsBaseline": true,
+            "rawSubsetScore": {
+              "references": 1,
+              "detected": 1,
+              "exact": 0,
+              "edits": 6,
+              "characters": 15
+            },
+            "normalizedContentScore": {
+              "policy": "NFKC, remove Unicode punctuation and whitespace; preserve kana, including prolonged sound marks. Secondary to exact raw-string score.",
+              "exact": 0,
+              "references": 1,
+              "edits": 5,
+              "characters": 14
+            }
+          },
+          "optimized": {
+            "medianMs": 999.25479149897,
+            "detectCalls": 1,
+            "recognizeCalls": 4,
+            "regions": 4,
+            "sameCompleteOutputAsBaseline": true,
+            "rawSubsetScore": {
+              "references": 1,
+              "detected": 1,
+              "exact": 0,
+              "edits": 6,
+              "characters": 15
+            },
+            "normalizedContentScore": {
+              "policy": "NFKC, remove Unicode punctuation and whitespace; preserve kana, including prolonged sound marks. Secondary to exact raw-string score.",
+              "exact": 0,
+              "references": 1,
+              "edits": 5,
+              "characters": 14
+            }
+          }
+        }
+      },
+      "dense-art": {
+        "sha256": "b21156231e67ce99a83d4c1d0c8513c537d67e3c5d8aef7e6dc2cdbdfb56079b",
+        "size": [1116, 949],
+        "profiles": {
+          "baseline": {
+            "medianMs": 4311.511625001003,
+            "detectCalls": 5,
+            "recognizeCalls": 9,
+            "regions": 8,
+            "sameCompleteOutputAsBaseline": true,
+            "rawSubsetScore": {
+              "references": 4,
+              "detected": 4,
+              "exact": 1,
+              "edits": 16,
+              "characters": 33
+            },
+            "normalizedContentScore": {
+              "policy": "NFKC, remove Unicode punctuation and whitespace; preserve kana, including prolonged sound marks. Secondary to exact raw-string score.",
+              "exact": 3,
+              "references": 4,
+              "edits": 8,
+              "characters": 31
+            }
+          },
+          "optimized": {
+            "medianMs": 4321.490708000056,
+            "detectCalls": 5,
+            "recognizeCalls": 9,
+            "regions": 8,
+            "sameCompleteOutputAsBaseline": true,
+            "rawSubsetScore": {
+              "references": 4,
+              "detected": 4,
+              "exact": 1,
+              "edits": 16,
+              "characters": 33
+            },
+            "normalizedContentScore": {
+              "policy": "NFKC, remove Unicode punctuation and whitespace; preserve kana, including prolonged sound marks. Secondary to exact raw-string score.",
+              "exact": 3,
+              "references": 4,
+              "edits": 8,
+              "characters": 31
+            }
+          }
+        }
+      },
+      "small-dialogue": {
+        "sha256": "207f7010bd23effe562c2a259f7c4e62ae15f8f9efab5538baed0812e4c2fbc0",
+        "size": [970, 348],
+        "profiles": {
+          "baseline": {
+            "medianMs": 3470.441812500212,
+            "detectCalls": 4,
+            "recognizeCalls": 6,
+            "regions": 4,
+            "sameCompleteOutputAsBaseline": true,
+            "rawSubsetScore": {
+              "references": 3,
+              "detected": 3,
+              "exact": 1,
+              "edits": 5,
+              "characters": 32
+            },
+            "normalizedContentScore": {
+              "policy": "NFKC, remove Unicode punctuation and whitespace; preserve kana, including prolonged sound marks. Secondary to exact raw-string score.",
+              "exact": 2,
+              "references": 3,
+              "edits": 2,
+              "characters": 31
+            }
+          },
+          "optimized": {
+            "medianMs": 3401.17368799838,
+            "detectCalls": 4,
+            "recognizeCalls": 6,
+            "regions": 4,
+            "sameCompleteOutputAsBaseline": true,
+            "rawSubsetScore": {
+              "references": 3,
+              "detected": 3,
+              "exact": 1,
+              "edits": 5,
+              "characters": 32
+            },
+            "normalizedContentScore": {
+              "policy": "NFKC, remove Unicode punctuation and whitespace; preserve kana, including prolonged sound marks. Secondary to exact raw-string score.",
+              "exact": 2,
+              "references": 3,
+              "edits": 2,
+              "characters": 31
+            }
+          }
+        }
+      }
+    },
+    "manualCropRecognition": {
+      "rawExact": 14,
+      "references": 22,
+      "normalized": {
+        "exact": 21,
+        "references": 22,
+        "edits": 1,
+        "characters": 195
+      }
+    }
+  },
+  "frozenService": {
+    "noTranslationDataInitially": true,
+    "pythonPathRemoved": true,
+    "tokenizerOverridesAbsent": true,
+    "fixtures": {
+      "blank": {
+        "sameCompleteOutputAsSource": true,
+        "regions": 0,
+        "httpMs": 72.06037499418017
+      },
+      "page": {
+        "sameCompleteOutputAsSource": true,
+        "regions": 21,
+        "httpMs": 4859.397833002731
+      },
+      "page-small": {
+        "sameCompleteOutputAsSource": true,
+        "regions": 24,
+        "httpMs": 7331.501250002475
+      },
+      "page-low-contrast": {
+        "sameCompleteOutputAsSource": true,
+        "regions": 22,
+        "httpMs": 3348.8471249947906
+      },
+      "small-kana": {
+        "sameCompleteOutputAsSource": true,
+        "regions": 4,
+        "httpMs": 988.5887499985984
+      },
+      "dense-art": {
+        "sameCompleteOutputAsSource": true,
+        "regions": 8,
+        "httpMs": 4379.002165995189
+      },
+      "small-dialogue": {
+        "sameCompleteOutputAsSource": true,
+        "regions": 4,
+        "httpMs": 3218.6997499957215
+      }
+    },
+    "translationWithoutSetup": {
+      "provider": "none",
+      "state": "notInstalled",
+      "translateHttp": 503
+    },
+    "status": "passed",
+    "linderaUnicodeOffsets": true,
+    "jmdict": true,
+    "kanjidic2": true,
+    "noTranslationModelInstalled": true,
+    "runtimeExecutableSha256": "a070641b4095029741a34e912b475ed808a1524cd40a7eb601be36211f134b3e"
+  },
+  "nativeStartupAndUi": {
+    "status": "passed",
+    "automaticBundledService": true,
+    "freshAppDataInIsolatedHome": true,
+    "health": {
+      "status": "ok",
+      "ocr": "manga"
+    },
+    "translationSettings": {
+      "provider": "none",
+      "ollamaModel": "",
+      "importedModel": null,
+      "backend": "torch"
+    },
+    "readingSettingsUiVerified": true,
+    "uiMessage": "No translation model installed. Import a model or install one through Ollama to get started.",
+    "defaultBuiltInModelAbsent": true,
+    "quitStopsAppAndService": true
+  },
+  "importRestartSmoke": {
+    "passed": true,
+    "script": "scripts/smoke-macos-bundle.py",
+    "scriptSha256": "6bf5dd09e3341c969b93e46a87c348a89d9430e4636973738eff22b285ced188",
+    "checks": [
+      "no translator initially",
+      "verified local Marian import before translation",
+      "on-demand inference",
+      "saved word and sentence restart",
+      "translation cache restart"
+    ]
+  },
+  "frozenSource": {
+    "verifiedModules": 29,
+    "sudachiExcluded": true
+  },
+  "nativeInputs": {
+    "comparison": "Local retained pre-feature resources, not a new source approval",
+    "oldUniqueInputs": 114,
+    "newUniqueInputs": 112,
+    "added": {
+      "site-packages/lindera/lindera.abi3.so": "16f9232da952ac3a84323e3ce5dc62f13ce8d85dfb267373985ea0c0a12f5c95"
+    },
+    "removed": {
+      "site-packages/fugashi/.dylibs/libmecab.2.dylib": "49d16ce524f19f8700e79233ab0ef11e43cb0bca2379e41b13f6ed6ca6db7561",
+      "site-packages/fugashi/fugashi.cpython-311-darwin.so": "c50214909e32c1f6bd437fc1b7f409afc1e8087d77f0dca621b34c12682b6b3f",
+      "site-packages/sudachipy/sudachipy.cpython-311-darwin.so": "d6cf84d3901eed099410bf85daccb2688783c1de08616a2e0c558dfe1a6fda63"
+    },
+    "changed": {},
+    "sourceReviewApproved": false
+  },
+  "materializedNativeAliases": {
+    "aliases": [
+      {
+        "path": "libc10.dylib",
+        "aliasOf": "torch/lib/libc10.dylib",
+        "bytes": 1075424,
+        "isSymlink": false,
+        "identicalBytes": true
+      },
+      {
+        "path": "libgeos.3.11.4.dylib",
+        "aliasOf": "shapely/.dylibs/libgeos.3.11.4.dylib",
+        "bytes": 2506000,
+        "isSymlink": false,
+        "identicalBytes": true
+      },
+      {
+        "path": "libgeos_c.1.17.4.dylib",
+        "aliasOf": "shapely/.dylibs/libgeos_c.1.17.4.dylib",
+        "bytes": 312112,
+        "isSymlink": false,
+        "identicalBytes": true
+      },
+      {
+        "path": "libomp.dylib",
+        "aliasOf": "torch/lib/libomp.dylib",
+        "bytes": 668608,
+        "isSymlink": false,
+        "identicalBytes": true
+      },
+      {
+        "path": "libshm.dylib",
+        "aliasOf": "torch/lib/libshm.dylib",
+        "bytes": 95248,
+        "isSymlink": false,
+        "identicalBytes": true
+      },
+      {
+        "path": "libtorch.dylib",
+        "aliasOf": "torch/lib/libtorch.dylib",
+        "bytes": 34784,
+        "isSymlink": false,
+        "identicalBytes": true
+      },
+      {
+        "path": "libtorch_cpu.dylib",
+        "aliasOf": "torch/lib/libtorch_cpu.dylib",
+        "bytes": 212068896,
+        "isSymlink": false,
+        "identicalBytes": true
+      },
+      {
+        "path": "libtorch_python.dylib",
+        "aliasOf": "torch/lib/libtorch_python.dylib",
+        "bytes": 26208128,
+        "isSymlink": false,
+        "identicalBytes": true
+      }
+    ],
+    "materializedAliasBytes": 242969200,
+    "scope": "Tauri copies PyInstaller native aliases as separate files. This is a future packaging optimization; no links or signatures were changed."
+  },
+  "tests": {
+    "releaseToolUnittests": 265,
+    "ruffChangedScripts": "passed",
+    "frontendProductionBuild": "passed",
+    "nativeReleaseBuild": "passed",
+    "mountedBundleAndPlatform": "passed",
+    "copiedAppResourceSealAndAllNativeSignatures": "passed"
+  },
+  "remaining": [
+    "Native Windows installer and installed-runtime acceptance not run: no Windows host; existing Checks debug builds do not substitute. Protected release inputs remain main-only and unchanged.",
+    "Fresh macOS seed/source review, including exact Lindera native dependency and IPADIC source provenance, remains open.",
+    "No Finder/quarantine/Screen Recording/live capture/Retina or physical Windows mixed-DPI acceptance for this private hash.",
+    "Only one real screenshot plus derived variants/crops; no broad manga accuracy claim.",
+    "Ollama left to owner."
+  ]
+}

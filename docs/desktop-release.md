@@ -1,5 +1,17 @@
 # Shared desktop release checklist
 
+Private resource-reduction verification — **2026-10-18**: macOS candidate
+`907636e` passes mounted/platform/signature, copied frozen-service learning,
+absent-translation OCR, explicit Marian import/restart and fresh native startup/UI
+checks. The DMG is 625.63 MiB; all six variants of one owner-selected manga
+screenshot preserve complete baseline responses. See the
+[exact candidate evidence and limits](resource-reduction-acceptance.md).
+The current UI offers user-installed translation through import or Ollama; the
+older built-in download flow below describes retained historical tooling. Native
+Windows installer checks, new runtime/source review, exact live capture/installed
+acceptance and explicit publication approval remain separate. No release or
+replacement CI seed was published, approved or activated.
+
 Resource reduction source update — **2026-10-18**: future builds from the
 Lindera/resource-reduction branch exclude OCR's UniDic/Fugashi resources and
 make local translation an explicit optional download. See the
