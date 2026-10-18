@@ -105,6 +105,12 @@ once while connected; progress and retry guidance appear here. OCR and word/kanj
 lookup work without it. After installation, return to the learning popup and
 choose **Translate locally**; no restart is needed. Opening settings or scanning
 never starts a download, and the download does not send text or screenshots.
+The **Translation model → Model source** control also supports **Import local
+model** for compatible Marian folders and **Ollama** for installed local text
+models or explicit downloads by model name. Choose **Import and use model** or
+**Use this model** to activate your choice; the **Using** line confirms it.
+Ollama must be installed and running separately. See
+[model selection and supported formats](translation-model-selection.md).
 **More actions → Sources & licenses** opens a separate attribution window with
 dictionary/model links and packaged notice guidance.
 Use Left/Right or Home/End on category tabs to navigate by keyboard.

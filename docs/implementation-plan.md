@@ -2,6 +2,20 @@
 
 ## Current status
 
+**User-selected translation models — 2026-10-18:** at the owner's request,
+Settings → Reading supports importing compatible local Marian models and choosing
+or explicitly downloading local Ollama text models. Imports are copied, hashed
+and load-checked before activation; failures preserve the previous choice.
+Selection persists and each request snapshots its provider to keep cache entries
+separate. Ollama requests use loopback only and reject cloud aliases. Source
+verification passes 159 service, 192 frontend and 70 native tests, frontend build
+and strict Clippy. Real Marian import/inference/cache smokes pass with Torch and
+the ONNX CPU path on macOS; the latter is not native Windows acceptance.
+Ollama is absent locally, so its API behavior uses controlled fixtures; real
+Ollama inference/download and native Windows installed acceptance remain pending.
+See [model selection](translation-model-selection.md). No installer/component was
+published or approved.
+
 **Translation setup connection recovery — 2026-10-18:** the owner's development
 Settings page showed “Checking translation setup…” alongside WebKit's “Load
 failed” because the separate local service was not running. Starting the existing

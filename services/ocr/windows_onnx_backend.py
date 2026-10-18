@@ -97,8 +97,11 @@ def configure_backend() -> None:
     from app.api import translation
     from app.pipeline import real_ocr
     from app.translation import TranslationService, default_cache_path
+    from app.translation_preferences import ConfiguredTranslationProvider
 
     # Assemble the existing Python API boundary in this Windows process only.
     # No shared route, OCR pipeline, coordinate transform or macOS file changes.
     real_ocr._models = cpu_models
-    translation.service = TranslationService(WindowsOnnxTranslator(), default_cache_path())
+    translation.service = TranslationService(
+        ConfiguredTranslationProvider(WindowsOnnxTranslator()), default_cache_path()
+    )

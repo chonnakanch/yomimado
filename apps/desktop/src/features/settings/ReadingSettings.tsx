@@ -1,9 +1,9 @@
-import { TranslationDownload } from "./TranslationDownload";
+import { TranslationModels } from "./TranslationModels";
 
 export function ReadingSettings({ active = false }: { active?: boolean }) {
   return (
     <>
-      <TranslationDownload active={active} />
+      <TranslationModels active={active} />
       <div className="settings-card">
         <h2>Reading</h2>
         <h3>Read with keyboard</h3>

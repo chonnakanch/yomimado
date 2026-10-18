@@ -30,6 +30,9 @@ records 12,804 matching cases and ten synthetic recognitions.
 
 ## Optional local translation
 
+Users can also [import compatible models or choose a local Ollama model](translation-model-selection.md).
+The built-in optional component below remains available as the default choice.
+
 In **Settings → Reading → Local translation**, the user chooses **Download local
 translation**. Opening settings, scanning, selecting text and asking for a missing
 model never start a download. The UI shows the pinned download size, progress,

@@ -95,7 +95,7 @@ def test_windows_assembly_preserves_routes_and_does_not_load_models(monkeypatch,
     routes = list(translation.router.routes)
     backend.configure_backend()
     assert real_ocr._models is backend.cpu_models
-    assert isinstance(translation.service.provider, backend.WindowsOnnxTranslator)
+    assert isinstance(translation.service.provider.builtin, backend.WindowsOnnxTranslator)
     assert translation.router.routes == routes
     assert telemetry == [False]
     assert backend.cpu_models.cache_info().currsize == 0

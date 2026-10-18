@@ -5,10 +5,13 @@ from fastapi import APIRouter, HTTPException
 
 from app.models import TranslationRequest, TranslationResponse
 from app.translation import LocalMarianProvider, TranslationService, default_cache_path
+from app.translation_preferences import ConfiguredTranslationProvider
 from app.translation_resources import local_model_path, resources
 
 router = APIRouter()
-service = TranslationService(LocalMarianProvider(), default_cache_path())
+service = TranslationService(
+    ConfiguredTranslationProvider(LocalMarianProvider()), default_cache_path()
+)
 
 
 @router.get("/api/v1/translation-model")

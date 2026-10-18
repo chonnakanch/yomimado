@@ -10,6 +10,7 @@ from pathlib import Path
 from typing import Protocol
 
 from app.models import TranslationResponse
+from app.translation_preferences import ConfiguredTranslationProvider
 
 
 class TranslationProvider(Protocol):
@@ -33,15 +34,19 @@ class LocalMarianProvider:
         return f"local-marian:{self.model_path.resolve()}"
 
     def translate(self, text: str) -> str:
-        tokenizer, model = _load_model(self.model_path.resolve())
-        inputs = tokenizer(text, return_tensors="pt")
-        if inputs["input_ids"].shape[-1] > 512:
-            raise ValueError("Selected text is too long for the local translation model")
-        output = model.generate(**inputs, max_new_tokens=256)
-        translation = tokenizer.decode(output[0], skip_special_tokens=True).strip()
-        if not translation:
-            raise RuntimeError("The local translation model returned no text")
-        return translation
+        return translate_with_model(self.model_path.resolve(), text)
+
+
+def translate_with_model(path: Path, text: str) -> str:
+    tokenizer, model = _load_model(path)
+    inputs = tokenizer(text, return_tensors="pt")
+    if inputs["input_ids"].shape[-1] > 512:
+        raise ValueError("Selected text is too long for the local translation model")
+    output = model.generate(**inputs, max_new_tokens=256)
+    translation = tokenizer.decode(output[0], skip_special_tokens=True).strip()
+    if not translation:
+        raise RuntimeError("The local translation model returned no text")
+    return translation
 
 
 @lru_cache(maxsize=1)
@@ -50,8 +55,12 @@ def _load_model(model_path: Path):
         from transformers import AutoModelForSeq2SeqLM, AutoTokenizer
     except ImportError as error:
         raise ImportError("Install yomimado-ocr[translation] to use local translation") from error
-    tokenizer = AutoTokenizer.from_pretrained(str(model_path), local_files_only=True)
-    model = AutoModelForSeq2SeqLM.from_pretrained(str(model_path), local_files_only=True)
+    tokenizer = AutoTokenizer.from_pretrained(
+        str(model_path), local_files_only=True, trust_remote_code=False
+    )
+    model = AutoModelForSeq2SeqLM.from_pretrained(
+        str(model_path), local_files_only=True, trust_remote_code=False
+    )
     model.eval()
     return tokenizer, model
 
@@ -64,7 +73,9 @@ def default_cache_path() -> Path:
 
 
 class TranslationService:
-    def __init__(self, provider: TranslationProvider, cache_path: Path):
+    def __init__(
+        self, provider: TranslationProvider | ConfiguredTranslationProvider, cache_path: Path
+    ):
         self.provider = provider
         self.cache_path = cache_path
 
@@ -72,7 +83,12 @@ class TranslationService:
         source = text.strip()
         if not source:
             raise ValueError("Select or enter Japanese text before translating")
-        provider_id = self.provider.identity
+        provider = (
+            self.provider.snapshot()
+            if isinstance(self.provider, ConfiguredTranslationProvider)
+            else self.provider
+        )
+        provider_id = provider.identity
         self.cache_path.parent.mkdir(parents=True, exist_ok=True)
         with closing(sqlite3.connect(self.cache_path)) as connection, connection:
             connection.execute(
@@ -91,7 +107,7 @@ class TranslationService:
                 return TranslationResponse(
                     sourceText=source, translatedText=row[0], provider=provider_id, cached=True
                 )
-        translated = self.provider.translate(source)
+        translated = provider.translate(source)
         with closing(sqlite3.connect(self.cache_path)) as connection, connection:
             connection.execute(
                 "INSERT OR REPLACE INTO translations VALUES (?, ?, ?)",
