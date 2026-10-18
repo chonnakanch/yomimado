@@ -209,7 +209,10 @@ replaces the built-in download choice; see [model selection](translation-model-s
 The [macOS ONNX investigation](macos-onnx-investigation.md) demonstrates about
 231 MiB of net regular-file saving, but its current CPU decoder is slower and
 does not preserve Torch-format Marian imports. The production macOS backend is
-unchanged; CoreML and quantization remain separate work. Existing installer
+unchanged. The [cached decoder/CoreML follow-up](macos-onnx-cache-coreml.md)
+improves CPU ONNX recognition while preserving synthetic outputs; its CoreML
+encoder profile uses substantially more memory and generates a 1.545 GiB cache.
+Quantization remains separate work. Existing installer
 evidence remains historical;
 dependency/model changes require updated source/notices and new candidate
 verification under the [shared release checklist](desktop-release.md).

@@ -2,6 +2,21 @@
 
 ## Current status
 
+**Priority 3 follow-up: cached ONNX and CoreML — 2026-10-18:** 216 isolated
+synthetic scans preserve identical complete OCR outputs across Torch, full-prefix
+ONNX CPU, cached ONNX CPU and CoreML encoder/cached CPU decoder profiles. Cached
+CPU recognition improves from a pooled 692 ms to 396 ms, versus Torch's 196 ms;
+all 48 next-token cache/beam numerical comparisons pass. Shared decoder weights
+add only 93,293 model-file bytes. CoreML recognition reaches 153 ms pooled, but
+uses about 5.25 GiB peak RSS, generates a 1.545 GiB encoder cache and needs
+17–18 seconds to load the cached encoder. The cached decoder fails CoreML
+initialization on dynamic shapes. Keep the current production backend; cached
+CPU ONNX remains a migration candidate requiring frozen verification and Marian
+import compatibility. All 264 research/release-tool tests and script Ruff checks
+pass, including five new cache-boundary tests. See the
+[follow-up evidence and limits](macos-onnx-cache-coreml.md). No production provider,
+dependency lock, runtime seed or installer is changed.
+
 **Priority 3: macOS ONNX investigation — 2026-10-18:** an isolated CPU comparison
 and private ARM64 freeze demonstrate a 231.16 MiB runtime-plus-OCR-weights saving
 against the retained Torch runtime. All 108 synthetic source scans preserve the

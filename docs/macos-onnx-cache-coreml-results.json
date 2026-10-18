@@ -1,0 +1,1388 @@
+{
+  "date": "2026-10-18",
+  "sourceBeforeExperiment": "df92bb0",
+  "scope": "macOS source-process experiments; synthetic fixtures only; no production migration or installer approval",
+  "hardware": {
+    "chip": "Apple M5",
+    "physicalCores": 10,
+    "ramBytes": 25769803776,
+    "os": "macOS 26.6.2 ARM64"
+  },
+  "rounds": 2,
+  "repeats": 3,
+  "processOrder": [
+    ["torch", "cpu-full", "cpu-cached", "coreml-cached"],
+    ["coreml-cached", "cpu-cached", "cpu-full", "torch"]
+  ],
+  "profiles": {
+    "torch": {
+      "scans": 54,
+      "medianMs": {
+        "scanMs": 1430.1222920003056,
+        "detectMs": 1234.2763125016063,
+        "recognizeMs": 195.6197705003433
+      },
+      "blocks": [
+        {
+          "scanMs": 902.1089999951073,
+          "detectMs": 776.4316250031698,
+          "recognizeMs": 125.16608300211374
+        },
+        {
+          "scanMs": 1551.4484590021311,
+          "detectMs": 1298.2377919979626,
+          "recognizeMs": 234.8742920003133
+        }
+      ],
+      "sameFullOutputs": true,
+      "pipelineText": {
+        "exact": 7,
+        "regions": 10,
+        "edits": 7,
+        "characters": 75,
+        "characterErrorRate": 0.09333333333333334
+      },
+      "recognition": {
+        "exact": 10,
+        "regions": 10,
+        "edits": 0,
+        "characters": 75,
+        "characterErrorRate": 0.0
+      },
+      "peakRssBytes": [2259615744, 2263203840],
+      "setupMs": [
+        {
+          "imports": 122.54679099714849,
+          "modelLoad": 1876.4410420044442,
+          "warmupScan": 1012.0158330028062,
+          "throughReady": 3039.7198329956154
+        },
+        {
+          "imports": 94.43800000008196,
+          "modelLoad": 1785.74220900191,
+          "warmupScan": 1561.8896250016405,
+          "throughReady": 3465.9818329964764
+        }
+      ],
+      "sessionLoadMs": [null, null],
+      "metadata": {
+        "platform": "macOS-26.6.2-arm64-arm-64bit",
+        "python": "3.11.17",
+        "torch": "2.8.0",
+        "torchThreads": 4,
+        "opencv": "4.11.0",
+        "opencvThreads": 10,
+        "transformers": "4.57.3",
+        "numpy": "1.26.4",
+        "lindera": "6.0.0",
+        "blockedModulesLoaded": ["manga_ocr", "torch", "torchvision"]
+      },
+      "geometry": [
+        {
+          "fixture": "small-horizontal",
+          "firstPass": {
+            "truePositive": 0,
+            "falsePositive": 1,
+            "falseNegative": 1,
+            "correctOrientation": 0
+          },
+          "finalRegions": {
+            "truePositive": 1,
+            "falsePositive": 0,
+            "falseNegative": 0,
+            "correctOrientation": 1
+          }
+        },
+        {
+          "fixture": "small-vertical",
+          "firstPass": {
+            "truePositive": 0,
+            "falsePositive": 1,
+            "falseNegative": 1,
+            "correctOrientation": 0
+          },
+          "finalRegions": {
+            "truePositive": 1,
+            "falsePositive": 0,
+            "falseNegative": 0,
+            "correctOrientation": 0
+          }
+        },
+        {
+          "fixture": "sentence-horizontal",
+          "firstPass": {
+            "truePositive": 1,
+            "falsePositive": 0,
+            "falseNegative": 0,
+            "correctOrientation": 1
+          },
+          "finalRegions": {
+            "truePositive": 1,
+            "falsePositive": 0,
+            "falseNegative": 0,
+            "correctOrientation": 1
+          }
+        },
+        {
+          "fixture": "sentence-vertical",
+          "firstPass": {
+            "truePositive": 1,
+            "falsePositive": 0,
+            "falseNegative": 0,
+            "correctOrientation": 1
+          },
+          "finalRegions": {
+            "truePositive": 1,
+            "falsePositive": 0,
+            "falseNegative": 0,
+            "correctOrientation": 1
+          }
+        },
+        {
+          "fixture": "small-font",
+          "firstPass": {
+            "truePositive": 1,
+            "falsePositive": 0,
+            "falseNegative": 0,
+            "correctOrientation": 1
+          },
+          "finalRegions": {
+            "truePositive": 1,
+            "falsePositive": 0,
+            "falseNegative": 0,
+            "correctOrientation": 1
+          }
+        },
+        {
+          "fixture": "low-contrast",
+          "firstPass": {
+            "truePositive": 0,
+            "falsePositive": 3,
+            "falseNegative": 1,
+            "correctOrientation": 0
+          },
+          "finalRegions": {
+            "truePositive": 0,
+            "falsePositive": 2,
+            "falseNegative": 1,
+            "correctOrientation": 0
+          }
+        },
+        {
+          "fixture": "skew-horizontal",
+          "firstPass": {
+            "truePositive": 1,
+            "falsePositive": 0,
+            "falseNegative": 0,
+            "correctOrientation": 1
+          },
+          "finalRegions": {
+            "truePositive": 1,
+            "falsePositive": 0,
+            "falseNegative": 0,
+            "correctOrientation": 1
+          }
+        },
+        {
+          "fixture": "mixed-page",
+          "firstPass": {
+            "truePositive": 3,
+            "falsePositive": 0,
+            "falseNegative": 0,
+            "correctOrientation": 3
+          },
+          "finalRegions": {
+            "truePositive": 3,
+            "falsePositive": 0,
+            "falseNegative": 0,
+            "correctOrientation": 3
+          }
+        },
+        {
+          "fixture": "blank",
+          "firstPass": {
+            "truePositive": 0,
+            "falsePositive": 0,
+            "falseNegative": 0,
+            "correctOrientation": 0
+          },
+          "finalRegions": {
+            "truePositive": 0,
+            "falsePositive": 0,
+            "falseNegative": 0,
+            "correctOrientation": 0
+          }
+        }
+      ]
+    },
+    "cpu-full": {
+      "scans": 54,
+      "medianMs": {
+        "scanMs": 1814.0871454997978,
+        "detectMs": 1206.0809374997916,
+        "recognizeMs": 692.2118545007834
+      },
+      "blocks": [
+        {
+          "scanMs": 1443.5610419968725,
+          "detectMs": 795.6126670032972,
+          "recognizeMs": 645.666042000812
+        },
+        {
+          "scanMs": 2077.6059580020956,
+          "detectMs": 1229.3382920033764,
+          "recognizeMs": 851.3314169977093
+        }
+      ],
+      "sameFullOutputs": true,
+      "pipelineText": {
+        "exact": 7,
+        "regions": 10,
+        "edits": 7,
+        "characters": 75,
+        "characterErrorRate": 0.09333333333333334
+      },
+      "recognition": {
+        "exact": 10,
+        "regions": 10,
+        "edits": 0,
+        "characters": 75,
+        "characterErrorRate": 0.0
+      },
+      "peakRssBytes": [2410577920, 2412265472],
+      "setupMs": [
+        {
+          "imports": 61.538000001746695,
+          "modelLoad": 277.5225000004866,
+          "warmupScan": 1559.0134160011075,
+          "throughReady": 1919.7375840012683
+        },
+        {
+          "imports": 56.57795799925225,
+          "modelLoad": 280.120249997708,
+          "warmupScan": 2340.4620420042193,
+          "throughReady": 2699.0776669990737
+        }
+      ],
+      "sessionLoadMs": [
+        {
+          "encoder": 155.62445900286548,
+          "decoder": 53.73491600039415,
+          "prefill": 0
+        },
+        {
+          "encoder": 159.85445799742592,
+          "decoder": 54.05362499732291,
+          "prefill": 0
+        }
+      ],
+      "metadata": {
+        "platform": "macOS-26.6.2-arm64-arm-64bit",
+        "python": "3.11.17",
+        "onnxruntime": "1.22.1",
+        "availableProviders": [
+          "CoreMLExecutionProvider",
+          "AzureExecutionProvider",
+          "CPUExecutionProvider"
+        ],
+        "activeProviders": ["CPUExecutionProvider"],
+        "ortThreads": 2,
+        "opencv": "4.11.0",
+        "opencvThreads": 10,
+        "transformers": "4.57.3",
+        "numpy": "1.26.4",
+        "lindera": "6.0.0",
+        "blockedModulesLoaded": []
+      },
+      "geometry": [
+        {
+          "fixture": "small-horizontal",
+          "firstPass": {
+            "truePositive": 0,
+            "falsePositive": 1,
+            "falseNegative": 1,
+            "correctOrientation": 0
+          },
+          "finalRegions": {
+            "truePositive": 1,
+            "falsePositive": 0,
+            "falseNegative": 0,
+            "correctOrientation": 1
+          }
+        },
+        {
+          "fixture": "small-vertical",
+          "firstPass": {
+            "truePositive": 0,
+            "falsePositive": 1,
+            "falseNegative": 1,
+            "correctOrientation": 0
+          },
+          "finalRegions": {
+            "truePositive": 1,
+            "falsePositive": 0,
+            "falseNegative": 0,
+            "correctOrientation": 0
+          }
+        },
+        {
+          "fixture": "sentence-horizontal",
+          "firstPass": {
+            "truePositive": 1,
+            "falsePositive": 0,
+            "falseNegative": 0,
+            "correctOrientation": 1
+          },
+          "finalRegions": {
+            "truePositive": 1,
+            "falsePositive": 0,
+            "falseNegative": 0,
+            "correctOrientation": 1
+          }
+        },
+        {
+          "fixture": "sentence-vertical",
+          "firstPass": {
+            "truePositive": 1,
+            "falsePositive": 0,
+            "falseNegative": 0,
+            "correctOrientation": 1
+          },
+          "finalRegions": {
+            "truePositive": 1,
+            "falsePositive": 0,
+            "falseNegative": 0,
+            "correctOrientation": 1
+          }
+        },
+        {
+          "fixture": "small-font",
+          "firstPass": {
+            "truePositive": 1,
+            "falsePositive": 0,
+            "falseNegative": 0,
+            "correctOrientation": 1
+          },
+          "finalRegions": {
+            "truePositive": 1,
+            "falsePositive": 0,
+            "falseNegative": 0,
+            "correctOrientation": 1
+          }
+        },
+        {
+          "fixture": "low-contrast",
+          "firstPass": {
+            "truePositive": 0,
+            "falsePositive": 3,
+            "falseNegative": 1,
+            "correctOrientation": 0
+          },
+          "finalRegions": {
+            "truePositive": 0,
+            "falsePositive": 2,
+            "falseNegative": 1,
+            "correctOrientation": 0
+          }
+        },
+        {
+          "fixture": "skew-horizontal",
+          "firstPass": {
+            "truePositive": 1,
+            "falsePositive": 0,
+            "falseNegative": 0,
+            "correctOrientation": 1
+          },
+          "finalRegions": {
+            "truePositive": 1,
+            "falsePositive": 0,
+            "falseNegative": 0,
+            "correctOrientation": 1
+          }
+        },
+        {
+          "fixture": "mixed-page",
+          "firstPass": {
+            "truePositive": 3,
+            "falsePositive": 0,
+            "falseNegative": 0,
+            "correctOrientation": 3
+          },
+          "finalRegions": {
+            "truePositive": 3,
+            "falsePositive": 0,
+            "falseNegative": 0,
+            "correctOrientation": 3
+          }
+        },
+        {
+          "fixture": "blank",
+          "firstPass": {
+            "truePositive": 0,
+            "falsePositive": 0,
+            "falseNegative": 0,
+            "correctOrientation": 0
+          },
+          "finalRegions": {
+            "truePositive": 0,
+            "falsePositive": 0,
+            "falseNegative": 0,
+            "correctOrientation": 0
+          }
+        }
+      ]
+    },
+    "cpu-cached": {
+      "scans": 54,
+      "medianMs": {
+        "scanMs": 1588.3274170009827,
+        "detectMs": 1184.299374497641,
+        "recognizeMs": 395.79212500029826
+      },
+      "blocks": [
+        {
+          "scanMs": 1458.9915840042522,
+          "detectMs": 1079.0887080001994,
+          "recognizeMs": 320.32429199898615
+        },
+        {
+          "scanMs": 1649.3832920023124,
+          "detectMs": 1202.8393330037943,
+          "recognizeMs": 397.36570899549406
+        }
+      ],
+      "sameFullOutputs": true,
+      "pipelineText": {
+        "exact": 7,
+        "regions": 10,
+        "edits": 7,
+        "characters": 75,
+        "characterErrorRate": 0.09333333333333334
+      },
+      "recognition": {
+        "exact": 10,
+        "regions": 10,
+        "edits": 0,
+        "characters": 75,
+        "characterErrorRate": 0.0
+      },
+      "peakRssBytes": [2462253056, 2467151872],
+      "setupMs": [
+        {
+          "imports": 62.60866700176848,
+          "modelLoad": 339.1206250016694,
+          "warmupScan": 1506.4604590006638,
+          "throughReady": 1932.018125000468
+        },
+        {
+          "imports": 73.83487500192132,
+          "modelLoad": 311.3084170036018,
+          "warmupScan": 1944.4349580007838,
+          "throughReady": 2351.1327910018736
+        }
+      ],
+      "sessionLoadMs": [
+        {
+          "encoder": 174.75725000258535,
+          "decoder": 43.13008300232468,
+          "prefill": 46.564666001359
+        },
+        {
+          "encoder": 156.25325000291923,
+          "decoder": 38.83354200661415,
+          "prefill": 42.71645799599355
+        }
+      ],
+      "metadata": {
+        "platform": "macOS-26.6.2-arm64-arm-64bit",
+        "python": "3.11.17",
+        "onnxruntime": "1.22.1",
+        "availableProviders": [
+          "CoreMLExecutionProvider",
+          "AzureExecutionProvider",
+          "CPUExecutionProvider"
+        ],
+        "activeProviders": ["CPUExecutionProvider"],
+        "ortThreads": 2,
+        "opencv": "4.11.0",
+        "opencvThreads": 10,
+        "transformers": "4.57.3",
+        "numpy": "1.26.4",
+        "lindera": "6.0.0",
+        "blockedModulesLoaded": []
+      },
+      "geometry": [
+        {
+          "fixture": "small-horizontal",
+          "firstPass": {
+            "truePositive": 0,
+            "falsePositive": 1,
+            "falseNegative": 1,
+            "correctOrientation": 0
+          },
+          "finalRegions": {
+            "truePositive": 1,
+            "falsePositive": 0,
+            "falseNegative": 0,
+            "correctOrientation": 1
+          }
+        },
+        {
+          "fixture": "small-vertical",
+          "firstPass": {
+            "truePositive": 0,
+            "falsePositive": 1,
+            "falseNegative": 1,
+            "correctOrientation": 0
+          },
+          "finalRegions": {
+            "truePositive": 1,
+            "falsePositive": 0,
+            "falseNegative": 0,
+            "correctOrientation": 0
+          }
+        },
+        {
+          "fixture": "sentence-horizontal",
+          "firstPass": {
+            "truePositive": 1,
+            "falsePositive": 0,
+            "falseNegative": 0,
+            "correctOrientation": 1
+          },
+          "finalRegions": {
+            "truePositive": 1,
+            "falsePositive": 0,
+            "falseNegative": 0,
+            "correctOrientation": 1
+          }
+        },
+        {
+          "fixture": "sentence-vertical",
+          "firstPass": {
+            "truePositive": 1,
+            "falsePositive": 0,
+            "falseNegative": 0,
+            "correctOrientation": 1
+          },
+          "finalRegions": {
+            "truePositive": 1,
+            "falsePositive": 0,
+            "falseNegative": 0,
+            "correctOrientation": 1
+          }
+        },
+        {
+          "fixture": "small-font",
+          "firstPass": {
+            "truePositive": 1,
+            "falsePositive": 0,
+            "falseNegative": 0,
+            "correctOrientation": 1
+          },
+          "finalRegions": {
+            "truePositive": 1,
+            "falsePositive": 0,
+            "falseNegative": 0,
+            "correctOrientation": 1
+          }
+        },
+        {
+          "fixture": "low-contrast",
+          "firstPass": {
+            "truePositive": 0,
+            "falsePositive": 3,
+            "falseNegative": 1,
+            "correctOrientation": 0
+          },
+          "finalRegions": {
+            "truePositive": 0,
+            "falsePositive": 2,
+            "falseNegative": 1,
+            "correctOrientation": 0
+          }
+        },
+        {
+          "fixture": "skew-horizontal",
+          "firstPass": {
+            "truePositive": 1,
+            "falsePositive": 0,
+            "falseNegative": 0,
+            "correctOrientation": 1
+          },
+          "finalRegions": {
+            "truePositive": 1,
+            "falsePositive": 0,
+            "falseNegative": 0,
+            "correctOrientation": 1
+          }
+        },
+        {
+          "fixture": "mixed-page",
+          "firstPass": {
+            "truePositive": 3,
+            "falsePositive": 0,
+            "falseNegative": 0,
+            "correctOrientation": 3
+          },
+          "finalRegions": {
+            "truePositive": 3,
+            "falsePositive": 0,
+            "falseNegative": 0,
+            "correctOrientation": 3
+          }
+        },
+        {
+          "fixture": "blank",
+          "firstPass": {
+            "truePositive": 0,
+            "falsePositive": 0,
+            "falseNegative": 0,
+            "correctOrientation": 0
+          },
+          "finalRegions": {
+            "truePositive": 0,
+            "falsePositive": 0,
+            "falseNegative": 0,
+            "correctOrientation": 0
+          }
+        }
+      ]
+    },
+    "coreml-cached": {
+      "scans": 54,
+      "medianMs": {
+        "scanMs": 1372.9233334997843,
+        "detectMs": 1231.2662919975992,
+        "recognizeMs": 153.4833539990359
+      },
+      "blocks": [
+        {
+          "scanMs": 1356.8963329962571,
+          "detectMs": 1218.2067500034464,
+          "recognizeMs": 149.02100000472274
+        },
+        {
+          "scanMs": 1397.6199999960954,
+          "detectMs": 1240.1156249979977,
+          "recognizeMs": 153.76912499777973
+        }
+      ],
+      "sameFullOutputs": true,
+      "pipelineText": {
+        "exact": 7,
+        "regions": 10,
+        "edits": 7,
+        "characters": 75,
+        "characterErrorRate": 0.09333333333333334
+      },
+      "recognition": {
+        "exact": 10,
+        "regions": 10,
+        "edits": 0,
+        "characters": 75,
+        "characterErrorRate": 0.0
+      },
+      "peakRssBytes": [5635358720, 5635260416],
+      "setupMs": [
+        {
+          "imports": 57.97241700201994,
+          "modelLoad": 17989.369082999474,
+          "warmupScan": 1205.9540420013946,
+          "throughReady": 19276.084875004017
+        },
+        {
+          "imports": 73.19808299507713,
+          "modelLoad": 17441.615583004022,
+          "warmupScan": 1251.1901249963557,
+          "throughReady": 18788.7829579995
+        }
+      ],
+      "sessionLoadMs": [
+        {
+          "encoder": 17667.78695800167,
+          "decoder": 81.61566600028891,
+          "prefill": 52.33895900164498
+        },
+        {
+          "encoder": 17115.665625002293,
+          "decoder": 79.11883400083752,
+          "prefill": 50.83491699770093
+        }
+      ],
+      "metadata": {
+        "platform": "macOS-26.6.2-arm64-arm-64bit",
+        "python": "3.11.17",
+        "onnxruntime": "1.22.1",
+        "availableProviders": [
+          "CoreMLExecutionProvider",
+          "AzureExecutionProvider",
+          "CPUExecutionProvider"
+        ],
+        "activeProviders": ["CoreMLExecutionProvider", "CPUExecutionProvider"],
+        "ortThreads": 2,
+        "opencv": "4.11.0",
+        "opencvThreads": 10,
+        "transformers": "4.57.3",
+        "numpy": "1.26.4",
+        "lindera": "6.0.0",
+        "blockedModulesLoaded": []
+      },
+      "geometry": [
+        {
+          "fixture": "small-horizontal",
+          "firstPass": {
+            "truePositive": 0,
+            "falsePositive": 1,
+            "falseNegative": 1,
+            "correctOrientation": 0
+          },
+          "finalRegions": {
+            "truePositive": 1,
+            "falsePositive": 0,
+            "falseNegative": 0,
+            "correctOrientation": 1
+          }
+        },
+        {
+          "fixture": "small-vertical",
+          "firstPass": {
+            "truePositive": 0,
+            "falsePositive": 1,
+            "falseNegative": 1,
+            "correctOrientation": 0
+          },
+          "finalRegions": {
+            "truePositive": 1,
+            "falsePositive": 0,
+            "falseNegative": 0,
+            "correctOrientation": 0
+          }
+        },
+        {
+          "fixture": "sentence-horizontal",
+          "firstPass": {
+            "truePositive": 1,
+            "falsePositive": 0,
+            "falseNegative": 0,
+            "correctOrientation": 1
+          },
+          "finalRegions": {
+            "truePositive": 1,
+            "falsePositive": 0,
+            "falseNegative": 0,
+            "correctOrientation": 1
+          }
+        },
+        {
+          "fixture": "sentence-vertical",
+          "firstPass": {
+            "truePositive": 1,
+            "falsePositive": 0,
+            "falseNegative": 0,
+            "correctOrientation": 1
+          },
+          "finalRegions": {
+            "truePositive": 1,
+            "falsePositive": 0,
+            "falseNegative": 0,
+            "correctOrientation": 1
+          }
+        },
+        {
+          "fixture": "small-font",
+          "firstPass": {
+            "truePositive": 1,
+            "falsePositive": 0,
+            "falseNegative": 0,
+            "correctOrientation": 1
+          },
+          "finalRegions": {
+            "truePositive": 1,
+            "falsePositive": 0,
+            "falseNegative": 0,
+            "correctOrientation": 1
+          }
+        },
+        {
+          "fixture": "low-contrast",
+          "firstPass": {
+            "truePositive": 0,
+            "falsePositive": 3,
+            "falseNegative": 1,
+            "correctOrientation": 0
+          },
+          "finalRegions": {
+            "truePositive": 0,
+            "falsePositive": 2,
+            "falseNegative": 1,
+            "correctOrientation": 0
+          }
+        },
+        {
+          "fixture": "skew-horizontal",
+          "firstPass": {
+            "truePositive": 1,
+            "falsePositive": 0,
+            "falseNegative": 0,
+            "correctOrientation": 1
+          },
+          "finalRegions": {
+            "truePositive": 1,
+            "falsePositive": 0,
+            "falseNegative": 0,
+            "correctOrientation": 1
+          }
+        },
+        {
+          "fixture": "mixed-page",
+          "firstPass": {
+            "truePositive": 3,
+            "falsePositive": 0,
+            "falseNegative": 0,
+            "correctOrientation": 3
+          },
+          "finalRegions": {
+            "truePositive": 3,
+            "falsePositive": 0,
+            "falseNegative": 0,
+            "correctOrientation": 3
+          }
+        },
+        {
+          "fixture": "blank",
+          "firstPass": {
+            "truePositive": 0,
+            "falsePositive": 0,
+            "falseNegative": 0,
+            "correctOrientation": 0
+          },
+          "finalRegions": {
+            "truePositive": 0,
+            "falsePositive": 0,
+            "falseNegative": 0,
+            "correctOrientation": 0
+          }
+        }
+      ]
+    }
+  },
+  "fixtureHashes": {
+    "small-horizontal": "ef7a7532fb25faed99921899b1d4aa2d4b3ba6c7bbe63d2ff9866eeed2979256",
+    "small-vertical": "a141e9bb04a1c10e4b49129eaf51fa012529fd6bedca2b7738898a15134c9ae5",
+    "sentence-horizontal": "c2ea04297bad3b93db13e866e14a8248afc2ec23c50867ccc84f647cc739d896",
+    "sentence-vertical": "7148fd3993a02b7ba1f3b15d5f3506a6fe5aab19a29c52ef20b2992b72e29daa",
+    "small-font": "c5555265bbc9713ffd5a18d81c64101e9523a1745c883a97425a043a298a2277",
+    "low-contrast": "f82cf0758292a7dfc4be16a875ef4fe0be9835f46d99e32170d83fa72a118746",
+    "skew-horizontal": "e266b8bde668c802dd90046f1dd9d1df345ab16a832ac7a9adaa1949b2dbb678",
+    "mixed-page": "92e3b15eb56769c1aa6f69df090055bee293cfcd6a70331a847dee52a92d18cc",
+    "blank": "da7d9081dac7f8b874771a62103078b78a1f8bff984f43c27808457f1c870eb1"
+  },
+  "sourceScripts": {
+    "benchmark_cached_coreml.py": "781d76a70fedb2172708a9b7169d98945c3e85169c2e3bfa90354b7d784ff745",
+    "onnx_cached_experiment.py": "23588fb051c80a2efe4bf79ce30b71cd97c88a1315774f99d5603a9e0a12f7df",
+    "benchmark_macos_onnx.py": "6d381ba0b7ffa98a7d6e2fe3b759e6e878465702d806afba161bac33d80f4836",
+    "export_cached_ocr.py": "e7c93f341391dd10b068ff00ddaec0c5e60f70c089ee9924487aefa8275eb827"
+  },
+  "cachedExportManifestSha256": "a2af63177ecaa27435be19b90b6758cc074d8084cae630382a3ab6cac80cc957",
+  "cachedExport": {
+    "sourceInputs": {
+      "config.json": "8c0e395de8fa699daaac21aee33a4ba9bd1309cfbff03147813d2a025f39f349",
+      "preprocessor_config.json": "af4eb4d79cf61b47010fc0bc9352ee967579c417423b4917188d809b7e048948",
+      "pytorch_model.bin": "c63e0bb5b3ff798c5991de18a8e0956c7ee6d1563aca6729029815eda6f5c2eb",
+      "special_tokens_map.json": "303df45a03609e4ead04bc3dc1536d0ab19b5358db685b6f3da123d05ec200e3",
+      "tokenizer_config.json": "d775ad1deac162dc56b84e9b8638f95ed8a1f263d0f56f4f40834e26e205e266",
+      "vocab.txt": "344fbb6b8bf18c57839e924e2c9365434697e0227fac00b88bb4899b78aa594d"
+    },
+    "exporterSha256": "e7c93f341391dd10b068ff00ddaec0c5e60f70c089ee9924487aefa8275eb827",
+    "versions": {
+      "torch": "2.8.0",
+      "transformers": "4.57.3",
+      "onnx": "1.18.0"
+    },
+    "outputs": {
+      "decoder-weights.bin": {
+        "sha256": "65e83be1c1fb6da604b686668140c49dfaf8f90064b7fd6f2701e98f35666835",
+        "bytes": 117341184
+      },
+      "ocr-cached.onnx": {
+        "sha256": "60e453a37ae473b786c79ec6e50cf5cb45e3aa21fa785400b59f912778883345",
+        "bytes": 86473
+      },
+      "ocr-prefill.onnx": {
+        "sha256": "e1ce81e3a5ccda3857c20849db4549adaa9f1c3dd72944681657d063c7fbbce2",
+        "bytes": 94347
+      }
+    },
+    "cacheNames": [
+      "self_0_key",
+      "self_0_value",
+      "cross_0_key",
+      "cross_0_value",
+      "self_1_key",
+      "self_1_value",
+      "cross_1_key",
+      "cross_1_value"
+    ],
+    "publicDistributionApproved": false
+  },
+  "numericalParity": {
+    "comparisons": 48,
+    "beams": [1, 4],
+    "lengths": [1, 24],
+    "maxAbsError": 6.67572021484375e-6,
+    "absoluteTolerance": 0.0002,
+    "relativeTolerance": 0.0001
+  },
+  "coremlProfiling": {
+    "encoder": {
+      "CoreMLExecutionProvider": {
+        "calls": 10,
+        "durationUs": 262156,
+        "nodes": [
+          "CoreMLExecutionProvider_15560278852155942903_CoreML_15560278852155942903_0_0_kernel_time"
+        ]
+      }
+    },
+    "decoder": {
+      "CPUExecutionProvider": {
+        "calls": 16435,
+        "durationUs": 179333,
+        "nodes": [
+          "/Concat_1_kernel_time",
+          "/Concat_2_kernel_time",
+          "/Concat_3_kernel_time",
+          "/Concat_4_kernel_time",
+          "/Concat_kernel_time",
+          "/decoder/bert/Cast_1_kernel_time",
+          "/decoder/bert/Concat_1_kernel_time",
+          "/decoder/bert/Concat_2_kernel_time",
+          "/decoder/bert/Concat_4_kernel_time",
+          "/decoder/bert/Concat_5_kernel_time",
+          "/decoder/bert/Concat_6_kernel_time",
+          "/decoder/bert/Concat_kernel_time",
+          "/decoder/bert/ConstantOfShape_1_kernel_time",
+          "/decoder/bert/ConstantOfShape_3_kernel_time",
+          "/decoder/bert/ConstantOfShape_4_kernel_time",
+          "/decoder/bert/Equal_kernel_time",
+          "/decoder/bert/Expand_kernel_time",
+          "/decoder/bert/Gather_1_kernel_time",
+          "/decoder/bert/Gather_2_kernel_time",
+          "/decoder/bert/Gather_3_kernel_time",
+          "/decoder/bert/Gather_4_kernel_time",
+          "/decoder/bert/Gather_5_kernel_time",
+          "/decoder/bert/Gather_6_kernel_time",
+          "/decoder/bert/Gather_kernel_time",
+          "/decoder/bert/LessOrEqual_kernel_time",
+          "/decoder/bert/Mul_1_kernel_time",
+          "/decoder/bert/Mul_2_kernel_time",
+          "/decoder/bert/Mul_3_kernel_time",
+          "/decoder/bert/Range_kernel_time",
+          "/decoder/bert/Reshape_kernel_time",
+          "/decoder/bert/Shape_1_kernel_time",
+          "/decoder/bert/Shape_2_kernel_time",
+          "/decoder/bert/Shape_5_kernel_time",
+          "/decoder/bert/Shape_6_kernel_time",
+          "/decoder/bert/Shape_8_kernel_time",
+          "/decoder/bert/Slice_kernel_time",
+          "/decoder/bert/Sub_1_kernel_time",
+          "/decoder/bert/Sub_2_kernel_time",
+          "/decoder/bert/Sub_kernel_time",
+          "/decoder/bert/Tile_kernel_time",
+          "/decoder/bert/Unsqueeze_11_kernel_time",
+          "/decoder/bert/Unsqueeze_14_kernel_time",
+          "/decoder/bert/Unsqueeze_15_kernel_time",
+          "/decoder/bert/Unsqueeze_16_kernel_time",
+          "/decoder/bert/Unsqueeze_17_kernel_time",
+          "/decoder/bert/Unsqueeze_18_kernel_time",
+          "/decoder/bert/Unsqueeze_19_kernel_time",
+          "/decoder/bert/Unsqueeze_1_kernel_time",
+          "/decoder/bert/Unsqueeze_20_kernel_time",
+          "/decoder/bert/Unsqueeze_21_kernel_time",
+          "/decoder/bert/Unsqueeze_2_kernel_time",
+          "/decoder/bert/Unsqueeze_5_kernel_time",
+          "/decoder/bert/Unsqueeze_6_kernel_time",
+          "/decoder/bert/Where_kernel_time",
+          "/decoder/bert/embeddings/Add_1_kernel_time",
+          "/decoder/bert/embeddings/Add_2_kernel_time",
+          "/decoder/bert/embeddings/Add_kernel_time",
+          "/decoder/bert/embeddings/LayerNorm/LayerNormalization_kernel_time",
+          "/decoder/bert/embeddings/Slice_kernel_time",
+          "/decoder/bert/embeddings/Unsqueeze_1_kernel_time",
+          "/decoder/bert/embeddings/Unsqueeze_kernel_time",
+          "/decoder/bert/embeddings/position_embeddings/Gather_kernel_time",
+          "/decoder/bert/embeddings/token_type_embeddings/Gather_kernel_time",
+          "/decoder/bert/embeddings/word_embeddings/Gather_kernel_time",
+          "/decoder/bert/encoder/layer.0/attention/output/Add_kernel_time",
+          "/decoder/bert/encoder/layer.0/attention/output/LayerNorm/LayerNormalization_kernel_time",
+          "/decoder/bert/encoder/layer.0/attention/output/dense/Add_kernel_time",
+          "/decoder/bert/encoder/layer.0/attention/output/dense/MatMul_kernel_time",
+          "/decoder/bert/encoder/layer.0/attention/self/Add_kernel_time",
+          "/decoder/bert/encoder/layer.0/attention/self/Concat_1_kernel_time",
+          "/decoder/bert/encoder/layer.0/attention/self/Concat_3_kernel_time",
+          "/decoder/bert/encoder/layer.0/attention/self/Concat_4_kernel_time",
+          "/decoder/bert/encoder/layer.0/attention/self/Gather_kernel_time",
+          "/decoder/bert/encoder/layer.0/attention/self/MatMul/MatmulTransposeFusion//MatMulScaleFusion/_kernel_time",
+          "/decoder/bert/encoder/layer.0/attention/self/MatMul_1_kernel_time",
+          "/decoder/bert/encoder/layer.0/attention/self/Reshape_1_kernel_time",
+          "/decoder/bert/encoder/layer.0/attention/self/Reshape_2_kernel_time",
+          "/decoder/bert/encoder/layer.0/attention/self/Reshape_3_kernel_time",
+          "/decoder/bert/encoder/layer.0/attention/self/Reshape_kernel_time",
+          "/decoder/bert/encoder/layer.0/attention/self/Shape_kernel_time",
+          "/decoder/bert/encoder/layer.0/attention/self/Softmax_kernel_time",
+          "/decoder/bert/encoder/layer.0/attention/self/Transpose_1_kernel_time",
+          "/decoder/bert/encoder/layer.0/attention/self/Transpose_2_kernel_time",
+          "/decoder/bert/encoder/layer.0/attention/self/Transpose_4_kernel_time",
+          "/decoder/bert/encoder/layer.0/attention/self/Transpose_kernel_time",
+          "/decoder/bert/encoder/layer.0/attention/self/Unsqueeze_1_kernel_time",
+          "/decoder/bert/encoder/layer.0/attention/self/key/Add_kernel_time",
+          "/decoder/bert/encoder/layer.0/attention/self/key/MatMul_kernel_time",
+          "/decoder/bert/encoder/layer.0/attention/self/query/Add_kernel_time",
+          "/decoder/bert/encoder/layer.0/attention/self/query/MatMul_kernel_time",
+          "/decoder/bert/encoder/layer.0/attention/self/value/Add_kernel_time",
+          "/decoder/bert/encoder/layer.0/attention/self/value/MatMul_kernel_time",
+          "/decoder/bert/encoder/layer.0/crossattention/output/Add_kernel_time",
+          "/decoder/bert/encoder/layer.0/crossattention/output/LayerNorm/LayerNormalization_kernel_time",
+          "/decoder/bert/encoder/layer.0/crossattention/output/dense/Add_kernel_time",
+          "/decoder/bert/encoder/layer.0/crossattention/output/dense/MatMul_kernel_time",
+          "/decoder/bert/encoder/layer.0/crossattention/self/Add_kernel_time",
+          "/decoder/bert/encoder/layer.0/crossattention/self/Concat_kernel_time",
+          "/decoder/bert/encoder/layer.0/crossattention/self/Gather_kernel_time",
+          "/decoder/bert/encoder/layer.0/crossattention/self/MatMul/MatmulTransposeFusion//MatMulScaleFusion/_kernel_time",
+          "/decoder/bert/encoder/layer.0/crossattention/self/MatMul_1_kernel_time",
+          "/decoder/bert/encoder/layer.0/crossattention/self/Reshape_1_kernel_time",
+          "/decoder/bert/encoder/layer.0/crossattention/self/Reshape_kernel_time",
+          "/decoder/bert/encoder/layer.0/crossattention/self/Shape_kernel_time",
+          "/decoder/bert/encoder/layer.0/crossattention/self/Softmax_kernel_time",
+          "/decoder/bert/encoder/layer.0/crossattention/self/Transpose_2_kernel_time",
+          "/decoder/bert/encoder/layer.0/crossattention/self/Transpose_kernel_time",
+          "/decoder/bert/encoder/layer.0/crossattention/self/Unsqueeze_kernel_time",
+          "/decoder/bert/encoder/layer.0/crossattention/self/query/Add_kernel_time",
+          "/decoder/bert/encoder/layer.0/crossattention/self/query/MatMul_kernel_time",
+          "/decoder/bert/encoder/layer.0/intermediate/dense/MatMul_kernel_time",
+          "/decoder/bert/encoder/layer.0/output/Add_kernel_time",
+          "/decoder/bert/encoder/layer.0/output/LayerNorm/LayerNormalization_kernel_time",
+          "/decoder/bert/encoder/layer.0/output/dense/Add_kernel_time",
+          "/decoder/bert/encoder/layer.0/output/dense/MatMul_kernel_time",
+          "/decoder/bert/encoder/layer.1/attention/output/Add_kernel_time",
+          "/decoder/bert/encoder/layer.1/attention/output/LayerNorm/LayerNormalization_kernel_time",
+          "/decoder/bert/encoder/layer.1/attention/output/dense/Add_kernel_time",
+          "/decoder/bert/encoder/layer.1/attention/output/dense/MatMul_kernel_time",
+          "/decoder/bert/encoder/layer.1/attention/self/Add_kernel_time",
+          "/decoder/bert/encoder/layer.1/attention/self/Concat_1_kernel_time",
+          "/decoder/bert/encoder/layer.1/attention/self/Concat_3_kernel_time",
+          "/decoder/bert/encoder/layer.1/attention/self/Concat_4_kernel_time",
+          "/decoder/bert/encoder/layer.1/attention/self/Gather_kernel_time",
+          "/decoder/bert/encoder/layer.1/attention/self/MatMul/MatmulTransposeFusion//MatMulScaleFusion/_kernel_time",
+          "/decoder/bert/encoder/layer.1/attention/self/MatMul_1_kernel_time",
+          "/decoder/bert/encoder/layer.1/attention/self/Reshape_1_kernel_time",
+          "/decoder/bert/encoder/layer.1/attention/self/Reshape_2_kernel_time",
+          "/decoder/bert/encoder/layer.1/attention/self/Reshape_3_kernel_time",
+          "/decoder/bert/encoder/layer.1/attention/self/Reshape_kernel_time",
+          "/decoder/bert/encoder/layer.1/attention/self/Shape_kernel_time",
+          "/decoder/bert/encoder/layer.1/attention/self/Softmax_kernel_time",
+          "/decoder/bert/encoder/layer.1/attention/self/Transpose_1_kernel_time",
+          "/decoder/bert/encoder/layer.1/attention/self/Transpose_2_kernel_time",
+          "/decoder/bert/encoder/layer.1/attention/self/Transpose_4_kernel_time",
+          "/decoder/bert/encoder/layer.1/attention/self/Transpose_kernel_time",
+          "/decoder/bert/encoder/layer.1/attention/self/Unsqueeze_1_kernel_time",
+          "/decoder/bert/encoder/layer.1/attention/self/key/Add_kernel_time",
+          "/decoder/bert/encoder/layer.1/attention/self/key/MatMul_kernel_time",
+          "/decoder/bert/encoder/layer.1/attention/self/query/Add_kernel_time",
+          "/decoder/bert/encoder/layer.1/attention/self/query/MatMul_kernel_time",
+          "/decoder/bert/encoder/layer.1/attention/self/value/Add_kernel_time",
+          "/decoder/bert/encoder/layer.1/attention/self/value/MatMul_kernel_time",
+          "/decoder/bert/encoder/layer.1/crossattention/output/Add_kernel_time",
+          "/decoder/bert/encoder/layer.1/crossattention/output/LayerNorm/LayerNormalization_kernel_time",
+          "/decoder/bert/encoder/layer.1/crossattention/output/dense/Add_kernel_time",
+          "/decoder/bert/encoder/layer.1/crossattention/output/dense/MatMul_kernel_time",
+          "/decoder/bert/encoder/layer.1/crossattention/self/Add_kernel_time",
+          "/decoder/bert/encoder/layer.1/crossattention/self/Concat_kernel_time",
+          "/decoder/bert/encoder/layer.1/crossattention/self/Gather_kernel_time",
+          "/decoder/bert/encoder/layer.1/crossattention/self/MatMul/MatmulTransposeFusion//MatMulScaleFusion/_kernel_time",
+          "/decoder/bert/encoder/layer.1/crossattention/self/MatMul_1_kernel_time",
+          "/decoder/bert/encoder/layer.1/crossattention/self/Reshape_1_kernel_time",
+          "/decoder/bert/encoder/layer.1/crossattention/self/Reshape_kernel_time",
+          "/decoder/bert/encoder/layer.1/crossattention/self/Shape_kernel_time",
+          "/decoder/bert/encoder/layer.1/crossattention/self/Softmax_kernel_time",
+          "/decoder/bert/encoder/layer.1/crossattention/self/Transpose_2_kernel_time",
+          "/decoder/bert/encoder/layer.1/crossattention/self/Transpose_kernel_time",
+          "/decoder/bert/encoder/layer.1/crossattention/self/Unsqueeze_kernel_time",
+          "/decoder/bert/encoder/layer.1/crossattention/self/query/Add_kernel_time",
+          "/decoder/bert/encoder/layer.1/crossattention/self/query/MatMul_kernel_time",
+          "/decoder/bert/encoder/layer.1/intermediate/dense/MatMul_kernel_time",
+          "/decoder/bert/encoder/layer.1/output/Add_kernel_time",
+          "/decoder/bert/encoder/layer.1/output/LayerNorm/LayerNormalization_kernel_time",
+          "/decoder/bert/encoder/layer.1/output/dense/Add_kernel_time",
+          "/decoder/bert/encoder/layer.1/output/dense/MatMul_kernel_time",
+          "/decoder/cls/predictions/decoder/Add_kernel_time",
+          "/decoder/cls/predictions/decoder/MatMul_kernel_time",
+          "/decoder/cls/predictions/transform/LayerNorm/LayerNormalization_kernel_time",
+          "/decoder/cls/predictions/transform/dense/MatMul_kernel_time",
+          "BiasGelu_kernel_time",
+          "BiasGelu_token_2_kernel_time",
+          "BiasGelu_token_3_kernel_time"
+        ]
+      }
+    },
+    "prefill": {
+      "CPUExecutionProvider": {
+        "calls": 1770,
+        "durationUs": 180743,
+        "nodes": [
+          "/decoder/bert/Cast_1_kernel_time",
+          "/decoder/bert/Concat_2_kernel_time",
+          "/decoder/bert/Concat_4_kernel_time",
+          "/decoder/bert/Concat_kernel_time",
+          "/decoder/bert/ConstantOfShape_1_kernel_time",
+          "/decoder/bert/ConstantOfShape_3_kernel_time",
+          "/decoder/bert/Equal_kernel_time",
+          "/decoder/bert/Expand_kernel_time",
+          "/decoder/bert/Gather_1_kernel_time",
+          "/decoder/bert/Gather_2_kernel_time",
+          "/decoder/bert/Gather_3_kernel_time",
+          "/decoder/bert/Gather_kernel_time",
+          "/decoder/bert/LessOrEqual_kernel_time",
+          "/decoder/bert/Mul_1_kernel_time",
+          "/decoder/bert/Mul_2_kernel_time",
+          "/decoder/bert/Mul_3_kernel_time",
+          "/decoder/bert/Range_kernel_time",
+          "/decoder/bert/Reshape_kernel_time",
+          "/decoder/bert/Shape_1_kernel_time",
+          "/decoder/bert/Shape_5_kernel_time",
+          "/decoder/bert/Slice_kernel_time",
+          "/decoder/bert/Sub_1_kernel_time",
+          "/decoder/bert/Sub_kernel_time",
+          "/decoder/bert/Tile_kernel_time",
+          "/decoder/bert/Unsqueeze_11_kernel_time",
+          "/decoder/bert/Unsqueeze_12_kernel_time",
+          "/decoder/bert/Unsqueeze_13_kernel_time",
+          "/decoder/bert/Unsqueeze_14_kernel_time",
+          "/decoder/bert/Unsqueeze_15_kernel_time",
+          "/decoder/bert/Unsqueeze_16_kernel_time",
+          "/decoder/bert/Unsqueeze_17_kernel_time",
+          "/decoder/bert/Unsqueeze_18_kernel_time",
+          "/decoder/bert/Unsqueeze_1_kernel_time",
+          "/decoder/bert/Unsqueeze_5_kernel_time",
+          "/decoder/bert/Unsqueeze_6_kernel_time",
+          "/decoder/bert/Where_kernel_time",
+          "/decoder/bert/embeddings/Add_1_kernel_time",
+          "/decoder/bert/embeddings/Add_kernel_time",
+          "/decoder/bert/embeddings/LayerNorm/LayerNormalization_kernel_time",
+          "/decoder/bert/embeddings/Slice_kernel_time",
+          "/decoder/bert/embeddings/Unsqueeze_kernel_time",
+          "/decoder/bert/embeddings/position_embeddings/Gather_kernel_time",
+          "/decoder/bert/embeddings/token_type_embeddings/Gather_kernel_time",
+          "/decoder/bert/embeddings/word_embeddings/Gather_kernel_time",
+          "/decoder/bert/encoder/layer.0/attention/output/Add_kernel_time",
+          "/decoder/bert/encoder/layer.0/attention/output/LayerNorm/LayerNormalization_kernel_time",
+          "/decoder/bert/encoder/layer.0/attention/output/dense/Add_kernel_time",
+          "/decoder/bert/encoder/layer.0/attention/output/dense/MatMul_kernel_time",
+          "/decoder/bert/encoder/layer.0/attention/self/Add_kernel_time",
+          "/decoder/bert/encoder/layer.0/attention/self/Concat_1_kernel_time",
+          "/decoder/bert/encoder/layer.0/attention/self/Concat_3_kernel_time",
+          "/decoder/bert/encoder/layer.0/attention/self/Concat_4_kernel_time",
+          "/decoder/bert/encoder/layer.0/attention/self/Gather_kernel_time",
+          "/decoder/bert/encoder/layer.0/attention/self/MatMul/MatMulScaleFusion/_kernel_time",
+          "/decoder/bert/encoder/layer.0/attention/self/MatMul_1_kernel_time",
+          "/decoder/bert/encoder/layer.0/attention/self/Reshape_1_kernel_time",
+          "/decoder/bert/encoder/layer.0/attention/self/Reshape_2_kernel_time",
+          "/decoder/bert/encoder/layer.0/attention/self/Reshape_3_kernel_time",
+          "/decoder/bert/encoder/layer.0/attention/self/Reshape_kernel_time",
+          "/decoder/bert/encoder/layer.0/attention/self/Shape_kernel_time",
+          "/decoder/bert/encoder/layer.0/attention/self/Softmax_kernel_time",
+          "/decoder/bert/encoder/layer.0/attention/self/Transpose_2_kernel_time",
+          "/decoder/bert/encoder/layer.0/attention/self/Transpose_3_kernel_time",
+          "/decoder/bert/encoder/layer.0/attention/self/Transpose_4_kernel_time",
+          "/decoder/bert/encoder/layer.0/attention/self/Transpose_kernel_time",
+          "/decoder/bert/encoder/layer.0/attention/self/Unsqueeze_1_kernel_time",
+          "/decoder/bert/encoder/layer.0/attention/self/key/Add_kernel_time",
+          "/decoder/bert/encoder/layer.0/attention/self/key/MatMul_kernel_time",
+          "/decoder/bert/encoder/layer.0/attention/self/query/Add_kernel_time",
+          "/decoder/bert/encoder/layer.0/attention/self/query/MatMul_kernel_time",
+          "/decoder/bert/encoder/layer.0/attention/self/value/Add_kernel_time",
+          "/decoder/bert/encoder/layer.0/attention/self/value/MatMul_kernel_time",
+          "/decoder/bert/encoder/layer.0/crossattention/output/Add_kernel_time",
+          "/decoder/bert/encoder/layer.0/crossattention/output/LayerNorm/LayerNormalization_kernel_time",
+          "/decoder/bert/encoder/layer.0/crossattention/output/dense/Add_kernel_time",
+          "/decoder/bert/encoder/layer.0/crossattention/output/dense/MatMul_kernel_time",
+          "/decoder/bert/encoder/layer.0/crossattention/self/Add_kernel_time",
+          "/decoder/bert/encoder/layer.0/crossattention/self/Concat_1_kernel_time",
+          "/decoder/bert/encoder/layer.0/crossattention/self/Concat_3_kernel_time",
+          "/decoder/bert/encoder/layer.0/crossattention/self/Concat_4_kernel_time",
+          "/decoder/bert/encoder/layer.0/crossattention/self/Gather_kernel_time",
+          "/decoder/bert/encoder/layer.0/crossattention/self/MatMul/MatMulScaleFusion/_kernel_time",
+          "/decoder/bert/encoder/layer.0/crossattention/self/MatMul_1_kernel_time",
+          "/decoder/bert/encoder/layer.0/crossattention/self/Reshape_1_kernel_time",
+          "/decoder/bert/encoder/layer.0/crossattention/self/Reshape_2_kernel_time",
+          "/decoder/bert/encoder/layer.0/crossattention/self/Reshape_3_kernel_time",
+          "/decoder/bert/encoder/layer.0/crossattention/self/Reshape_kernel_time",
+          "/decoder/bert/encoder/layer.0/crossattention/self/Shape_kernel_time",
+          "/decoder/bert/encoder/layer.0/crossattention/self/Softmax_kernel_time",
+          "/decoder/bert/encoder/layer.0/crossattention/self/Transpose_2_kernel_time",
+          "/decoder/bert/encoder/layer.0/crossattention/self/Transpose_3_kernel_time",
+          "/decoder/bert/encoder/layer.0/crossattention/self/Transpose_4_kernel_time",
+          "/decoder/bert/encoder/layer.0/crossattention/self/Transpose_kernel_time",
+          "/decoder/bert/encoder/layer.0/crossattention/self/Unsqueeze_1_kernel_time",
+          "/decoder/bert/encoder/layer.0/crossattention/self/key/Add_kernel_time",
+          "/decoder/bert/encoder/layer.0/crossattention/self/key/MatMul_kernel_time",
+          "/decoder/bert/encoder/layer.0/crossattention/self/query/Add_kernel_time",
+          "/decoder/bert/encoder/layer.0/crossattention/self/query/MatMul_kernel_time",
+          "/decoder/bert/encoder/layer.0/crossattention/self/value/Add_kernel_time",
+          "/decoder/bert/encoder/layer.0/crossattention/self/value/MatMul_kernel_time",
+          "/decoder/bert/encoder/layer.0/intermediate/dense/MatMul_kernel_time",
+          "/decoder/bert/encoder/layer.0/output/Add_kernel_time",
+          "/decoder/bert/encoder/layer.0/output/LayerNorm/LayerNormalization_kernel_time",
+          "/decoder/bert/encoder/layer.0/output/dense/Add_kernel_time",
+          "/decoder/bert/encoder/layer.0/output/dense/MatMul_kernel_time",
+          "/decoder/bert/encoder/layer.1/attention/output/Add_kernel_time",
+          "/decoder/bert/encoder/layer.1/attention/output/LayerNorm/LayerNormalization_kernel_time",
+          "/decoder/bert/encoder/layer.1/attention/output/dense/Add_kernel_time",
+          "/decoder/bert/encoder/layer.1/attention/output/dense/MatMul_kernel_time",
+          "/decoder/bert/encoder/layer.1/attention/self/Add_kernel_time",
+          "/decoder/bert/encoder/layer.1/attention/self/Concat_1_kernel_time",
+          "/decoder/bert/encoder/layer.1/attention/self/Concat_3_kernel_time",
+          "/decoder/bert/encoder/layer.1/attention/self/Concat_4_kernel_time",
+          "/decoder/bert/encoder/layer.1/attention/self/Gather_kernel_time",
+          "/decoder/bert/encoder/layer.1/attention/self/MatMul/MatMulScaleFusion/_kernel_time",
+          "/decoder/bert/encoder/layer.1/attention/self/MatMul_1_kernel_time",
+          "/decoder/bert/encoder/layer.1/attention/self/Reshape_1_kernel_time",
+          "/decoder/bert/encoder/layer.1/attention/self/Reshape_2_kernel_time",
+          "/decoder/bert/encoder/layer.1/attention/self/Reshape_3_kernel_time",
+          "/decoder/bert/encoder/layer.1/attention/self/Reshape_kernel_time",
+          "/decoder/bert/encoder/layer.1/attention/self/Shape_kernel_time",
+          "/decoder/bert/encoder/layer.1/attention/self/Softmax_kernel_time",
+          "/decoder/bert/encoder/layer.1/attention/self/Transpose_2_kernel_time",
+          "/decoder/bert/encoder/layer.1/attention/self/Transpose_3_kernel_time",
+          "/decoder/bert/encoder/layer.1/attention/self/Transpose_4_kernel_time",
+          "/decoder/bert/encoder/layer.1/attention/self/Transpose_kernel_time",
+          "/decoder/bert/encoder/layer.1/attention/self/Unsqueeze_1_kernel_time",
+          "/decoder/bert/encoder/layer.1/attention/self/key/Add_kernel_time",
+          "/decoder/bert/encoder/layer.1/attention/self/key/MatMul_kernel_time",
+          "/decoder/bert/encoder/layer.1/attention/self/query/Add_kernel_time",
+          "/decoder/bert/encoder/layer.1/attention/self/query/MatMul_kernel_time",
+          "/decoder/bert/encoder/layer.1/attention/self/value/Add_kernel_time",
+          "/decoder/bert/encoder/layer.1/attention/self/value/MatMul_kernel_time",
+          "/decoder/bert/encoder/layer.1/crossattention/output/Add_kernel_time",
+          "/decoder/bert/encoder/layer.1/crossattention/output/LayerNorm/LayerNormalization_kernel_time",
+          "/decoder/bert/encoder/layer.1/crossattention/output/dense/Add_kernel_time",
+          "/decoder/bert/encoder/layer.1/crossattention/output/dense/MatMul_kernel_time",
+          "/decoder/bert/encoder/layer.1/crossattention/self/Add_kernel_time",
+          "/decoder/bert/encoder/layer.1/crossattention/self/Concat_1_kernel_time",
+          "/decoder/bert/encoder/layer.1/crossattention/self/Concat_3_kernel_time",
+          "/decoder/bert/encoder/layer.1/crossattention/self/Concat_4_kernel_time",
+          "/decoder/bert/encoder/layer.1/crossattention/self/Gather_kernel_time",
+          "/decoder/bert/encoder/layer.1/crossattention/self/MatMul/MatMulScaleFusion/_kernel_time",
+          "/decoder/bert/encoder/layer.1/crossattention/self/MatMul_1_kernel_time",
+          "/decoder/bert/encoder/layer.1/crossattention/self/Reshape_1_kernel_time",
+          "/decoder/bert/encoder/layer.1/crossattention/self/Reshape_2_kernel_time",
+          "/decoder/bert/encoder/layer.1/crossattention/self/Reshape_3_kernel_time",
+          "/decoder/bert/encoder/layer.1/crossattention/self/Reshape_kernel_time",
+          "/decoder/bert/encoder/layer.1/crossattention/self/Shape_kernel_time",
+          "/decoder/bert/encoder/layer.1/crossattention/self/Softmax_kernel_time",
+          "/decoder/bert/encoder/layer.1/crossattention/self/Transpose_2_kernel_time",
+          "/decoder/bert/encoder/layer.1/crossattention/self/Transpose_3_kernel_time",
+          "/decoder/bert/encoder/layer.1/crossattention/self/Transpose_4_kernel_time",
+          "/decoder/bert/encoder/layer.1/crossattention/self/Transpose_kernel_time",
+          "/decoder/bert/encoder/layer.1/crossattention/self/Unsqueeze_1_kernel_time",
+          "/decoder/bert/encoder/layer.1/crossattention/self/key/Add_kernel_time",
+          "/decoder/bert/encoder/layer.1/crossattention/self/key/MatMul_kernel_time",
+          "/decoder/bert/encoder/layer.1/crossattention/self/query/Add_kernel_time",
+          "/decoder/bert/encoder/layer.1/crossattention/self/query/MatMul_kernel_time",
+          "/decoder/bert/encoder/layer.1/crossattention/self/value/Add_kernel_time",
+          "/decoder/bert/encoder/layer.1/crossattention/self/value/MatMul_kernel_time",
+          "/decoder/bert/encoder/layer.1/intermediate/dense/MatMul_kernel_time",
+          "/decoder/bert/encoder/layer.1/output/Add_kernel_time",
+          "/decoder/bert/encoder/layer.1/output/LayerNorm/LayerNormalization_kernel_time",
+          "/decoder/bert/encoder/layer.1/output/dense/Add_kernel_time",
+          "/decoder/bert/encoder/layer.1/output/dense/MatMul_kernel_time",
+          "/decoder/cls/predictions/decoder/Add_kernel_time",
+          "/decoder/cls/predictions/decoder/MatMul_kernel_time",
+          "/decoder/cls/predictions/transform/LayerNorm/LayerNormalization_kernel_time",
+          "/decoder/cls/predictions/transform/dense/MatMul_kernel_time",
+          "BiasGelu_kernel_time",
+          "BiasGelu_token_5_kernel_time",
+          "BiasGelu_token_6_kernel_time",
+          "Transpose_kernel_time",
+          "Transpose_token_0_kernel_time",
+          "Transpose_token_1_kernel_time",
+          "Transpose_token_2_kernel_time"
+        ]
+      }
+    }
+  },
+  "firstSuccessfulCoremlEncoderSetup": {
+    "sessionMs": 86341.15345800092,
+    "peakRssBytes": 5478973440,
+    "referenceCropsExact": 10,
+    "note": "Retried after a sandbox compiler working-directory failure; not a pristine machine-cache test"
+  },
+  "coremlEncoderCache": {
+    "files": 10,
+    "regularBytes": 1658536336,
+    "allocatedBytes": 1660215296,
+    "scope": "successful encoder cache only; excludes profiles and failed decoder artifacts",
+    "contents": {
+      "15560278852155942903/model.txt": {
+        "bytes": 110
+      },
+      "15560278852155942903/0_dynamic_mlprogram/model/Manifest.json": {
+        "bytes": 653
+      },
+      "15560278852155942903/0_dynamic_mlprogram/model/compiled_model.mlmodelc/model.mil": {
+        "bytes": 1311820032
+      },
+      "15560278852155942903/0_dynamic_mlprogram/model/compiled_model.mlmodelc/coremldata.bin": {
+        "bytes": 166
+      },
+      "15560278852155942903/0_dynamic_mlprogram/model/compiled_model.mlmodelc/weights/weight.bin": {
+        "bytes": 3307328
+      },
+      "15560278852155942903/0_dynamic_mlprogram/model/compiled_model.mlmodelc/analytics/coremldata.bin": {
+        "bytes": 243
+      },
+      "15560278852155942903/0_dynamic_mlprogram/model/Data/com.microsoft.OnnxRuntime/model.mlmodel": {
+        "bytes": 340100476
+      },
+      "15560278852155942903/0_dynamic_mlprogram/model/Data/com.microsoft.OnnxRuntime/weights/weight.bin": {
+        "bytes": 3307328
+      },
+      "15560278852155942903/0_dynamic_mlprogram/model/tmp/model.mlmodel": {
+        "bytes": 0
+      },
+      "15560278852155942903/0_dynamic_mlprogram/model/tmp/weight.bin": {
+        "bytes": 0
+      }
+    }
+  },
+  "coremlAllFailure": {
+    "variant": "coreml-all",
+    "returnCode": 1,
+    "elapsedMs": 18252.42900000012,
+    "stage": "cached decoder session initialization",
+    "error": "CoreML MLProgram execution-plan failure: unbounded dimensions and matmul shapes; error -14",
+    "reportedCandidatePartitions": 21,
+    "reportedSupportedNodes": 66,
+    "reportedGraphNodes": 196,
+    "logSha256": "b809334fc29ba6fe85df7c82d8de70ab601593d15d4f702c9a08ee603816bc29",
+    "logFile": "coreml-all-failure.log",
+    "silentCpuRetryAccepted": false
+  },
+  "evidenceSha256": {
+    "0-coreml-cached.json": "1b9bcb8e45aff9c7d58d8d1054c648d8161bd6ba0873a920f06b8b1666c8ddee",
+    "0-cpu-cached.json": "920442b02a1f42b2f2d1b6df828e9badb33c107a6cd211d5494443a6e41adbd2",
+    "0-cpu-full.json": "b45c42c3c2ded0764232f167991cd1c05f1f6486a9ae8e377441d0eff22d4a53",
+    "0-torch.json": "0fe7983bea801f0cc919e75cc67efd6e1102d6f4eb7761650341a5f9c548282c",
+    "1-coreml-cached.json": "82064b0dbf0489dfc69c5a3078e5b78be2b983b821aabfc6f38db06348cfe485",
+    "1-cpu-cached.json": "64d643698e7a0d63fb556642216bbdc55cc52c9610978abbd6dd29a7e94f3235",
+    "1-cpu-full.json": "c28730e2c7fccd6a6f99142af175fde8e8e243633493b6e2c6b239d4f5e97bcf",
+    "1-torch.json": "373c80432859b4fde58fd07b35eb18b5f3019152dea86a69b52d364335669f1d",
+    "comparison.json": "f0f0d01c6ec0ef2378dd4e746b8ffea3d86fc2d2ca83bb53baa475b5a7baa891",
+    "coreml-all-failure.json": "b9cd1c18326a20f76b87b61e8576a3feb64f1943d99b6eaf56bff7263399ac4e",
+    "diagnostic-coreml-cached-final.json": "14f5315e1e08a0b20155b80e4d7430641723adc640fb0b16f9ec9c7f2077f95c",
+    "diagnostic-coreml-encoder.json": "decfd139bfaa727e9166fc01632e10ebfdfde84558f06c9f567a21c026a729ba",
+    "diagnostic-cpu-cached-final.json": "2e78eab0cdcafe527b8c4238cd00d6da7a585c0a50bded64aa2b947fa4e231b3",
+    "diagnostic-cpu-cached.json": "0ed7c21475efacef0dcd545a5367a62f536bab66644c5b99e4d887df64b327ab"
+  },
+  "publicDistributionApproved": false
+}

@@ -10,6 +10,10 @@ slightly higher process peak RSS, and requiring a different format for local
 Marian translation imports. Keep the current Torch backend while investigating
 decoder caching and Apple acceleration.
 
+The subsequent [cached-decoder and CoreML investigation](macos-onnx-cache-coreml.md)
+adds measured cache/provider results. The figures below retain the first study's
+full-prefix CPU comparison and frozen-runtime evidence.
+
 ## What was tested
 
 - Apple M5, 10 physical CPU cores, 24 GiB RAM; macOS 26.6.2 ARM64.
