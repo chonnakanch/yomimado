@@ -208,7 +208,11 @@ def verify_omissions(resources: Path) -> dict[str, str]:
 def prune_ocr_metadata(runtime: Path) -> None:
     for path in (runtime / "_internal").iterdir():
         name = path.name.lower().replace("-", "_")
-        if name.startswith(("unidic_lite", "fugashi")) and name.endswith(".dist_info"):
+        # Transformers' freezer hook copies metadata for optional dependencies
+        # installed on the builder, even when their modules are excluded.
+        if name.startswith(
+            ("unidic_lite", "fugashi", "sudachipy", "sudachidict_core")
+        ) and name.endswith(".dist_info"):
             shutil.rmtree(path)
 
 
@@ -217,7 +221,16 @@ def verify_ocr_runtime(runtime: Path) -> None:
         if (
             path.name.lower()
             .replace("-", "_")
-            .startswith(("unidic", "fugashi", "mecab", "libmecab"))
+            .startswith(
+                (
+                    "unidic",
+                    "fugashi",
+                    "mecab",
+                    "libmecab",
+                    "sudachipy",
+                    "sudachidict_core",
+                )
+            )
         ):
             raise ValueError(
                 "Unused OCR dictionary/binding remains in frozen service: " + path.name

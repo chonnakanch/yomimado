@@ -2,6 +2,15 @@
 
 ## Current status
 
+**Private packaging follow-up — 2026-10-18:** a fresh macOS freeze exposed
+obsolete Sudachi distribution metadata copied by Transformers' freezer hook,
+despite the excluded binding and dictionary. The existing bundle gate correctly
+rejects it. Shared packaging now removes that metadata alongside UniDic/Fugashi
+metadata, while retaining rejection of accidentally collected modules. All 265
+release-tool tests pass, including the cleanup regression. Fresh installer and
+user-local manga-page verification are in progress; no runtime seed or release
+approval changes.
+
 **CI regression coverage — 2026-10-18:** Checks now collects the model-free
 decoder-cache and scan/benchmark metric suites alongside the service tests.
 Explicit pytest configuration and script import paths collect both unittest

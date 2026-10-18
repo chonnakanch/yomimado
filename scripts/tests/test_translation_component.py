@@ -48,9 +48,40 @@ class ComponentTests(unittest.TestCase):
             runtime = Path(directory)
             internal = runtime / "_internal"
             internal.mkdir()
-            for name in ("unidic_lite", "fugashi", "unidic_lite-1.0.8.dist-info"):
+            for name in (
+                "unidic_lite",
+                "fugashi",
+                "unidic_lite-1.0.8.dist-info",
+                "sudachipy",
+                "sudachidict_core",
+                "SudachiPy-0.6.10.dist-info",
+            ):
                 path = internal / name
                 path.mkdir()
                 with self.assertRaisesRegex(ValueError, "Unused OCR"):
                     component.verify_ocr_runtime(runtime)
                 path.rmdir()
+
+    def test_prune_removes_obsolete_metadata_but_preserves_code_and_lindera(self):
+        with tempfile.TemporaryDirectory() as directory:
+            runtime = Path(directory)
+            internal = runtime / "_internal"
+            internal.mkdir()
+            obsolete = (
+                "unidic_lite-1.0.8.dist-info",
+                "fugashi-1.5.2.dist-info",
+                "SudachiPy-0.6.10.dist-info",
+                "sudachidict_core-20250515.dist-info",
+            )
+            retained = ("lindera-6.0.0.dist-info", "torch-2.8.0.dist-info", "sudachipy")
+            for name in obsolete + retained:
+                (internal / name).mkdir()
+                (internal / name / "METADATA").write_text("fixture")
+            component.prune_ocr_metadata(runtime)
+            self.assertEqual({path.name for path in internal.iterdir()}, set(retained))
+            # Cleanup must not conceal an accidentally collected old binding.
+            with self.assertRaisesRegex(ValueError, "Unused OCR"):
+                component.verify_ocr_runtime(runtime)
+            (internal / "sudachipy/METADATA").unlink()
+            (internal / "sudachipy").rmdir()
+            component.verify_ocr_runtime(runtime)
