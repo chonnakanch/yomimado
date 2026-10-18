@@ -1,5 +1,11 @@
 # Verified macOS runtime seed
 
+**Lindera migration — 2026-10-18:** the source now changes tokenizer dependencies
+and dictionary inputs. The seed below predates those changes and cannot authorize
+their reuse. Its dependency guard remains enforced; prepare and review a fresh
+seed before building a release from the migrated source. See the
+[migration report](lindera-migration.md). Historical hashes and approvals follow.
+
 ## Current 0.2.0 preparation — 2026-10-16
 
 Replacement source revision: `fae4d286619543014edb8aff6302fd3c864783a1`.

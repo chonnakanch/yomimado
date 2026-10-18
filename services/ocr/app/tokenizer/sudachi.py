@@ -1,13 +1,8 @@
 from __future__ import annotations
 
 from functools import lru_cache
-from typing import Protocol
 
 from app.models import TextToken
-
-
-class JapaneseTokenizer(Protocol):
-    def tokenize(self, text: str) -> list[TextToken]: ...
 
 
 def _offsets(text: str, surface: str, begin: int, end: int) -> tuple[int, int]:
@@ -31,7 +26,7 @@ def _dictionary():
         from sudachipy import dictionary
     except ImportError as error:
         raise RuntimeError(
-            "Japanese tokenization is unavailable. Install pip extra '[tokenization]' "
+            "Sudachi comparison is unavailable. Install pip extra '[tokenization-baseline]' "
             "in the OCR service environment."
         ) from error
 

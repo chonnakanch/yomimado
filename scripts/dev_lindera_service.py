@@ -1,4 +1,4 @@
-"""Launch the local Lindera experiment with OCR, dictionary and translation paths.
+"""Launch local manga OCR with the default Lindera/IPADIC learning tokenizer.
 
 Uses existing local assets only. No downloads or packaged-runtime changes.
 """
@@ -16,9 +16,9 @@ def configure(root: Path, existing: dict[str, str]) -> dict[str, str]:
     service = root / "services/ocr"
     experiment = service / "build/lindera-experiment-20261017"
     assets = root / "apps/desktop/src-tauri/resources/ocr/assets"
-    data = experiment / "dev-data"
+    data = service / "build/dev-data"
     defaults = {
-        "YOMIMADO_LINDERA_DICTIONARY": experiment / "dictionary/lindera-ipadic",
+        "YOMIMADO_LINDERA_DICTIONARY": service / "local-dictionaries/lindera-ipadic",
         "YOMIMADO_DETECTOR_REPO": assets / "comic-text-detector",
         "YOMIMADO_DETECTOR_MODEL": service / "local-models/comictextdetector.pt.onnx",
         "YOMIMADO_MANGA_OCR_MODEL": assets / "manga-ocr-base",
@@ -58,7 +58,7 @@ def configure(root: Path, existing: dict[str, str]) -> dict[str, str]:
         f"{name}: {path}" for name, path in required.items() if not path.is_file()
     ]
     if missing:
-        raise RuntimeError("Missing local experiment inputs:\n" + "\n".join(missing))
+        raise RuntimeError("Missing local OCR/tokenizer inputs:\n" + "\n".join(missing))
     return env
 
 

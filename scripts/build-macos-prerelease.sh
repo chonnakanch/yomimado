@@ -331,7 +331,11 @@ require_sha256 "$translation_model/pytorch_model.bin" \
   --hidden-import backports.tarfile \
   --collect-all manga_ocr \
   --collect-all unidic_lite \
-  --collect-all sudachidict_core \
+  --collect-all lindera \
+  --add-data "$service_dir/app/tokenizer/lindera-inputs.json:app/tokenizer" \
+  --exclude-module app.tokenizer.sudachi \
+  --exclude-module sudachipy \
+  --exclude-module sudachidict_core \
   --exclude-module wandb \
   --collect-submodules transformers.models.bert \
   --collect-submodules transformers.models.vit \
@@ -347,6 +351,8 @@ trap '[[ ! -d "$staging" ]] || rm -rf "$staging"' EXIT
 mkdir -p "$staging/runtime" "$staging/assets/comic-text-detector" \
   "$staging/assets/manga-ocr-base" "$staging/assets/opus-mt-ja-en" \
   "$staging/notices"
+"$python_bin" "$repo_root/scripts/prepare_lindera.py" --download \
+  --target "$staging/assets/lindera-ipadic" --notices "$staging/notices/lindera"
 cp -R "$service_dir/dist/yomimado-ocr/." "$staging/runtime/"
 # Manga OCR warms up by reading this path. Replace its sample artwork with
 # an original, generated blank image so no third-party example is distributed.
@@ -379,7 +385,7 @@ cp "$service_dir/build/opencv-source/source-changes.diff" "$staging/notices/open
 (
   cd "$staging/assets"
   shasum -a 256 manga-ocr-base/pytorch_model.bin \
-    opus-mt-ja-en/pytorch_model.bin JMdict_e.gz kanjidic2.xml.gz
+    opus-mt-ja-en/pytorch_model.bin JMdict_e.gz kanjidic2.xml.gz lindera-ipadic/*
 ) > "$staging/notices/asset-checksums.txt"
 "$python_bin" "$repo_root/scripts/generate-macos-notices.py" \
   "$staging/notices" --strict

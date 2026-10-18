@@ -57,6 +57,7 @@ jobs:
         run: |
           python -m pip install --only-binary=:all: -r ../../scripts/requirements-ci.txt
           python -m pip check
+          python ../../scripts/prepare_lindera.py --download
       - name: Lint and format service sources
         run: |
           python -m ruff check app tests packaged_main.py windows_packaged_main.py windows_onnx_backend.py

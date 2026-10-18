@@ -24,8 +24,7 @@ class DevelopmentLaunchTests(unittest.TestCase):
             assets / "manga-ocr-base/pytorch_model.bin",
             assets / "manga-ocr-base/config.json",
             self.root / "services/ocr/local-models/comictextdetector.pt.onnx",
-            self.root
-            / "services/ocr/build/lindera-experiment-20261017/dictionary/lindera-ipadic/metadata.json",
+            self.root / "services/ocr/local-dictionaries/lindera-ipadic/metadata.json",
         ]
         for path in self.inputs:
             path.parent.mkdir(parents=True, exist_ok=True)

@@ -69,7 +69,7 @@ Local OCR service (Python)
 Local data
 ├── JMdict
 ├── KANJIDIC2
-├── Sudachi dictionary/resources
+├── Lindera/IPADIC dictionary/resources
 └── SQLite cache/history
 
 Optional network
@@ -148,7 +148,7 @@ The detector should produce geometry such as polygons/bounding boxes and text-li
 
 ### Japanese analysis
 
-Use Sudachi/Sudachi.rs behind a small application interface. Pin exact versions for reproducibility, especially for dictionary compatibility.
+Use Lindera 6.0.0 with the pinned IPADIC resource behind a small application interface. Preserve source-text offsets, readings and dictionary forms. Sudachi is retained only for explicit source comparisons. Pin exact versions and dictionary hashes for reproducibility.
 
 ### Dictionary
 

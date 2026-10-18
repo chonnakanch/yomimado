@@ -209,6 +209,8 @@ pub fn start(app: &tauri::App) -> Result<Service, Box<dyn std::error::Error>> {
         )
         .env("YOMIMADO_MANGA_OCR_MODEL", assets.join("manga-ocr-base"))
         .env("YOMIMADO_TRANSLATION_MODEL", assets.join("opus-mt-ja-en"))
+        .env("YOMIMADO_TOKENIZER", "lindera")
+        .env("YOMIMADO_LINDERA_DICTIONARY", assets.join("lindera-ipadic"))
         .env("YOMIMADO_JMDICT", assets.join("JMdict_e.gz"))
         .env("YOMIMADO_KANJIDIC2", assets.join("kanjidic2.xml.gz"))
         .env("YOMIMADO_JMDICT_INDEX", data.join("jmdict-index.sqlite3"))

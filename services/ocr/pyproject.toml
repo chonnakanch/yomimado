@@ -6,22 +6,26 @@ build-backend = "setuptools.build_meta"
 name = "yomimado-ocr"
 version = "0.1.0"
 description = "Local OCR service boundary for YomiMado"
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 dependencies = ["fastapi>=0.115,<1", "python-multipart>=0.0.9,<1", "uvicorn[standard]>=0.30,<1"]
 
 [project.optional-dependencies]
 dev = ["httpx>=0.27,<1", "pytest>=8,<9", "ruff>=0.8,<1"]
 ocr = ["manga-ocr==0.1.16"]
-tokenization = ["sudachipy==0.6.10", "sudachidict-core==20250515"]
+tokenization = ["lindera==6.0.0"]
+tokenization-baseline = ["sudachipy==0.6.10", "sudachidict-core==20250515"]
 translation = ["transformers==4.57.3", "torch==2.8.0", "sentencepiece==0.2.1"]
 macos-build = ["pyinstaller==6.16.0", "pyinstaller-hooks-contrib==2026.8", "backports.tarfile==1.2.0"]
+
+[tool.setuptools.package-data]
+"app.tokenizer" = ["lindera-inputs.json"]
 
 [tool.pytest.ini_options]
 pythonpath = ["."]
 
 [tool.ruff]
 line-length = 100
-target-version = "py39"
+target-version = "py310"
 
 [tool.ruff.lint.per-file-ignores]
 "app/api/*.py" = ["B008"]

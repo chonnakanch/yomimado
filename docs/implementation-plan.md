@@ -2,6 +2,19 @@
 
 ## Current status
 
+**Lindera/IPADIC migration — 2026-10-18:** at the owner's request, Lindera 6.0.0
+is now the default learning tokenizer. Both packaging recipes and native service
+launchers use a separate hash-pinned IPADIC resource and exclude Sudachi. The
+dictionary saves 161.73 MiB before binding costs; the known segmentation tradeoff
+is accepted. The API injects an engine-independent `JapaneseTokenizer` port;
+Lindera and source-only Sudachi implement its existing token contract.
+All 113 service tests, 256 release-tool tests and a private frozen
+macOS HTTP smoke pass, including concurrent analysis, OCR geometry, word/kanji
+lookup and translation. See the [migration report](lindera-migration.md).
+Native Windows execution, a newly reviewed macOS runtime seed and exact installer
+acceptance remain future release work. No installer is published or approved.
+The investigation entries below record their earlier defaults and results.
+
 **All suggested tokenizer candidates compared — 2026-10-17:** seven local native
 profiles cover Core, Small, Lindera/IPADIC, MeCab/IPADIC, existing UniDic Lite and
 Vaporetto kana/pronunciation. All source spans pass over 53 shared sentences plus

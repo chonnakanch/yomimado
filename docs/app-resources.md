@@ -5,8 +5,9 @@ information as the user explores it. Models recognize images or translate text;
 tokenizer dictionaries analyze Japanese; learning dictionaries provide definitions.
 These resources serve different stages even when some contain overlapping readings.
 
-This describes the source implementation at `32b5117`, inspected on 2026-10-17.
-The size-reduction ideas at the end are proposals, not implemented changes.
+This describes the source implementation after the Lindera migration on
+2026-10-18. Published v0.1.0 packages retain their historical Sudachi inputs.
+The size baseline below predates this migration.
 
 ## From capture to learning
 
@@ -16,7 +17,7 @@ flowchart TD
     Weights["User-installed detector ONNX weights"] --> Detect
     Detect --> Recognize["Manga OCR: recognize each cropped region"]
     Recognize --> Overlay["Overlay: Japanese text and aligned regions"]
-    Overlay -->|Open a region| Analyze["Sudachi: words, readings and base forms"]
+    Overlay -->|Open a region| Analyze["Lindera/IPADIC: words, readings and base forms"]
     Analyze -->|Select a word| Word["JMdict: word readings and meanings"]
     Word -->|Select a kanji| Kanji["KANJIDIC2: character readings and meanings"]
     Kanji -->|Expand example compounds| Examples["JMdict: words containing that kanji"]
@@ -41,7 +42,7 @@ sentence also works without translating it first.
 4. **Overlay:** the frontend maps image polygons into logical overlay coordinates
    using capture metadata, preserving the original manga underneath. The current
    OCR response has empty `tokens` arrays; word analysis happens separately.
-5. **Analyze on opening a region:** the popup requests Sudachi analysis of that
+5. **Analyze on opening a region:** the popup requests Lindera analysis of that
    region's text. Tokens identify selectable word spans, readings, base forms and
    parts of speech. Applying an OCR text edit requests fresh analysis.
 6. **Look up on selection:** selecting a word queries JMdict. Selecting one of its
@@ -59,7 +60,7 @@ sentence also works without translating it first.
 | `comictextdetector.pt.onnx`                            | Learned detector weights: where text is in an image                                         | Installed separately by the user                                                      |
 | Manga OCR model, vocabulary and configuration          | Recognition: what the cropped Japanese text says                                            | Bundled; backend differs by platform                                                  |
 | UniDic Lite and Fugashi/MeCab support                  | Dictionary and binding used by the configured Japanese OCR tokenizer                        | Bundled in the current tokenizer setup                                                |
-| SudachiPy and Sudachi core dictionary                  | Japanese word segmentation, readings, dictionary forms and parts of speech                  | Bundled                                                                               |
+| Lindera 6.0.0 and its pinned IPADIC dictionary         | Japanese word segmentation, readings, dictionary forms and parts of speech                  | Binding in frozen runtime; dictionary in `assets/lindera-ipadic`                      |
 | `JMdict_e.gz`                                          | English word meanings, word readings, spelling/reading restrictions and compound candidates | Bundled                                                                               |
 | `kanjidic2.xml.gz`                                     | Individual kanji meanings, on'yomi and kun'yomi                                             | Bundled                                                                               |
 | OPUS-MT Japanese-to-English model and tokenizer assets | Local sentence translation                                                                  | Bundled; backend differs by platform                                                  |
@@ -85,27 +86,28 @@ does not explicitly ask this OCR tokenizer to split recognized sentences for the
 learning UI. Removing UniDic would require verifying a replacement initialization
 and decoding path against the existing output.
 
-**Sudachi** analyzes the recognized sentence when its learning popup opens. It
+**Lindera/IPADIC** analyzes the recognized sentence when its learning popup opens. It
 provides the word boundaries and base forms needed to select a word and find an
-inflected expression in JMdict. The current implementation uses the core
-dictionary and Split Mode C. Its token offsets refer to the original text, so
+inflected expression in JMdict. The implementation uses the pinned v6.0.0 IPADIC
+resource in normal mode. UTF-8 byte offsets are converted to Unicode code-point
+offsets referring to the original text, so
 the UI can preserve punctuation and highlight the selected span.
 
-UniDic is not the dictionary queried by the word popup. Sudachi does not supply
+UniDic is not the dictionary queried by the word popup. IPADIC does not supply
 English word definitions, and JMdict does not perform sentence segmentation.
 
 ## Where the displayed readings and meanings come from
 
 | UI information                                        | Resource and behavior                                                                                                  |
 | ----------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
-| Selected word's reading, base form and token POS      | Sudachi analysis; the UI converts Katakana readings to Hiragana for display                                            |
+| Selected word's reading, base form and token POS      | Lindera/IPADIC analysis; the UI converts Katakana readings to Hiragana for display                                     |
 | Matched dictionary entry's reading and English senses | JMdict; lookup uses the token's surface, dictionary form and reading to rank candidates and respect entry restrictions |
-| Reading mismatch hint                                 | Compares the Sudachi reading with the matched JMdict entry reading                                                     |
+| Reading mismatch hint                                 | Compares the IPADIC reading with the matched JMdict entry reading                                                      |
 | Kanji on'yomi, kun'yomi and character meanings        | KANJIDIC2; these are possible character readings, not a per-character split of the word's reading                      |
 | Example compounds and their readings/meanings         | JMdict, using its generated kanji-to-word index                                                                        |
 | English sentence translation                          | OPUS-MT, requested separately; dictionary senses are not sentence translations                                         |
 
-For example, selecting `学校` first uses Sudachi's word span and reading to make
+For example, selecting `学校` first uses Lindera's word span and reading to make
 the lookup request. JMdict supplies matching word definitions and its entry
 reading. Selecting `学` then asks KANJIDIC2 for that character's information;
 opening example compounds asks JMdict for short words containing `学`.
@@ -117,7 +119,7 @@ opening example compounds asks JMdict for short words containing `学`.
 | Detector                           | comic-text-detector adapter; user-installed ONNX weights use OpenCV DNN | Adapted detector code with NumPy/OpenCV DNN; same user-installed detector input                                    |
 | Recognition                        | Manga OCR through Torch and Transformers, with original PyTorch weights | CPU ONNX Runtime, exported OCR encoder/decoder graphs and matching preprocessing/decoding                          |
 | Translation                        | Local Marian/OPUS-MT through Torch and Transformers                     | CPU ONNX Runtime, exported translation encoder/decoder graphs and matching text tokenizer                          |
-| Learning analysis and dictionaries | Sudachi, JMdict and KANJIDIC2                                           | Same roles and API contracts                                                                                       |
+| Learning analysis and dictionaries | Lindera/IPADIC, JMdict and KANJIDIC2                                    | Same roles and API contracts                                                                                       |
 | Model delivery                     | Original recognition and translation weights                            | Four exported graphs; original export-only PyTorch weights are removed from installer resources after verification |
 
 The Windows build uses Torch in a separate export/reference environment. Torch,
@@ -171,7 +173,7 @@ to install WebView2 if it is missing; that is separate from reading-time inferen
 
 ## Size baseline and possible consolidation
 
-The local macOS OCR staging directory measured on 2026-10-17 contains about
+The pre-migration local macOS OCR staging directory measured on 2026-10-17 contains about
 **1,661 MiB (1.62 GiB)** of regular-file content, excluding symlink aliases:
 
 | Resource group                                        | Approximate MiB |
@@ -190,17 +192,21 @@ Combining JMdict and KANJIDIC2 into one prepared SQLite database is possible, bu
 is not implemented. It would simplify loading and could avoid first-run indexing;
 an indexed database might occupy more installed space than the compressed XML.
 Such a database must preserve word restrictions, readings, attribution and source
-provenance. It would not replace Sudachi's morphological analysis dictionary.
+provenance. It would not replace IPADIC's morphological analysis dictionary.
 
-The [tokenizer resource investigation](tokenizer-resource-investigation.md) now
-shows source-level OCR decoding/recognition parity without UniDic imports and
-documents behavior changes with Sudachi Small. It recommends retaining Sudachi
-Core and investigating removal of UniDic from the packaged OCR runtime first.
-Frozen-service/platform parity and final size/performance effects remain
-unverified. Other candidates are using the Windows ONNX approach on macOS and
-separately evaluating model quantization. Existing bundles and release evidence remain
-the baseline; dependency/model changes require updated source/notices and new
-candidate verification under the [shared release checklist](desktop-release.md).
+The owner selected [Lindera/IPADIC](lindera-migration.md) after the
+[candidate comparison](tokenizer-candidate-comparison.md). Its 45.33 MiB dictionary
+replaces the 207.06 MiB Sudachi Core resource, saving 161.73 MiB before native
+binding costs. Word boundaries differ; this does not improve image detection or
+recognition. A private frozen macOS service passes OCR and learning smoke checks;
+native Windows and exact installers still require release verification.
+
+The earlier [tokenizer resource investigation](tokenizer-resource-investigation.md)
+also shows source-level OCR decoding/recognition parity without UniDic imports.
+Removing UniDic, adopting the Windows ONNX approach on macOS and quantization
+remain separate proposals. Existing installer evidence remains historical;
+dependency/model changes require updated source/notices and new candidate
+verification under the [shared release checklist](desktop-release.md).
 
 ## Implementation references
 
@@ -215,7 +221,7 @@ candidate verification under the [shared release checklist](desktop-release.md).
   [export-only input removal](../scripts/windows_export_inputs.py).
 - Learning: [popup triggers](../apps/desktop/src/features/translation/TranslationPopup.tsx),
   [word display](../apps/desktop/src/features/translation/WordDefinition.tsx),
-  [Sudachi adapter](../services/ocr/app/tokenizer/sudachi.py),
+  [Lindera adapter](../services/ocr/app/tokenizer/lindera.py),
   [JMdict index/lookup](../services/ocr/app/dictionary/jmdict.py),
   [KANJIDIC2 lookup](../services/ocr/app/dictionary/kanjidic.py).
 - Persistence: [translation provider/cache](../services/ocr/app/translation.py),

@@ -179,7 +179,7 @@ def main() -> None:
                             t["dictionaryForm"] == "学校" and t["reading"]
                             for t in tokens
                         ),
-                        "Sudachi tokenization failed",
+                        "Lindera tokenization failed",
                     )
                     word = request(
                         "/api/v1/word",
@@ -239,7 +239,7 @@ def main() -> None:
                             pass
                         process.wait()
     print(
-        "PASS: frozen health, vertical OCR geometry, Sudachi, JMdict, KANJIDIC2, translation and saved-data/cache restart"
+        "PASS: frozen health, vertical OCR geometry, Lindera, JMdict, KANJIDIC2, translation and saved-data/cache restart"
     )
 
 

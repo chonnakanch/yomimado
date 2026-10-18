@@ -1,4 +1,4 @@
-"""Opt-in Lindera/IPADIC development experiment; release bundles still use Sudachi."""
+"""Local, pinned Lindera/IPADIC learning analysis for source and frozen services."""
 
 from __future__ import annotations
 
@@ -6,18 +6,28 @@ import hashlib
 import importlib.metadata
 import json
 import os
+import sys
 from functools import lru_cache
 from pathlib import Path
 from threading import Lock
 
 from app.models import TextToken
 
-INPUTS = Path(__file__).resolve().parents[2] / "lindera-experiment-inputs.json"
+INPUTS = Path(__file__).with_name("lindera-inputs.json")
+
+
+def dictionary_path() -> Path:
+    configured = os.environ.get("YOMIMADO_LINDERA_DICTIONARY")
+    if configured:
+        return Path(configured).expanduser().resolve()
+    if getattr(sys, "frozen", False):
+        return Path(sys.executable).resolve().parent.parent / "assets/lindera-ipadic"
+    return Path(__file__).resolve().parents[2] / "local-dictionaries/lindera-ipadic"
 
 
 def verify_dictionary(path: Path, expected: dict[str, str]) -> None:
     if not path.is_dir() or {p.name for p in path.iterdir()} != set(expected):
-        raise RuntimeError("Lindera requires the exact experimental IPADIC file set")
+        raise RuntimeError("Lindera requires the exact pinned IPADIC file set")
     for name, sha in expected.items():
         source = path / name
         if source.is_symlink() or not source.is_file():
@@ -25,7 +35,7 @@ def verify_dictionary(path: Path, expected: dict[str, str]) -> None:
         with source.open("rb") as stream:
             actual = hashlib.sha256(stream.read()).hexdigest()
         if actual != sha:
-            raise RuntimeError(f"Lindera experimental dictionary checksum differs: {name}")
+            raise RuntimeError(f"Lindera dictionary checksum differs: {name}")
 
 
 @lru_cache(maxsize=1)
@@ -33,10 +43,12 @@ def _backend(path: str):
     pins = json.loads(INPUTS.read_text())
     try:
         if importlib.metadata.version("lindera") != pins["version"]:
-            raise RuntimeError("This experiment requires lindera==6.0.0")
+            raise RuntimeError("Japanese tokenization requires lindera==6.0.0")
         from lindera import TokenizerBuilder
     except (ImportError, importlib.metadata.PackageNotFoundError) as error:
-        raise RuntimeError("Install the pinned Lindera experiment wheel first") from error
+        raise RuntimeError(
+            "Install the OCR service's pinned '[tokenization]' dependencies"
+        ) from error
     verify_dictionary(Path(path), pins["dictionary"]["files"])
     try:
         builder = TokenizerBuilder()
@@ -46,7 +58,7 @@ def _backend(path: str):
         # surfaces and offsets must continue to refer to the original OCR string.
         return builder.build(), Lock()
     except Exception as error:
-        raise RuntimeError("Lindera could not load the experimental IPADIC dictionary") from error
+        raise RuntimeError("Lindera could not load the pinned IPADIC dictionary") from error
 
 
 def _character_offsets(text: str) -> dict[int, int]:
@@ -60,12 +72,7 @@ def _character_offsets(text: str) -> dict[int, int]:
 
 class LinderaTokenizer:
     def tokenize(self, text: str) -> list[TextToken]:
-        configured = os.environ.get("YOMIMADO_LINDERA_DICTIONARY")
-        if not configured:
-            raise RuntimeError(
-                "Set YOMIMADO_LINDERA_DICTIONARY to the experimental IPADIC directory"
-            )
-        path = Path(configured).expanduser().resolve()
+        path = dictionary_path()
         backend, lock = _backend(str(path))
         try:
             # Serialize calls to a cached native tokenizer rather than assuming

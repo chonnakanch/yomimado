@@ -1,5 +1,9 @@
 # SudachiPy investigation — 2026-10-17
 
+Historical investigation: the owner subsequently selected Lindera/IPADIC as the
+default. See the [migration and adapter contract](lindera-migration.md) for the
+current implementation. Results and earlier recommendations below are preserved.
+
 The [expanded candidate comparison](tokenizer-candidate-comparison.md) additionally
 tests MeCab/IPADIC, OCR UniDic reuse and two Vaporetto models against this baseline,
 using 53 shared sentences and 24 focused learning targets.

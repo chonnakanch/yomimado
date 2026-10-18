@@ -1,5 +1,9 @@
 # Lindera + IPADIC experiment — 2026-10-17
 
+Historical investigation: the owner subsequently selected Lindera/IPADIC as the
+default. See the [migration and adapter contract](lindera-migration.md) for the
+current implementation. Results and earlier recommendations below are preserved.
+
 Branch: `codex/lindera-tokenizer-experiment`, created from `08663d9`.
 
 **Lindera substantially reduces dictionary size, but changes the learning

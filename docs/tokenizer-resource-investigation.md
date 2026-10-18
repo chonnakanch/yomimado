@@ -1,5 +1,9 @@
 # Tokenizer resource investigation — 2026-10-17
 
+Historical investigation: the owner subsequently selected Lindera/IPADIC as the
+default. See the [migration and adapter contract](lindera-migration.md) for the
+current implementation. Results and earlier recommendations below are preserved.
+
 **Recommendation: keep Sudachi Core and pursue removing UniDic Lite from OCR
 inference.** An isolated source experiment preserves decoding, synthetic OCR
 output and Sudachi analysis without importing UniDic or Fugashi. Switching

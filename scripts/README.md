@@ -49,7 +49,7 @@ private seed identities and download checks live in `desktop_release.py`.
 
 ## Windows build, runtime and source dependencies
 
-The `windows_*` component scripts prepare CPython, minimal OpenCV, Sudachi,
+The `windows_*` component scripts prepare CPython, minimal OpenCV, Lindera,
 NSIS, the source WebView loader, canonical VC inputs, export bindings, native
 preferred sources and full notices. Their manifests/locks remain under `docs/`.
 The C++ WebView adapter/probe and native probes are part of those build checks.
@@ -74,12 +74,19 @@ including full-pipeline losses rather than only clean-crop recognition. It does
 not capture user screenshots or change production behavior. See the
 [speed/accuracy report](../docs/scan-performance-comparison.md).
 
-`dev_lindera_service.py` starts the existing local Lindera experiment with complete
+`prepare_lindera.py --download` explicitly downloads and stages the pinned IPADIC
+dictionary for development. Use `--archive` for an existing archive or `--check`
+to verify staged files. Packaging also supplies `--target` and `--notices`.
+Changed archives, incomplete dictionaries and unexpected members are rejected.
+The default resource path is `services/ocr/local-dictionaries/lindera-ipadic`.
+See the [migration report](../docs/lindera-migration.md).
+
+`dev_lindera_service.py` starts the local service with complete
 OCR/model/dictionary paths, independent of the terminal working directory. It
 checks required files, enables offline model loading and uses isolated development
 data. It downloads nothing; `--check` performs path validation without serving.
 
-`benchmark_lindera_tokenizer.py` compares the optional development Lindera/IPADIC
+`benchmark_lindera_tokenizer.py` compares the Lindera/IPADIC
 adapter with Sudachi Core, including source offsets, fixed learning checks,
 JMdict matches, payload sizes and warm adapter timings. It downloads nothing and
 keeps derived lookup data in its output directory. Optional `--sudachi-small`

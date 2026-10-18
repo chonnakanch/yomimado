@@ -294,6 +294,18 @@ def download_assets() -> None:
 def prepare_assets() -> None:
     download_assets()
     assets = RESOURCES / "assets"
+    subprocess.run(
+        [
+            sys.executable,
+            str(ROOT / "scripts/prepare_lindera.py"),
+            "--download",
+            "--target",
+            str(assets / "lindera-ipadic"),
+            "--notices",
+            str(RESOURCES / "notices/lindera"),
+        ],
+        check=True,
+    )
     detector = BUILD / "detector"
     revision = "440b978563c71b758e31aaa315d100faba1efa2f"
     if not detector.exists():
@@ -799,6 +811,11 @@ def verify_resources(
     resources: Path, *, manifest_hashes: dict[str, str] | None = None
 ) -> dict:
     assert_no_detector(resources)
+    # Preserve historical exact-installer audits using their supplied manifests.
+    if manifest_hashes is None:
+        from prepare_lindera import verify_packaged
+
+        verify_packaged(resources)
     required = [
         "LICENSE",
         "MODEL_CREDITS.md",

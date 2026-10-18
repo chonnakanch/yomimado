@@ -1,4 +1,4 @@
-"""Retain original locked Rust dependencies of the four Windows Python wheels."""
+"""Retain original locked Rust dependencies of the Windows Python wheels."""
 
 from __future__ import annotations
 
@@ -19,7 +19,7 @@ from windows_release import (
     write_json,
 )
 
-PACKAGES = {"pydantic_core", "safetensors", "tokenizers", "watchfiles"}
+PACKAGES = {"pydantic_core", "safetensors", "tokenizers", "watchfiles", "lindera"}
 
 
 def regular_members(archive: tarfile.TarFile):

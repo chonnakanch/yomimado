@@ -12,6 +12,8 @@ from pathlib import Path
 
 from opencv_release import VIDEO_LIBRARY, verify_record
 from PIL import Image
+from prepare_lindera import INPUTS as LINDERA_INPUTS
+from prepare_lindera import verify_packaged as verify_lindera
 
 MACHO = {
     b"\xfe\xed\xfa\xce",
@@ -29,6 +31,10 @@ EXPECTED_ASSETS = (
     "opus-mt-ja-en/pytorch_model.bin",
     "JMdict_e.gz",
     "kanjidic2.xml.gz",
+    *(
+        "lindera-ipadic/" + name
+        for name in json.loads(LINDERA_INPUTS.read_text())["dictionary"]["files"]
+    ),
 )
 REQUIRED_NOTICES = (
     "LICENSE",
@@ -52,6 +58,9 @@ REQUIRED_NOTICES = (
     "assets/CC-BY-SA-4.0.txt",
     "assets/EDRDG-dictionary-licence.html",
     "assets/manga-ocr-model-card.md",
+    "lindera/lindera-inputs.json",
+    "lindera/lindera-LICENSE.txt",
+    "lindera/IPADIC-NOTICE.txt",
 )
 
 
@@ -191,6 +200,10 @@ def verify(app: Path) -> list[str]:
     resources = app / "Contents/Resources/ocr"
     assets = resources / "assets"
     notices = resources / "notices"
+    try:
+        verify_lindera(resources)
+    except (OSError, RuntimeError, ValueError) as error:
+        errors.append(str(error))
     info = app / "Contents/Info.plist"
     if not info.is_file():
         return [f"Missing macOS app metadata: {info}"]

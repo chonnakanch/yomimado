@@ -1,5 +1,9 @@
 # Learning tokenizer candidates versus current Sudachi — 2026-10-17
 
+Historical investigation: the owner subsequently selected Lindera/IPADIC as the
+default. See the [migration and adapter contract](lindera-migration.md) for the
+current implementation. Results and earlier recommendations below are preserved.
+
 **Current Sudachi Core remains the best match for the tested learning targets.
 Lindera/IPADIC and MeCab/IPADIC offer substantial size reductions with different
 word selections. Vaporetto is small and fast but its selected models lack the

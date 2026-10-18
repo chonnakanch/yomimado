@@ -90,10 +90,19 @@ def test_rejects_incompatible_native_output(monkeypatch, raw):
         backend(monkeypatch, raw).tokenize("学校")
 
 
-def test_requires_explicit_dictionary_configuration(monkeypatch):
+def test_resolves_development_dictionary_without_environment_override(monkeypatch):
     monkeypatch.delenv("YOMIMADO_LINDERA_DICTIONARY", raising=False)
-    with pytest.raises(RuntimeError, match="YOMIMADO_LINDERA_DICTIONARY"):
-        lindera.LinderaTokenizer().tokenize("学校")
+    assert (
+        lindera.dictionary_path()
+        == Path(lindera.__file__).resolve().parents[2] / "local-dictionaries/lindera-ipadic"
+    )
+
+
+def test_resolves_frozen_dictionary_relative_to_executable(monkeypatch, tmp_path):
+    monkeypatch.delenv("YOMIMADO_LINDERA_DICTIONARY", raising=False)
+    monkeypatch.setattr(lindera.sys, "frozen", True, raising=False)
+    monkeypatch.setattr(lindera.sys, "executable", str(tmp_path / "runtime/yomimado-ocr"))
+    assert lindera.dictionary_path() == tmp_path / "assets/lindera-ipadic"
 
 
 def test_verifies_pinned_dictionary_bytes_and_membership(tmp_path: Path):
@@ -109,14 +118,16 @@ def test_verifies_pinned_dictionary_bytes_and_membership(tmp_path: Path):
         lindera.verify_dictionary(tmp_path, pins)
 
 
-def test_default_stays_sudachi_and_experiment_requires_opt_in(monkeypatch):
+def test_default_is_lindera_in_source_and_frozen_apps(monkeypatch):
     monkeypatch.delenv("YOMIMADO_TOKENIZER", raising=False)
-    assert isinstance(provider.get_tokenizer(), SudachiTokenizer)
-    monkeypatch.setenv("YOMIMADO_TOKENIZER", "lindera")
     assert isinstance(provider.get_tokenizer(), lindera.LinderaTokenizer)
     monkeypatch.setattr(provider.sys, "frozen", True, raising=False)
-    with pytest.raises(RuntimeError, match="development experiment"):
+    assert isinstance(provider.get_tokenizer(), lindera.LinderaTokenizer)
+    monkeypatch.setenv("YOMIMADO_TOKENIZER", "sudachi")
+    with pytest.raises(RuntimeError, match="development comparisons"):
         provider.get_tokenizer()
+    monkeypatch.setattr(provider.sys, "frozen", False)
+    assert isinstance(provider.get_tokenizer(), SudachiTokenizer)
 
 
 def test_api_preserves_contract_with_selected_provider(monkeypatch):
@@ -132,7 +143,7 @@ def test_api_preserves_contract_with_selected_provider(monkeypatch):
 def test_api_reports_missing_dictionary_and_unknown_provider(monkeypatch):
     client = TestClient(app, base_url="http://127.0.0.1", headers={"X-YomiMado-Client": "desktop"})
     monkeypatch.setenv("YOMIMADO_TOKENIZER", "lindera")
-    monkeypatch.delenv("YOMIMADO_LINDERA_DICTIONARY", raising=False)
+    monkeypatch.setenv("YOMIMADO_LINDERA_DICTIONARY", "/nonexistent/ipadic")
     assert client.post("/api/v1/tokenize", json={"text": "学校"}).status_code == 503
     monkeypatch.setenv("YOMIMADO_TOKENIZER", "unsupported")
     assert client.post("/api/v1/tokenize", json={"text": "学校"}).status_code == 503

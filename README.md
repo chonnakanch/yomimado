@@ -53,6 +53,7 @@ cd services/ocr
 python3 -m venv .venv
 . .venv/bin/activate
 pip install -e '.[dev,tokenization]'
+python ../../scripts/prepare_lindera.py --download
 uvicorn app.main:app --reload --port 8765
 ```
 

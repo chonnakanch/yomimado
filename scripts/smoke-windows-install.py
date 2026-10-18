@@ -241,7 +241,7 @@ def main() -> None:
                             t["dictionaryForm"] == "学校" and t["reading"]
                             for t in tokens
                         ),
-                        "Sudachi tokenization failed",
+                        "Lindera tokenization failed",
                     )
                     word = request(
                         "/api/v1/word",
@@ -342,7 +342,7 @@ def main() -> None:
     report["savedDataAndTranslationCacheSurvivedRestart"] = True
     report_path.write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
     print(
-        "PASS: installed frozen health, vertical/horizontal OCR geometry, Sudachi, JMdict, KANJIDIC2, translation and saved-data/cache restart"
+        "PASS: installed frozen health, vertical/horizontal OCR geometry, Lindera, JMdict, KANJIDIC2, translation and saved-data/cache restart"
     )
 
 
