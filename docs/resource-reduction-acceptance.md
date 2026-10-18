@@ -43,7 +43,9 @@ UniDic/Fugashi metadata. A regression verifies that cleanup preserves Lindera
 metadata and leaves accidentally collected old code in place for the verifier
 to reject. It does not weaken the existing bundle gate.
 
-All **265 release-tool tests** and changed-script Ruff checks pass. The frontend
+All **265 release-tool tests** and changed-script Ruff checks pass.
+CI's model-free service selection also includes the three component/packaging
+tests, bringing that selection to **187 passing tests without skips**. The frontend
 production build and native macOS release build pass. The rebuilt exact DMG
 passes mounted bundle, ARM64/deployment-target and native-library-link checks.
 Its copied app passes the resource-seal check and every native code-signature

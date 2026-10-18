@@ -18,6 +18,10 @@ runtime/source review and exact capture/installed acceptance remain open. No
 publication or seed approval changes. See the
 [evidence and limitations](resource-reduction-acceptance.md).
 
+The model-free CI service selection now includes the component/packaging regression
+suite: all 187 selected tests pass without skips. Workflow syntax checks pass;
+required gates, triggers, seed access and publication behavior are unchanged.
+
 **CI regression coverage — 2026-10-18:** Checks now collects the model-free
 decoder-cache and scan/benchmark metric suites alongside the service tests.
 Explicit pytest configuration and script import paths collect both unittest

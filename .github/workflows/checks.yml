@@ -72,6 +72,7 @@ jobs:
             ../../scripts/tests/test_cached_ocr_experiment.py \
             ../../scripts/tests/test_macos_onnx_benchmark.py \
             ../../scripts/tests/test_scan_benchmark_metrics.py \
+            ../../scripts/tests/test_translation_component.py \
             --junitxml="$RUNNER_TEMP/service-tests.xml"
           python - <<'PY'
           import os

@@ -577,7 +577,9 @@
     "frontendProductionBuild": "passed",
     "nativeReleaseBuild": "passed",
     "mountedBundleAndPlatform": "passed",
-    "copiedAppResourceSealAndAllNativeSignatures": "passed"
+    "copiedAppResourceSealAndAllNativeSignatures": "passed",
+    "modelFreeCiSelection": 187,
+    "workflowSyntax": "passed"
   },
   "remaining": [
     "Native Windows installer and installed-runtime acceptance not run: no Windows host; existing Checks debug builds do not substitute. Protected release inputs remain main-only and unchanged.",
