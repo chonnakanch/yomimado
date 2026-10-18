@@ -30,8 +30,12 @@ records 12,804 matching cases and ten synthetic recognitions.
 
 ## Optional local translation
 
-Users can also [import compatible models or choose a local Ollama model](translation-model-selection.md).
-The built-in optional component below remains available as the default choice.
+**Current flow:** users [import a compatible model or install/select a local
+Ollama model](translation-model-selection.md). The built-in option described
+below was removed at the owner's request. A fresh app has no active translator;
+old default selections become unconfigured without deleting their model files.
+The component delivery details below record the earlier implementation and remain
+available to release tooling; they are not a download choice in current settings.
 
 In **Settings → Reading → Local translation**, the user chooses **Download local
 translation**. Opening settings, scanning, selecting text and asking for a missing

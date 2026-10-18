@@ -32,13 +32,6 @@ const response = (body: unknown, ok = true) => ({
 });
 const fetch = vi.fn(async (url: string, options?: RequestInit) => {
   const body = options?.body ? JSON.parse(String(options.body)) : {};
-  if (url.endsWith("/translation-model"))
-    return response({
-      state: "notInstalled",
-      receivedBytes: 0,
-      downloadBytes: 1000,
-      error: null,
-    });
   if (url.endsWith("/ollama/pull")) {
     download = {
       state: "downloading",
@@ -89,7 +82,7 @@ const input = (value: string) =>
 beforeEach(() => {
   Object.assign(globalThis, { IS_REACT_ACT_ENVIRONMENT: true });
   settings = {
-    provider: "builtin",
+    provider: "none",
     importedModel: null,
     ollamaModel: "",
     backend: "torch",
@@ -110,10 +103,22 @@ afterEach(async () => {
 });
 const mount = () => act(async () => root.render(<TranslationModels active />));
 
+it("offers only user-installed sources and does not check or download a default model", async () => {
+  await mount();
+  expect(
+    Array.from(container.querySelectorAll("option")).map((item) => item.value),
+  ).toEqual(["imported", "ollama"]);
+  expect(container.textContent).toContain("No translation model installed.");
+  expect(container.textContent).not.toContain("Built-in");
+  expect(fetch.mock.calls.map(([url]) => new URL(url).pathname)).toEqual([
+    "/api/v1/translation-settings",
+  ]);
+});
+
 it("loads the saved choice without downloading or activating a browsed source", async () => {
   await mount();
   await source("ollama");
-  expect(container.textContent).toContain("Using: Built-in Marian model");
+  expect(container.textContent).toContain("No translation model installed.");
   expect(container.textContent).toContain("my-model:latest");
   expect(
     fetch.mock.calls.every(([, options]) => options?.method !== "POST"),
@@ -159,7 +164,7 @@ it("keeps the current provider visible after an incompatible import", async () =
     ),
   );
   await click("Import and use model");
-  expect(container.textContent).toContain("Using: Built-in Marian model");
+  expect(container.textContent).toContain("No translation model installed.");
   expect(container.querySelector('[role="alert"]')?.textContent).toContain(
     "Marian model folder",
   );
@@ -185,7 +190,7 @@ it("keeps the Ollama panel and model name while an explicit pull runs", async ()
   expect(container.querySelector("input")?.value).toBe("another-model:latest");
   expect(container.querySelector("progress")?.value).toBe(50);
   expect(button("Downloading…").disabled).toBe(true);
-  expect(container.textContent).toContain("Using: Built-in Marian model");
+  expect(container.textContent).toContain("No translation model installed.");
 });
 
 it("restores an Ollama selection without contacting chat or pulling a model", async () => {

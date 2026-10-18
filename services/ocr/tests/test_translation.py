@@ -6,7 +6,7 @@ from fastapi.testclient import TestClient
 
 from app.api import translation as translation_api
 from app.main import app
-from app.translation import TranslationService
+from app.translation import LocalMarianProvider, TranslationService
 
 
 class FakeProvider:
@@ -56,7 +56,7 @@ def test_translation_reports_missing_local_model(monkeypatch, tmp_path: Path) ->
     monkeypatch.setattr(
         translation_api,
         "service",
-        TranslationService(translation_api.LocalMarianProvider(), tmp_path / "cache.sqlite3"),
+        TranslationService(LocalMarianProvider(), tmp_path / "cache.sqlite3"),
     )
     response = TestClient(
         app, base_url="http://127.0.0.1", headers={"X-YomiMado-Client": "desktop"}

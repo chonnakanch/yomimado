@@ -45,12 +45,16 @@ def backend() -> str:
 def read_settings() -> dict:
     path = resources().root / "preferences.json"
     if not path.exists():
-        return {"provider": "builtin", "ollamaModel": "", "imported": None}
+        return {"provider": "none", "ollamaModel": "", "imported": None}
     if path.stat().st_size > 64 * 1024:
         raise ValueError("Translation preferences are invalid")
     value = json.loads(path.read_text(encoding="utf-8"))
+    # Earlier development builds selected a default model implicitly. Require
+    # explicit installation/selection instead, preserving any existing files.
+    if isinstance(value, dict) and value.get("provider") == "builtin":
+        value["provider"] = "none"
     if not isinstance(value, dict) or value.get("provider") not in {
-        "builtin",
+        "none",
         "imported",
         "ollama",
     }:
@@ -123,7 +127,7 @@ def verify_import(directory: Path, identity: str) -> None:
 def select_provider(provider: str, model: str = "") -> dict:
     from app.ollama_translation import local_model
 
-    if provider not in {"builtin", "imported", "ollama"}:
+    if provider not in {"imported", "ollama"}:
         raise ValueError("Choose a supported translation provider")
     if provider == "ollama":
         model = local_model(model)["name"]
@@ -260,9 +264,6 @@ def import_model(folder: str) -> dict:
 class ConfiguredTranslationProvider:
     """Resolve once per request so selection changes cannot mix model/cache IDs."""
 
-    def __init__(self, builtin):
-        self.builtin = builtin
-
     def snapshot(self):
         from app.ollama_translation import OllamaProvider
 
@@ -273,7 +274,9 @@ class ConfiguredTranslationProvider:
             if value["provider"] == "imported":
                 path = imported_path(value)
                 return ImportedProvider(path, value["imported"]["id"])
-            return self.builtin
+            raise FileNotFoundError(
+                "Local translation is not set up. In Settings → Reading, import a model or install and select one through Ollama."
+            )
 
 
 class ImportedProvider:

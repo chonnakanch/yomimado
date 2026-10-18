@@ -289,6 +289,25 @@ def main() -> None:
                             request("/api/v1/translation-model")["state"] == "ready",
                             "Verified optional model did not become ready",
                         )
+                        check(
+                            request("/api/v1/translation-settings")["provider"]
+                            == "none",
+                            "A model must not be selected implicitly",
+                        )
+                        imported = request(
+                            "/api/v1/translation-settings/import",
+                            {
+                                "folder": str(
+                                    data
+                                    / "translation-models"
+                                    / json.loads(component.read_text())["id"]
+                                )
+                            },
+                        )
+                        check(
+                            imported["provider"] == "imported",
+                            "Local model import failed",
+                        )
                     translation = request(
                         "/api/v1/translate", {"text": "今日は学校に行きます。"}
                     )

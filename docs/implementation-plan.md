@@ -2,6 +2,18 @@
 
 ## Current status
 
+**User-installed local translation only — 2026-10-18:** at the owner's request,
+the built-in model choice and download card are removed. A fresh setup offers
+only local-model import and Ollama, with clear installation guidance. Translation
+requires explicit selection; existing default selections become unconfigured
+while their model files remain intact. No environment-path or default-model
+fallback activates translation. Service checks cover this migration and the
+unconfigured API error; frontend checks confirm only the two user-installed
+sources and no default-model status/download requests. All 161 service and 187
+frontend tests and the frontend build pass. Candidate smoke scripts explicitly
+import their verified model fixture before translation. Historical release
+records/component tooling are retained; no installer/component is published.
+
 **User-selected translation models — 2026-10-18:** at the owner's request,
 Settings → Reading supports importing compatible local Marian models and choosing
 or explicitly downloading local Ollama text models. Imports are copied, hashed

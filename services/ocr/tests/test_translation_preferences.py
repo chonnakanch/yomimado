@@ -30,6 +30,26 @@ def model_folder(path: Path):
     return path
 
 
+@pytest.mark.parametrize("legacy", [False, True])
+def test_no_default_model_even_when_old_model_files_exist(tmp_path, monkeypatch, legacy):
+    from app.api import translation as api
+
+    source = model_folder(tmp_path / "existing-model")
+    monkeypatch.setenv("YOMIMADO_TRANSLATION_MODEL", str(source))
+    if legacy:
+        preferences.save_settings({"provider": "builtin", "ollamaModel": "", "imported": None})
+    assert preferences.settings_status()["provider"] == "none"
+    monkeypatch.setattr(
+        api,
+        "service",
+        TranslationService(preferences.ConfiguredTranslationProvider(), tmp_path / "cache.db"),
+    )
+    client = TestClient(app, base_url="http://127.0.0.1", headers={"X-YomiMado-Client": "desktop"})
+    response = client.post("/api/v1/translate", json={"text": "学校"})
+    assert response.status_code == 503
+    assert "import a model or install and select one through Ollama" in response.json()["detail"]
+
+
 def test_import_copies_validated_model_and_persists_selection(tmp_path, monkeypatch):
     source = model_folder(tmp_path / "my-translator")
     checked = []
@@ -50,7 +70,7 @@ def test_import_copies_validated_model_and_persists_selection(tmp_path, monkeypa
     preferences.verify_import.cache_clear()
     assert preferences.imported_path() == managed
     assert preferences.settings_status()["provider"] == "imported"
-    preferences.select_provider("builtin")
+    preferences.save_settings(preferences.read_settings() | {"provider": "none"})
     assert preferences.settings_status()["importedModel"] == "my-translator"
     preferences.select_provider("imported")
     assert preferences.imported_path() == managed
@@ -94,7 +114,7 @@ def test_import_rejects_incompatible_or_unsafe_files(tmp_path, monkeypatch, chan
     )
     with pytest.raises((ValueError, FileNotFoundError)):
         preferences.import_model(str(source))
-    assert preferences.settings_status()["provider"] == "builtin"
+    assert preferences.settings_status()["provider"] == "none"
 
 
 def test_modified_import_is_rejected_after_restart(tmp_path, monkeypatch):
@@ -144,9 +164,7 @@ def test_requests_snapshot_provider_and_keep_cache_separate(tmp_path, monkeypatc
             return self.name
 
     monkeypatch.setattr(ollama_translation, "OllamaProvider", Provider)
-    service = TranslationService(
-        preferences.ConfiguredTranslationProvider(None), tmp_path / "cache.db"
-    )
+    service = TranslationService(preferences.ConfiguredTranslationProvider(), tmp_path / "cache.db")
     assert service.translate("学校").translatedText == "first:latest"
     assert service.translate("学校").translatedText == "second:latest"
     assert service.translate("学校").cached is True
@@ -174,7 +192,7 @@ def test_settings_reads_and_selection_never_start_a_download(monkeypatch):
 
     monkeypatch.setattr(downloads, "start", lambda _: pytest.fail("Unexpected download"))
     client = TestClient(app, base_url="http://127.0.0.1", headers={"X-YomiMado-Client": "desktop"})
-    assert client.get("/api/v1/translation-settings").json()["provider"] == "builtin"
+    assert client.get("/api/v1/translation-settings").json()["provider"] == "none"
     assert (
-        client.post("/api/v1/translation-settings", json={"provider": "builtin"}).status_code == 200
+        client.post("/api/v1/translation-settings", json={"provider": "builtin"}).status_code == 422
     )

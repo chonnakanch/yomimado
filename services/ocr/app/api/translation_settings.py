@@ -12,7 +12,7 @@ router = APIRouter()
 
 
 class Selection(BaseModel):
-    provider: Literal["builtin", "imported", "ollama"]
+    provider: Literal["imported", "ollama"]
     model: str = Field(default="", max_length=200)
 
 

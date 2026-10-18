@@ -1,9 +1,9 @@
 import { useEffect, useRef, useState } from "react";
 import { invoke, isTauri } from "@tauri-apps/api/core";
 import { postServiceJson, requestService } from "../../lib/service-client";
-import { TranslationDownload } from "./TranslationDownload";
 
-type Provider = "builtin" | "imported" | "ollama";
+type ModelSource = "imported" | "ollama";
+type Provider = "none" | ModelSource;
 interface Settings {
   provider: Provider;
   importedModel: string | null;
@@ -28,7 +28,7 @@ function parseSettings(value: unknown): Settings {
     !value ||
     typeof value !== "object" ||
     !("provider" in value) ||
-    !["builtin", "imported", "ollama"].includes(String(value.provider)) ||
+    !["none", "imported", "ollama"].includes(String(value.provider)) ||
     !("backend" in value) ||
     !["torch", "onnx"].includes(String(value.backend)) ||
     !("ollamaModel" in value) ||
@@ -84,7 +84,7 @@ const message = (reason: unknown) =>
 
 export function TranslationModels({ active }: { active: boolean }) {
   const [settings, setSettings] = useState<Settings | null>(null);
-  const [source, setSource] = useState<Provider>("builtin");
+  const [source, setSource] = useState<ModelSource>("imported");
   const [folder, setFolder] = useState("");
   const [model, setModel] = useState("");
   const [ollama, setOllama] = useState<OllamaStatus | null>(null);
@@ -104,7 +104,7 @@ export function TranslationModels({ active }: { active: boolean }) {
       .then((value) => {
         if (id !== generation.current) return;
         setSettings(value);
-        setSource(value.provider);
+        setSource(value.provider === "none" ? "imported" : value.provider);
         setModel(value.ollamaModel);
         setError(null);
       })
@@ -158,7 +158,7 @@ export function TranslationModels({ active }: { active: boolean }) {
       setBusy(false);
     }
   };
-  const select = (provider: Provider) =>
+  const select = (provider: ModelSource) =>
     run(async () => {
       setSettings(
         parseSettings(
@@ -195,20 +195,19 @@ export function TranslationModels({ active }: { active: boolean }) {
   return (
     <>
       <div className="settings-card">
-        <h2>Translation model</h2>
+        <h2>Local translation</h2>
         <p>
-          Choose how to translate Japanese into English. Models stay on this
-          computer; translation runs only when you request it.
+          Install a model to translate Japanese into English offline. Import a
+          compatible model folder or download a local model through Ollama.
+          Translation runs only when you request it.
         </p>
         {settings && (
           <p role="status">
-            Using:{" "}
-            {settings.provider === "builtin"
-              ? "Built-in Marian model"
+            {settings.provider === "none"
+              ? "No translation model installed. Import a model or install one through Ollama to get started."
               : settings.provider === "imported"
-                ? settings.importedModel
-                : `Ollama · ${settings.ollamaModel}`}
-            .
+                ? `Using: ${settings.importedModel}.`
+                : `Using: Ollama · ${settings.ollamaModel}.`}
           </p>
         )}
         <label className="settings-model-field">
@@ -217,24 +216,14 @@ export function TranslationModels({ active }: { active: boolean }) {
             value={source}
             disabled={busy || !settings}
             onChange={(event) => {
-              setSource(event.target.value as Provider);
+              setSource(event.target.value as ModelSource);
               setError(null);
             }}
           >
-            <option value="builtin">Built-in model</option>
             <option value="imported">Import local model</option>
             <option value="ollama">Ollama</option>
           </select>
         </label>
-        {source === "builtin" && settings?.provider !== "builtin" && (
-          <button
-            className="utility-button"
-            disabled={busy || !settings}
-            onClick={() => void select("builtin")}
-          >
-            Use built-in model
-          </button>
-        )}
         {source === "imported" && (
           <>
             <p>
@@ -413,9 +402,6 @@ export function TranslationModels({ active }: { active: boolean }) {
           </>
         )}
       </div>
-      {source === "builtin" && (
-        <TranslationDownload active={active && source === "builtin"} />
-      )}
     </>
   );
 }

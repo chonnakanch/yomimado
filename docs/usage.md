@@ -99,16 +99,14 @@ ready based on the packaged model status.
 **Reading** explains **More actions → Read with keyboard**, which replaces the
 old Reading-order controls preference and Previous/Next text panel. No preference
 needs to be enabled before using keyboard reading.
-It also offers **Download local translation** for the optional offline
-Japanese-to-English model. The model is separate from the installer. Download it
-once while connected; progress and retry guidance appear here. OCR and word/kanji
-lookup work without it. After installation, return to the learning popup and
-choose **Translate locally**; no restart is needed. Opening settings or scanning
-never starts a download, and the download does not send text or screenshots.
-The **Translation model → Model source** control also supports **Import local
-model** for compatible Marian folders and **Ollama** for installed local text
-models or explicit downloads by model name. Choose **Import and use model** or
-**Use this model** to activate your choice; the **Using** line confirms it.
+Under **Local translation → Model source**, choose **Import local model** for
+compatible Marian folders or **Ollama** for installed local text models or
+explicit downloads by model name. A fresh setup shows **No translation model
+installed**. Choose **Import and use model** or **Use this model** to activate your
+choice; the **Using** line confirms it. There is no built-in model option or
+automatic fallback. OCR and word/kanji lookup work without a translation model.
+After installation, choose **Translate locally** in a learning popup; no restart
+is needed. Opening settings or scanning never starts a model download.
 Ollama must be installed and running separately. See
 [model selection and supported formats](translation-model-selection.md).
 **More actions → Sources & licenses** opens a separate attribution window with

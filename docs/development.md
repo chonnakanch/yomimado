@@ -117,21 +117,22 @@ development service is running on port 8765. `npm run tauri dev` does not start
 that service. With the existing local experiment environment and resources, run
 `services/ocr/build/release-venv/bin/python scripts/dev_lindera_service.py` from
 the repository root in another terminal, then choose **Try again** in Settings.
-The launcher validates local paths and uses an existing translation model when
-available; it does not download one. Installed release apps start their bundled
-service automatically.
+The launcher validates local OCR paths; it does not download or automatically
+activate a translation model. Installed release apps start their bundled service
+automatically.
 
-Packaged source builds now omit translation weights from the installer and offer
-an explicit **Settings → Reading → Download local translation** action. The
-original Torch model is a macOS component; Windows uses a separate ONNX component.
-See [resource reduction and component delivery](optional-translation-and-ocr-size.md).
-The source-service override below continues to use an existing local model.
+Translation weights are omitted from the installer. **Settings → Reading →
+Local translation** offers **Import local model** and **Ollama**. A fresh setup
+has no active translator. Import a compatible Marian folder or install/select a
+local model through Ollama. The old built-in/default model option is removed;
+`YOMIMADO_TRANSLATION_MODEL` alone no longer activates translation through the API.
+See [model selection and platform formats](translation-model-selection.md).
 
 The on-demand popup can translate Japanese text to English with the free,
 user-installed [Helsinki-NLP/opus-mt-ja-en](https://huggingface.co/Helsinki-NLP/opus-mt-ja-en)
 model. This is a baseline model, not a manga-specific or contextual translator.
 Neither model weights nor Japanese text are sent to a cloud translation service
-at runtime. No model is downloaded by YomiMado itself.
+at runtime. Ollama model downloads start only on an explicit user click.
 
 Install the optional Python dependencies in the OCR service environment and
 download the model to the git-ignored local model directory:
@@ -140,12 +141,13 @@ download the model to the git-ignored local model directory:
 cd services/ocr
 pip install -e '.[dev,translation]'
 hf download Helsinki-NLP/opus-mt-ja-en --local-dir ./local-models/opus-mt-ja-en
-export YOMIMADO_TRANSLATION_MODEL="$PWD/local-models/opus-mt-ja-en"
 uvicorn app.main:app --reload --port 8765
 ```
 
-The popup reports a setup error until the model and optional dependencies are
-available. Successful translations are cached locally in
+Choose **Import local model** in Settings and import that downloaded folder.
+Alternatively, run Ollama locally and use its model selection/download controls.
+The popup reports a setup error until a model is explicitly installed and
+selected. Successful translations are cached locally in
 `~/.cache/yomimado/translation.sqlite3` (override with
 `YOMIMADO_TRANSLATION_CACHE`). Only the selected Japanese text is sent from
 the desktop window to this loopback service; screenshots are not submitted for

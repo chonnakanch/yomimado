@@ -1,17 +1,17 @@
 # Choosing a translation model
 
 In **Settings → Reading → Translation model**, choose a **Model source**.
-Browsing a source does not activate it. **Using** names the current selection;
+The available sources are **Import local model** and **Ollama**. Local translation
+starts unconfigured; install and select a model before using it. Browsing a source
+does not activate it. **Using** names the current selection;
 selecting another provider takes effect on the next translation without restarting.
 OCR, tokenization and dictionary lookup remain independent of this choice.
 
-## Built-in model
-
-Choose **Built-in model**, then **Use built-in model** if another provider is
-active. The existing optional Marian Japanese-to-English component can be
-downloaded once and used offline. Source development can still use
-`YOMIMADO_TRANSLATION_MODEL`. The component must be published with the matching
-app release before the public download works.
+An earlier development build offered a built-in model. That choice is removed;
+its saved selection now becomes unconfigured. Existing model files are preserved
+and can be imported explicitly. A source-service environment path alone does not
+activate a translator. Historical component archives/APIs remain available to
+release verification tools; the settings UI does not offer their download.
 
 ## Import a local model
 
@@ -78,8 +78,9 @@ content hashes and Ollama model names/digests separate cached translations;
 switching back can reuse the correct previous results.
 
 The existing `TranslationProvider` boundary remains intact. A settings adapter
-chooses the built-in platform provider, an imported Marian provider or the local
-Ollama adapter. Model installation is separate from OCR and translation requests.
+chooses an imported Marian provider or the local Ollama adapter. Without a
+selection it returns setup guidance instead of falling back to a default model.
+Model installation is separate from OCR and translation requests.
 New setup routes retain the service's loopback/origin/desktop-header guards.
 
 ## Verification scope
