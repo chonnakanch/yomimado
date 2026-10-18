@@ -112,6 +112,15 @@ outside this repository until their distribution terms are reviewed.
 
 ## Local translation model (optional)
 
+If Settings → Reading cannot connect to the local service, ensure the separate
+development service is running on port 8765. `npm run tauri dev` does not start
+that service. With the existing local experiment environment and resources, run
+`services/ocr/build/release-venv/bin/python scripts/dev_lindera_service.py` from
+the repository root in another terminal, then choose **Try again** in Settings.
+The launcher validates local paths and uses an existing translation model when
+available; it does not download one. Installed release apps start their bundled
+service automatically.
+
 Packaged source builds now omit translation weights from the installer and offer
 an explicit **Settings → Reading → Download local translation** action. The
 original Torch model is a macOS component; Windows uses a separate ONNX component.

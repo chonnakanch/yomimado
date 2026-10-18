@@ -1,5 +1,12 @@
 const SERVICE_URL = import.meta.env.VITE_OCR_URL ?? "http://127.0.0.1:8765";
 
+export class ServiceConnectionError extends Error {
+  constructor() {
+    super("Could not connect to YomiMado’s local service.");
+    this.name = "ServiceConnectionError";
+  }
+}
+
 /** Keep transport errors separate from each endpoint's response validation. */
 export async function requestService(
   path: string,
@@ -9,10 +16,16 @@ export async function requestService(
   const headers = new Headers(options?.headers);
   // Forces browser preflight even for multipart uploads and read-only APIs.
   headers.set("X-YomiMado-Client", "desktop");
-  const response = await fetch(`${SERVICE_URL}${path}`, {
-    ...options,
-    headers: Object.fromEntries(headers.entries()),
-  });
+  let response: Response;
+  try {
+    response = await fetch(`${SERVICE_URL}${path}`, {
+      ...options,
+      headers: Object.fromEntries(headers.entries()),
+    });
+  } catch (reason) {
+    if (options?.signal?.aborted) throw reason;
+    throw new ServiceConnectionError();
+  }
   if (!response.ok) {
     const body: unknown = await response.json().catch(() => null);
     const detail =

@@ -37,6 +37,12 @@ ready state and retry guidance. Translation remains a separate explicit action
 and runs offline after installation. Screenshots and Japanese text are never
 included in download requests.
 
+If the local service cannot be reached, setup stops checking and offers **Try
+again** with guidance to quit and reopen the installed app. A lost connection
+during progress polling also permits reconnecting; setup never starts a second
+download merely to retry a status check. Once ready, the card explains the next
+step: scan text, click a detected region, then choose **Translate locally**.
+
 The local API adds:
 
 | Endpoint                                 | Behavior                                                              |

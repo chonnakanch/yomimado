@@ -45,6 +45,9 @@ it("checks status without downloading and installs only on a user click", async 
     fetch.mock.calls.filter(([, options]) => options?.method === "POST"),
   ).toHaveLength(1);
   expect(container.textContent).toContain("Ready for offline translation");
+  expect(container.textContent).toContain(
+    "Scan manga text, click a detected region, then choose Translate locally.",
+  );
   expect(container.querySelector("button")).toBeNull();
 });
 
@@ -68,4 +71,63 @@ it("offers retry after a failed download", async () => {
     "Connection interrupted",
   );
   expect(container.querySelector("button")?.textContent).toBe("Retry download");
+});
+
+it("explains a service connection failure and recovers without downloading", async () => {
+  const fetch = vi
+    .fn()
+    .mockRejectedValueOnce(new TypeError("Load failed"))
+    .mockResolvedValue(response(status("ready")));
+  vi.stubGlobal("fetch", fetch);
+  await act(async () => root.render(<TranslationDownload active />));
+  expect(container.querySelector('[role="status"]')?.textContent).toBe(
+    "Translation setup could not be checked.",
+  );
+  expect(container.querySelector('[role="alert"]')?.textContent).toContain(
+    "Quit and reopen YomiMado, then try again.",
+  );
+  expect(container.textContent).not.toContain("Checking translation setup");
+  expect(container.textContent).not.toContain("Load failed");
+  await act(async () => container.querySelector("button")!.click());
+  expect(container.textContent).toContain("Ready for offline translation");
+  expect(container.querySelector('[role="alert"]')).toBeNull();
+  expect(
+    fetch.mock.calls.every(([, options]) => options?.method !== "POST"),
+  ).toBe(true);
+});
+
+it("keeps a failed install request visible until the user retries", async () => {
+  const fetch = vi.fn(async (_url: string, options?: RequestInit) => {
+    if (options?.method === "POST") throw new TypeError("Load failed");
+    return response(status("notInstalled"));
+  });
+  vi.stubGlobal("fetch", fetch);
+  await act(async () => root.render(<TranslationDownload active />));
+  await act(async () => container.querySelector("button")!.click());
+  expect(container.querySelector('[role="alert"]')?.textContent).toContain(
+    "local service",
+  );
+  expect(container.querySelector("button")?.textContent).toBe("Try again");
+  expect(fetch).toHaveBeenCalledTimes(2);
+});
+
+it("allows reconnecting when a download status poll loses the service", async () => {
+  vi.useFakeTimers();
+  try {
+    const fetch = vi
+      .fn()
+      .mockResolvedValueOnce(response(status("downloading")))
+      .mockRejectedValueOnce(new TypeError("Load failed"))
+      .mockResolvedValue(response(status("ready")));
+    vi.stubGlobal("fetch", fetch);
+    await act(async () => root.render(<TranslationDownload active />));
+    await act(async () => vi.advanceTimersByTimeAsync(1000));
+    expect(container.querySelector("progress")).toBeNull();
+    expect(container.querySelector("button")?.disabled).toBe(false);
+    expect(container.querySelector("button")?.textContent).toBe("Try again");
+    await act(async () => container.querySelector("button")!.click());
+    expect(container.textContent).toContain("Ready for offline translation");
+  } finally {
+    vi.useRealTimers();
+  }
 });

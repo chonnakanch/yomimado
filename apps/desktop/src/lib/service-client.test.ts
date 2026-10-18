@@ -1,7 +1,33 @@
 import { afterEach, expect, it, vi } from "vitest";
-import { postServiceJson, requestService } from "./service-client";
+import {
+  postServiceJson,
+  requestService,
+  ServiceConnectionError,
+} from "./service-client";
 
 afterEach(() => vi.unstubAllGlobals());
+
+it("identifies an unreachable local service without exposing browser error text", async () => {
+  vi.stubGlobal(
+    "fetch",
+    vi.fn().mockRejectedValue(new TypeError("Load failed")),
+  );
+  await expect(
+    requestService("/api/v1/translation-model", "Translation setup"),
+  ).rejects.toBeInstanceOf(ServiceConnectionError);
+});
+
+it("preserves intentional request cancellation", async () => {
+  const controller = new AbortController();
+  controller.abort();
+  const reason = new DOMException("Cancelled", "AbortError");
+  vi.stubGlobal("fetch", vi.fn().mockRejectedValue(reason));
+  await expect(
+    requestService("/api/v1/translation-model", "Translation setup", {
+      signal: controller.signal,
+    }),
+  ).rejects.toBe(reason);
+});
 
 it("sends JSON to the local service and returns untrusted data for endpoint validation", async () => {
   const fetch = vi

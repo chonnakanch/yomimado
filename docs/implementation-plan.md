@@ -2,6 +2,17 @@
 
 ## Current status
 
+**Translation setup connection recovery — 2026-10-18:** the owner's development
+Settings page showed “Checking translation setup…” alongside WebKit's “Load
+failed” because the separate local service was not running. Starting the existing
+development launcher returns `ready` for the owner's installed model. The UI now
+ends the checking state on failure, gives restart/retry guidance, allows reconnecting
+after a failed download poll, and retains install-request errors until retry.
+The ready state explains how to request a translation. All 185 frontend tests,
+the production frontend build and formatting checks pass. The running development
+Settings page also reports ready. Packaged installer acceptance and public model
+component delivery remain separate future release checks.
+
 **OCR resources and optional translation — 2026-10-18:** at the owner's request,
 OCR uses a shared decode-only tokenizer without UniDic/Fugashi in frozen
 runtimes. Local translation becomes an explicit Settings → Reading download,
