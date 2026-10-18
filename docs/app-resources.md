@@ -204,8 +204,13 @@ The [implemented resource reduction](optional-translation-and-ocr-size.md) remov
 UniDic from frozen OCR and makes translation an optional download. The private
 macOS runtime is 249.11 MiB smaller; the optional Torch model is 292.20 MiB.
 An explicit Settings action downloads only pinned model files, while all reading
-and translation inference stays local. Adopting ONNX on macOS and quantization
-remain separate proposals. Existing installer evidence remains historical;
+and translation inference stays local. The later user-installed translation flow
+replaces the built-in download choice; see [model selection](translation-model-selection.md).
+The [macOS ONNX investigation](macos-onnx-investigation.md) demonstrates about
+231 MiB of net regular-file saving, but its current CPU decoder is slower and
+does not preserve Torch-format Marian imports. The production macOS backend is
+unchanged; CoreML and quantization remain separate work. Existing installer
+evidence remains historical;
 dependency/model changes require updated source/notices and new candidate
 verification under the [shared release checklist](desktop-release.md).
 

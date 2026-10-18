@@ -2,6 +2,19 @@
 
 ## Current status
 
+**Priority 3: macOS ONNX investigation — 2026-10-18:** an isolated CPU comparison
+and private ARM64 freeze demonstrate a 231.16 MiB runtime-plus-OCR-weights saving
+against the retained Torch runtime. All 108 synthetic source scans preserve the
+same complete OCR responses; frozen scans, Lindera and word/kanji lookup pass
+without Torch. The current full-prefix ONNX decoder is slower, and source-process
+peak RSS is higher. CoreML is available but was not measured. Removing Torch also
+requires a migration plan for user-imported Marian Torch models; Ollama remains
+independent. Keep the current macOS backend as default while investigating decoder
+caching and CoreML. See [measurements and limits](macos-onnx-investigation.md).
+All 262 research/release-tool tests, Ruff and documentation formatting pass;
+model/export hashes, fixture bytes and measured-script identity are verified.
+No production provider, dependency lock, runtime seed or installer is changed.
+
 **User-installed local translation only — 2026-10-18:** at the owner's request,
 the built-in model choice and download card are removed. A fresh setup offers
 only local-model import and Ollama, with clear installation guidance. Translation
