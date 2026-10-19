@@ -133,8 +133,16 @@ jobs:
           test -z "$(git status --porcelain)"
           rustup toolchain install 1.98.1 --profile minimal
           rustup default 1.98.1
-          python -m pip install --disable-pip-version-check --only-binary=:all: --no-deps pillow==11.3.0 tomli==2.4.1 importlib-metadata==8.7.1 zipp==3.23.0
-          python -m unittest discover -s scripts/tests -p 'test_macos*.py'
+          # Verification imports the shared tokenizer models. Reuse the pinned,
+          # model-free test environment; none of these tools enters the seed.
+          python -m pip install --disable-pip-version-check --only-binary=:all: -r scripts/requirements-ci.txt
+          python -m pip install --disable-pip-version-check --only-binary=:all: --no-deps tomli==2.4.1 importlib-metadata==8.7.1 zipp==3.23.0
+          python -m pip check
+          # Benchmark pytest contracts run in Checks/service. Keep this unittest
+          # selection explicit so new experiments cannot change release imports.
+          python -m unittest discover -s scripts/tests -p test_macos_release.py
+          python -m unittest discover -s scripts/tests -p test_macos_notices.py
+          python -m unittest discover -s scripts/tests -p test_macos_sources.py
           python -m unittest discover -s scripts/tests -p test_opencv_release.py
           python -m unittest discover -s scripts/tests -p test_desktop_release.py
           npm ci --prefix apps/desktop
