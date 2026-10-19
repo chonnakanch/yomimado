@@ -73,8 +73,9 @@ causatives, progressive forms and other grammar remain future scope.
 
 Completed on 2026-10-19 for existing regions. The popup's **Check OCR** indicator
 opens **Retry bubble OCR** and **Redraw bubble bounds**. A successful local retry
-replaces only that region and reopens its popup; other regions, stable IDs and the
-original full-area Rescan target are preserved. Failures/cancellation retain the
+accepts one or several detected parts and reopens the first part's popup. Parts
+stay linked for subsequent retries without duplicating old fragments; unrelated
+regions and the original full-area Rescan target are preserved. Failures/cancellation retain the
 old result, and retries remain marked for review rather than claiming certainty.
 
 See the [retry workflow and limits](bubble-ocr-retry.md). Adding an entirely

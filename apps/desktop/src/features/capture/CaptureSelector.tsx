@@ -198,14 +198,18 @@ export function CaptureSelector() {
       const rawResponse: OcrResponse = await requestOcr(captured.imageDataUrl, {
         debug: debugCaptureEnabled,
       });
+      if (regionRetry && rawResponse.engine !== "manga") {
+        throw new Error(
+          "Bubble retry needs the local OCR models; the previous result was kept.",
+        );
+      }
       if (
         regionRetry &&
-        (rawResponse.engine !== "manga" ||
-          rawResponse.regions.length !== 1 ||
-          !rawResponse.regions[0].text.trim())
+        (rawResponse.regions.length === 0 ||
+          rawResponse.regions.some((region) => !region.text.trim()))
       ) {
         throw new Error(
-          "Retry needs one recognized text region. Redraw tightly around one bubble; the previous result was kept.",
+          "No text was recognized in this bubble; the previous result was kept. Try redrawing its bounds.",
         );
       }
       reportOcrStage("recognized");

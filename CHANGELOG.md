@@ -16,8 +16,8 @@ The [feature roadmap](docs/feature-roadmap.md) tracks completed and proposed wor
 
 - **Single-bubble OCR retry — done in development source.** Check OCR now opens
   retry and redraw actions for an existing uncertain/approximate region. Only
-  that region's text and geometry are replaced; other regions and the full-page
-  Rescan target are retained. Errors, empty/multiple replies, cancellation and
+  that bubble's text and geometry are replaced; unrelated regions and the full-page
+  Rescan target are retained. Errors, empty replies, cancellation and
   stale requests cannot replace the old result. The updated popup reopens and
   retains its review indicator. Uses the existing local capture/OCR pipeline.
   See [bubble retry](docs/bubble-ocr-retry.md).
@@ -46,6 +46,11 @@ The [feature roadmap](docs/feature-roadmap.md) tracks completed and proposed wor
 
 #### Fixed
 
+- **Bubble redraw rejecting multiple text regions:** a single bubble can contain
+  several detected lines/blocks. Retry and redraw now accept all valid parts,
+  preserving their individual geometry and tokens. Parts stay linked so another
+  retry replaces the group without duplicates; unrelated bubbles remain intact.
+  Empty/invalid results still preserve the previous scan.
 - **Toolbar menu clipping and resize cycling:** More actions waits for the
   tray-dependent item list before its first native reveal, then measures the
   full content independently of the constrained scroll viewport. Quit stays
@@ -71,6 +76,9 @@ The [feature roadmap](docs/feature-roadmap.md) tracks completed and proposed wor
 
 #### Verification and availability
 
+- The multiple-part bubble retry fix passes 280 frontend tests, 78 native tests,
+  formatting, TypeScript, strict Clippy and frontend/macOS native debug builds.
+  Full native interaction remains unverified under the limitation below.
 - Bubble retry passes 278 frontend tests, 76 native tests, formatting, TypeScript,
   strict Clippy and frontend/macOS preview builds. UI layout is checked in the
   browser; the full native retry flow remains unverified after the unsigned

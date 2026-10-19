@@ -61,9 +61,11 @@ scale so a fresh-process result is recorded. Start W1 before any Selected Area s
 ## Transitions and recovery
 
 - [ ] **Single-bubble retry:** open a region with Check OCR. Retry and redraw it
-      at each scale above; confirm only its text/polygon changes and the popup
-      reopens. Cancel redraw and cancel processing; original results must return.
-      Repeat with unavailable OCR and with a crop containing multiple regions.
+      at each scale above; confirm only that bubble's text/polygons change and
+      its first part's popup reopens. A crop containing multiple text parts must
+      retain all parts; retry any part again and confirm no old fragments remain.
+      Cancel redraw/processing and try unavailable OCR or an empty crop; original
+      results must return. Unrelated bubbles must stay unchanged.
       Verify full-page Rescan still uses the page bounds. Move/change the monitor
       during a retry; stale replies must not replace the current result.
 - [ ] **W5 menu sizing regression:** at each scale above, open/close More actions

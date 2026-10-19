@@ -1322,6 +1322,7 @@ mod tests {
                 region_id: "bubble".into(),
             },
             original: serde_json::Value::Null,
+            group_id: "bubble".into(),
             metadata: metadata(),
             area,
         });

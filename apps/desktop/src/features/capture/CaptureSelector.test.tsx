@@ -49,39 +49,48 @@ const retryBubble = {
   tokens: [],
 };
 
-it("recaptures one bubble and publishes only its replacement without changing saved scan bounds", async () => {
-  window.history.replaceState(
-    {},
-    "",
-    "/?mode=capture&scan=retry-region&session=42",
-  );
-  const previous = { x: 20, y: 10, width: 120, height: 70 };
-  saveScanArea(surface, previous);
-  vi.mocked(invoke).mockImplementation(async (command) =>
-    command === "capture_ocr_region" ? captured : undefined,
-  );
-  vi.mocked(requestOcr).mockResolvedValue({
-    engine: "manga",
-    regions: [retryBubble],
-  });
-  await act(async () => root.render(<CaptureSelector />));
-  expect(invoke).toHaveBeenCalledWith("capture_ocr_region", { sessionId: 42 });
-  expect(invoke).toHaveBeenCalledWith("replace_ocr_region", {
-    sessionId: 42,
-    regions: [retryBubble],
-    engine: "manga",
-  });
-  expect(invoke).not.toHaveBeenCalledWith(
-    "show_ocr_overlay",
-    expect.anything(),
-  );
-  expect(invoke).toHaveBeenCalledWith("hide_finished_selector", {
-    sessionId: 42,
-  });
-  expect(loadScanArea(surface)).toEqual(previous);
-});
+it.each([1, 2])(
+  "recaptures one bubble and publishes all %i detected parts without changing saved scan bounds",
+  async (count) => {
+    window.history.replaceState(
+      {},
+      "",
+      "/?mode=capture&scan=retry-region&session=42",
+    );
+    const previous = { x: 20, y: 10, width: 120, height: 70 };
+    saveScanArea(surface, previous);
+    vi.mocked(invoke).mockImplementation(async (command) =>
+      command === "capture_ocr_region" ? captured : undefined,
+    );
+    const regions = Array.from({ length: count }, (_, index) => ({
+      ...retryBubble,
+      id: `region-${index + 1}`,
+    }));
+    vi.mocked(requestOcr).mockResolvedValue({
+      engine: "manga",
+      regions,
+    });
+    await act(async () => root.render(<CaptureSelector />));
+    expect(invoke).toHaveBeenCalledWith("capture_ocr_region", {
+      sessionId: 42,
+    });
+    expect(invoke).toHaveBeenCalledWith("replace_ocr_region", {
+      sessionId: 42,
+      regions,
+      engine: "manga",
+    });
+    expect(invoke).not.toHaveBeenCalledWith(
+      "show_ocr_overlay",
+      expect.anything(),
+    );
+    expect(invoke).toHaveBeenCalledWith("hide_finished_selector", {
+      sessionId: 42,
+    });
+    expect(loadScanArea(surface)).toEqual(previous);
+  },
+);
 
-it.each(["empty", "multiple", "demo", "error"])(
+it.each(["empty", "blank", "demo", "error"])(
   "keeps the previous result after %s bubble OCR",
   async (mode) => {
     window.history.replaceState(
@@ -100,8 +109,8 @@ it.each(["empty", "multiple", "demo", "error"])(
         regions:
           mode === "empty"
             ? []
-            : mode === "multiple"
-              ? [retryBubble, { ...retryBubble, id: "other" }]
+            : mode === "blank"
+              ? [retryBubble, { ...retryBubble, id: "other", text: " " }]
               : [retryBubble],
       });
     await act(async () => root.render(<CaptureSelector />));
@@ -125,58 +134,69 @@ it.each(["empty", "multiple", "demo", "error"])(
   },
 );
 
-it("redraws one bubble without saving a new page scan area, and Escape cancels the retry session", async () => {
-  window.history.replaceState(
-    {},
-    "",
-    "/?mode=capture&scan=redraw-region&session=42",
-  );
-  vi.mocked(invoke).mockImplementation(async (command) =>
-    command === "capture_selection" ? captured : undefined,
-  );
-  vi.mocked(requestOcr).mockResolvedValue({
-    engine: "manga",
-    regions: [retryBubble],
-  });
-  await act(async () => root.render(<CaptureSelector />));
-  const selector =
-    container.querySelector<HTMLDivElement>(".capture-selector")!;
-  expect(container.textContent).toContain("Redraw one bubble");
-  Object.defineProperty(selector, "clientWidth", { value: 200 });
-  Object.defineProperty(selector, "clientHeight", { value: 100 });
-  selector.setPointerCapture = vi.fn();
-  await act(async () =>
-    selector.dispatchEvent(
-      new MouseEvent("pointerdown", {
-        bubbles: true,
-        clientX: 20,
-        clientY: 10,
-      }),
-    ),
-  );
-  await act(async () => {
-    selector.dispatchEvent(
-      new MouseEvent("pointerup", { bubbles: true, clientX: 140, clientY: 80 }),
+it.each([1, 2])(
+  "redraws a bubble with %i detected parts without saving a new page scan area, and Escape cancels the retry session",
+  async (count) => {
+    window.history.replaceState(
+      {},
+      "",
+      "/?mode=capture&scan=redraw-region&session=42",
     );
-    await new Promise<void>((resolve) => setTimeout(resolve, 0));
-  });
-  expect(invoke).toHaveBeenCalledWith("capture_selection", {
-    sessionId: 42,
-    selection: { x: 20, y: 10, width: 120, height: 70 },
-    viewport: { width: 200, height: 100 },
-  });
-  expect(invoke).toHaveBeenCalledWith(
-    "replace_ocr_region",
-    expect.objectContaining({ sessionId: 42 }),
-  );
-  expect(loadScanArea(surface)).toBeNull();
-  await act(async () =>
-    window.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape" })),
-  );
-  expect(invoke).toHaveBeenCalledWith("cancel_capture_selector", {
-    sessionId: 42,
-  });
-});
+    vi.mocked(invoke).mockImplementation(async (command) =>
+      command === "capture_selection" ? captured : undefined,
+    );
+    const regions = Array.from({ length: count }, (_, index) => ({
+      ...retryBubble,
+      id: `region-${index + 1}`,
+    }));
+    vi.mocked(requestOcr).mockResolvedValue({
+      engine: "manga",
+      regions,
+    });
+    await act(async () => root.render(<CaptureSelector />));
+    const selector =
+      container.querySelector<HTMLDivElement>(".capture-selector")!;
+    expect(container.textContent).toContain("Redraw one bubble");
+    Object.defineProperty(selector, "clientWidth", { value: 200 });
+    Object.defineProperty(selector, "clientHeight", { value: 100 });
+    selector.setPointerCapture = vi.fn();
+    await act(async () =>
+      selector.dispatchEvent(
+        new MouseEvent("pointerdown", {
+          bubbles: true,
+          clientX: 20,
+          clientY: 10,
+        }),
+      ),
+    );
+    await act(async () => {
+      selector.dispatchEvent(
+        new MouseEvent("pointerup", {
+          bubbles: true,
+          clientX: 140,
+          clientY: 80,
+        }),
+      );
+      await new Promise<void>((resolve) => setTimeout(resolve, 0));
+    });
+    expect(invoke).toHaveBeenCalledWith("capture_selection", {
+      sessionId: 42,
+      selection: { x: 20, y: 10, width: 120, height: 70 },
+      viewport: { width: 200, height: 100 },
+    });
+    expect(invoke).toHaveBeenCalledWith(
+      "replace_ocr_region",
+      expect.objectContaining({ sessionId: 42, regions }),
+    );
+    expect(loadScanArea(surface)).toBeNull();
+    await act(async () =>
+      window.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape" })),
+    );
+    expect(invoke).toHaveBeenCalledWith("cancel_capture_selector", {
+      sessionId: 42,
+    });
+  },
+);
 
 beforeEach(() => {
   Object.assign(globalThis, { IS_REACT_ACT_ENVIRONMENT: true });

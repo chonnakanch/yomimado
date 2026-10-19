@@ -6,16 +6,31 @@ See the [feature roadmap](feature-roadmap.md) for proposed learning features and
 the [changelog](../CHANGELOG.md) for completed development changes. Source
 completion is tracked separately from publication and installer acceptance.
 
+**Bubble retry with multiple detected parts — 2026-10-19:** fixed the owner's
+redraw error caused by requiring exactly one detected region. Both UI and native
+publication now accept multiple valid parts, preserve every polygon/token list,
+and allocate collision-free IDs while retaining the selected ID for the first
+part. Native group metadata links parts so retrying any part uses their combined
+bounds and atomically replaces the group without duplicates. Unrelated regions,
+original overlay coordinates and full-page Rescan remain intact. Empty, invalid,
+demo and stale replies retain the previous result. Regression cases cover retry
+and redraw publication, scaling, ID collisions, repeated group replacement and
+invalid later parts. All 280 frontend tests and 78 native tests pass, alongside
+Prettier, TypeScript/frontend build, Cargo formatting, strict all-target Clippy
+and a macOS native debug build. Native runtime/installer verification limits
+below still apply; no dependency, version or release changes.
+
 **Single-bubble OCR retry — 2026-10-19:** the existing Check OCR indicator now
 opens the review reason plus retry-current-bounds and redraw actions. The popup
 receives a native completed-session/region identity. A retry uses the existing
 capture selector/local OCR pipeline, publishes exactly one replacement and
 preserves the other regions, target ID/list position, original overlay metadata
 and full-page Rescan specification. Successful publication reopens the updated
-popup; keyboard dismissal can return to that region. Empty/multiple/demo replies,
+popup; keyboard dismissal can return to that region. Initially, empty/multiple/demo replies,
 failure, cancellation, stale generations and changed displays do not replace the
 old result. Redraw is limited to the original scanned area. Retried text remains
 marked for review because Manga OCR has no calibrated recognition confidence.
+The multiple-region restriction was subsequently removed by the fix above.
 
 All 278 frontend tests, 76 native tests, Prettier, TypeScript, Cargo formatting,
 strict all-target Clippy and frontend/macOS preview builds pass. Thirteen frontend
