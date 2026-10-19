@@ -1498,3 +1498,14 @@ cases remain separate; no additional publication approval was supplied.
   values; activate matching CI pins, preserving the runtime dependency guard.
 - Main merge, real Windows release build, exact-installer owner checks and
   protected publication remain pending. Full source-only rebuilding is unverified.
+
+### 0.3.0 hosted verification follow-up — 2026-10-19
+
+PR #14 merged to main at `6022372`. Release `39192927827` passes the plan and
+GET-only private-input transfer. macOS verification preparation then fails because
+its minimal tool environment lacks Pydantic, newly imported by the Lindera bundle
+verifier, and broad unittest discovery imports a separate pytest benchmark file.
+Reuse the existing hash-locked model-free CI dependencies and explicitly select
+the three macOS release unittest modules. Benchmark contracts remain covered in
+Checks/service. This changes verification tools only; the approved frozen runtime,
+source seed, native inputs and publication protections remain unchanged.
