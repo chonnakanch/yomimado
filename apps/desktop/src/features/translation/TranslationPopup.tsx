@@ -52,6 +52,7 @@ export function TranslationPopup() {
   const returnEditorFocus = useRef(false);
   const selectTextButtonRef = useRef<HTMLButtonElement>(null);
   const [selectingText, setSelectingText] = useState(false);
+  const [manualToken, setManualToken] = useState<TextToken | null>(null);
   const [editing, setEditing] = useState(state?.demo ?? false);
   const [draft, setDraft] = useState(state?.demo ? "" : (state?.text ?? ""));
   const [copied, setCopied] = useState(false);
@@ -458,6 +459,9 @@ export function TranslationPopup() {
     state.reviewReason || state.approximate
       ? `${state.approximate ? "Approximate OCR region." : "Review OCR."} ${state.reviewReason ?? "Check the text against the page before saving."} Use Edit OCR text to correct it.`
       : null;
+  // Match the local word API's Unicode code-point limit.
+  const selectionTooLong =
+    !!manualToken && manualToken.end - manualToken.start > 100;
 
   return (
     <div className="translation-popup" aria-label="Japanese learning popup">
@@ -517,10 +521,7 @@ export function TranslationPopup() {
             <ManualWordSelection
               source={source}
               maxHeight={sentenceMaxHeight}
-              onLookup={(token) => {
-                detailsRef.current?.scrollTo?.({ top: 0 });
-                void lookupWord(token, null);
-              }}
+              onSelectionChange={setManualToken}
             />
           ) : (
             <div
@@ -539,31 +540,61 @@ export function TranslationPopup() {
             </div>
           )}
           <div className="sentence-save-actions">
+            {selectingText && (
+              <button
+                className="utility-button utility-button-primary"
+                aria-label="Look up selection"
+                disabled={
+                  !manualToken || !isWord(manualToken) || selectionTooLong
+                }
+                onClick={() => {
+                  if (!manualToken) return;
+                  detailsRef.current?.scrollTo?.({ top: 0 });
+                  void lookupWord(manualToken, null);
+                }}
+              >
+                Look up
+              </button>
+            )}
             <button
               ref={selectTextButtonRef}
               className="utility-button"
               aria-pressed={selectingText}
+              aria-label={selectingText ? "Done selecting text" : "Select text"}
               disabled={editing || !source.trim()}
-              onClick={() => setSelectingText(!selectingText)}
+              onClick={() => {
+                setManualToken(null);
+                setSelectingText(!selectingText);
+              }}
             >
-              {selectingText ? "Use word clicks" : "Select text"}
+              {selectingText ? "Done" : "Select text"}
             </button>
             <button
               className="utility-button"
+              aria-label={copied ? "Copied sentence" : "Copy sentence"}
               disabled={!source.trim()}
               onClick={() => void copySentence()}
             >
-              {copied ? "Copied" : "Copy sentence"}
+              {copied ? "Copied" : "Copy"}
             </button>
             <button
               className="utility-button"
+              aria-label={savingSentence ? "Saving sentence" : "Save sentence"}
               disabled={savingSentence || !source.trim()}
               onClick={() => void saveCurrentSentence()}
             >
-              {savingSentence ? "Saving…" : "Save sentence"}
+              {savingSentence ? "Saving…" : "Save"}
             </button>
+            <span className="visually-hidden" role="status">
+              {selectingText ? manualToken?.surface : null}
+            </span>
           </div>
           <div className="sentence-feedback">
+            {selectingText && selectionTooLong && (
+              <p className="translation-error" role="status">
+                Select at most 100 characters.
+              </p>
+            )}
             {copied && (
               <p className="popup-success" role="status">
                 Sentence copied.
@@ -599,10 +630,14 @@ export function TranslationPopup() {
                 : tokenError
                   ? null
                   : selectingText
-                    ? "Select text and choose Look up selection to explore its meaning."
+                    ? selectedToken
+                      ? null
+                      : "Drag to select text, then look it up."
                     : tokens && !tokens.some(isWord)
                       ? "No words found in this text."
-                      : "Select a word in the sentence to explore its meaning."}
+                      : selectedToken
+                        ? null
+                        : "Select a word in the sentence to explore its meaning."}
             </div>
             {tokenError && (
               <div role="alert">

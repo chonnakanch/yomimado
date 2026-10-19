@@ -72,9 +72,7 @@ export function WordDefinition({
       <h2 className="selected-word" lang="ja">
         {token.surface}
       </h2>
-      {manualSelection ? (
-        <p className="popup-metadata">Manual selection</p>
-      ) : (
+      {!manualSelection && (
         <>
           <p className="selected-reading" lang="ja">
             {hiraganaReading(token.reading) || "Reading unavailable"}

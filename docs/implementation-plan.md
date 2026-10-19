@@ -2,6 +2,18 @@
 
 ## Current status
 
+**Compact selection controls — 2026-10-19:** the selection text box now fits its
+content and recalculates when its width changes, retaining the existing height
+cap and scrolling for long text. Look up, Done, Copy and Save share one action
+row. Duplicate selection previews and manual-selection labels are removed;
+keyboard help, full action names and selection announcements remain accessible.
+The normal word prompt disappears once a word is open. All 196 frontend tests,
+Prettier, TypeScript, the production frontend build and the macOS native debug
+build pass. Browser checks at 320/420 px confirm a single action row, no horizontal
+overflow, compact short text, capped/scrollable long text, mouse/keyboard selection
+and local dictionary lookup. Native installed-app and Windows interaction remain
+unverified; release versions, candidates and approvals are unchanged.
+
 **Manual dictionary selection — 2026-10-19:** development source adds
 **Select text → Look up selection** to the compact learning popup. A read-only
 sentence supports mouse/keyboard selection across or within tokenizer boundaries,
