@@ -150,6 +150,15 @@ jobs:
         run: |
           set -euo pipefail
           python scripts/desktop_release.py verify-inputs --platform macos --directory "$RUNNER_TEMP/yomimado-input"
+          # A reduced seed keeps optional translation weights outside its DMG.
+          # verify-inputs pins exact membership and hashes; the frozen smoke and
+          # package step also bind this archive to the embedded component manifest.
+          shopt -s nullglob
+          components=("$RUNNER_TEMP/yomimado-input/"*_translation_torch.zip)
+          if (( ${#components[@]} )); then
+            mkdir -p services/ocr/build/translation-components
+            cp "${components[@]}" services/ocr/build/translation-components/
+          fi
           tar -xzf "$RUNNER_TEMP/yomimado-input/YomiMado_0.2.0_sources_fae4d28.tar.gz" -C "$RUNNER_TEMP/yomimado-input"
           echo "YOMIMADO_SOURCE_DIR=$RUNNER_TEMP/yomimado-input/source-delivery-fae4d28" >> "$GITHUB_ENV"
       - name: Install smoke-only detector from the original publisher
