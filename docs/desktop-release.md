@@ -1,5 +1,15 @@
 # Shared desktop release checklist
 
+0.3.0 rebuild started — **2026-10-19**: the owner authorized the packaging fix's
+main integration and a fresh release build. [PR #16](https://github.com/chonnakanch/yomimado/pull/16)
+merged after all 12 push/PR checks passed, at
+`e434b6cea96853079919e8acbbbd1468cc5c8bf4`. Fresh
+[Release `39225156409`](https://github.com/chonnakanch/yomimado/actions/runs/39225156409)
+and [exact-main Checks](https://github.com/chonnakanch/yomimado/actions/runs/39225156215)
+have started from that commit. Their final outcomes and exact candidate hashes
+are not yet recorded. Keep main at this source while it builds; installer
+acceptance and protected publication remain separate and unapproved.
+
 0.3.0 verification packaging repair — **2026-10-19**:
 [Release `39193821074`](https://github.com/chonnakanch/yomimado/actions/runs/39193821074)
 at `b4c95116dcc4c3abb1cdd732700336162155c994` passes the macOS builder in
@@ -18,10 +28,11 @@ provenance, checksum and size guards remain. Seven-file `platform-sources-v1`
 supports builds without optional components. Historical 6-, 8- and 17-file
 layouts remain verifiable without rewriting their bytes.
 
-This repair is prepared on `develop` only. Rerunning the old failed job uses its
-old script and cannot apply the change; a future authorized main integration
-must produce a fresh source-bound candidate. No source/runtime approval,
-installer acceptance or publication approval is inferred from this repair.
+This repair was initially prepared on `develop` only. Rerunning the old failed
+job uses its old script and cannot apply the change; the subsequently authorized
+main integration and new source-bound run are recorded above. No source/runtime
+approval, installer acceptance or publication approval is inferred from the
+packaging repair.
 
 0.3.0 preparation — **2026-10-18**: the owner requests the version bump,
 protected-main merge and release build. Version fields now agree on `0.3.0`,

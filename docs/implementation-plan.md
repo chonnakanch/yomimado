@@ -2,6 +2,15 @@
 
 ## Current status
 
+**0.3.0 rebuild started — 2026-10-19:** at the owner's explicit authorization,
+[PR #16](https://github.com/chonnakanch/yomimado/pull/16) merged the packaging
+repair into main at `e434b6cea96853079919e8acbbbd1468cc5c8bf4` after all 12
+push/PR checks passed. Fresh [Release `39225156409`](https://github.com/chonnakanch/yomimado/actions/runs/39225156409)
+and [exact-main Checks](https://github.com/chonnakanch/yomimado/actions/runs/39225156215)
+have started. Build/verification completion, exact new installer acceptance and
+publication remain pending. The owner authorized a new build, not publication;
+keep main at this exact source during the run.
+
 **0.3.0 verification packaging repair — 2026-10-19:** both installer builders
 pass in [Release `39193821074`](https://github.com/chonnakanch/yomimado/actions/runs/39193821074)
 at `b4c9511`, but `verify-transfer` rejects the combined source archive at the
