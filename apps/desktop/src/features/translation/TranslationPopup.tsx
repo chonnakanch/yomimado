@@ -546,7 +546,7 @@ export function TranslationPopup() {
               disabled={editing || !source.trim()}
               onClick={() => setSelectingText(!selectingText)}
             >
-              {selectingText ? "Use word clicks" : "Select text"}
+              {selectingText ? "Back to normal" : "Select text"}
             </button>
             <button
               className="utility-button"

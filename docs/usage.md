@@ -147,7 +147,7 @@ No match keeps the selection available to adjust and try again. Manual lookup
 does not infer a base form or reading; dictionary matches show their own readings.
 Saving a match keeps its expression as the dictionary form, its reading/meanings,
 the selected surface and the original sentence. Kanji exploration still works.
-Choose **Use word clicks**, or press Escape once, to return to automatic words;
+Choose **Back to normal**, or press Escape once, to return to automatic words;
 Escape returns keyboard focus to **Select text** before a later Escape closes
 the popup. Selecting or looking up text never changes OCR text or starts translation.
 

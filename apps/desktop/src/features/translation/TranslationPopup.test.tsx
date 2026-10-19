@@ -783,7 +783,7 @@ it("preserves unmatched selection, allows shrinking inside a token, and restores
   ).toHaveLength(1);
   await click("Look up selection");
   expect(container.querySelector(".selected-word")?.textContent).toBe("校");
-  await click("Use word clicks");
+  await click("Back to normal");
   expect(container.querySelector(".sentence-selection-text")).toBeNull();
   expect(container.querySelector(".tokenization-text")?.textContent).toBe(
     "学校",
