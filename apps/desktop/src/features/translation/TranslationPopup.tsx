@@ -379,10 +379,7 @@ export function TranslationPopup() {
       await saveVocabularyWord({
         surface: token.surface,
         reading: entry?.reading ?? token.reading,
-        dictionaryForm:
-          selectedTokenIndex === null
-            ? (entry?.expression ?? token.dictionaryForm)
-            : token.dictionaryForm,
+        dictionaryForm: entry?.expression ?? token.dictionaryForm,
         meanings: entry?.senses.map((sense) => sense.glosses.join("; ")) ?? [],
         sourceText: source,
       });

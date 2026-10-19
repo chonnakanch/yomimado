@@ -1,6 +1,8 @@
 import type { TextToken } from "../../lib/ocr-types";
 import type { WordEntry } from "../../lib/word-client";
 import { hiraganaReading } from "./ClickableSentence";
+import { JlptBadge } from "../jlpt/JlptBadge";
+import { useJlptVisible } from "../jlpt/preference";
 
 export function WordDefinition({
   token,
@@ -25,6 +27,7 @@ export function WordDefinition({
   onSave: (entry: WordEntry | null, index: number) => void;
   onRetry: () => void;
 }) {
+  const showJlpt = useJlptVisible();
   const entryView = (entry: WordEntry, index: number) => (
     <div
       className="word-entry"
@@ -33,6 +36,9 @@ export function WordDefinition({
       <div className="dictionary-match" lang="ja">
         <strong>{entry.expression}</strong>
         <span>{hiraganaReading(entry.reading)}</span>
+        {showJlpt && (
+          <JlptBadge expression={entry.expression} reading={entry.reading} />
+        )}
       </div>
       {entry.match === "dictionaryForm" && (
         <p className="popup-metadata">Matched base form</p>

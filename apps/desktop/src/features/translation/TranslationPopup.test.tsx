@@ -1079,7 +1079,7 @@ it("keeps alternatives collapsed and saves only the chosen entry's raw reading a
   expect(JSON.parse(request[1]!.body as string)).toEqual({
     surface: "学校",
     reading: "ガクエン",
-    dictionaryForm: "学校",
+    dictionaryForm: "学園",
     meanings: ["academy; campus"],
     sourceText: "学校",
   });

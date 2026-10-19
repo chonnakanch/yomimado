@@ -181,6 +181,18 @@ the popup. Selecting or looking up text never changes OCR text or starts transla
 
 Select a kanji below the word for meanings and on’yomi/kun’yomi. Expand Example
 compounds to load short local JMdict words; this does not require translation.
+
+Word matches and Saved words can show a small **N5–N1** badge. These are estimated
+JLPT vocabulary levels from a bundled community dataset, matched by dictionary
+spelling and reading. Unlisted words and missing readings receive no badge;
+an absent badge does not mean N1 or "beyond JLPT." Existing saved words use their
+stored dictionary form and reading. The badge does not rate an entire sentence
+or assign a separate level to its individual kanji.
+
+Use **Settings → Reading → Show estimated JLPT levels** to hide or restore badges.
+The choice is saved locally and updates open learning/library windows. Tags work
+offline and require no extra setup, model, API key or lookup service. See
+**Sources & licenses** for attribution and the full data license.
 The sentence and its actions stay above scrollable details as the popup grows
 to its work-area limit. Long sentences have their own scroll area.
 

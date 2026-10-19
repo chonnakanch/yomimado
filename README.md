@@ -11,6 +11,7 @@ interactive overlay to explore Japanese without replacing the original image.
 - Select a screen region or scan a manga page with a reusable area fallback.
 - Recognize horizontal and vertical Japanese and show aligned text regions.
 - Explore word readings, dictionary meanings, kanji, and example compounds.
+- Development source: show optional, offline estimated JLPT vocabulary tags in word definitions and Saved.
 - Import an optional local translation model or select one through Ollama, then request translation when needed.
 - Save and review words and sentences locally.
 

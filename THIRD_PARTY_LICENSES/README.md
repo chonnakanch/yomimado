@@ -22,6 +22,11 @@ while source clearance and final release verification remain open.
 | [JMdict](https://www.edrdg.org/edrdg/licence.html) and [KANJIDIC2](https://www.edrdg.org/edrdg/licence.html)                                     | Local word/kanji data                                              | EDRDG dictionary licence: CC BY-SA 4.0                                                                   | Redistribution is allowed with attribution and ShareAlike obligations; bundle the official files and their documentation/licence, and retain on-screen attribution. |
 | [Helsinki-NLP/opus-mt-ja-en](https://huggingface.co/Helsinki-NLP/opus-mt-ja-en)                                                                  | On-demand local translation                                        | Model card states Apache-2.0                                                                             | Model terms identified; pin revision and include notice/license.                                                                                                    |
 
+JLPT vocabulary estimates additionally use the hash-pinned
+[Jonathan Waller / Stephen Kraus dataset](jlpt/README.md), under CC BY-SA 4.0.
+Its full licence and attribution are embedded in Sources & licenses; the
+original data and provenance are retained separately from software licences.
+
 The JMdict and KANJIDIC2 files are copyright James William Breen and the
 Electronic Dictionary Research and Development Group. YomiMado uses them for
 word and kanji information. The official licence and source are at

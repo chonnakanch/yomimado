@@ -12,7 +12,7 @@ See the [changelog](../CHANGELOG.md) for completed changes and the
 ## Feature checklist
 
 - [x] **Manual word selection** — done on `develop`, unreleased.
-- [ ] **JLPT vocabulary tags** — proposed.
+- [x] **JLPT vocabulary tags** — done on `develop`, unreleased.
 - [ ] **Saved search and organization** — proposed.
 - [ ] **Conjugation and manga speech explanations** — proposed.
 - [ ] **Retry OCR for one speech bubble** — proposed.
@@ -38,17 +38,25 @@ preview build pass. Native macOS caret/selection, source protection and local
 lookup were checked. Windows interaction and exact installer acceptance remain
 unverified. See the [dated changelog entries](../CHANGELOG.md#2026-10-19).
 
-## Proposed implementation slices
-
 ### JLPT vocabulary tags
 
-Show a small estimated N5–N1 badge beside vocabulary in the word popup and Saved.
-Allow badges to be hidden. Use a vetted, versioned local dataset with compatible
-licensing and visible attribution; leave unlisted words unclassified.
+Completed on 2026-10-19. Estimated N5–N1 badges appear beside dictionary matches
+and saved words. Reading settings can hide them across open windows. The bundled
+Jonathan Waller / Stephen Kraus snapshot contains 8,113 spelling/reading pairs;
+unlisted words and missing readings stay unclassified. Full source credits and
+CC BY-SA 4.0 terms are available in Sources & licenses. No external API, model
+or Python dependency is needed.
 
-Completion: the same word/reading receives consistent labels in both views,
-unmatched entries are not guessed, and lookup still works offline. Kanji and
-grammar levels are separate future scope.
+New saves retain the selected dictionary expression so the same word/reading
+can be labelled in Saved. Existing records and database formats are preserved;
+tags are derived from the bundled data rather than persisted in saved records.
+The 202 frontend tests and six data/provenance tests pass, including reading
+disambiguation, preference synchronization, source hashes and license retention.
+Windows interaction and exact-installer acceptance remain unverified. See the
+[changelog](../CHANGELOG.md#2026-10-19) and [data review](../THIRD_PARTY_LICENSES/jlpt/README.md).
+Kanji/grammar tags and JLPT filtering are separate future scope.
+
+## Proposed implementation slices
 
 ### Saved search and organization
 

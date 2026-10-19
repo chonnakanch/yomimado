@@ -14,6 +14,15 @@ The [feature roadmap](docs/feature-roadmap.md) tracks completed and proposed wor
 
 #### Added
 
+- **JLPT vocabulary tags — done in development source.** Estimated N5–N1 badges
+  in dictionary matches and Saved use a bundled, hash-pinned snapshot of 8,113
+  spelling/reading pairs from Jonathan Waller's lists as adapted by Stephen
+  Kraus. Matching is reading-sensitive; absent words/readings stay unclassified.
+  Reading settings can hide badges across open windows. Full attribution and
+  CC BY-SA 4.0 terms are embedded in Sources & licenses. No runtime API, model
+  download or Python dependency is added. Original inputs and a reproducible
+  offline generator are retained; CI verifies their hashes and generated output.
+  See the [data review](THIRD_PARTY_LICENSES/jlpt/README.md).
 - **Manual word selection — done in development source.** Select text across or
   within automatic word boundaries, explicitly look up the selection in local
   JMdict, adjust unmatched selections, save the chosen entry with sentence
@@ -23,6 +32,9 @@ The [feature roadmap](docs/feature-roadmap.md) tracks completed and proposed wor
 
 #### Fixed
 
+- **Saved dictionary identity:** new saves preserve the chosen dictionary
+  entry's expression, including alternative matches, so Saved can derive the
+  same JLPT label. Existing saved records are not rewritten and need no migration.
 - **Visible caret and keyboard selection.** Native arrow keys move the caret;
   Shift + arrow keys extend the selection. Text edits are blocked, including
   typing, deletion, paste, cut and drop, with source restoration for
@@ -40,6 +52,10 @@ The [feature roadmap](docs/feature-roadmap.md) tracks completed and proposed wor
 
 #### Verification and availability
 
+- JLPT tags pass 202 frontend tests and six data/provenance tests, formatting,
+  TypeScript, frontend production build and macOS preview build. Browser checks confirm a real
+  local dictionary match and immediate cross-window hiding/restoring of tags.
+  Windows native interaction and new-installer acceptance are not established.
 - The caret fix passed all 197 frontend tests, formatting, TypeScript, frontend
   production build and macOS preview app build. Native macOS checks confirmed
   caret movement, keyboard selection, source protection and local lookup.

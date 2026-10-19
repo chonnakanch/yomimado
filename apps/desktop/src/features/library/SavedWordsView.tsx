@@ -8,8 +8,11 @@ import {
   useRemovalFocus,
 } from "./CollectionPanel";
 import { useSavedCollection } from "./useSavedCollection";
+import { JlptBadge } from "../jlpt/JlptBadge";
+import { useJlptVisible } from "../jlpt/preference";
 
 export function SavedWordsView({ active }: { active: boolean }) {
+  const showJlpt = useJlptVisible();
   const collection = useSavedCollection(
     active,
     listVocabularyWords,
@@ -56,7 +59,15 @@ export function SavedWordsView({ active }: { active: boolean }) {
           <li className="library-row" key={word.id}>
             <div className="library-row-heading">
               <div className="library-word">
-                <strong lang="ja">{word.surface}</strong>
+                <div className="library-word-title">
+                  <strong lang="ja">{word.surface}</strong>
+                  {showJlpt && (
+                    <JlptBadge
+                      expression={word.dictionaryForm || word.surface}
+                      reading={word.reading}
+                    />
+                  )}
+                </div>
                 <span
                   className="library-reading"
                   lang={word.reading ? "ja" : undefined}

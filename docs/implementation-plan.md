@@ -6,6 +6,27 @@ See the [feature roadmap](feature-roadmap.md) for proposed learning features and
 the [changelog](../CHANGELOG.md) for completed development changes. Source
 completion is tracked separately from publication and installer acceptance.
 
+**Offline JLPT vocabulary tags — 2026-10-19:** development source adds estimated
+N5–N1 badges beside dictionary matches and saved words. A pinned, locally bundled
+Jonathan Waller / Stephen Kraus dataset contains 8,113 spelling/reading pairs;
+exact normalized spelling and reading determine the label, with no inference
+for unlisted words or missing readings. Reading settings persist badge visibility
+and synchronize it across open windows. Source credit and the full CC BY-SA 4.0
+license are embedded in Sources & licenses. New saves retain the chosen entry's
+dictionary expression; existing saved databases are unchanged. There is no
+additional service, model, runtime download or Python package.
+
+The [data review](../THIRD_PARTY_LICENSES/jlpt/README.md) retains upstream inputs,
+revision, hashes, licence and adaptation details. The offline generator and six
+provenance tests are added to existing source CI without changing release gates.
+All 202 frontend tests, Prettier, TypeScript, the frontend/macOS preview builds, generator/data
+checks and script Ruff checks pass. Browser smoke confirms the real 学校／がっこう
+N5 badge and preference changes reaching an already-open popup. Windows native
+interaction and exact installer acceptance remain unverified. No released
+installer, version, runtime seed or publication approval is changed.
+The frontend bundle is 610.73 kB (174.83 kB gzip); Vite reports its non-fatal
+500 kB chunk-size warning. No warning threshold or packaging gate is relaxed.
+
 **Selection caret and keyboard fix — 2026-10-19:** development source uses a
 native editable caret for the selection box while canceling text edits. This
 avoids the native read-only control's invisible caret/keyboard behavior without

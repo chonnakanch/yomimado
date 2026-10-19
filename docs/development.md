@@ -198,6 +198,16 @@ and exclude Sudachi. Manga OCR's UniDic setup is separate and remains unchanged.
 
 ## Local word dictionary
 
+JLPT vocabulary labels are a separate frontend data asset, not a JMdict field.
+The retained Waller/Kraus snapshot, terms and hashes are documented in the
+[data review](../THIRD_PARTY_LICENSES/jlpt/README.md). Run
+`rtk python3 scripts/prepare_jlpt.py --check` from the repository root to verify
+the bundled table and license offline. Omit `--check` to regenerate them from
+the retained inputs. No API, Python dependency or OCR runtime input is added.
+Levels are derived at display time from exact spelling/reading matches; no
+saved-database migration is required. The full license is embedded in the
+frontend independently of the OCR runtime's notice directory.
+
 For combined-word meanings (for example, 今日 → “today” rather than the
 separate meanings of 今 and 日), download the English-only
 [JMdict_e.gz file from EDRDG](https://www.edrdg.org/pub/Nihongo/JMdict_e.gz)
