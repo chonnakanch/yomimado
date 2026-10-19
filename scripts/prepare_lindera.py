@@ -7,9 +7,11 @@ import hashlib
 import json
 import shutil
 import sys
+import tarfile
 import tempfile
 import urllib.request
 import zipfile
+from importlib.metadata import version
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -71,6 +73,66 @@ def retain_notices(destination: Path, pins: dict) -> None:
     )
 
 
+def rebuild(source: Path, software: Path, destination: Path, pins: dict) -> None:
+    """Rebuild the pinned dictionary offline; never overwrite an existing target."""
+    import lindera
+
+    spec = pins["dictionarySource"]
+    if version("lindera") != pins["version"]:
+        raise ValueError("Dictionary builder version differs")
+    if digest(source) != spec["sha256"] or digest(software) != pins["source"]["sha256"]:
+        raise ValueError("Dictionary or software source checksum differs")
+    if destination.exists():
+        raise ValueError("Dictionary rebuild destination must be new")
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    with tempfile.TemporaryDirectory(dir=destination.parent) as temporary:
+        temporary = Path(temporary)
+        inputs = temporary / "source"
+        inputs.mkdir()
+        with tarfile.open(source) as bundle:
+            seen = set()
+            for member in bundle.getmembers():
+                path = Path(member.name)
+                if (
+                    path.is_absolute()
+                    or ".." in path.parts
+                    or "\\" in member.name
+                    or not path.parts
+                    or path.parts[0] != spec["root"]
+                    or (not member.isdir() and not member.isfile())
+                    or member.name in seen
+                ):
+                    raise ValueError("Unsafe dictionary source member")
+                seen.add(member.name)
+                target = inputs / path
+                if member.isdir():
+                    target.mkdir(parents=True, exist_ok=True)
+                else:
+                    target.parent.mkdir(parents=True, exist_ok=True)
+                    with bundle.extractfile(member) as raw, target.open("wb") as out:
+                        shutil.copyfileobj(raw, out)
+        with tarfile.open(software) as bundle:
+
+            def read(name):
+                matches = [m for m in bundle.getmembers() if m.name == name]
+                if len(matches) != 1 or not matches[0].isfile():
+                    raise ValueError("Missing or duplicate dictionary build input")
+                return bundle.extractfile(matches[0]).read()
+
+            metadata = temporary / "metadata.json"
+            metadata.write_bytes(read(spec["metadata"]))
+            notice = read(spec["notice"])
+        generated = temporary / "dictionary"
+        lindera.build_dictionary(
+            str(inputs / spec["root"]),
+            str(generated),
+            lindera.Metadata.from_json_file(str(metadata)),
+        )
+        (generated / "NOTICE.txt").write_bytes(notice)
+        verify_dictionary(generated, pins["dictionary"]["files"])
+        generated.rename(destination)
+
+
 def verify_packaged(resources: Path) -> None:
     """Reject missing/changed dictionary inputs and accidentally retained Sudachi."""
     pins = json.loads(INPUTS.read_text())
@@ -102,9 +164,15 @@ def main():
     parser.add_argument("--download", action="store_true")
     parser.add_argument("--check", action="store_true")
     parser.add_argument("--notices", type=Path)
+    parser.add_argument("--rebuild-source", type=Path)
+    parser.add_argument("--software-source", type=Path)
     args = parser.parse_args()
     pins = json.loads(INPUTS.read_text())
-    if args.check:
+    if args.rebuild_source:
+        if not args.software_source:
+            parser.error("--rebuild-source requires --software-source")
+        rebuild(args.rebuild_source, args.software_source, args.target, pins)
+    elif args.check:
         verify_dictionary(args.target, pins["dictionary"]["files"])
     else:
         archive = (

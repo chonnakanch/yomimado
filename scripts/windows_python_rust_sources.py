@@ -5,9 +5,9 @@ from __future__ import annotations
 import hashlib
 import json
 import tarfile
-import tomllib
 from pathlib import Path, PurePosixPath
 
+import tomllib
 from windows_release import (
     BUILD,
     RESOURCES,
@@ -73,6 +73,96 @@ def locked_sources(archive: Path) -> tuple[dict, list[dict]]:
             "path": locks[0].name,
             "sha256": hashlib.sha256(raw).hexdigest(),
         }, entries
+
+
+def verify_source_comparison(
+    original: tarfile.TarFile,
+    members: list[tarfile.TarInfo],
+    key: str,
+    manifest: dict,
+    pin: dict,
+    destination: Path,
+) -> None:
+    """Bind notices for old crates without VCS metadata to identical source code."""
+    prefix = PurePosixPath(pin["prefix"])
+    if (
+        prefix.is_absolute()
+        or ".." in prefix.parts
+        or "\\" in pin["prefix"]
+        or prefix.as_posix() != pin["prefix"]
+    ):
+        raise ValueError("Unsafe Rust source comparison prefix")
+    archive = destination / "supplements/source-match" / (key + ".tar.gz")
+    fetch(pin, archive)
+    original_prefix = key + "/"
+    expected = {
+        item.name.removeprefix(original_prefix): original.extractfile(item).read()
+        for item in members
+        if item.name.startswith(original_prefix) and item.name.endswith(".rs")
+    }
+    with tarfile.open(archive) as upstream:
+        source_members = list(regular_members(upstream))
+        package_path = pin["prefix"] + "/Cargo.toml"
+        package = next(
+            (item for item in source_members if item.name == package_path), None
+        )
+        if package is None:
+            raise ValueError("Missing Rust source comparison manifest")
+        identity = tomllib.loads(upstream.extractfile(package).read().decode())[
+            "package"
+        ]
+        if any(
+            identity.get(field) != manifest.get(field) for field in ("name", "version")
+        ):
+            raise ValueError("Rust source comparison package identity differs")
+        upstream_prefix = pin["prefix"] + "/"
+        actual = {
+            item.name.removeprefix(upstream_prefix): upstream.extractfile(item).read()
+            for item in source_members
+            if item.name.startswith(upstream_prefix) and item.name.endswith(".rs")
+        }
+        if not expected or actual != expected:
+            raise ValueError("Rust source comparison code differs")
+
+
+def verify_supplement(
+    path: Path,
+    source: tarfile.TarFile,
+    members: list[tarfile.TarInfo],
+    key: str,
+    manifest: dict,
+    supplement: dict,
+    destination: Path,
+) -> None:
+    if (
+        digest(path) != supplement["crateSha256"]
+        or manifest["repository"] != supplement["repository"]
+    ):
+        raise ValueError("Rust supplemental notice original identity differs")
+    vcs_member = next(
+        (item for item in members if item.name == key + "/.cargo_vcs_info.json"), None
+    )
+    if vcs_member is not None:
+        vcs = json.loads(source.extractfile(vcs_member).read())
+        if vcs["git"]["sha1"] != supplement["revision"]:
+            raise ValueError("Rust supplemental notice original revision differs")
+    elif comparison := supplement.get("sourceComparison"):
+        expected_url = (
+            manifest["repository"].replace(
+                "https://github.com/", "https://codeload.github.com/", 1
+            )
+            + "/tar.gz/"
+            + supplement["revision"]
+        )
+        if comparison.get("url") != expected_url:
+            raise ValueError("Rust source comparison repository/revision differs")
+        verify_source_comparison(
+            source, members, key, manifest, comparison, destination
+        )
+    else:
+        raise ValueError(
+            "Rust supplemental notice needs VCS metadata or exact source comparison"
+        )
 
 
 def collect() -> None:
@@ -155,18 +245,9 @@ def collect() -> None:
                 target.write_bytes(raw)
                 texts[relative.as_posix()] = hashlib.sha256(raw).hexdigest()
             if supplement := supplements.get(key):
-                vcs_member = next(
-                    m for m in members if m.name == key + "/.cargo_vcs_info.json"
+                verify_supplement(
+                    path, source, members, key, manifest, supplement, destination
                 )
-                vcs = json.loads(source.extractfile(vcs_member).read())
-                if (
-                    digest(path) != supplement["crateSha256"]
-                    or manifest["repository"] != supplement["repository"]
-                    or vcs["git"]["sha1"] != supplement["revision"]
-                ):
-                    raise ValueError(
-                        "Rust supplemental notice original revision differs"
-                    )
                 for pin in supplement["files"]:
                     relative = key + "/upstream/" + pin["filename"]
                     if Path(pin["filename"]).name != pin["filename"]:

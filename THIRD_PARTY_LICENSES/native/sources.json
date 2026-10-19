@@ -137,5 +137,14 @@
         "sha256": "e7a93b009565cfce55919a381437ac4db883e9da2126fa28b91d12732bc53d96"
       }
     ]
+  },
+  "lindera": {
+    "version": "6.0.0",
+    "files": [
+      {
+        "path": "lindera-6.0.0-NOTICES.txt",
+        "sha256": "35cb814706a25ef6fa20c4e47372ae046eb4ce554b6e50873604d6883c5507f0"
+      }
+    ]
   }
 }

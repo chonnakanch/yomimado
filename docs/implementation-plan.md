@@ -1478,3 +1478,13 @@ test scope are recorded in [the Windows test record](windows-installed-test.md).
 This closes the reported missing-overlay regression on that Windows setup.
 Protected publication, exact macOS installer acceptance and untested hardware
 cases remain separate; no additional publication approval was supplied.
+
+### 0.3.0 source preparation — 2026-10-19
+
+- Retained all 399 original Lindera Cargo.lock registry crates and notices;
+  pinned missing notices, with source-content checks for three old non-VCS crates.
+- Rebuilt pinned IPADIC source to all nine identical generated files and retained
+  its original data terms, exact recipe and separate release notice.
+- Updated the technical native inventory for 112 inputs and the new notice
+  supplement. Human source-delivery approval, a fresh runtime seed, main merge,
+  real Windows release build and exact-installer publication gates remain pending.

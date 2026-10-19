@@ -110,6 +110,30 @@ installation. Keep dynamic linking and the library source/notices available
 alongside the installer. A rebuilt/modified app can require per-app Gatekeeper
 approval; this does not confer Developer ID notarization.
 
+## Lindera technical source refresh — 2026-10-19
+
+The 0.3.0 runtime replaces the Sudachi extension and two Fugashi/MeCab native
+inputs with Lindera's publisher-built ARM64 extension. The technical record now
+covers **112 unique native inputs**. The 111 retained binary input hashes and
+their prior source archives remain unchanged; historical reviews below are
+preserved. A new separate Lindera source delivery retains the tagged monorepo,
+all **399 original locked registry crates**, original notices and pinned missing
+notice supplements. Three old crates without VCS metadata require byte-identical
+Rust source files and matching package identities at immutable upstream revisions.
+The runtime includes the complete hash-bound native notice supplement.
+
+The original IPADIC source is now available and SHA-256 pinned. Using the exact
+6.0.0 builder and tagged metadata reproduces all nine generated dictionary files
+byte for byte; the tenth release file is the matching tagged notice. The original
+data archive and its separate COPYING, recipe and output hashes are retained.
+See [the recipe and limitations](../THIRD_PARTY_LICENSES/lindera/README.md).
+
+This completes technical provenance collection, not human approval of a new
+release-source delivery. Native wheels and the complete app were not rebuilt
+solely from the filtered source delivery. The previous source approval cannot
+cover the new Lindera inputs. Fresh 0.3.0 source/notices, runtime seed, installed
+candidate evidence and protected publication review remain required.
+
 ## Source candidate preparation
 
 `scripts/prepare-macos-sources.py` gathers data for review without installing

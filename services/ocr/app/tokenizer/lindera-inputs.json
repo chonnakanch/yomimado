@@ -38,5 +38,14 @@
   "noticeHashes": {
     "IPADIC-NOTICE.txt": "2cf235bf0842d6d61eb0244fb22e645a321b12408a3cf75feb3a53577d885bde",
     "lindera-LICENSE.txt": "287b69ae48d8013362d0ca77483e9e7e9753ceba78fe098acd30d4eef0d347b7"
+  },
+  "dictionarySource": {
+    "filename": "mecab-ipadic-2.7.0-20250920.tar.gz",
+    "url": "https://lindera.dev/mecab-ipadic-2.7.0-20250920.tar.gz",
+    "sha256": "a7ba9f645ffe7094e56ae1c4a81d100df8fbb1e28bbe1792622e9728e162db3d",
+    "upstreamMd5": "a95c409f12f1023fce8ef91f991ef042",
+    "root": "mecab-ipadic-2.7.0-20250920",
+    "metadata": "lindera-6.0.0/lindera-ipadic/metadata.json",
+    "notice": "lindera-6.0.0/lindera-ipadic/NOTICE.txt"
   }
 }

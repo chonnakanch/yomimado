@@ -1,6 +1,8 @@
 """Require complete hash-locked registry inputs and safe original members."""
 
+import hashlib
 import io
+import json
 import tarfile
 import tempfile
 import unittest
@@ -48,6 +50,125 @@ class PythonRustSourcesTests(unittest.TestCase):
             path = self.archive(directory, "../Cargo.lock", b"bad")
             with self.assertRaisesRegex(ValueError, "Unsafe"):
                 sources.locked_sources(path)
+
+    def source_comparison_fixture(
+        self, directory, *, code=b"pub fn sample() {}", vcs=None
+    ):
+        root = Path(directory)
+        key = "example-1.0.0"
+        original = root / "original.crate"
+        upstream = root / "supplements/source-match" / (key + ".tar.gz")
+        upstream.parent.mkdir(parents=True)
+        package = b'[package]\nname="example"\nversion="1.0.0"\n'
+        for path, prefix, contents in (
+            (original, key, b"pub fn sample() {}"),
+            (upstream, "source", code),
+        ):
+            with tarfile.open(path, "w:gz") as output:
+                files = {"Cargo.toml": package, "src/lib.rs": contents}
+                if path == original and vcs:
+                    files[".cargo_vcs_info.json"] = json.dumps(
+                        {"git": {"sha1": vcs}}
+                    ).encode()
+                for name, data in files.items():
+                    item = tarfile.TarInfo(prefix + "/" + name)
+                    item.size = len(data)
+                    output.addfile(item, io.BytesIO(data))
+        manifest = {
+            "name": "example",
+            "version": "1.0.0",
+            "repository": "https://github.com/example/original",
+        }
+        pin = {
+            "crateSha256": hashlib.sha256(original.read_bytes()).hexdigest(),
+            "repository": manifest["repository"],
+            "revision": "a" * 40,
+            "sourceComparison": {
+                "url": "https://codeload.github.com/example/original/tar.gz/"
+                + "a" * 40,
+                "sha256": hashlib.sha256(upstream.read_bytes()).hexdigest(),
+                "prefix": "source",
+            },
+        }
+        return root, key, original, manifest, pin
+
+    def test_older_crate_without_vcs_requires_identical_pinned_source(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root, key, path, manifest, pin = self.source_comparison_fixture(directory)
+            with tarfile.open(path) as source:
+                sources.verify_supplement(
+                    path,
+                    source,
+                    list(sources.regular_members(source)),
+                    key,
+                    manifest,
+                    pin,
+                    root,
+                )
+                pin.pop("sourceComparison")
+                with self.assertRaisesRegex(ValueError, "needs VCS metadata"):
+                    sources.verify_supplement(
+                        path,
+                        source,
+                        list(sources.regular_members(source)),
+                        key,
+                        manifest,
+                        pin,
+                        root,
+                    )
+
+    def test_source_comparison_rejects_different_code_and_original_identity(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root, key, path, manifest, pin = self.source_comparison_fixture(
+                directory, code=b"pub fn changed() {}"
+            )
+            with tarfile.open(path) as source:
+                members = list(sources.regular_members(source))
+                with self.assertRaisesRegex(ValueError, "code differs"):
+                    sources.verify_supplement(
+                        path, source, members, key, manifest, pin, root
+                    )
+                pin["crateSha256"] = "0" * 64
+                with self.assertRaisesRegex(ValueError, "identity differs"):
+                    sources.verify_supplement(
+                        path, source, members, key, manifest, pin, root
+                    )
+
+    def test_vcs_mismatch_cannot_fall_back_to_matching_code(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root, key, path, manifest, pin = self.source_comparison_fixture(
+                directory, vcs="b" * 40
+            )
+            with (
+                tarfile.open(path) as source,
+                self.assertRaisesRegex(ValueError, "original revision differs"),
+            ):
+                sources.verify_supplement(
+                    path,
+                    source,
+                    list(sources.regular_members(source)),
+                    key,
+                    manifest,
+                    pin,
+                    root,
+                )
+
+    def test_source_comparison_rejects_unbound_revision_and_unsafe_prefix(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root, key, path, manifest, pin = self.source_comparison_fixture(directory)
+            with tarfile.open(path) as source:
+                members = list(sources.regular_members(source))
+                pin["revision"] = "c" * 40
+                with self.assertRaisesRegex(ValueError, "repository/revision differs"):
+                    sources.verify_supplement(
+                        path, source, members, key, manifest, pin, root
+                    )
+                pin["revision"] = "a" * 40
+                pin["sourceComparison"]["prefix"] = "../source"
+                with self.assertRaisesRegex(ValueError, "Unsafe"):
+                    sources.verify_supplement(
+                        path, source, members, key, manifest, pin, root
+                    )
 
 
 if __name__ == "__main__":
