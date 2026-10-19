@@ -709,7 +709,8 @@ it("looks up across token boundaries only on request and saves the chosen entry 
   await openPopup(source);
   await click("Select text");
   const input = await selectText(2, 6);
-  expect(input.readOnly).toBe(true);
+  expect(input.readOnly).toBe(false);
+  expect(input.getAttribute("aria-readonly")).toBe("true");
   expect(fetch).toHaveBeenCalledTimes(1);
   expect(button("Look up selection").disabled).toBe(false);
   await click("Look up selection");
@@ -906,6 +907,76 @@ it("exits selection mode on Escape and returns keyboard focus before closing the
     "close_translation_popup",
     expect.anything(),
   );
+});
+
+it("keeps native caret navigation while preventing edits to the selection text", async () => {
+  const fetch = serviceMock();
+  await openPopup();
+  await click("Select text");
+  const input = await selectText(0, 1);
+  expect(input.readOnly).toBe(false);
+  expect(document.activeElement).toBe(input);
+  for (const key of ["ArrowRight", "ArrowLeft", "Home", "End"]) {
+    const event = new KeyboardEvent("keydown", {
+      key,
+      shiftKey: true,
+      bubbles: true,
+      cancelable: true,
+    });
+    await act(async () => input.dispatchEvent(event));
+    expect(event.defaultPrevented).toBe(false);
+  }
+  for (const inputType of [
+    "insertText",
+    "deleteContentBackward",
+    "deleteContentForward",
+    "insertFromPaste",
+    "insertLineBreak",
+    "historyUndo",
+    "historyRedo",
+  ]) {
+    const event = new InputEvent("beforeinput", {
+      inputType,
+      data: "changed",
+      bubbles: true,
+      cancelable: true,
+    });
+    await act(async () => input.dispatchEvent(event));
+    expect(event.defaultPrevented).toBe(true);
+    expect(input.value).toBe("学校");
+  }
+  for (const type of ["paste", "cut", "drop"]) {
+    const event = new Event(type, { bubbles: true, cancelable: true });
+    await act(async () => input.dispatchEvent(event));
+    expect(event.defaultPrevented).toBe(true);
+  }
+  const copy = new Event("copy", { bubbles: true, cancelable: true });
+  input.dispatchEvent(copy);
+  expect(copy.defaultPrevented).toBe(false);
+  await act(async () => {
+    Object.getOwnPropertyDescriptor(
+      HTMLTextAreaElement.prototype,
+      "value",
+    )!.set!.call(input, "IME text");
+    input.dispatchEvent(
+      new InputEvent("input", {
+        inputType: "insertCompositionText",
+        bubbles: true,
+      }),
+    );
+  });
+  expect(input.value).toBe("学校");
+  expect([input.selectionStart, input.selectionEnd]).toEqual([0, 1]);
+  await click("Look up selection");
+  expect(
+    JSON.parse(
+      fetch.mock.calls.find(([url]) => url.endsWith("/word"))![1]!
+        .body as string,
+    ),
+  ).toEqual({ surface: "学", dictionaryForm: "学", reading: "" });
+  expect(
+    fetch.mock.calls.filter(([url]) => url.endsWith("/tokenize")),
+  ).toHaveLength(1);
 });
 
 it("renders source during analysis failure and retries without requesting meanings or translation", async () => {

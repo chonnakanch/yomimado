@@ -136,8 +136,10 @@ action. Display readings use hiragana, while saved/lookup readings retain the
 original dictionary data. Missing dictionaries still allow Save without meaning.
 
 If a word boundary is wrong, choose **Select text** above the learning details.
-Drag over any continuous part of the Japanese sentence, or position the cursor
-and hold Shift while using the arrow keys. Choose **Look up selection** to look
+Drag over any continuous part of the Japanese sentence, or click to place the
+visible cursor. Arrow keys move the cursor; Shift + arrow keys extend the
+highlighted selection. The selection box blocks typing, deletion, paste, cut and
+drop; use **Edit OCR text** to change the original sentence. Choose **Look up selection** to look
 up that exact expression in local JMdict. Selection can cross automatic word
 boundaries or include only part of a word, and works even if word analysis fails.
 Leading/trailing whitespace is ignored; the lookup limit is 100 characters.

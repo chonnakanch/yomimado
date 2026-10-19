@@ -58,18 +58,30 @@ export function ManualWordSelection({
 }) {
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const helpId = useId();
-  const [range, setRange] = useState({ start: 0, end: 0 });
+  const [range, setRange] = useState({
+    start: 0,
+    end: 0,
+    direction: "none" as "forward" | "backward" | "none",
+  });
   const token = selectionToken(source, range.start, range.end);
   // Matches the existing local word API limit, measured in Unicode code points.
   const tooLong = !!token && token.end - token.start > 100;
   useEffect(() => {
-    inputRef.current?.focus();
-    inputRef.current?.setSelectionRange(0, 0);
+    const input = inputRef.current;
+    if (!input) return;
+    // Native readOnly hides the caret in WebKit. Keep native text navigation,
+    // but cancel edits before they change this selection-only copy of the source.
+    const preventEdit = (event: InputEvent) => event.preventDefault();
+    input.addEventListener("beforeinput", preventEdit);
+    input.focus();
+    input.setSelectionRange(0, 0);
+    return () => input.removeEventListener("beforeinput", preventEdit);
   }, []);
   return (
     <>
       <p className="popup-metadata" id={helpId}>
-        Drag to select text, or hold Shift and use the arrow keys.
+        Drag to select text, or click to place the cursor. Arrow keys move it;
+        Shift + arrow keys select text.
       </p>
       <textarea
         ref={inputRef}
@@ -77,14 +89,25 @@ export function ManualWordSelection({
         aria-label="Select Japanese text for lookup"
         aria-describedby={helpId}
         lang="ja"
-        readOnly
+        aria-readonly="true"
+        spellCheck={false}
         value={source}
         rows={3}
         style={{ maxHeight }}
+        onPaste={(event) => event.preventDefault()}
+        onCut={(event) => event.preventDefault()}
+        onDrop={(event) => event.preventDefault()}
+        onChange={(event) => {
+          // Also restore the source for non-cancelable input (for example IME).
+          const input = event.currentTarget;
+          input.value = source.replace(/\r\n?/g, "\n");
+          input.setSelectionRange(range.start, range.end, range.direction);
+        }}
         onSelect={(event) => {
           setRange({
             start: event.currentTarget.selectionStart,
             end: event.currentTarget.selectionEnd,
+            direction: event.currentTarget.selectionDirection,
           });
         }}
       />

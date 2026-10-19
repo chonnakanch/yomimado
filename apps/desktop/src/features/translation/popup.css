@@ -116,7 +116,12 @@
   min-height: 0;
   resize: none;
   user-select: text;
+  caret-color: var(--color-text-primary);
   cursor: text;
+}
+.sentence-selection-text::selection {
+  background: var(--color-selected);
+  color: var(--color-on-accent);
 }
 .sentence-feedback:empty {
   display: none;

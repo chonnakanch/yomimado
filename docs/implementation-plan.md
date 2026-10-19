@@ -2,6 +2,21 @@
 
 ## Current status
 
+**Selection caret and keyboard fix — 2026-10-19:** development source uses a
+native editable caret for the selection box while canceling text edits. This
+avoids the native read-only control's invisible caret/keyboard behavior without
+changing OCR text. Arrow navigation and Shift + arrow selection remain native;
+typing, deletion, paste, cut, drop and undo/redo edits are blocked, with controlled
+source restoration for non-cancelable input. Explicit caret and selection colors
+improve visibility. The previous popup layout is retained.
+
+All 197 frontend tests, Prettier, TypeScript, the production frontend build and
+the macOS preview app build pass. Regression coverage checks navigation events,
+edit cancellation and source/range restoration. A native macOS preview smoke
+confirms caret movement, Shift+Right selecting 生徒会長, typing/deletion leaving
+the source intact, and successful local dictionary lookup. Windows and exact
+installer acceptance remain unverified; no release version or candidate changes.
+
 **Manual dictionary selection — 2026-10-19:** development source adds
 **Select text → Look up selection** to the compact learning popup. A read-only
 sentence supports mouse/keyboard selection across or within tokenizer boundaries,
