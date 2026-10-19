@@ -652,6 +652,262 @@ function serviceMock(
   return fetch;
 }
 
+async function selectText(start: number, end: number) {
+  const input = container.querySelector<HTMLTextAreaElement>(
+    ".sentence-selection-text",
+  )!;
+  await act(async () => {
+    input.focus();
+    input.setSelectionRange(start, end);
+    document.dispatchEvent(new Event("selectionchange"));
+    input.dispatchEvent(
+      new KeyboardEvent("keyup", { key: "Shift", bubbles: true }),
+    );
+  });
+  return input;
+}
+
+it("looks up across token boundaries only on request and saves the chosen entry with original context", async () => {
+  const source = "彼は生徒会長です。";
+  const entry = {
+    ...schoolEntry,
+    expression: "生徒会長",
+    reading: "セイトカイチョウ",
+    readingMatch: false,
+    senses: [{ glosses: ["student council president"] }],
+  };
+  const alternate = {
+    ...entry,
+    expression: "生徒会長別表記",
+    reading: "セイトカイチョー",
+    senses: [{ glosses: ["alternate meaning"] }],
+  };
+  const fetch = serviceMock((path) => {
+    if (path.endsWith("/tokenize"))
+      return response({
+        sourceText: source,
+        tokens: [
+          {
+            ...schoolToken,
+            surface: "生徒",
+            dictionaryForm: "生徒",
+            start: 2,
+            end: 4,
+          },
+          {
+            ...schoolToken,
+            surface: "会長",
+            dictionaryForm: "会長",
+            start: 4,
+            end: 6,
+          },
+        ],
+      });
+    if (path.endsWith("/word"))
+      return response({ entries: [entry, alternate] });
+  });
+  await openPopup(source);
+  await click("Select text");
+  const input = await selectText(2, 6);
+  expect(input.readOnly).toBe(true);
+  expect(fetch).toHaveBeenCalledTimes(1);
+  expect(button("Look up selection").disabled).toBe(false);
+  await click("Look up selection");
+  expect(
+    JSON.parse(
+      fetch.mock.calls.find(([url]) => url.endsWith("/word"))![1]!
+        .body as string,
+    ),
+  ).toEqual({ surface: "生徒会長", dictionaryForm: "生徒会長", reading: "" });
+  expect(container.querySelector(".selected-word")?.textContent).toBe(
+    "生徒会長",
+  );
+  expect(container.textContent).not.toContain("Reading differs");
+  expect(container.querySelector(".word-metadata")).toBeNull();
+  const alternative = container.querySelector<HTMLDetailsElement>(
+    ".alternative-matches",
+  )!;
+  await act(async () => {
+    alternative.open = true;
+    alternative.querySelector<HTMLButtonElement>(".save-word-button")!.click();
+  });
+  expect(
+    JSON.parse(
+      fetch.mock.calls.find(([url]) => url.endsWith("/vocabulary"))![1]!
+        .body as string,
+    ),
+  ).toEqual({
+    surface: "生徒会長",
+    reading: alternate.reading,
+    dictionaryForm: alternate.expression,
+    meanings: ["alternate meaning"],
+    sourceText: source,
+  });
+  expect(input.value).toBe(source);
+  expect([input.selectionStart, input.selectionEnd]).toEqual([2, 6]);
+  expect(fetch.mock.calls.some(([url]) => url.endsWith("/translate"))).toBe(
+    false,
+  );
+  await click("Look up kanji 生");
+  expect(container.querySelector(".kanji-detail")?.textContent).toContain(
+    "Used here in 生徒会長.",
+  );
+  expect(container.querySelector(".kanji-detail")?.textContent).not.toContain(
+    "whole-word reading:",
+  );
+  await click("Example compounds");
+  expect(
+    JSON.parse(
+      fetch.mock.calls.find(([url]) => url.endsWith("/kanji/examples"))![1]!
+        .body as string,
+    ),
+  ).toEqual({ character: "生", excludeWord: "生徒会長" });
+});
+
+it("preserves unmatched selection, allows shrinking inside a token, and restores normal word clicks", async () => {
+  const fetch = serviceMock((path, body) =>
+    path.endsWith("/word")
+      ? response({ entries: body.surface === "学校" ? [] : [schoolEntry] })
+      : undefined,
+  );
+  await openPopup();
+  await click("Select text");
+  let input = await selectText(0, 2);
+  await click("Look up selection");
+  expect(container.textContent).toContain("Adjust the selection and try again");
+  expect([input.selectionStart, input.selectionEnd]).toEqual([0, 2]);
+  input = await selectText(1, 2);
+  expect(
+    fetch.mock.calls.filter(([url]) => url.endsWith("/word")),
+  ).toHaveLength(1);
+  await click("Look up selection");
+  expect(container.querySelector(".selected-word")?.textContent).toBe("校");
+  await click("Use word clicks");
+  expect(container.querySelector(".sentence-selection-text")).toBeNull();
+  expect(container.querySelector(".tokenization-text")?.textContent).toBe(
+    "学校",
+  );
+  await click("学校");
+  expect(container.querySelector(".selected-reading")?.textContent).toBe(
+    "がっこう",
+  );
+  expect(container.querySelector(".word-metadata")?.textContent).toContain(
+    "Token POS名詞",
+  );
+});
+
+it("supports manual lookup when tokenization fails and retries a failed selection lookup", async () => {
+  let first = true;
+  const fetch = serviceMock((path) => {
+    if (path.endsWith("/tokenize"))
+      return response({ detail: "Tokenizer unavailable" }, 503);
+    if (path.endsWith("/word") && first) {
+      first = false;
+      return response({ detail: "Dictionary unavailable" }, 503);
+    }
+  });
+  await openPopup();
+  await click("Select text");
+  await selectText(0, 2);
+  await click("Look up selection");
+  expect(container.textContent).toContain("Dictionary unavailable");
+  await click("Retry word lookup");
+  expect(container.textContent).toContain("school");
+  expect(
+    fetch.mock.calls.filter(([url]) => url.endsWith("/tokenize")),
+  ).toHaveLength(1);
+});
+
+it("rejects blank, punctuation-only and oversized selections before lookup", async () => {
+  const text = " \n!?" + "学".repeat(101);
+  const fetch = serviceMock();
+  await openPopup(text);
+  await click("Select text");
+  expect(button("Look up selection").disabled).toBe(true);
+  await selectText(0, 2);
+  expect(button("Look up selection").disabled).toBe(true);
+  await selectText(2, 4);
+  expect(button("Look up selection").disabled).toBe(true);
+  await selectText(4, text.length);
+  expect(button("Look up selection").disabled).toBe(true);
+  expect(container.textContent).toContain("Select at most 100 characters");
+  expect(fetch).toHaveBeenCalledTimes(1);
+  await selectText(4, text.length - 1);
+  expect(button("Look up selection").disabled).toBe(false);
+});
+
+it("ignores stale manual lookup and save completions after a new lookup or OCR correction", async () => {
+  const oldLookup = deferred();
+  const oldSave = deferred();
+  let lookups = 0;
+  const fetch = serviceMock((path) => {
+    if (path.endsWith("/word") && ++lookups === 1) return oldLookup.promise;
+    if (path.endsWith("/vocabulary")) return oldSave.promise;
+  });
+  await openPopup();
+  await click("Select text");
+  await selectText(0, 1);
+  await click("Look up selection");
+  await selectText(0, 2);
+  await click("Look up selection");
+  await act(async () =>
+    oldLookup.resolve(
+      response({
+        entries: [
+          { ...schoolEntry, senses: [{ glosses: ["STALE MANUAL RESULT"] }] },
+        ],
+      }),
+    ),
+  );
+  expect(container.textContent).not.toContain("STALE MANUAL RESULT");
+  expect(container.querySelector(".selected-word")?.textContent).toBe("学校");
+  await click("Save this word");
+  const payload = JSON.parse(
+    fetch.mock.calls.find(([url]) => url.endsWith("/vocabulary"))![1]!
+      .body as string,
+  );
+  await click("Edit OCR text");
+  await editDraft("猫");
+  await click("Apply and analyze");
+  await act(async () =>
+    oldSave.resolve(
+      response({ ...payload, id: 1, createdAt: "2026-10-19T00:00:00Z" }),
+    ),
+  );
+  expect(container.querySelector(".word-definition")).toBeNull();
+  expect(container.textContent).not.toContain("Word saved locally.");
+  await click("Select text");
+  const input = container.querySelector<HTMLTextAreaElement>(
+    ".sentence-selection-text",
+  )!;
+  expect(input.value).toBe("猫");
+  expect(button("Look up selection").disabled).toBe(true);
+});
+
+it("exits selection mode on Escape and returns keyboard focus before closing the popup", async () => {
+  serviceMock();
+  await openPopup();
+  await click("Select text");
+  expect(document.activeElement).toBe(
+    container.querySelector(".sentence-selection-text"),
+  );
+  await act(async () =>
+    window.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape" })),
+  );
+  expect(document.activeElement).toBe(button("Select text"));
+  expect(invokeMock).not.toHaveBeenCalledWith(
+    "close_translation_popup",
+    expect.anything(),
+  );
+  await act(async () =>
+    window.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape" })),
+  );
+  expect(invokeMock).toHaveBeenCalledWith(
+    "close_translation_popup",
+    expect.anything(),
+  );
+});
+
 it("renders source during analysis failure and retries without requesting meanings or translation", async () => {
   const pending = deferred();
   let first = true;

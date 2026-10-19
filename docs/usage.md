@@ -135,6 +135,20 @@ Alternative dictionary matches are collapsed; each has its own Save this word
 action. Display readings use hiragana, while saved/lookup readings retain the
 original dictionary data. Missing dictionaries still allow Save without meaning.
 
+If a word boundary is wrong, choose **Select text** above the learning details.
+Drag over any continuous part of the Japanese sentence, or position the cursor
+and hold Shift while using the arrow keys. Choose **Look up selection** to look
+up that exact expression in local JMdict. Selection can cross automatic word
+boundaries or include only part of a word, and works even if word analysis fails.
+Leading/trailing whitespace is ignored; the lookup limit is 100 characters.
+No match keeps the selection available to adjust and try again. Manual lookup
+does not infer a base form or reading; dictionary matches show their own readings.
+Saving a match keeps its expression as the dictionary form, its reading/meanings,
+the selected surface and the original sentence. Kanji exploration still works.
+Choose **Use word clicks**, or press Escape once, to return to automatic words;
+Escape returns keyboard focus to **Select text** before a later Escape closes
+the popup. Selecting or looking up text never changes OCR text or starts translation.
+
 Select a kanji below the word for meanings and on’yomi/kun’yomi. Expand Example
 compounds to load short local JMdict words; this does not require translation.
 The sentence and its actions stay above scrollable details as the popup grows

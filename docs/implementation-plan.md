@@ -2,6 +2,28 @@
 
 ## Current status
 
+**Manual dictionary selection — 2026-10-19:** development source adds
+**Select text → Look up selection** to the compact learning popup. A read-only
+sentence supports mouse/keyboard selection across or within tokenizer boundaries,
+including when analysis is unavailable. Exact local JMdict lookup preserves the
+original sentence and Unicode code-point offsets, keeps unmatched selections
+available for adjustment, and reuses word saving and kanji/compound exploration.
+Manual matches save the chosen entry's dictionary expression, raw reading and
+meanings; readings/base forms are not inferred for custom spans. Word clicks,
+OCR correction and explicit translation retain their existing behavior. Escape
+leaves selection mode and returns focus before closing the popup on a later press.
+
+Source verification passes all 196 frontend tests, Prettier, TypeScript, the
+production frontend build and the macOS native debug build. Regression cases
+cover combined/partial selections, Unicode and normalized newlines, invalid/long
+spans, unavailable analysis/dictionaries, retries, chosen-entry saves, kanji
+compounds, stale responses, correction and keyboard focus. A browser smoke at
+420 px verifies mouse/keyboard selection, real local dictionary lookup and saving
+with isolated temporary storage. Native installed-app and Windows interaction
+acceptance remain unverified. This develop-only feature changes no version,
+release candidate, runtime input, installer acceptance or publication approval;
+the in-flight 0.3.0 main rebuild remains at its recorded source below.
+
 **0.3.0 rebuild started — 2026-10-19:** at the owner's explicit authorization,
 [PR #16](https://github.com/chonnakanch/yomimado/pull/16) merged the packaging
 repair into main at `e434b6cea96853079919e8acbbbd1468cc5c8bf4` after all 12
