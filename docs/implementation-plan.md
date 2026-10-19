@@ -6,6 +6,28 @@ See the [feature roadmap](feature-roadmap.md) for proposed learning features and
 the [changelog](../CHANGELOG.md) for completed development changes. Source
 completion is tracked separately from publication and installer acceptance.
 
+**Conjugation explanations — 2026-10-19:** development source adds a collapsed
+Conjugation disclosure to selected verb/i-adjective details. It explains common
+past, negative and polite forms plus ちゃう／じゃう contractions as intermediate
+steps back to the analyzed base. Original rules reuse the existing local
+Lindera/IPADIC classes and source offsets; no vocabulary/grammar dataset, service,
+model, dependency, API or database change is added. Complete manual expressions
+can reuse a supported analyzed base for local dictionary lookup and saving.
+Unsupported forms remain explicit; contextual completion/regret/unintended-action
+nuances are not selected automatically. The existing popup layout is retained.
+
+All 265 frontend tests (including 56 new rule/integration cases), TypeScript,
+Prettier and frontend/macOS preview builds pass. A separate 36-example matrix
+using the existing pinned Lindera/IPADIC provider passes, including the split
+読ん／じゃ／う. Browser checks with the real local dictionary service confirmed
+polite past, both contraction variants, adjective negative past and complete
+manual lookup to 食べる. Explanation content wraps at 420 px and 280 px without
+horizontal overflow. No saved records or translation requests were created by
+the browser checks. Windows native interaction and exact installer acceptance
+remain unverified; no version or publication state changes. Supported forms,
+grammar references and limitations are in the
+[conjugation notes](conjugation-explanations.md).
+
 **Toolbar menu sizing repair — 2026-10-19:** the owner reported the More actions
 menu showing different item counts, missing Quit, and repeatedly resizing on
 Windows. A browser reproduction confirmed that the first five-item measurement

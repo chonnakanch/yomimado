@@ -612,6 +612,140 @@ async function openPopup(text = "学校") {
   );
   await act(async () => root.render(<TranslationPopup />));
 }
+
+const inflectedTokens: TextToken[] = [
+  {
+    surface: "食べ",
+    reading: "タベ",
+    dictionaryForm: "食べる",
+    start: 0,
+    end: 2,
+    partOfSpeech: "動詞 / 自立 / 一段 / 連用形",
+  },
+  {
+    surface: "まし",
+    reading: "マシ",
+    dictionaryForm: "ます",
+    start: 2,
+    end: 4,
+    partOfSpeech: "助動詞 / 特殊・マス / 連用形",
+  },
+  {
+    surface: "た",
+    reading: "タ",
+    dictionaryForm: "た",
+    start: 4,
+    end: 5,
+    partOfSpeech: "助動詞 / 特殊・タ / 基本形",
+  },
+  { ...schoolToken, start: 6, end: 8 },
+];
+const eatEntry = {
+  ...schoolEntry,
+  expression: "食べる",
+  reading: "たべる",
+  senses: [{ glosses: ["to eat"] }],
+  match: "dictionaryForm",
+};
+
+it("shows a local full-expression breakdown on a stem click and clears it for a noun", async () => {
+  const source = "食べました。学校";
+  const fetch = serviceMock((path, body) => {
+    if (path.endsWith("/tokenize"))
+      return response({ sourceText: source, tokens: inflectedTokens });
+    if (path.endsWith("/word") && body.dictionaryForm === "食べる")
+      return response({ entries: [eatEntry] });
+  });
+  await openPopup(source);
+  await click("食べ");
+  const disclosure = container.querySelector<HTMLDetailsElement>(
+    ".conjugation-explanation",
+  )!;
+  expect(disclosure.open).toBe(false);
+  expect(disclosure.querySelector("summary")?.textContent).toContain(
+    "Polite past",
+  );
+  expect(disclosure.textContent).toContain("食べました → 食べます");
+  expect(disclosure.textContent).toContain("食べます → 食べる");
+  expect(fetch).toHaveBeenCalledTimes(2);
+  await click("学校");
+  expect(container.querySelector(".conjugation-explanation")).toBeNull();
+  expect(fetch.mock.calls.some(([url]) => url.endsWith("/translate"))).toBe(
+    false,
+  );
+});
+
+it("looks up and saves the analyzed base for a complete manually selected inflection", async () => {
+  const source = "食べました。学校";
+  const fetch = serviceMock((path) => {
+    if (path.endsWith("/tokenize"))
+      return response({ sourceText: source, tokens: inflectedTokens });
+    if (path.endsWith("/word")) return response({ entries: [eatEntry] });
+  });
+  await openPopup(source);
+  await click("Select text");
+  const input = await selectText(0, 5);
+  await click("Look up selection");
+  expect(
+    JSON.parse(
+      fetch.mock.calls.find(([url]) => url.endsWith("/word"))![1]!
+        .body as string,
+    ),
+  ).toEqual({ surface: "食べました", dictionaryForm: "食べる", reading: "" });
+  expect(
+    container.querySelector(".conjugation-explanation")?.textContent,
+  ).toContain("Polite past");
+  await click("Save this word");
+  expect(
+    JSON.parse(
+      fetch.mock.calls.find(([url]) => url.endsWith("/vocabulary"))![1]!
+        .body as string,
+    ),
+  ).toMatchObject({
+    surface: "食べました",
+    dictionaryForm: "食べる",
+    reading: "たべる",
+    sourceText: source,
+  });
+  expect(input.value).toBe(source);
+  expect(fetch.mock.calls.some(([url]) => url.endsWith("/translate"))).toBe(
+    false,
+  );
+});
+
+it("keeps unsupported grammar explicit without guessing a manual lookup base", async () => {
+  const source = "食べられた";
+  const tokens = [
+    inflectedTokens[0],
+    {
+      ...inflectedTokens[1],
+      surface: "られ",
+      dictionaryForm: "られる",
+      partOfSpeech: "動詞 / 接尾 / 一段",
+    },
+    inflectedTokens[2],
+  ];
+  const fetch = serviceMock((path) => {
+    if (path.endsWith("/tokenize"))
+      return response({ sourceText: source, tokens });
+    if (path.endsWith("/word")) return response({ entries: [] });
+  });
+  await openPopup(source);
+  await click("Select text");
+  await selectText(0, 5);
+  await click("Look up selection");
+  expect(
+    container.querySelector(".conjugation-explanation")?.textContent,
+  ).toContain("Not covered");
+  expect(
+    JSON.parse(
+      fetch.mock.calls.find(([url]) => url.endsWith("/word"))![1]!
+        .body as string,
+    ).dictionaryForm,
+  ).toBe(source);
+  expect(button("Save without meaning")).toBeDefined();
+});
+
 function serviceMock(
   handler?: (
     path: string,

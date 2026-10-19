@@ -8,6 +8,7 @@
 - [Script roles](../scripts/README.md): release entrypoints, runtime dependencies and manual rebuild tools.
 - [Implementation plan](implementation-plan.md): completed milestone and current maintenance scope.
 - [Feature roadmap](feature-roadmap.md): proposed features, completed work and completion criteria.
+- [Conjugation explanations](conjugation-explanations.md): supported forms, lookup behavior and limits.
 - [Changelog](../CHANGELOG.md): dated development changes and verification limits.
 - [Code quality review](code-review-2026-10-13.md): fixed boundary/state issues, duplication and refactor follow-ups.
 - [Redesign quality review](ui-redesign-review.md) and [Windows UI checklist](ui-redesign-windows-checklist.md): current source checks and remaining interactive acceptance.

@@ -193,6 +193,15 @@ Use **Settings → Reading → Show estimated JLPT levels** to hide or restore b
 The choice is saved locally and updates open learning/library windows. Tags work
 offline and require no extra setup, model, API key or lookup service. See
 **Sources & licenses** for attribution and the full data license.
+
+For an inflected verb or i-adjective, expand **Conjugation** in its word details.
+The app includes adjacent analyzed endings and shows steps such as
+食べました → 食べます → 食べる. Complete manual selections can also use their
+analyzed base for local dictionary lookup. Common past/negative/polite forms and
+ちゃう／じゃう contractions are supported; **Not covered** marks unsupported
+forms. Explanations do not start translation or infer a context-specific meaning.
+See the [supported forms and limits](conjugation-explanations.md).
+
 The sentence and its actions stay above scrollable details as the popup grows
 to its work-area limit. Long sentences have their own scroll area.
 

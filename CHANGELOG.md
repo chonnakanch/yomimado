@@ -14,6 +14,13 @@ The [feature roadmap](docs/feature-roadmap.md) tracks completed and proposed wor
 
 #### Added
 
+- **Conjugation explanations — done in development source.** Expand Conjugation
+  in word details for step-by-step common verb past/negative/polite forms,
+  i-adjectives and ちゃう／じゃう contractions. Complete manual expressions can
+  reuse their analyzed dictionary base. Unsupported forms stay explicit;
+  context-dependent meanings are not inferred. Uses the existing local
+  tokenizer with no added dataset, model or dependency. See the
+  [supported forms](docs/conjugation-explanations.md).
 - **JLPT vocabulary tags — done in development source.** Estimated N5–N1 badges
   in dictionary matches and Saved use a bundled, hash-pinned snapshot of 8,113
   spelling/reading pairs from Jonathan Waller's lists as adapted by Stephen
@@ -57,6 +64,10 @@ The [feature roadmap](docs/feature-roadmap.md) tracks completed and proposed wor
 
 #### Verification and availability
 
+- Conjugation explanations pass 265 frontend tests, formatting, TypeScript,
+  frontend/macOS preview builds and 36 real Lindera/IPADIC examples. Browser
+  checks confirm local dictionary lookup and narrow-popup wrapping. Native
+  Windows and exact-installer acceptance remain unverified.
 - Toolbar sizing passes 209 frontend tests, formatting, TypeScript and the
   frontend/macOS preview builds. Native macOS checks confirm repeated complete
   menu openings and keyboard navigation. Browser checks cover short-screen

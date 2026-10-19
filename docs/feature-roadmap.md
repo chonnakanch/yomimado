@@ -14,7 +14,7 @@ See the [changelog](../CHANGELOG.md) for completed changes and the
 - [x] **Manual word selection** — done on `develop`, unreleased.
 - [x] **JLPT vocabulary tags** — done on `develop`, unreleased.
 - [ ] **Saved search and organization** — proposed.
-- [ ] **Conjugation and manga speech explanations** — proposed.
+- [x] **Conjugation explanations (initial forms and contractions)** — done on `develop`, unreleased.
 - [ ] **Retry OCR for one speech bubble** — proposed.
 - [ ] **Known / learning word states** — proposed.
 - [ ] **Personal manga glossary** — proposed.
@@ -56,6 +56,19 @@ Windows interaction and exact-installer acceptance remain unverified. See the
 [changelog](../CHANGELOG.md#2026-10-19) and [data review](../THIRD_PARTY_LICENSES/jlpt/README.md).
 Kanji/grammar tags and JLPT filtering are separate future scope.
 
+### Conjugation explanations
+
+Completed on 2026-10-19. Word details include an expandable **Conjugation**
+breakdown for common verb past/negative/polite forms, i-adjectives and
+ちゃう／じゃう contractions. Complete manual selections can use the analyzed
+base for local lookup and saving. Exact source spans and tokenizer classes are
+required; unknown forms stay explicitly unsupported, and contextual nuances
+remain uncertain. No external dataset, model, service or dependency is added.
+
+See the [supported slice and checked examples](conjugation-explanations.md) and
+[changelog](../CHANGELOG.md#2026-10-19). Broader manga speech, passive/potential,
+causatives, progressive forms and other grammar remain future scope.
+
 ## Proposed implementation slices
 
 ### Saved search and organization
@@ -67,16 +80,6 @@ can follow once vocabulary tags are available.
 Completion: searches and tags persist locally, existing saved databases remain
 readable, and organizing entries never triggers translation or changes their
 stored dictionary meanings.
-
-### Conjugation and manga speech explanations
-
-Explain how a selected inflected expression relates to its dictionary form.
-Start with common past, negative and polite forms, then a small documented set
-of contractions such as 食べちゃった. Show the intermediate forms and a short
-explanation; expose uncertainty when an analysis is ambiguous.
-
-Completion: supported forms have checked examples, unsupported forms remain
-explicit, and explanations work without requiring sentence translation.
 
 ### Retry OCR for one speech bubble
 

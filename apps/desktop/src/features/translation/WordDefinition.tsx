@@ -3,10 +3,13 @@ import type { WordEntry } from "../../lib/word-client";
 import { hiraganaReading } from "./ClickableSentence";
 import { JlptBadge } from "../jlpt/JlptBadge";
 import { useJlptVisible } from "../jlpt/preference";
+import { ConjugationExplanation } from "./ConjugationExplanation";
+import type { ConjugationAnalysis } from "./conjugation";
 
 export function WordDefinition({
   token,
   manualSelection = false,
+  conjugation = null,
   entries,
   loading,
   error,
@@ -18,6 +21,7 @@ export function WordDefinition({
 }: {
   token: TextToken;
   manualSelection?: boolean;
+  conjugation?: ConjugationAnalysis | null;
   entries: WordEntry[] | null;
   loading: boolean;
   error: string | null;
@@ -97,6 +101,7 @@ export function WordDefinition({
           </dl>
         </>
       )}
+      <ConjugationExplanation analysis={conjugation} />
       {loading && <p role="status">Looking up word…</p>}
       {error && (
         <div role="alert">

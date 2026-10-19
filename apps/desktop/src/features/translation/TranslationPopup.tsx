@@ -20,6 +20,7 @@ import { ClickableSentence, isWord } from "./ClickableSentence";
 import { ManualWordSelection } from "./ManualWordSelection";
 import { WordDefinition } from "./WordDefinition";
 import { KanjiDetail } from "./KanjiDetail";
+import { explainConjugation, type ConjugationAnalysis } from "./conjugation";
 import "./popup.css";
 
 interface PopupState {
@@ -77,6 +78,9 @@ export function TranslationPopup() {
   );
   const tokenRequestId = useRef(0);
   const [selectedToken, setSelectedToken] = useState<TextToken | null>(null);
+  const [conjugation, setConjugation] = useState<ConjugationAnalysis | null>(
+    null,
+  );
   const wordRequestId = useRef(0);
   const [wordEntries, setWordEntries] = useState<WordEntry[] | null>(null);
   const [wordError, setWordError] = useState<string | null>(null);
@@ -101,6 +105,7 @@ export function TranslationPopup() {
   const resetWordSelection = () => {
     setSelectedTokenIndex(null);
     setSelectedToken(null);
+    setConjugation(null);
     wordRequestId.current++;
     setWordEntries(null);
     setWordError(null);
@@ -123,6 +128,18 @@ export function TranslationPopup() {
 
   const lookupWord = async (token: TextToken, tokenIndex: number | null) => {
     const requestId = ++wordRequestId.current;
+    const explanation = explainConjugation(
+      source,
+      tokens ?? [],
+      token,
+      tokenIndex === null,
+    );
+    setConjugation(explanation);
+    // An exact, supported manual expression can reuse the tokenizer's base form.
+    // The selected source text and its offsets remain unchanged.
+    if (tokenIndex === null && explanation?.status === "supported") {
+      token = { ...token, dictionaryForm: explanation.dictionaryForm };
+    }
     kanjiRequestId.current++;
     setSelectedTokenIndex(tokenIndex);
     setSelectedToken(token);
@@ -621,6 +638,7 @@ export function TranslationPopup() {
                 <WordDefinition
                   token={selectedToken}
                   manualSelection={selectedTokenIndex === null}
+                  conjugation={conjugation}
                   entries={wordEntries}
                   loading={wordLoading}
                   error={wordError}
