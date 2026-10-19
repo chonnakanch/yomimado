@@ -1488,3 +1488,13 @@ cases remain separate; no additional publication approval was supplied.
 - Updated the technical native inventory for 112 inputs and the new notice
   supplement. Human source-delivery approval, a fresh runtime seed, main merge,
   real Windows release build and exact-installer publication gates remain pending.
+
+### 0.3.0 reviewed seed — 2026-10-19
+
+- Owner chonnakanch approved the exact 476-entry/76-archive source/license delivery.
+- The matching clean-source macOS seed passes mounted source/signature/platform
+  and frozen OCR/dictionary/translation/persistence smoke checks.
+- All four private draft uploads have matching independently observed SHA-256
+  values; activate matching CI pins, preserving the runtime dependency guard.
+- Main merge, real Windows release build, exact-installer owner checks and
+  protected publication remain pending. Full source-only rebuilding is unverified.

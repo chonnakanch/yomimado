@@ -65,7 +65,7 @@ The private DMG is `seed/YomiMado_0.2.0_aarch64.dmg`.
 The approved-source seed and both archives were uploaded to the unpublished
 [private CI draft](https://github.com/chonnakanch/yomimado/releases/tag/untagged-1cd1cb337b8446f45a1d).
 GitHub displays all three exact SHA-256 values recorded in the
-[current seed record](macos-runtime-seed.md#current-020-preparation--2026-10-16).
+[current seed record](macos-runtime-seed.md#historical-020-preparation--2026-10-16).
 The final seed DMG SHA-256 is
 `54623c751236029039c7ea3911f35b4b1aa8f1d2127ca23b110473c12bb32d93`.
 Its mounted embedded source manifest matches the approved delivery, both inventory
