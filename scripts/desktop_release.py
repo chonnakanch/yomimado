@@ -50,6 +50,14 @@ INPUTS = {
 }
 ASSET_LIMIT = 2 * 1024**3
 LAYOUT = "consolidated-v1"
+SPLIT_LAYOUT = "platform-sources-v1"
+SPLIT_COMPONENT_LAYOUT = "platform-sources-optional-translation-v1"
+COMBINED_LAYOUTS = {
+    LAYOUT,
+    "combined-optional-translation-v1",
+    SPLIT_LAYOUT,
+    SPLIT_COMPONENT_LAYOUT,
+}
 
 
 def main_scope() -> None:
@@ -253,27 +261,49 @@ def verify_windows(directory: Path, expected: dict) -> None:
         raise ValueError("Windows release artifact provenance/digests differ")
 
 
-def public_names(version: str, components: bool = False) -> set[str]:
+def public_names(
+    version: str, components: bool = False, *, split_sources: bool = False
+) -> set[str]:
     return (
-        {
-            f"YomiMado_{version}_translation_{backend}.zip"
-            for backend in ("torch", "onnx")
-        }
-        if components
-        else set()
-    ) | {
-        f"YomiMado_{version}{suffix}"
-        for suffix in (
-            "_aarch64.dmg",
-            "_x64-setup.exe",
-            "_sources.tar.gz",
-            "_notices.tar.gz",
+        (
+            {
+                f"YomiMado_{version}_translation_{backend}.zip"
+                for backend in ("torch", "onnx")
+            }
+            if components
+            else set()
         )
-    }
+        | {
+            f"YomiMado_{version}_{kind}.tar.gz"
+            for kind in (
+                ("sources_macos", "sources_windows") if split_sources else ("sources",)
+            )
+        }
+        | {
+            f"YomiMado_{version}{suffix}"
+            for suffix in (
+                "_aarch64.dmg",
+                "_x64-setup.exe",
+                "_notices.tar.gz",
+            )
+        }
+    )
 
 
 def bundle_members(version: str, kind: str, components: bool = False) -> dict[str, str]:
     """Retain every verified platform input except the two direct installers."""
+    if kind not in (
+        "sources",
+        "sources_macos",
+        "sources_windows",
+        "notices",
+        "notices_split",
+    ):
+        raise ValueError("Unknown release bundle kind")
+    source_kind = kind.startswith("sources")
+    source_platform = (
+        kind.removeprefix("sources_") if kind.startswith("sources_") else None
+    )
     sources = {
         f"macos/YomiMado_{version}_sources.tar.gz",
         "windows/project-sources.tar.gz",
@@ -288,13 +318,19 @@ def bundle_members(version: str, kind: str, components: bool = False) -> dict[st
         )
         for name in names
         if not name.endswith((".dmg", ".exe", ".zip"))
-        and ((f"{platform}/{name}" in sources) == (kind == "sources"))
+        and ((f"{platform}/{name}" in sources) == source_kind)
     }
+    if source_platform is not None:
+        members = {
+            name: filename
+            for name, filename in members.items()
+            if name.startswith(source_platform + "/")
+        }
     return dict(sorted(members.items()))
 
 
 def bundle_guide(version: str, kind: str, components: bool = False) -> bytes:
-    if kind == "sources":
+    if kind.startswith("sources"):
         text = f"""YomiMado {version} — corresponding sources and rebuild inputs
 
 Extract this archive, then extract the original archives under macos/ and
@@ -311,7 +347,22 @@ Consult the build/review documents for platform-specific dependencies and terms.
 A full source-only rebuild of the complete delivery remains unverified.
 Detector ONNX weights are user-installed and excluded from this delivery.
 """
+        if kind != "sources":
+            platform = kind.removeprefix("sources_")
+            text += f"""
+This archive contains only the original {platform} source inputs listed above.
+Download BOTH YomiMado_{version}_sources_macos.tar.gz and
+YomiMado_{version}_sources_windows.tar.gz for the complete source delivery.
+The original platform archives are preserved byte for byte. Both source parts
+and the separate notices archive are bound by desktop-release-candidate.json
+and desktop-SHA256SUMS.txt. No input has been omitted to meet the upload limit.
+"""
     else:
+        others = (
+            ("eight" if components else "six")
+            if kind == "notices_split"
+            else ("seven" if components else "five")
+        )
         text = f"""YomiMado {version} — notices and original verification records
 
 Extract the platform notice archives under macos/ and windows/ to read the
@@ -321,12 +372,22 @@ inventory and checksums. No approval flags in these records have been rewritten.
 Human installed-app tests and publication approval are recorded separately.
 
 desktop-release-candidate.json binds both installers and these combined archives.
-desktop-SHA256SUMS.txt checks all five other downloadable release files.
+desktop-SHA256SUMS.txt checks all {others} other downloadable release files.
 """
     if components:
-        text = text.replace("all five other", "all seven other")
         text += "\nThe torch and ONNX translation ZIPs are separate optional downloads. Their exact hashes are bound by the platform/combined candidate records. Each includes model attribution and Apache-2.0 terms. Installers contain only OCR, learning data and the pinned download descriptor.\n"
     return text.encode("utf-8")
+
+
+def bundle_outputs(split_sources: bool) -> dict[str, str]:
+    """Public filename suffix -> archive membership/guide kind."""
+    if split_sources:
+        return {
+            "sources_macos": "sources_macos",
+            "sources_windows": "sources_windows",
+            "notices": "notices_split",
+        }
+    return {"sources": "sources", "notices": "notices"}
 
 
 def write_bundle(
@@ -432,9 +493,9 @@ def combine(
         (win_directory, f"YomiMado_{version}_x64-setup.exe"),
     ):
         shutil.copyfile(source / name, output / name)
-    for kind in ("sources", "notices"):
+    for suffix, kind in bundle_outputs(True).items():
         write_bundle(
-            output / f"YomiMado_{version}_{kind}.tar.gz",
+            output / f"YomiMado_{version}_{suffix}.tar.gz",
             directories,
             version,
             kind,
@@ -445,7 +506,7 @@ def combine(
             name = f"YomiMado_{version}_translation_{backend}.zip"
             shutil.copyfile(directories[platform] / name, output / name)
     record = {
-        "layout": "combined-optional-translation-v1" if components else LAYOUT,
+        "layout": SPLIT_COMPONENT_LAYOUT if components else SPLIT_LAYOUT,
         "sourceRevision": mac_record["sourceRevision"],
         "version": mac_record["version"],
         "tag": mac_record["tag"],
@@ -475,13 +536,16 @@ def verify_combined(
 ) -> None:
     version = macos.version()
     layout = expected.get("layout")
-    components = layout == "combined-optional-translation-v1"
-    if layout not in (None, LAYOUT, "combined-optional-translation-v1"):
+    if layout is not None and (
+        not isinstance(layout, str) or layout not in COMBINED_LAYOUTS
+    ):
         raise ValueError("Unknown combined release layout")
+    components = layout in ("combined-optional-translation-v1", SPLIT_COMPONENT_LAYOUT)
+    split_sources = layout in (SPLIT_LAYOUT, SPLIT_COMPONENT_LAYOUT)
     # Keep the original 17-file v0.1.0 record readable without repackaging it.
     names = (
-        public_names(version, components)
-        if layout in (LAYOUT, "combined-optional-translation-v1")
+        public_names(version, components, split_sources=split_sources)
+        if layout in COMBINED_LAYOUTS
         else macos_names(version) | windows_names(version)
     )
     if (
@@ -522,7 +586,7 @@ def verify_combined(
         f"{sha}  {name}\n" for name, sha in sums.items()
     ):
         raise ValueError("Combined checksums differ")
-    if layout in (LAYOUT, "combined-optional-translation-v1"):
+    if layout in COMBINED_LAYOUTS:
         inputs = expected.get("inputs", {})
         if set(inputs) != macos_names(version, components) | windows_names(
             version, components
@@ -571,9 +635,9 @@ def verify_combined(
         ):
             if inputs[name] != expected["assets"][name]:
                 raise ValueError("Combined installer bytes differ from platform inputs")
-        for kind in ("sources", "notices"):
+        for suffix, kind in bundle_outputs(split_sources).items():
             verify_bundle(
-                directory / f"YomiMado_{version}_{kind}.tar.gz",
+                directory / f"YomiMado_{version}_{suffix}.tar.gz",
                 version,
                 kind,
                 inputs,
