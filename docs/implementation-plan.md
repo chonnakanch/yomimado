@@ -2,6 +2,10 @@
 
 ## Current status
 
+See the [feature roadmap](feature-roadmap.md) for proposed learning features and
+the [changelog](../CHANGELOG.md) for completed development changes. Source
+completion is tracked separately from publication and installer acceptance.
+
 **Selection caret and keyboard fix — 2026-10-19:** development source uses a
 native editable caret for the selection box while canceling text edits. This
 avoids the native read-only control's invisible caret/keyboard behavior without

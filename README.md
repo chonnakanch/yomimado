@@ -83,6 +83,8 @@ checklists.
 
 - [Documentation index](docs/README.md)
 - [Implementation status and remaining work](docs/implementation-plan.md)
+- [Feature roadmap](docs/feature-roadmap.md)
+- [Changelog](CHANGELOG.md)
 - [Initial product and technical design](docs/initial-design.md)
 - [App resources and data flow](docs/app-resources.md)
 - [macOS release guide](docs/macos-release.md)

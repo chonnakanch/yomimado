@@ -6,6 +6,8 @@
 - [Development setup](development.md): local service, models, dictionaries and diagnostics.
 - [Script roles](../scripts/README.md): release entrypoints, runtime dependencies and manual rebuild tools.
 - [Implementation plan](implementation-plan.md): completed milestone and current maintenance scope.
+- [Feature roadmap](feature-roadmap.md): proposed features, completed work and completion criteria.
+- [Changelog](../CHANGELOG.md): dated development changes and verification limits.
 - [Code quality review](code-review-2026-10-13.md): fixed boundary/state issues, duplication and refactor follow-ups.
 - [Redesign quality review](ui-redesign-review.md) and [Windows UI checklist](ui-redesign-windows-checklist.md): current source checks and remaining interactive acceptance.
 - [Security review](security-review-2026-10-13.md): browser/input guards, dependency advisories and remaining runtime work.
