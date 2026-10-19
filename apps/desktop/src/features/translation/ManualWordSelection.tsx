@@ -1,5 +1,6 @@
-import { useEffect, useId, useLayoutEffect, useRef } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import type { TextToken } from "../../lib/ocr-types";
+import { isWord } from "./ClickableSentence";
 
 // Textareas use UTF-16 offsets and normalize line endings; OCR uses code points
 // in the original source. Keep both conversions here, without changing the text.
@@ -49,43 +50,25 @@ export function selectionToken(
 export function ManualWordSelection({
   source,
   maxHeight,
-  onSelectionChange,
+  onLookup,
 }: {
   source: string;
   maxHeight: number;
-  onSelectionChange: (token: TextToken | null) => void;
+  onLookup: (token: TextToken) => void;
 }) {
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const helpId = useId();
-  useLayoutEffect(() => {
-    const input = inputRef.current;
-    if (!input) return;
-    let lastWidth = -1;
-    const fitText = () => {
-      if (input.clientWidth === lastWidth) return;
-      lastWidth = input.clientWidth;
-      const style = getComputedStyle(input);
-      const borders =
-        (parseFloat(style.borderTopWidth) || 0) +
-        (parseFloat(style.borderBottomWidth) || 0);
-      input.style.height = "0px";
-      input.style.height = `${input.scrollHeight + borders}px`;
-    };
-    fitText();
-    const observer =
-      typeof ResizeObserver === "undefined"
-        ? null
-        : new ResizeObserver(fitText);
-    observer?.observe(input);
-    return () => observer?.disconnect();
-  }, [source, maxHeight]);
+  const [range, setRange] = useState({ start: 0, end: 0 });
+  const token = selectionToken(source, range.start, range.end);
+  // Matches the existing local word API limit, measured in Unicode code points.
+  const tooLong = !!token && token.end - token.start > 100;
   useEffect(() => {
     inputRef.current?.focus();
     inputRef.current?.setSelectionRange(0, 0);
   }, []);
   return (
     <>
-      <p className="visually-hidden" id={helpId}>
+      <p className="popup-metadata" id={helpId}>
         Drag to select text, or hold Shift and use the arrow keys.
       </p>
       <textarea
@@ -96,18 +79,33 @@ export function ManualWordSelection({
         lang="ja"
         readOnly
         value={source}
-        rows={1}
+        rows={3}
         style={{ maxHeight }}
         onSelect={(event) => {
-          onSelectionChange(
-            selectionToken(
-              source,
-              event.currentTarget.selectionStart,
-              event.currentTarget.selectionEnd,
-            ),
-          );
+          setRange({
+            start: event.currentTarget.selectionStart,
+            end: event.currentTarget.selectionEnd,
+          });
         }}
       />
+      <div className="manual-selection-actions">
+        <button
+          className="utility-button utility-button-primary"
+          disabled={!token || !isWord(token) || tooLong}
+          onClick={() => token && onLookup(token)}
+        >
+          Look up selection
+        </button>
+        <span className="popup-metadata" role="status">
+          {tooLong ? (
+            "Select at most 100 characters."
+          ) : token ? (
+            <span lang="ja">{token.surface}</span>
+          ) : (
+            "Select the expression to look up."
+          )}
+        </span>
+      </div>
     </>
   );
 }
