@@ -32,6 +32,11 @@ The [feature roadmap](docs/feature-roadmap.md) tracks completed and proposed wor
 
 #### Fixed
 
+- **Toolbar menu clipping and resize cycling:** More actions waits for the
+  tray-dependent item list before its first native reveal, then measures the
+  full content independently of the constrained scroll viewport. Quit stays
+  visible when there is room, or reachable by scrolling on short screens.
+  Reserved scrollbar space prevents wrapping from changing as scrolling starts.
 - **Saved dictionary identity:** new saves preserve the chosen dictionary
   entry's expression, including alternative matches, so Saved can derive the
   same JLPT label. Existing saved records are not rewritten and need no migration.
@@ -52,6 +57,10 @@ The [feature roadmap](docs/feature-roadmap.md) tracks completed and proposed wor
 
 #### Verification and availability
 
+- Toolbar sizing passes 209 frontend tests, formatting, TypeScript and the
+  frontend/macOS preview builds. Native macOS checks confirm repeated complete
+  menu openings and keyboard navigation. Browser checks cover short-screen
+  scrolling; Windows native/mixed-DPI interaction remains unverified.
 - JLPT tags pass 202 frontend tests and six data/provenance tests, formatting,
   TypeScript, frontend production build and macOS preview build. Browser checks confirm a real
   local dictionary match and immediate cross-window hiding/restoring of tags.

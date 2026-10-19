@@ -6,6 +6,26 @@ See the [feature roadmap](feature-roadmap.md) for proposed learning features and
 the [changelog](../CHANGELOG.md) for completed development changes. Source
 completion is tracked separately from publication and installer acceptance.
 
+**Toolbar menu sizing repair — 2026-10-19:** the owner reported the More actions
+menu showing different item counts, missing Quit, and repeatedly resizing on
+Windows. A browser reproduction confirmed that the first five-item measurement
+set a 189 px viewport; adding Hide Toolbar left the final Quit row below it.
+The frontend now waits for the initial toolbar snapshot (or its error) before
+requesting native reveal. A separate intrinsic content wrapper supplies the full
+height independently of the capped scroll viewport. Scrollbar space is stable,
+and requests retain the existing native size limit and generation guards.
+
+Seven regression cases cover delayed tray state, intrinsic content growth under
+native height clamps at 100/125/150/200% scaling, oversized content and snapshot
+failure with Quit still available. All 209 frontend tests, TypeScript, formatting
+and the frontend/macOS preview builds pass. Browser checks confirm one stable
+full-size request, all six actions visible, and keyboard scrolling to Quit with a
+140 px height limit. Native macOS checks confirm repeated openings show all six
+rows, End focuses Quit, and Escape closes the popover and returns toolbar focus.
+Browser IPC simulations and macOS checks do not establish Windows WebView2 or
+mixed-monitor acceptance.
+No menu actions, native positioning policy, dependencies or installer are changed.
+
 **Offline JLPT vocabulary tags — 2026-10-19:** development source adds estimated
 N5–N1 badges beside dictionary matches and saved words. A pinned, locally bundled
 Jonathan Waller / Stephen Kraus dataset contains 8,113 spelling/reading pairs;
