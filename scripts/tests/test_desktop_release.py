@@ -1,6 +1,7 @@
 """Exercise shared release transfer, private input scope and actual publisher."""
 
 import copy
+import hashlib
 import io
 import json
 import os
@@ -44,12 +45,16 @@ MAIN_RULES = [
 ]
 
 
-def fixtures(root, version="0.1.0", components=False):
+def fixtures(root, version="0.1.0", components=False, source_bytes=0):
     mac, win = root / "mac", root / "win"
     mac.mkdir()
     win.mkdir()
     for name in release.macos_names(version, components) - {"release-candidate.json"}:
         (mac / name).write_bytes(b"mac fixture " + name.encode())
+    if source_bytes:
+        (mac / f"YomiMado_{version}_sources.tar.gz").write_bytes(
+            os.urandom(source_bytes)
+        )
     primary = sorted(
         n
         for n in release.macos_names(version, components)
@@ -74,6 +79,10 @@ def fixtures(root, version="0.1.0", components=False):
         "SHA256SUMS.txt",
     }:
         (win / name).write_bytes(b"windows fixture " + name.encode())
+    if source_bytes:
+        (win / "windows-source-preparation.tar.gz").write_bytes(
+            os.urandom(source_bytes)
+        )
     win_private = {
         "mode": "private-test",
         "platform": "windows-x64",
@@ -149,8 +158,9 @@ class ArtifactTests(unittest.TestCase):
 
     def test_both_platforms_have_one_identity_and_all_files(self):
         record = self.combine()
-        self.assertEqual(len(record["assets"]), 4)
-        self.assertEqual(len(list(self.out.iterdir())), 6)
+        self.assertEqual(len(record["assets"]), 5)
+        self.assertEqual(len(list(self.out.iterdir())), 7)
+        self.assertEqual(record["layout"], release.SPLIT_LAYOUT)
         self.assertIs(record["installedAppVerified"], False)
         self.assertEqual(record["platforms"], ["macos-aarch64", "windows-x64"])
         release.verify_combined(self.out, record)
@@ -160,8 +170,12 @@ class ArtifactTests(unittest.TestCase):
         directory.mkdir()
         mac, win, mac_record, win_record = fixtures(directory, components=True)
         record = release.combine(mac, win, self.out, mac_record, win_record)
-        self.assertEqual(len(list(self.out.iterdir())), 8)
-        self.assertEqual(set(record["assets"]), release.public_names("0.1.0", True))
+        self.assertEqual(len(list(self.out.iterdir())), 9)
+        self.assertEqual(record["layout"], release.SPLIT_COMPONENT_LAYOUT)
+        self.assertEqual(
+            set(record["assets"]),
+            release.public_names("0.1.0", True, split_sources=True),
+        )
         release.verify_combined(self.out, record)
         with tarfile.open(self.out / "YomiMado_0.1.0_notices.tar.gz") as archive:
             self.assertFalse(any(m.name.endswith(".zip") for m in archive))
@@ -172,8 +186,8 @@ class ArtifactTests(unittest.TestCase):
     def test_all_original_sources_data_notices_and_records_are_preserved(self):
         record = self.combine()
         retained = {}
-        for kind in ("sources", "notices"):
-            with tarfile.open(self.out / f"YomiMado_0.1.0_{kind}.tar.gz") as archive:
+        for suffix, kind in release.bundle_outputs(True).items():
+            with tarfile.open(self.out / f"YomiMado_0.1.0_{suffix}.tar.gz") as archive:
                 for member in archive:
                     data = archive.extractfile(member).read()
                     if member.name == "README.txt":
@@ -207,6 +221,95 @@ class ArtifactTests(unittest.TestCase):
         self.assertEqual(len(list(self.out.iterdir())), 17)
         release.verify_combined(self.out, record)
 
+    def test_historical_archive_guide_bytes_remain_unchanged(self):
+        # Pinned from the pre-split packager. Old artifacts bind these bytes;
+        # a newly generated legacy fixture alone would not catch guide drift.
+        expected = {
+            (
+                "sources",
+                False,
+            ): "58e25235a54a699ccde24d224884e483a054570f8798d26831847fc21e34dee8",
+            (
+                "sources",
+                True,
+            ): "3e0f45c1e2105580647641e0c7edb05445c4ea0133150732559fe3c815f26fa1",
+            (
+                "notices",
+                False,
+            ): "3bdba645d90b4545ba2488b96e9ee9a013f9cb8f6b8b870901cc804ec32b0ba9",
+            (
+                "notices",
+                True,
+            ): "c3756cd5e89c5c28ba7c3805db48308cc99ad71b8a948ed5466eba8f79a9e920",
+        }
+        for (kind, components), sha in expected.items():
+            with self.subTest(kind=kind, components=components):
+                self.assertEqual(
+                    hashlib.sha256(
+                        release.bundle_guide("0.1.0", kind, components)
+                    ).hexdigest(),
+                    sha,
+                )
+
+    def test_existing_six_and_eight_file_layouts_remain_verifiable(self):
+        for components in (False, True):
+            with self.subTest(components=components):
+                root = self.root / str(components)
+                root.mkdir()
+                mac, win, mac_record, win_record = fixtures(root, components=components)
+                output = root / "combined"
+                record = release.combine(mac, win, output, mac_record, win_record)
+                for suffix in release.bundle_outputs(True):
+                    (output / f"YomiMado_0.1.0_{suffix}.tar.gz").unlink()
+                for kind in ("sources", "notices"):
+                    release.write_bundle(
+                        output / f"YomiMado_0.1.0_{kind}.tar.gz",
+                        {"macos": mac, "windows": win},
+                        "0.1.0",
+                        kind,
+                        components,
+                    )
+                record["layout"] = (
+                    "combined-optional-translation-v1" if components else release.LAYOUT
+                )
+                record["assets"] = {
+                    name: release.digest(output / name)
+                    for name in release.public_names("0.1.0", components)
+                }
+                update_combined(output, record)
+                self.assertEqual(len(list(output.iterdir())), 8 if components else 6)
+                release.verify_combined(output, record)
+
+    def test_platform_sources_fit_when_the_original_combined_archive_is_too_large(self):
+        root = self.root / "large"
+        root.mkdir()
+        mac, win, mac_record, win_record = fixtures(
+            root, components=True, source_bytes=24 * 1024
+        )
+        with patch.object(release, "ASSET_LIMIT", 50 * 1024):
+            with self.assertRaisesRegex(ValueError, "exceeds the upload limit"):
+                release.write_bundle(
+                    root / "old-sources.tar.gz",
+                    {"macos": mac, "windows": win},
+                    "0.1.0",
+                    "sources",
+                    True,
+                )
+            record = release.combine(mac, win, self.out, mac_record, win_record)
+            release.verify_combined(self.out, record)
+            self.assertTrue(
+                all(p.stat().st_size < release.ASSET_LIMIT for p in self.out.iterdir())
+            )
+            for platform in ("macos", "windows"):
+                path = self.out / f"YomiMado_0.1.0_sources_{platform}.tar.gz"
+                with tarfile.open(path) as archive:
+                    self.assertTrue(
+                        all(
+                            m.name == "README.txt" or m.name.startswith(platform + "/")
+                            for m in archive
+                        )
+                    )
+
     def test_unknown_layout_and_missing_input_or_platform_provenance_fail_closed(self):
         record = self.combine()
         for field, wrong in (
@@ -230,7 +333,7 @@ class ArtifactTests(unittest.TestCase):
 
     def test_missing_altered_duplicate_or_unsafe_archived_inputs_are_rejected(self):
         record = self.combine()
-        path = self.out / "YomiMado_0.1.0_sources.tar.gz"
+        path = self.out / "YomiMado_0.1.0_sources_windows.tar.gz"
         with tarfile.open(path) as archive:
             entries = [(m.name, archive.extractfile(m).read()) for m in archive]
         for scenario in ("missing", "altered", "duplicate", "traversal", "symlink"):
@@ -266,6 +369,27 @@ class ArtifactTests(unittest.TestCase):
             self.assertRaisesRegex(ValueError, "exceeds the upload limit"),
         ):
             self.combine()
+
+    def test_each_split_source_part_remains_required_and_size_limited(self):
+        for platform in ("macos", "windows"):
+            root = self.root / platform
+            root.mkdir()
+            mac, win, mac_record, win_record = fixtures(root)
+            output = root / "combined"
+            record = release.combine(mac, win, output, mac_record, win_record)
+            part = output / f"YomiMado_0.1.0_sources_{platform}.tar.gz"
+            with (
+                patch.object(release, "ASSET_LIMIT", part.stat().st_size),
+                self.subTest(platform=platform, scenario="limit"),
+                self.assertRaisesRegex(ValueError, "upload limit"),
+            ):
+                release.verify_combined(output, record)
+            part.unlink()
+            with (
+                self.subTest(platform=platform, scenario="missing"),
+                self.assertRaisesRegex(ValueError, "missing combined release files"),
+            ):
+                release.verify_combined(output, record)
 
     def test_windows_tamper_and_wrong_source_block_combination(self):
         path = self.win / "YomiMado_0.1.0_x64-setup.exe"
@@ -316,9 +440,9 @@ class ArtifactTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "checksums"):
             release.verify_combined(self.out, record)
         path.write_text(sums)
-        target = self.out / "YomiMado_0.1.0_sources.tar.gz"
+        target = self.out / "YomiMado_0.1.0_sources_macos.tar.gz"
         target.unlink()
-        target.symlink_to(self.mac / target.name)
+        target.symlink_to(self.mac / "YomiMado_0.1.0_sources.tar.gz")
         with self.assertRaisesRegex(ValueError, "regular"):
             release.verify_combined(self.out, record)
 

@@ -1,5 +1,28 @@
 # Shared desktop release checklist
 
+0.3.0 verification packaging repair — **2026-10-19**:
+[Release `39193821074`](https://github.com/chonnakanch/yomimado/actions/runs/39193821074)
+at `b4c95116dcc4c3abb1cdd732700336162155c994` passes the macOS builder in
+**11 minutes 31 seconds** and the Windows builder in **44 minutes 31 seconds**.
+`verify-transfer` then rejects the combined source archive at the existing
+2 GiB upload limit. Publication is skipped; neither installer build failed.
+
+The source repair uses `platform-sources-optional-translation-v1` for this
+optional-component delivery, with **nine uploaded files**. The single source
+archive becomes `YomiMado_<version>_sources_macos.tar.gz` and
+`YomiMado_<version>_sources_windows.tar.gz`; the installers, combined notices,
+checksums, provenance and two optional translation ZIPs remain. Both source
+archives are required for the complete delivery. Original platform source/data
+archives, paths and hashes are preserved byte for byte, and all prior member,
+provenance, checksum and size guards remain. Seven-file `platform-sources-v1`
+supports builds without optional components. Historical 6-, 8- and 17-file
+layouts remain verifiable without rewriting their bytes.
+
+This repair is prepared on `develop` only. Rerunning the old failed job uses its
+old script and cannot apply the change; a future authorized main integration
+must produce a fresh source-bound candidate. No source/runtime approval,
+installer acceptance or publication approval is inferred from this repair.
+
 0.3.0 preparation — **2026-10-18**: the owner requests the version bump,
 protected-main merge and release build. Version fields now agree on `0.3.0`,
 with release notes for the resource reduction and user-selected local models.
@@ -444,9 +467,10 @@ The combined archives wrap already compressed inputs without a costly second
 compression pass. Fixed outer headers make their bytes independent of runner
 file timestamps and permissions. Every nested file hash and expected member is
 verified; missing/extra/duplicate members, links, traversal paths, altered bytes
-and files reaching the 2 GiB upload limit stop publication. The source archive is
-close to that limit with current inputs; future growth may require a separately
-reviewed packaging change rather than omitting source content.
+and files reaching the 2 GiB upload limit stop publication. The single source
+archive reached that limit in the 0.3.0 build; the platform split recorded above
+replaces it for future candidates without omitting source content. Each new
+source archive must still remain below the same limit.
 
 The original October 12 **v0.1.0** delivery had the 17-file layout; the October 13
 republication uses six uploaded files. Legacy verification

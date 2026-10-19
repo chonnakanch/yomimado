@@ -2,6 +2,26 @@
 
 ## Current status
 
+**0.3.0 verification packaging repair — 2026-10-19:** both installer builders
+pass in [Release `39193821074`](https://github.com/chonnakanch/yomimado/actions/runs/39193821074)
+at `b4c9511`, but `verify-transfer` rejects the combined source archive at the
+2 GiB limit. The `develop` repair separates macOS and Windows source archives,
+retaining every original source/data/notice input and hash, the unchanged asset
+limit and the protected publication gate. New candidates use seven files, or
+nine with both optional translation components. Original 6-, 8- and 17-file
+deliveries remain verifiable. No application/runtime/model input is changed.
+This source-only repair does not rebuild or accept installers; a future
+authorized main merge must create and verify a new exact candidate.
+
+Local verification passes 274 distinct script unittest cases: 271 in the
+Python 3.11 verification environment, plus the three inference/native-OpenCV
+cases run in the existing OCR environment. The 28 shared-release cases cover
+oversized old packaging versus fitting source parts, required/size-limited parts,
+complete original-input retention, deterministic output and historical guide
+byte hashes. Ruff, document formatting, pinned actionlint 1.7.7 and macOS runtime
+reuse verification pass. Hosted verification of real new source archives is
+still required; local fixtures do not supply installer acceptance.
+
 **Version 0.3.0 release preparation — 2026-10-18:** the owner requests the
 version bump, merge into protected `main` and new release. App/npm/Tauri/Cargo
 versions agree on `0.3.0`; release notes describe Lindera, smaller OCR resources,
