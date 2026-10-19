@@ -685,7 +685,7 @@
       "sha256": "8dbe5f606267c8e9337fcd31a417a058ffad0803e1167d777327c18ab1877418",
       "licenseEvidence": "Lindera 6.0.0 tagged monorepo, all 399 checksum-verified locked registry crates and complete original notices retained; pinned upstream notices and immutable source comparisons cover old crates without VCS metadata. IPADIC original source, byte-identical dictionary rebuild recipe/evidence and separate NAIST/ICOT notice retained. Native wheel remains publisher-built; no source-only wheel rebuild attested. Technical provenance only; human source approval remains separate.",
       "noticeFiles": {
-        "licenses/native/lindera-6.0.0-NOTICES.txt": "35cb814706a25ef6fa20c4e47372ae046eb4ce554b6e50873604d6883c5507f0"
+        "native-notices/lindera-6.0.0-NOTICES.txt": "35cb814706a25ef6fa20c4e47372ae046eb4ce554b6e50873604d6883c5507f0"
       },
       "nativeInputs": [
         {
