@@ -28,6 +28,7 @@ interface PopupState {
   demo: boolean;
   reviewReason?: string;
   approximate?: boolean;
+  retryTarget?: { sessionId: number; regionId: string };
   placement?: {
     screen: { x: number; y: number; width: number; height: number };
     anchorLeft: number;
@@ -54,6 +55,11 @@ export function TranslationPopup() {
   const selectTextButtonRef = useRef<HTMLButtonElement>(null);
   const [selectingText, setSelectingText] = useState(false);
   const [editing, setEditing] = useState(state?.demo ?? false);
+  const [reviewOpen, setReviewOpen] = useState(false);
+  const [retryingOcr, setRetryingOcr] = useState(false);
+  const [retryOcrError, setRetryOcrError] = useState<string | null>(null);
+  const retryOcrPending = useRef(false);
+  const reviewButtonRef = useRef<HTMLButtonElement>(null);
   const [draft, setDraft] = useState(state?.demo ? "" : (state?.text ?? ""));
   const [copied, setCopied] = useState(false);
   const [copyError, setCopyError] = useState<string | null>(null);
@@ -240,6 +246,11 @@ export function TranslationPopup() {
         selectTextButtonRef.current?.focus();
         return;
       }
+      if (reviewOpen) {
+        setReviewOpen(false);
+        reviewButtonRef.current?.focus();
+        return;
+      }
       void invoke("close_translation_popup", {
         returnFocus: true,
         viewQuery,
@@ -247,7 +258,7 @@ export function TranslationPopup() {
     };
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, [editing, selectingText, source, viewQuery]);
+  }, [editing, selectingText, reviewOpen, source, viewQuery]);
 
   useEffect(() => {
     if (editing) editorRef.current?.focus();
@@ -342,6 +353,28 @@ export function TranslationPopup() {
   }, [state?.text, state?.demo]);
 
   if (!state) return null;
+
+  const retryBubble = async (redraw: boolean) => {
+    if (!state.retryTarget || state.demo || editing || retryOcrPending.current)
+      return;
+    retryOcrPending.current = true;
+    setRetryingOcr(true);
+    setRetryOcrError(null);
+    try {
+      await invoke("retry_ocr_region", {
+        target: state.retryTarget,
+        redraw,
+        viewQuery,
+      });
+    } catch (reason) {
+      setRetryOcrError(
+        `Could not start bubble OCR retry: ${String(reason).replace(/^Error: /, "")}`,
+      );
+    } finally {
+      retryOcrPending.current = false;
+      setRetryingOcr(false);
+    }
+  };
 
   const translate = async () => {
     const requestId = ++translationRequestId.current;
@@ -472,6 +505,22 @@ export function TranslationPopup() {
     state.reviewReason || state.approximate
       ? `${state.approximate ? "Approximate OCR region." : "Review OCR."} ${state.reviewReason ?? "Check the text against the page before saving."} Use Edit OCR text to correct it.`
       : null;
+  const reviewIndicator = (
+    <>
+      <svg
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.6"
+        strokeLinecap="round"
+        aria-hidden="true"
+      >
+        <circle cx="12" cy="12" r="9" />
+        <path d="M12 7v6m0 4v.1" />
+      </svg>
+      <span>Check OCR</span>
+    </>
+  );
 
   return (
     <div className="translation-popup" aria-label="Japanese learning popup">
@@ -490,18 +539,21 @@ export function TranslationPopup() {
                   role="status"
                   title={debugTooltip(reviewDescription)}
                 >
-                  <svg
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="1.6"
-                    strokeLinecap="round"
-                    aria-hidden="true"
-                  >
-                    <circle cx="12" cy="12" r="9" />
-                    <path d="M12 7v6m0 4v.1" />
-                  </svg>
-                  <span>Check OCR</span>
+                  {state.retryTarget && !state.demo ? (
+                    <button
+                      ref={reviewButtonRef}
+                      type="button"
+                      className="ocr-review-action"
+                      aria-expanded={reviewOpen}
+                      aria-controls="bubble-ocr-actions"
+                      aria-label="Check OCR: retry this bubble"
+                      onClick={() => setReviewOpen(!reviewOpen)}
+                    >
+                      {reviewIndicator}
+                    </button>
+                  ) : (
+                    reviewIndicator
+                  )}
                   <span className="visually-hidden"> {reviewDescription}</span>
                 </span>
               )}
@@ -521,6 +573,44 @@ export function TranslationPopup() {
               ×
             </button>
           </div>
+          {reviewOpen && state.retryTarget && !state.demo && (
+            <div className="bubble-ocr-actions" id="bubble-ocr-actions">
+              <p className="popup-metadata">
+                {state.reviewReason ??
+                  "This region has approximate bounds. Compare its text with the page."}
+              </p>
+              <p className="popup-metadata">
+                Retry only this bubble. Keep the page in place. Redraw inside
+                the original scanned area if its bounds are wrong.
+              </p>
+              <div className="popup-actions">
+                <button
+                  className="utility-button"
+                  disabled={retryingOcr || editing}
+                  onClick={() => void retryBubble(false)}
+                >
+                  {retryingOcr ? "Starting retry…" : "Retry bubble OCR"}
+                </button>
+                <button
+                  className="utility-button"
+                  disabled={retryingOcr || editing}
+                  onClick={() => void retryBubble(true)}
+                >
+                  Redraw bubble bounds
+                </button>
+              </div>
+              {editing && (
+                <p className="popup-metadata">
+                  Apply or cancel OCR text edits before retrying.
+                </p>
+              )}
+              {retryOcrError && (
+                <p className="translation-error" role="alert">
+                  {retryOcrError}
+                </p>
+              )}
+            </div>
+          )}
           {state.demo && (
             <p className="popup-metadata">
               Demo boundary — no recognized text. Enter Japanese to try the

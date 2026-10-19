@@ -13,6 +13,7 @@ interactive overlay to explore Japanese without replacing the original image.
 - Explore word readings, dictionary meanings, kanji, and example compounds.
 - Development source: show optional, offline estimated JLPT vocabulary tags in word definitions and Saved.
 - Development source: expand local conjugation explanations for common verb/adjective forms and ちゃう／じゃう contractions.
+- Development source: use Check OCR to retry or redraw one uncertain bubble while retaining the rest of the scan.
 - Import an optional local translation model or select one through Ollama, then request translation when needed.
 - Save and review words and sentences locally.
 

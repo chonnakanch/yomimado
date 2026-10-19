@@ -15,7 +15,7 @@ See the [changelog](../CHANGELOG.md) for completed changes and the
 - [x] **JLPT vocabulary tags** — done on `develop`, unreleased.
 - [ ] **Saved search and organization** — proposed.
 - [x] **Conjugation explanations (initial forms and contractions)** — done on `develop`, unreleased.
-- [ ] **Retry OCR for one speech bubble** — proposed.
+- [x] **Retry OCR for one speech bubble (existing regions)** — done on `develop`, unreleased.
 - [ ] **Known / learning word states** — proposed.
 - [ ] **Personal manga glossary** — proposed.
 - [ ] **Local pronunciation playback** — proposed.
@@ -69,6 +69,18 @@ See the [supported slice and checked examples](conjugation-explanations.md) and
 [changelog](../CHANGELOG.md#2026-10-19). Broader manga speech, passive/potential,
 causatives, progressive forms and other grammar remain future scope.
 
+### Retry OCR for one speech bubble
+
+Completed on 2026-10-19 for existing regions. The popup's **Check OCR** indicator
+opens **Retry bubble OCR** and **Redraw bubble bounds**. A successful local retry
+replaces only that region and reopens its popup; other regions, stable IDs and the
+original full-area Rescan target are preserved. Failures/cancellation retain the
+old result, and retries remain marked for review rather than claiming certainty.
+
+See the [retry workflow and limits](bubble-ocr-retry.md). Adding an entirely
+missed bubble without an existing region is future scope. Windows native and
+exact-installer verification remain separate from development completion.
+
 ## Proposed implementation slices
 
 ### Saved search and organization
@@ -80,16 +92,6 @@ can follow once vocabulary tags are available.
 Completion: searches and tags persist locally, existing saved databases remain
 readable, and organizing entries never triggers translation or changes their
 stored dictionary meanings.
-
-### Retry OCR for one speech bubble
-
-Let the reader explicitly redraw or retry a single missed or incorrect text
-region. Update that region's text and geometry while retaining the rest of the
-scan. Reuse the existing physical/logical coordinate-transform path.
-
-Completion: other regions remain usable, failures retain the previous result,
-and replacement geometry stays aligned on supported display scales. This adds
-no continuous background scanning.
 
 ### Known / learning word states
 

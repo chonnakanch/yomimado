@@ -34,6 +34,149 @@ const surface: CaptureSurface = {
   selectorPhysicalBounds: { x: 0, y: 0, width: 200, height: 100 },
   scaleFactor: 1,
 };
+const retryBubble = {
+  id: "region-1",
+  text: "新しい",
+  polygon: [
+    { x: 10, y: 10 },
+    { x: 30, y: 10 },
+    { x: 30, y: 40 },
+    { x: 10, y: 40 },
+  ],
+  orientation: "vertical" as const,
+  confidence: 0,
+  type: "dialogue" as const,
+  tokens: [],
+};
+
+it("recaptures one bubble and publishes only its replacement without changing saved scan bounds", async () => {
+  window.history.replaceState(
+    {},
+    "",
+    "/?mode=capture&scan=retry-region&session=42",
+  );
+  const previous = { x: 20, y: 10, width: 120, height: 70 };
+  saveScanArea(surface, previous);
+  vi.mocked(invoke).mockImplementation(async (command) =>
+    command === "capture_ocr_region" ? captured : undefined,
+  );
+  vi.mocked(requestOcr).mockResolvedValue({
+    engine: "manga",
+    regions: [retryBubble],
+  });
+  await act(async () => root.render(<CaptureSelector />));
+  expect(invoke).toHaveBeenCalledWith("capture_ocr_region", { sessionId: 42 });
+  expect(invoke).toHaveBeenCalledWith("replace_ocr_region", {
+    sessionId: 42,
+    regions: [retryBubble],
+    engine: "manga",
+  });
+  expect(invoke).not.toHaveBeenCalledWith(
+    "show_ocr_overlay",
+    expect.anything(),
+  );
+  expect(invoke).toHaveBeenCalledWith("hide_finished_selector", {
+    sessionId: 42,
+  });
+  expect(loadScanArea(surface)).toEqual(previous);
+});
+
+it.each(["empty", "multiple", "demo", "error"])(
+  "keeps the previous result after %s bubble OCR",
+  async (mode) => {
+    window.history.replaceState(
+      {},
+      "",
+      "/?mode=capture&scan=retry-region&session=42",
+    );
+    vi.mocked(invoke).mockImplementation(async (command) =>
+      command === "capture_ocr_region" ? captured : undefined,
+    );
+    if (mode === "error")
+      vi.mocked(requestOcr).mockRejectedValue(new Error("OCR unavailable"));
+    else
+      vi.mocked(requestOcr).mockResolvedValue({
+        engine: mode === "demo" ? "demo" : "manga",
+        regions:
+          mode === "empty"
+            ? []
+            : mode === "multiple"
+              ? [retryBubble, { ...retryBubble, id: "other" }]
+              : [retryBubble],
+      });
+    await act(async () => root.render(<CaptureSelector />));
+    expect(invoke).not.toHaveBeenCalledWith(
+      "replace_ocr_region",
+      expect.anything(),
+    );
+    expect(invoke).not.toHaveBeenCalledWith(
+      "show_ocr_overlay",
+      expect.anything(),
+    );
+    expect(invoke).toHaveBeenCalledWith(
+      "finish_scan",
+      expect.objectContaining({
+        sessionId: 42,
+        message: expect.stringContaining(
+          mode === "error" ? "OCR unavailable" : "previous result was kept",
+        ),
+      }),
+    );
+  },
+);
+
+it("redraws one bubble without saving a new page scan area, and Escape cancels the retry session", async () => {
+  window.history.replaceState(
+    {},
+    "",
+    "/?mode=capture&scan=redraw-region&session=42",
+  );
+  vi.mocked(invoke).mockImplementation(async (command) =>
+    command === "capture_selection" ? captured : undefined,
+  );
+  vi.mocked(requestOcr).mockResolvedValue({
+    engine: "manga",
+    regions: [retryBubble],
+  });
+  await act(async () => root.render(<CaptureSelector />));
+  const selector =
+    container.querySelector<HTMLDivElement>(".capture-selector")!;
+  expect(container.textContent).toContain("Redraw one bubble");
+  Object.defineProperty(selector, "clientWidth", { value: 200 });
+  Object.defineProperty(selector, "clientHeight", { value: 100 });
+  selector.setPointerCapture = vi.fn();
+  await act(async () =>
+    selector.dispatchEvent(
+      new MouseEvent("pointerdown", {
+        bubbles: true,
+        clientX: 20,
+        clientY: 10,
+      }),
+    ),
+  );
+  await act(async () => {
+    selector.dispatchEvent(
+      new MouseEvent("pointerup", { bubbles: true, clientX: 140, clientY: 80 }),
+    );
+    await new Promise<void>((resolve) => setTimeout(resolve, 0));
+  });
+  expect(invoke).toHaveBeenCalledWith("capture_selection", {
+    sessionId: 42,
+    selection: { x: 20, y: 10, width: 120, height: 70 },
+    viewport: { width: 200, height: 100 },
+  });
+  expect(invoke).toHaveBeenCalledWith(
+    "replace_ocr_region",
+    expect.objectContaining({ sessionId: 42 }),
+  );
+  expect(loadScanArea(surface)).toBeNull();
+  await act(async () =>
+    window.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape" })),
+  );
+  expect(invoke).toHaveBeenCalledWith("cancel_capture_selector", {
+    sessionId: 42,
+  });
+});
 
 beforeEach(() => {
   Object.assign(globalThis, { IS_REACT_ACT_ENVIRONMENT: true });

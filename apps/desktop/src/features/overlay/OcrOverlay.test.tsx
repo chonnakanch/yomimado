@@ -31,6 +31,90 @@ afterEach(async () => {
   vi.unstubAllEnvs();
 });
 
+it.each([true, false])(
+  "reopens only the retried bubble after a current reveal=%s",
+  async (reveal) => {
+    const layout = {
+      windowWidth: 1000,
+      windowHeight: 800,
+      contentLeft: 0,
+      contentTop: 0,
+      contentWidth: 1000,
+      contentHeight: 800,
+      toolbarTop: 0,
+      toolbarHeight: 32,
+    };
+    const metadata = {
+      displayId: "display",
+      displayName: "Display",
+      screenPhysicalBounds: { x: 0, y: 0, width: 1000, height: 800 },
+      selectionPhysicalBounds: { x: 0, y: 0, width: 1000, height: 800 },
+      selectionLogicalBounds: { x: 0, y: 0, width: 1000, height: 800 },
+      imageWidth: 1000,
+      imageHeight: 800,
+      scaleFactor: 1,
+    };
+    const regions = ["updated", "untouched"].map((id, index) => ({
+      id,
+      text: index === 0 ? "新しい" : "そのまま",
+      polygon: [
+        { x: 10 + index * 100, y: 10 },
+        { x: 30 + index * 100, y: 10 },
+        { x: 30 + index * 100, y: 40 },
+      ],
+      orientation: "vertical",
+      confidence: 0,
+      type: "dialogue",
+      tokens: [],
+    }));
+    let finishReveal!: (value: unknown) => void;
+    const pending = new Promise((resolve) => {
+      finishReveal = resolve;
+    });
+    vi.mocked(invoke).mockImplementation(async (command) => {
+      if (command === "get_overlay_state")
+        return {
+          sessionId: 42,
+          retryRegionId: "updated",
+          metadata,
+          regions,
+          engine: "manga",
+          layout,
+        };
+      if (command === "reveal_ocr_overlay") return pending;
+    });
+    await act(async () => root.render(<OcrOverlay />));
+    expect(invoke).not.toHaveBeenCalledWith(
+      "show_translation_popup",
+      expect.anything(),
+    );
+    await act(async () => finishReveal(reveal ? layout : null));
+    expect(container.querySelectorAll("polygon")).toHaveLength(2);
+    if (reveal) {
+      expect(invoke).toHaveBeenCalledWith("show_translation_popup", {
+        metadata,
+        text: "新しい",
+        polygon: regions[0].polygon,
+        regionId: "updated",
+        sessionId: 42,
+        keyboard: true,
+      });
+      await act(async () => window.dispatchEvent(new Event("resize")));
+      expect(
+        vi
+          .mocked(invoke)
+          .mock.calls.filter(
+            ([command]) => command === "show_translation_popup",
+          ),
+      ).toHaveLength(1);
+    } else
+      expect(invoke).not.toHaveBeenCalledWith(
+        "show_translation_popup",
+        expect.anything(),
+      );
+  },
+);
+
 it.each([false, true])(
   "loads OCR from native state, preserving accessible review labels with debug tooltips enabled=%s",
   async (debug) => {

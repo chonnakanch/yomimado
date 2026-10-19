@@ -6,6 +6,34 @@ See the [feature roadmap](feature-roadmap.md) for proposed learning features and
 the [changelog](../CHANGELOG.md) for completed development changes. Source
 completion is tracked separately from publication and installer acceptance.
 
+**Single-bubble OCR retry — 2026-10-19:** the existing Check OCR indicator now
+opens the review reason plus retry-current-bounds and redraw actions. The popup
+receives a native completed-session/region identity. A retry uses the existing
+capture selector/local OCR pipeline, publishes exactly one replacement and
+preserves the other regions, target ID/list position, original overlay metadata
+and full-page Rescan specification. Successful publication reopens the updated
+popup; keyboard dismissal can return to that region. Empty/multiple/demo replies,
+failure, cancellation, stale generations and changed displays do not replace the
+old result. Redraw is limited to the original scanned area. Retried text remains
+marked for review because Manga OCR has no calibrated recognition confidence.
+
+All 278 frontend tests, 76 native tests, Prettier, TypeScript, Cargo formatting,
+strict all-target Clippy and frontend/macOS preview builds pass. Thirteen frontend
+and six native regression cases cover the actions, edit/duplicate guards,
+single-region publication, recovery, generation invalidation and reopening.
+Coordinate cases cover negative origins, 100/125/150/200% scale and differing
+image/physical dimensions. Browser UI checks with a synthetic popup identity
+confirm action expansion and wrapping at 420 px and 280 px.
+
+A temporary native fixture used owned Japanese text. An initial baseline capture
+completed, but a full retry/redraw cycle was not established: the rebuilt unsigned
+preview stopped at macOS Screen Recording preflight, including after restart.
+No full native macOS retry acceptance is claimed. Windows native/mixed-DPI and
+exact-installer acceptance remain unverified. Test harness pages/configuration
+remain outside the repository; no new model, dataset, dependency, API endpoint,
+version, installer or publication approval is added. See the
+[retry workflow and limits](bubble-ocr-retry.md).
+
 **Conjugation explanations — 2026-10-19:** development source adds a collapsed
 Conjugation disclosure to selected verb/i-adjective details. It explains common
 past, negative and polite forms plus ちゃう／じゃう contractions as intermediate

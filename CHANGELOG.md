@@ -14,6 +14,13 @@ The [feature roadmap](docs/feature-roadmap.md) tracks completed and proposed wor
 
 #### Added
 
+- **Single-bubble OCR retry — done in development source.** Check OCR now opens
+  retry and redraw actions for an existing uncertain/approximate region. Only
+  that region's text and geometry are replaced; other regions and the full-page
+  Rescan target are retained. Errors, empty/multiple replies, cancellation and
+  stale requests cannot replace the old result. The updated popup reopens and
+  retains its review indicator. Uses the existing local capture/OCR pipeline.
+  See [bubble retry](docs/bubble-ocr-retry.md).
 - **Conjugation explanations — done in development source.** Expand Conjugation
   in word details for step-by-step common verb past/negative/polite forms,
   i-adjectives and ちゃう／じゃう contractions. Complete manual expressions can
@@ -64,6 +71,11 @@ The [feature roadmap](docs/feature-roadmap.md) tracks completed and proposed wor
 
 #### Verification and availability
 
+- Bubble retry passes 278 frontend tests, 76 native tests, formatting, TypeScript,
+  strict Clippy and frontend/macOS preview builds. UI layout is checked in the
+  browser; the full native retry flow remains unverified after the unsigned
+  preview's Screen Recording preflight blocked capture. Windows native checks
+  and exact-installer acceptance remain pending.
 - Conjugation explanations pass 265 frontend tests, formatting, TypeScript,
   frontend/macOS preview builds and 36 real Lindera/IPADIC examples. Browser
   checks confirm local dictionary lookup and narrow-popup wrapping. Native

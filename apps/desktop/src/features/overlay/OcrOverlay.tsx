@@ -13,6 +13,7 @@ interface OverlayState {
   regions: TextRegion[];
   engine: "demo" | "manga";
   estimatedReadingOrder?: boolean;
+  retryRegionId?: string | null;
   layout: {
     windowWidth: number;
     windowHeight: number;
@@ -41,6 +42,7 @@ export function OcrOverlay() {
   const [activeRegionId, setActiveRegionId] = useState<string | null>(null);
   const [popupError, setPopupError] = useState<string | null>(null);
   const [revealed, setRevealed] = useState(false);
+  const retriedPopupOpened = useRef(false);
   const navigatorRef = useRef<HTMLDivElement>(null);
   const regionElements = useRef(new Map<string, SVGPolygonElement>());
   const [focusRequest, setFocusRequest] = useState<{
@@ -150,6 +152,29 @@ export function OcrOverlay() {
     // so native keyboard entry still works when polygon.focus() does not.
     if (document.activeElement !== element) navigatorRef.current?.focus();
   };
+  useEffect(() => {
+    if (!state?.retryRegionId || !revealed || retriedPopupOpened.current)
+      return;
+    const region = state.regions.find(
+      (item) => item.id === state.retryRegionId,
+    );
+    if (!region) return;
+    retriedPopupOpened.current = true;
+    setActiveRegionId(region.id);
+    void invoke("show_translation_popup", {
+      metadata: state.metadata,
+      text: region.text,
+      polygon: region.polygon,
+      regionId: region.id,
+      sessionId: state.sessionId,
+      // An explicit retry reopens its region; Escape should return there.
+      keyboard: true,
+    }).catch((error) =>
+      setPopupError(
+        `Bubble updated, but its popup could not open: ${String(error)}`,
+      ),
+    );
+  }, [revealed, state?.sessionId]);
   const navigateRegion = (key: string, current: number) => {
     if (!state?.regions.length) return;
     const nextIndex =

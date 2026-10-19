@@ -128,6 +128,11 @@ pub fn reveal_overlay(app: &AppHandle, store: &OverlayStore) -> Result<serde_jso
         );
     }
     state["layout"] = actual.clone();
+    // Reopen the updated bubble only for this reveal, not on later cancellation
+    // restores or Hide/Show navigation of the same completed scan.
+    if let Some(object) = state.as_object_mut() {
+        object.remove("retryRegionId");
+    }
     store.set(state)?;
     Ok(actual)
 }
@@ -249,6 +254,7 @@ fn translation_popup_query(
     placement: PopupPlacement,
     review_reason: Option<&str>,
     approximate: bool,
+    retry_target: Option<&crate::region_retry::RegionTarget>,
 ) -> String {
     let mut state = serde_json::json!({ "text": text, "demo": demo, "placement": placement });
     if let Some(reason) = review_reason {
@@ -256,6 +262,9 @@ fn translation_popup_query(
     }
     if approximate {
         state["approximate"] = true.into();
+    }
+    if let Some(target) = retry_target {
+        state["retryTarget"] = serde_json::to_value(target).expect("serializable region identity");
     }
     let serialized = state.to_string();
     let encoded = urlencoding::encode(&serialized);
@@ -321,6 +330,11 @@ fn layout(metadata: &CaptureMetadata) -> OverlayLayout {
     }
 }
 
+pub struct OverlayGeneration<'a> {
+    pub session_id: u64,
+    pub retry_region_id: Option<&'a str>,
+}
+
 pub fn show_overlay(
     app: &AppHandle,
     store: &OverlayStore,
@@ -328,8 +342,12 @@ pub fn show_overlay(
     regions: serde_json::Value,
     engine: &str,
     estimated_reading_order: bool,
-    session_id: u64,
+    generation: OverlayGeneration<'_>,
 ) -> Result<(), String> {
+    let OverlayGeneration {
+        session_id,
+        retry_region_id,
+    } = generation;
     app.state::<crate::AppState>().overlay_input.disable(app)?;
     let previous = store.get().ok();
     let layout = layout(metadata);
@@ -337,6 +355,7 @@ pub fn show_overlay(
         "metadata": metadata, "regions": regions, "engine": engine,
         "layout": layout, "estimatedReadingOrder": estimated_reading_order,
         "sessionId": session_id,
+        "retryRegionId": retry_region_id,
     });
     if let Some(popup) = app.get_webview_window("translation-popup") {
         popup.hide().map_err(|e| e.to_string())?;
@@ -426,14 +445,19 @@ pub fn show_overlay(
     result
 }
 
+pub struct PopupContext<'a> {
+    pub demo: bool,
+    pub review_reason: Option<&'a str>,
+    pub approximate: bool,
+    pub retry_target: Option<&'a crate::region_retry::RegionTarget>,
+}
+
 pub fn show_translation_popup(
     app: &AppHandle,
     metadata: &CaptureMetadata,
     text: &str,
     polygon: &[OcrPoint],
-    demo: bool,
-    review_reason: Option<&str>,
-    approximate: bool,
+    context: PopupContext<'_>,
 ) -> Result<(), String> {
     let screen = app
         .get_webview_window("ocr-overlay")
@@ -450,7 +474,14 @@ pub fn show_translation_popup(
         .unwrap_or(metadata.screen_physical_bounds);
     let placement = popup_placement(metadata, polygon, screen)?;
     let position = popup_position(placement, INITIAL_POPUP_LOGICAL_HEIGHT)?;
-    let query = translation_popup_query(text, demo, placement, review_reason, approximate);
+    let query = translation_popup_query(
+        text,
+        context.demo,
+        placement,
+        context.review_reason,
+        context.approximate,
+        context.retry_target,
+    );
     if let Some(window) = app.get_webview_window("translation-popup") {
         // Reuse the existing webview: close() can return before its label is
         // removed, so immediately rebuilding with the same label can fail.
@@ -753,6 +784,10 @@ mod tests {
             placement,
             Some("Check short text"),
             true,
+            Some(&crate::region_retry::RegionTarget {
+                session_id: 42,
+                region_id: "region-1".into(),
+            }),
         )));
 
         let state = url
@@ -765,6 +800,8 @@ mod tests {
         assert_eq!(state["demo"], false);
         assert_eq!(state["reviewReason"], "Check short text");
         assert_eq!(state["approximate"], true);
+        assert_eq!(state["retryTarget"]["sessionId"], 42);
+        assert_eq!(state["retryTarget"]["regionId"], "region-1");
         assert_eq!(state["placement"]["anchorLeft"], 100.0);
     }
 

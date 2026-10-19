@@ -194,6 +194,13 @@ The choice is saved locally and updates open learning/library windows. Tags work
 offline and require no extra setup, model, API key or lookup service. See
 **Sources & licenses** for attribution and the full data license.
 
+For an uncertain or approximate bubble, click **Check OCR** in its popup. Choose
+**Retry bubble OCR** to capture its current area again, or **Redraw bubble bounds**
+to draw corrected bounds inside the original scan. Keep the page in place.
+Successful OCR updates only that region and reopens its popup; failed or cancelled
+retries keep the previous result. The indicator remains because a rerun does not
+establish recognition confidence. See [bubble retry](bubble-ocr-retry.md).
+
 For an inflected verb or i-adjective, expand **Conjugation** in its word details.
 The app includes adjacent analyzed endings and shows steps such as
 食べました → 食べます → 食べる. Complete manual selections can also use their

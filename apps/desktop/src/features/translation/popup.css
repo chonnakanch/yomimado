@@ -59,6 +59,20 @@
   height: 12px;
   width: 12px;
 }
+.translation-popup .ocr-review-action {
+  display: inline-flex;
+  align-items: center;
+  gap: calc(var(--space-1) / 2);
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  padding: var(--space-1) 0;
+}
+.bubble-ocr-actions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
 .translation-popup .utility-button {
   box-sizing: border-box;
   font-size: var(--font-size-label);

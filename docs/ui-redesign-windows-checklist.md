@@ -60,6 +60,12 @@ scale so a fresh-process result is recorded. Start W1 before any Selected Area s
 
 ## Transitions and recovery
 
+- [ ] **Single-bubble retry:** open a region with Check OCR. Retry and redraw it
+      at each scale above; confirm only its text/polygon changes and the popup
+      reopens. Cancel redraw and cancel processing; original results must return.
+      Repeat with unavailable OCR and with a crop containing multiple regions.
+      Verify full-page Rescan still uses the page bounds. Move/change the monitor
+      during a retry; stale replies must not replace the current result.
 - [ ] **W5 menu sizing regression:** at each scale above, open/close More actions
       repeatedly after a fresh launch. With tray recovery available, all six rows
       include Hide Toolbar and Quit; without it, only Hide Toolbar is omitted.

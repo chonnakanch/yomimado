@@ -9,6 +9,7 @@
 - [Implementation plan](implementation-plan.md): completed milestone and current maintenance scope.
 - [Feature roadmap](feature-roadmap.md): proposed features, completed work and completion criteria.
 - [Conjugation explanations](conjugation-explanations.md): supported forms, lookup behavior and limits.
+- [Bubble OCR retry](bubble-ocr-retry.md): retry/redraw through Check OCR, recovery and coordinate handling.
 - [Changelog](../CHANGELOG.md): dated development changes and verification limits.
 - [Code quality review](code-review-2026-10-13.md): fixed boundary/state issues, duplication and refactor follow-ups.
 - [Redesign quality review](ui-redesign-review.md) and [Windows UI checklist](ui-redesign-windows-checklist.md): current source checks and remaining interactive acceptance.
