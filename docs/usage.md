@@ -99,6 +99,16 @@ ready based on the packaged model status.
 **Reading** explains **More actions → Read with keyboard**, which replaces the
 old Reading-order controls preference and Previous/Next text panel. No preference
 needs to be enabled before using keyboard reading.
+Under **Local translation → Model source**, choose **Import local model** for
+compatible Marian folders or **Ollama** for installed local text models or
+explicit downloads by model name. A fresh setup shows **No translation model
+installed**. Choose **Import and use model** or **Use this model** to activate your
+choice; the **Using** line confirms it. There is no built-in model option or
+automatic fallback. OCR and word/kanji lookup work without a translation model.
+After installation, choose **Translate locally** in a learning popup; no restart
+is needed. Opening settings or scanning never starts a model download.
+Ollama must be installed and running separately. See
+[model selection and supported formats](translation-model-selection.md).
 **More actions → Sources & licenses** opens a separate attribution window with
 dictionary/model links and packaged notice guidance.
 Use Left/Right or Home/End on category tabs to navigate by keyboard.

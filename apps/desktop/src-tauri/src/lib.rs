@@ -24,6 +24,32 @@ use tauri_plugin_global_shortcut::{
 const MANUAL_CAPTURE_SHORTCUT: &str = "CMDORCONTROL+SHIFT+O";
 const WHOLE_SCREEN_SHORTCUT: &str = "CMDORCONTROL+SHIFT+S";
 
+#[tauri::command]
+async fn choose_translation_model_folder(
+    app: AppHandle,
+    window: tauri::WebviewWindow,
+) -> Result<Option<String>, String> {
+    use tauri_plugin_dialog::DialogExt;
+
+    if window.label() != "main" {
+        return Err("Choose a translation model from Settings.".into());
+    }
+    tauri::async_runtime::spawn_blocking(move || {
+        app.dialog()
+            .file()
+            .blocking_pick_folder()
+            .map(|folder| {
+                folder
+                    .into_path()
+                    .map(|path| path.to_string_lossy().into_owned())
+                    .map_err(|error| error.to_string())
+            })
+            .transpose()
+    })
+    .await
+    .map_err(|error| error.to_string())?
+}
+
 struct AppState {
     capture: Arc<dyn ScreenCapture>,
     overlay: overlay::OverlayStore,
@@ -46,6 +72,7 @@ fn start_bundled_service(app: &tauri::App) -> Result<Child, Box<dyn std::error::
     let data = app.path().app_data_dir()?;
     std::fs::create_dir_all(&data)?;
     let child = Command::new(resources.join("runtime/yomimado-ocr"))
+        .env_remove("YOMIMADO_TRANSLATION_MODEL")
         .env("YOMIMADO_OCR_PORT", "8766")
         .env("YOMIMADO_DETECTOR_REPO", assets.join("comic-text-detector"))
         .env(
@@ -53,7 +80,16 @@ fn start_bundled_service(app: &tauri::App) -> Result<Child, Box<dyn std::error::
             detector_model::installed_path(app.handle())?,
         )
         .env("YOMIMADO_MANGA_OCR_MODEL", assets.join("manga-ocr-base"))
-        .env("YOMIMADO_TRANSLATION_MODEL", assets.join("opus-mt-ja-en"))
+        .env(
+            "YOMIMADO_TRANSLATION_MANIFEST",
+            resources.join("notices/translation-component.json"),
+        )
+        .env(
+            "YOMIMADO_TRANSLATION_RESOURCES",
+            data.join("models/translation"),
+        )
+        .env("YOMIMADO_TOKENIZER", "lindera")
+        .env("YOMIMADO_LINDERA_DICTIONARY", assets.join("lindera-ipadic"))
         .env("YOMIMADO_JMDICT", assets.join("JMdict_e.gz"))
         .env("YOMIMADO_KANJIDIC2", assets.join("kanjidic2.xml.gz"))
         .env("YOMIMADO_JMDICT_INDEX", data.join("jmdict-index.sqlite3"))
@@ -1025,6 +1061,7 @@ pub fn run() {
             capture_repeat_scan,
             detector_model::detector_model_status,
             detector_model::install_detector_model,
+            choose_translation_model_folder,
             show_capture_selector,
             show_auto_scanner,
             show_scan_area_selector,

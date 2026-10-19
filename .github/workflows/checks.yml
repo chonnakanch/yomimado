@@ -57,16 +57,23 @@ jobs:
         run: |
           python -m pip install --only-binary=:all: -r ../../scripts/requirements-ci.txt
           python -m pip check
+          python ../../scripts/prepare_lindera.py --download
       - name: Lint and format service sources
         run: |
           python -m ruff check app tests packaged_main.py windows_packaged_main.py windows_onnx_backend.py
           python -m ruff format --check app tests packaged_main.py windows_packaged_main.py windows_onnx_backend.py
-      - name: Test API, geometry, security, dictionaries and persistence
+      - name: Test service and model-free OCR regression contracts
         env:
           HF_HUB_OFFLINE: "1"
           TRANSFORMERS_OFFLINE: "1"
+          PYTHONPATH: ../../scripts
         run: |
-          python -m pytest -q --junitxml="$RUNNER_TEMP/service-tests.xml"
+          python -m pytest -c pyproject.toml -q tests \
+            ../../scripts/tests/test_cached_ocr_experiment.py \
+            ../../scripts/tests/test_macos_onnx_benchmark.py \
+            ../../scripts/tests/test_scan_benchmark_metrics.py \
+            ../../scripts/tests/test_translation_component.py \
+            --junitxml="$RUNNER_TEMP/service-tests.xml"
           python - <<'PY'
           import os
           import xml.etree.ElementTree as ET
@@ -78,7 +85,7 @@ jobs:
           tests = sum(int(suite.get("tests", "0")) for suite in suites)
           if skipped or not tests:
               raise SystemExit(f"Service coverage incomplete: {tests} tests, {skipped} skipped")
-          print(f"All {tests} service tests ran without skips")
+          print(f"All {tests} service and OCR contract tests ran without skips")
           PY
 
   release-tools:

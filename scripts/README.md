@@ -49,7 +49,7 @@ private seed identities and download checks live in `desktop_release.py`.
 
 ## Windows build, runtime and source dependencies
 
-The `windows_*` component scripts prepare CPython, minimal OpenCV, Sudachi,
+The `windows_*` component scripts prepare CPython, minimal OpenCV, Lindera,
 NSIS, the source WebView loader, canonical VC inputs, export bindings, native
 preferred sources and full notices. Their manifests/locks remain under `docs/`.
 The C++ WebView adapter/probe and native probes are part of those build checks.
@@ -66,6 +66,58 @@ their current functions. Backend imports, source recipes and exporter hash check
 use those paths. The pinned input manifest retains its existing name.
 
 ## Manual rebuild and licence maintenance
+
+`translation_component.py` verifies and separates translation model data from
+generated installer resources. It creates versioned Torch/ONNX ZIPs outside the
+installer and a hash-pinned `notices/translation-component.json` descriptor,
+retains model terms, verifies deliberate asset omissions and rejects leftover
+OCR dictionary/binding files. Exact-candidate smoke can install the component
+offline with `YOMIMADO_SMOKE_TRANSLATION_ARCHIVE`. Future release delivery adds
+the two component ZIPs as separate hash-bound assets; historical layouts remain
+supported. See [the implementation](../docs/optional-translation-and-ocr-size.md).
+
+`benchmark_scan_pipeline.py` times detector passes, recognition and subsequent
+tokenization on generated local fixtures for both development tokenizer profiles.
+It verifies OCR-output parity and scores supplied geometry/text ground truth,
+including full-pipeline losses rather than only clean-crop recognition. It does
+not capture user screenshots or change production behavior. See the
+[speed/accuracy report](../docs/scan-performance-comparison.md).
+
+`prepare_lindera.py --download` explicitly downloads and stages the pinned IPADIC
+dictionary for development. Use `--archive` for an existing archive or `--check`
+to verify staged files. Packaging also supplies `--target` and `--notices`.
+Changed archives, incomplete dictionaries and unexpected members are rejected.
+The default resource path is `services/ocr/local-dictionaries/lindera-ipadic`.
+See the [migration report](../docs/lindera-migration.md).
+
+`dev_lindera_service.py` starts the local service with complete
+OCR/model/dictionary paths, independent of the terminal working directory. It
+checks required files, enables offline model loading and uses isolated development
+data. It downloads nothing; `--check` performs path validation without serving.
+
+`benchmark_lindera_tokenizer.py` compares the Lindera/IPADIC
+adapter with Sudachi Core, including source offsets, fixed learning checks,
+JMdict matches, payload sizes and warm adapter timings. It downloads nothing and
+keeps derived lookup data in its output directory. Optional `--sudachi-small`
+adds the hash-verified Small 20250515 dictionary to the same-corpus comparison;
+see the [SudachiPy investigation](../docs/sudachipy-investigation.md). The strict
+`--require-learning-parity` mode currently fails the whole-word compatibility
+check documented in [the experiment](../docs/lindera-tokenizer-experiment.md).
+
+`compare_tokenizer_candidates.py` covers every previously suggested engine using
+seven pinned local profiles: Core, Small, Lindera/IPADIC, MeCab/IPADIC,
+MeCab/UniDic Lite and Vaporetto kana/pronunciation models. It preserves unknown
+fields as fallbacks, separates missing base forms from reading compatibility,
+validates source offsets and retains all timing samples. It downloads nothing
+and registers no production providers. See [the comparison](../docs/tokenizer-candidate-comparison.md)
+for optional isolated inputs and reproduction.
+
+`investigate_tokenizer_resources.py` is an offline, source-only diagnostic, not
+an imported runtime module or release gate. It compares existing OCR tokenization
+with a decoding configuration that avoids UniDic/Fugashi, runs synthetic OCR and
+Sudachi checks in isolated workers, and optionally compares an explicitly supplied
+Sudachi Small dictionary. It does not download inputs or modify model/runtime
+files. See [the investigation and reproduction command](../docs/tokenizer-resource-investigation.md).
 
 - `build-macos-prerelease.sh`, `verify-python-release-lock.py`,
   `build-opencv-macos.py`, `opencv_release.py`, `generate-macos-notices.py`,

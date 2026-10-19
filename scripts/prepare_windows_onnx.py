@@ -22,7 +22,14 @@ from windows_release import fetch, read_json, validate_lock, write_json
 
 ROOT = Path(__file__).resolve().parent.parent
 BUILD = ROOT / "services/ocr/build/onnx-prototype"
-EXCLUDED = {"torch", "torchvision", "manga-ocr", "torchsummary"}
+EXCLUDED = {
+    "torch",
+    "torchvision",
+    "manga-ocr",
+    "torchsummary",
+    "unidic-lite",
+    "fugashi",
+}
 
 
 def select_packages(

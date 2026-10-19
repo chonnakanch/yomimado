@@ -150,8 +150,17 @@ jobs:
         run: |
           set -euo pipefail
           python scripts/desktop_release.py verify-inputs --platform macos --directory "$RUNNER_TEMP/yomimado-input"
-          tar -xzf "$RUNNER_TEMP/yomimado-input/YomiMado_0.2.0_sources_fae4d28.tar.gz" -C "$RUNNER_TEMP/yomimado-input"
-          echo "YOMIMADO_SOURCE_DIR=$RUNNER_TEMP/yomimado-input/source-delivery-fae4d28" >> "$GITHUB_ENV"
+          # A reduced seed keeps optional translation weights outside its DMG.
+          # verify-inputs pins exact membership and hashes; the frozen smoke and
+          # package step also bind this archive to the embedded component manifest.
+          shopt -s nullglob
+          components=("$RUNNER_TEMP/yomimado-input/"*_translation_torch.zip)
+          if (( ${#components[@]} )); then
+            mkdir -p services/ocr/build/translation-components
+            cp "${components[@]}" services/ocr/build/translation-components/
+          fi
+          tar -xzf "$RUNNER_TEMP/yomimado-input/YomiMado_0.3.0_sources_f1b4fba.tar.gz" -C "$RUNNER_TEMP/yomimado-input"
+          echo "YOMIMADO_SOURCE_DIR=$RUNNER_TEMP/yomimado-input/source-delivery-f1b4fba" >> "$GITHUB_ENV"
       - name: Install smoke-only detector from the original publisher
         shell: bash
         run: |
@@ -165,7 +174,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          seed="$RUNNER_TEMP/yomimado-input/YomiMado_0.2.0_aarch64.dmg"
+          seed="$RUNNER_TEMP/yomimado-input/YomiMado_0.3.0_aarch64.dmg"
           bash scripts/verify-macos-dmg.sh "$seed" "$(command -v python)" --hobby-release
           mount_dir="$(mktemp -d /private/tmp/yomimado-seed.XXXXXX)"
           trap 'hdiutil detach "$mount_dir"; rmdir "$mount_dir"' EXIT
@@ -187,9 +196,9 @@ jobs:
           python scripts/macos-release.py verify-sources "$notices" \
             --source-dir "$source_dir" --revision "$SOURCE_REVISION"
           echo "YOMIMADO_SOURCE_DIR=$source_dir" >> "$GITHUB_ENV"
-          rm -rf "$RUNNER_TEMP/yomimado-input/source-delivery-fae4d28"
-          rm "$RUNNER_TEMP/yomimado-input/YomiMado_0.2.0_sources_fae4d28.tar.gz"
-          rm "$RUNNER_TEMP/yomimado-input/YomiMado_0.2.0_notices_fae4d28.tar.gz"
+          rm -rf "$RUNNER_TEMP/yomimado-input/source-delivery-f1b4fba"
+          rm "$RUNNER_TEMP/yomimado-input/YomiMado_0.3.0_sources_f1b4fba.tar.gz"
+          rm "$RUNNER_TEMP/yomimado-input/YomiMado_0.3.0_notices_f1b4fba.tar.gz"
       - name: Build and verify the new hobby DMG
         env:
           APP_VERSION: ${{ needs.plan.outputs.version }}
@@ -463,7 +472,7 @@ jobs:
         with:
           name: windows-candidate-for-transfer
           path: windows-candidate
-      - name: Verify both platforms and package six public release files
+      - name: Verify both platforms and package public release files and optional components
         id: combine
         env:
           MACOS_RECORD: ${{ needs.build.outputs.record }}

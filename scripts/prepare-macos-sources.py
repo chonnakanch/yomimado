@@ -462,6 +462,18 @@ def candidate(item: dict, path: Path, output: Path, checksum: str, origin: str) 
 
 
 def python_archive(item: dict, output: Path) -> dict:
+    if item["name"].lower() == "lindera":
+        pins = json.loads(
+            (ROOT / "services/ocr/app/tokenizer/lindera-inputs.json").read_text()
+        )
+        if item["version"] != pins["version"]:
+            raise ValueError("Lindera source version differs from runtime")
+        source = pins["source"]
+        path = output / "python" / filename(source["filename"])
+        download(
+            source["url"], path, source["sha256"], "sha256", {"codeload.github.com"}
+        )
+        return candidate(item, path, output, source["sha256"], source["url"])
     if item["name"].lower() == "numpy":
         path = ROOT / "services/ocr/build/numpy-source/numpy-source-delivery.tar.gz"
         target = output / path.name

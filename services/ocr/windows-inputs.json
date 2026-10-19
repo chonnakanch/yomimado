@@ -772,34 +772,6 @@
       "sourceReview": "pending"
     },
     {
-      "name": "SudachiDict-core",
-      "version": "20250515",
-      "filename": "sudachidict_core-20250515-py3-none-any.whl",
-      "url": "https://files.pythonhosted.org/packages/39/df/83d0cf0d94e812519c8b556b6ad0b430d074e163eb917e161f90cce2d716/sudachidict_core-20250515-py3-none-any.whl",
-      "sha256": "bcf0056eecfa360a92cea1251a04eeb19a5d16938559ecf52b67d4fbfa1c249f",
-      "source": {
-        "filename": "sudachidict_core-20250515.tar.gz",
-        "url": "https://files.pythonhosted.org/packages/f7/84/647417933bff5de7d6fd9fd11a2d9005e68868b9ef6dd8c7ff32e7fcfc79/sudachidict_core-20250515.tar.gz",
-        "sha256": "63be5499104f5cb5464c819739d9901bd886cb3c4b6ab59ae3f39e97a23f5603"
-      },
-      "licenseMetadata": "Apache-2.0",
-      "sourceReview": "pending"
-    },
-    {
-      "name": "SudachiPy",
-      "version": "0.6.10",
-      "filename": "SudachiPy-0.6.10-cp311-cp311-win_amd64.whl",
-      "url": "https://files.pythonhosted.org/packages/79/34/ace16ae26b067ae1a0d69e4294c18203f903739f73e6655c555be51a7884/SudachiPy-0.6.10-cp311-cp311-win_amd64.whl",
-      "sha256": "8af8b3c91a9aaf0f300901967f85805d73e83297da6c56db50002dde3a4514fe",
-      "source": {
-        "filename": "sudachipy-0.6.10.tar.gz",
-        "url": "https://files.pythonhosted.org/packages/86/eb/ceadfb1e9178332839a75b91393765b135ab870fad9230d47c201c931607/sudachipy-0.6.10.tar.gz",
-        "sha256": "b8910a4610de98b2c3cb6dc3362fea93e3ba5059f1eb445a68baa9585278f31b"
-      },
-      "licenseMetadata": "Apache-2.0",
-      "sourceReview": "pending"
-    },
-    {
       "name": "sympy",
       "version": "1.14.0",
       "filename": "sympy-1.14.0-py3-none-any.whl",
@@ -1111,6 +1083,20 @@
         "sha256": "2e58454a340b3556dfa4972d5451aff4fba8dd42a236600ba1a1d2b1514f0fef"
       },
       "licenseMetadata": "Apache-2.0",
+      "sourceReview": "pending"
+    },
+    {
+      "name": "lindera",
+      "version": "6.0.0",
+      "filename": "lindera-6.0.0-cp310-abi3-win_amd64.whl",
+      "url": "https://files.pythonhosted.org/packages/c5/2e/27ee1db018b5a3143ce0abf684834ba606864a8cf22749618195fe78805c/lindera-6.0.0-cp310-abi3-win_amd64.whl",
+      "sha256": "059476fee9f6975a2eb687c9d032c912b6bfbf77c58933beefff2a5bc0c71a05",
+      "source": {
+        "filename": "lindera-6.0.0-source.tar.gz",
+        "url": "https://codeload.github.com/lindera/lindera/tar.gz/refs/tags/v6.0.0",
+        "sha256": "648da7098359db82b8b70ab8f9c53245eba296d6ce586f0c4190305b187e80a1"
+      },
+      "licenseMetadata": "MIT",
       "sourceReview": "pending"
     }
   ],

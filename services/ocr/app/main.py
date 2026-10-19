@@ -7,6 +7,7 @@ from app.api.kanji import router as kanji_router
 from app.api.ocr import router as ocr_router
 from app.api.tokenization import router as tokenization_router
 from app.api.translation import router as translation_router
+from app.api.translation_settings import router as translation_settings_router
 from app.api.vocabulary import router as vocabulary_router
 from app.api.word import router as word_router
 from app.security import ALLOWED_ORIGINS, CLIENT_HEADER, LocalRequestMiddleware
@@ -30,4 +31,5 @@ app.include_router(ocr_router)
 app.include_router(tokenization_router)
 app.include_router(word_router)
 app.include_router(translation_router)
+app.include_router(translation_settings_router)
 app.include_router(vocabulary_router)

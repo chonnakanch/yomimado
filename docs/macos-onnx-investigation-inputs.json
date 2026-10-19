@@ -1,0 +1,34 @@
+{
+  "scope": "Private macOS ARM64 ONNX investigation; not a release lock or publication approval",
+  "onnxruntime": {
+    "version": "1.22.1",
+    "wheel": "onnxruntime-1.22.1-cp311-cp311-macosx_13_0_universal2.whl",
+    "sha256": "f4581bccb786da68725d8eac7c63a8f31a89116b8761ff8b4989dc58b61d49a0",
+    "noticeInputs": {
+      "LICENSE": "2f07c72751aed99790b8a4869cf2311df85a860b22ded05fa22803587a48922c",
+      "ThirdPartyNotices.txt": "e9e90971a8e75a9a8ac0c6412e29c1202d079998389915aa485f46c816c3b4cc"
+    },
+    "nativeInputs": {
+      "capi/libonnxruntime.1.22.1.dylib": "114a54d0c08cc94c68dba8a30dbc16627e543f978c345e016f67e46f8b727c51",
+      "capi/onnxruntime_pybind11_state.so": "0f1e4c4d9385f97630d93f20fc416feba9dcb7cd59b73ee3375436341df35068"
+    }
+  },
+  "exports": {
+    "manifestSha256": "5ae1a2060fbde77c8faed3258502618da5d5b800acdbd8900e6dab6679b2e1f2",
+    "ocrInputs": {
+      "manga-ocr-base/config.json": "8c0e395de8fa699daaac21aee33a4ba9bd1309cfbff03147813d2a025f39f349",
+      "manga-ocr-base/preprocessor_config.json": "af4eb4d79cf61b47010fc0bc9352ee967579c417423b4917188d809b7e048948",
+      "manga-ocr-base/pytorch_model.bin": "c63e0bb5b3ff798c5991de18a8e0956c7ee6d1563aca6729029815eda6f5c2eb",
+      "manga-ocr-base/special_tokens_map.json": "303df45a03609e4ead04bc3dc1536d0ab19b5358db685b6f3da123d05ec200e3",
+      "manga-ocr-base/tokenizer_config.json": "d775ad1deac162dc56b84e9b8638f95ed8a1f263d0f56f4f40834e26e205e266",
+      "manga-ocr-base/vocab.txt": "344fbb6b8bf18c57839e924e2c9365434697e0227fac00b88bb4899b78aa594d"
+    },
+    "outputs": {
+      "ocr-encoder.onnx": "f8ac1da927a6a30ea9613bf760f1bb560358db753efdb4fdedc35c1fa08748f4",
+      "ocr-decoder.onnx": "14d2dd0bea5cd4568e3385eeb11c9d37116b70e5b4c29d3c6db3e19415056370",
+      "policies.json": "44cb3937a9ad273aab284b5df95083ac955b87ae8bfc679f271d56d469712e8e"
+    }
+  },
+  "productionDefaultsChanged": false,
+  "publicationApproved": false
+}

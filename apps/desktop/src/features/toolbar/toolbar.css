@@ -124,12 +124,6 @@
   outline: var(--focus-width) solid var(--color-focus);
   outline-offset: -2px;
 }
-.toolbar-menu-hint {
-  margin: var(--space-2);
-  color: var(--color-text-muted);
-  font-size: var(--font-size-label);
-}
-
 .toolbar-menu-error {
   color: var(--color-status-error);
   font-size: var(--font-size-label);

@@ -74,7 +74,7 @@ export function SettingsWindow({
           {id === "scan" ? (
             <ScanSettings active={active && category === "scan"} />
           ) : (
-            <ReadingSettings />
+            <ReadingSettings active={active && category === "reading"} />
           )}
         </section>
       ))}

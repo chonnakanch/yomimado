@@ -1,7 +1,7 @@
 {
-  "reviewScope": "Completed technical source/notice review for all 114 unique native inputs in this inventory. Final release-source delivery sign-off and installed-app gates remain separate.",
+  "reviewScope": "Technical source/notice evidence for all 112 unique native inputs after replacing Sudachi/Fugashi with Lindera. Historical dependency reviews remain hash-bound. Final human release-source approval and installer gates remain separate.",
   "verifiedBy": "Codex",
-  "verifiedOn": "2026-10-06",
+  "verifiedOn": "2026-10-19",
   "groups": [
     {
       "components": [
@@ -500,10 +500,6 @@
           "buildInputSha256": "9f8c6553b8fa7a5286d3baa9e5ce3a75e0567e441557d35c61c43e25414e0ab3"
         },
         {
-          "id": "native:sudachipy/sudachipy.cpython-311-darwin.so",
-          "buildInputSha256": "d6cf84d3901eed099410bf85daccb2688783c1de08616a2e0c558dfe1a6fda63"
-        },
-        {
           "id": "native:tokenizers/tokenizers.abi3.so",
           "buildInputSha256": "899b244f19f1ddd6506c45ea0f7163f38952f2a552272a687a6ef4b9ddcc7327"
         },
@@ -525,14 +521,6 @@
         "native-notices/pyyaml-6.0.3-libyaml-NOTICE.txt": "c40112449f254b9753045925248313e9270efa36d226b22d82d4cc6c43c57f29"
       },
       "nativeInputs": [
-        {
-          "id": "native:fugashi/.dylibs/libmecab.2.dylib",
-          "buildInputSha256": "49d16ce524f19f8700e79233ab0ef11e43cb0bca2379e41b13f6ed6ca6db7561"
-        },
-        {
-          "id": "native:fugashi/fugashi.cpython-311-darwin.so",
-          "buildInputSha256": "c50214909e32c1f6bd437fc1b7f409afc1e8087d77f0dca621b34c12682b6b3f"
-        },
         {
           "id": "native:yaml/_yaml.cpython-311-darwin.so",
           "buildInputSha256": "fddcdc7e45b0b363583056a3f313b2f5a7467eab6da2351a6ac1c2100272e0c0"
@@ -688,6 +676,21 @@
         {
           "id": "native:websockets/speedups.cpython-311-darwin.so",
           "buildInputSha256": "dc0d8a8e8ab9c5489b5270875760bd6e0d2e1dc8ae4a6ab7f66ab1ba97b5d43c"
+        }
+      ]
+    },
+    {
+      "components": ["python:lindera@6.0.0"],
+      "archive": "lindera-6.0.0-source-delivery.tar.gz",
+      "sha256": "8dbe5f606267c8e9337fcd31a417a058ffad0803e1167d777327c18ab1877418",
+      "licenseEvidence": "Lindera 6.0.0 tagged monorepo, all 399 checksum-verified locked registry crates and complete original notices retained; pinned upstream notices and immutable source comparisons cover old crates without VCS metadata. IPADIC original source, byte-identical dictionary rebuild recipe/evidence and separate NAIST/ICOT notice retained. Native wheel remains publisher-built; no source-only wheel rebuild attested. Technical provenance only; human source approval remains separate.",
+      "noticeFiles": {
+        "native-notices/lindera-6.0.0-NOTICES.txt": "35cb814706a25ef6fa20c4e47372ae046eb4ce554b6e50873604d6883c5507f0"
+      },
+      "nativeInputs": [
+        {
+          "id": "native:lindera/lindera.abi3.so",
+          "buildInputSha256": "16f9232da952ac3a84323e3ce5dc62f13ce8d85dfb267373985ea0c0a12f5c95"
         }
       ]
     }

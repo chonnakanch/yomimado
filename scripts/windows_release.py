@@ -254,6 +254,9 @@ def derived_onnx_graphs(directory: Path) -> dict[Path, str]:
     ):
         raise ValueError("Unbound Windows inference conversion provenance")
     allowed = {}
+    from translation_component import verify_omissions
+
+    omitted = verify_omissions(directory)
     for name, sha in record["outputs"].items():
         path = exported / name
         if (
@@ -261,7 +264,7 @@ def derived_onnx_graphs(directory: Path) -> dict[Path, str]:
             or not re.fullmatch(r"[0-9a-f]{64}", sha)
             or path.is_symlink()
             or sha == DETECTOR_SHA256
-            or digest(path) != sha
+            or (digest(path) if path.exists() else omitted.get("onnx/" + name)) != sha
         ):
             raise ValueError("Unapproved or changed Windows inference conversion")
         if name.endswith(".onnx"):
@@ -292,8 +295,23 @@ def download_assets() -> None:
 
 
 def prepare_assets() -> None:
+    # Rebuilding restores the full export inputs before making a new component.
+    # A descriptor from a prior generated resource tree must not excuse them.
+    (RESOURCES / "notices/translation-component.json").unlink(missing_ok=True)
     download_assets()
     assets = RESOURCES / "assets"
+    subprocess.run(
+        [
+            sys.executable,
+            str(ROOT / "scripts/prepare_lindera.py"),
+            "--download",
+            "--target",
+            str(assets / "lindera-ipadic"),
+            "--notices",
+            str(RESOURCES / "notices/lindera"),
+        ],
+        check=True,
+    )
     detector = BUILD / "detector"
     revision = "440b978563c71b758e31aaa315d100faba1efa2f"
     if not detector.exists():
@@ -799,6 +817,11 @@ def verify_resources(
     resources: Path, *, manifest_hashes: dict[str, str] | None = None
 ) -> dict:
     assert_no_detector(resources)
+    # Preserve historical exact-installer audits using their supplied manifests.
+    if manifest_hashes is None:
+        from prepare_lindera import verify_packaged
+
+        verify_packaged(resources)
     required = [
         "LICENSE",
         "MODEL_CREDITS.md",
@@ -840,9 +863,12 @@ def verify_resources(
     for name, sha in manifest_hashes.items():
         if digest(resources / "notices" / name) != sha:
             raise ValueError("Installed input manifest differs: " + name)
+    from translation_component import verify_ocr_runtime, verify_omissions
     from windows_export_inputs import verify as verify_export_exclusions
 
-    excluded = verify_export_exclusions(resources)
+    excluded = verify_export_exclusions(resources) | set(verify_omissions(resources))
+    if (resources / "notices/translation-component.json").is_file():
+        verify_ocr_runtime(resources / "runtime")
     for entry in read_json(resources / "notices/windows-assets.json"):
         if entry["path"] in excluded:
             continue
@@ -936,6 +962,11 @@ def package(installer: Path, output: Path, installed: Path) -> None:
         output / "windows-installer-inputs.json", installer_inputs(installed, installer)
     )
     shutil.copy2(installer, output / installer.name)
+    component = installed / "ocr/notices/translation-component.json"
+    if component.is_file():
+        from translation_component import copy_component
+
+        copy_component(component, BUILD / "translation-components", output)
     with tarfile.open(output / "windows-notices.tar.gz", "w:gz") as archive:
         archive.add(installed / "ocr/notices", arcname="notices")
     # Preserve original daily dictionary snapshots for reproducible rebuilds.

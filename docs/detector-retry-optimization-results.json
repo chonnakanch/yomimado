@@ -1,0 +1,1280 @@
+{
+  "date": "2026-10-18",
+  "scope": "Shared warmed source models; sequential alternating profiles; synthetic images only",
+  "baselineRef": "7cf0154",
+  "baselineSha256": "bc40af4c02d86fa5cc6586f3a1f73360c34cf829a6a03717d90a65702c4f2ba0",
+  "candidateSha256": "778cda6c23aa8cb6b76906c6405f33276ed47d16383f61902abf19880a1db6b6",
+  "benchmarkSha256": "b8fd7c8c373bd327691782a605eb6f0f3d1142debdcd269d14127979af22d250",
+  "repeats": 2,
+  "totalScans": 78,
+  "metadata": {
+    "platform": "macOS-26.6.2-arm64-arm-64bit",
+    "python": "3.11.17",
+    "torch": "2.8.0",
+    "torchThreads": 4,
+    "opencv": "4.11.0",
+    "opencvThreads": 10,
+    "parallelFramework": "Parallel framework:            GCD",
+    "numpy": "1.26.4",
+    "pillow": "11.3.0",
+    "transformers": "4.57.3",
+    "manga-ocr": "0.1.16"
+  },
+  "fixtureSha256": {
+    "small-horizontal": "ef7a7532fb25faed99921899b1d4aa2d4b3ba6c7bbe63d2ff9866eeed2979256",
+    "small-vertical": "a141e9bb04a1c10e4b49129eaf51fa012529fd6bedca2b7738898a15134c9ae5",
+    "sentence-horizontal": "c2ea04297bad3b93db13e866e14a8248afc2ec23c50867ccc84f647cc739d896",
+    "sentence-vertical": "7148fd3993a02b7ba1f3b15d5f3506a6fe5aab19a29c52ef20b2992b72e29daa",
+    "small-font": "c5555265bbc9713ffd5a18d81c64101e9523a1745c883a97425a043a298a2277",
+    "low-contrast": "f82cf0758292a7dfc4be16a875ef4fe0be9835f46d99e32170d83fa72a118746",
+    "skew-horizontal": "e266b8bde668c802dd90046f1dd9d1df345ab16a832ac7a9adaa1949b2dbb678",
+    "mixed-page": "92e3b15eb56769c1aa6f69df090055bee293cfcd6a70331a847dee52a92d18cc",
+    "blank": "da7d9081dac7f8b874771a62103078b78a1f8bff984f43c27808457f1c870eb1",
+    "sparse-page-14": "3057d9ba000ca68a814a0dbb5971d20046a822c7d5a9416e758ee44eb0095629",
+    "sparse-page-24": "60f0b54d1400f274584804f1a34fcaa3b8a1e60e46019dc7d445e06ec7d47df5",
+    "sparse-page-40": "2e871c99dca7c88de1c84062de7cdea28f740e14b41568b8a9ed3789ea8caead",
+    "blank-large": "ac8a85867284bb0501d4aaa5dae3e1937533d3d6d741e1ce139495a31c002526"
+  },
+  "fontSha256": "833776a6fd68e2c71c0c52fd8041195bd3d0a336cdb278170b7ad71c7e1b3475",
+  "summary": {
+    "baseline": {
+      "scans": 26,
+      "medianMs": {
+        "scanMs": 1047.6800204996835,
+        "detectMs": 904.828937498678,
+        "recognizeMs": 111.46008349896874,
+        "forwardMs": 899.6569584960525,
+        "refineMs": 2.0695004968729336
+      },
+      "perFixture": {
+        "small-horizontal": {
+          "scanMs": 1012.6113955011533,
+          "detectMs": 856.9262709970644,
+          "recognizeMs": 154.86768750633928,
+          "detectCalls": 1.0,
+          "recognizeCalls": 2.0
+        },
+        "small-vertical": {
+          "scanMs": 992.8695000016887,
+          "detectMs": 835.8800210007757,
+          "recognizeMs": 156.13166649563937,
+          "detectCalls": 1.0,
+          "recognizeCalls": 2.0
+        },
+        "sentence-horizontal": {
+          "scanMs": 963.343437997537,
+          "detectMs": 841.1450829989917,
+          "recognizeMs": 120.29447899840306,
+          "detectCalls": 1.0,
+          "recognizeCalls": 1.0
+        },
+        "sentence-vertical": {
+          "scanMs": 981.4901669997198,
+          "detectMs": 878.0465834970528,
+          "recognizeMs": 101.36420799972257,
+          "detectCalls": 1.0,
+          "recognizeCalls": 1.0
+        },
+        "small-font": {
+          "scanMs": 966.58549950007,
+          "detectMs": 866.4099169982364,
+          "recognizeMs": 98.58587499911664,
+          "detectCalls": 1.0,
+          "recognizeCalls": 1.0
+        },
+        "low-contrast": {
+          "scanMs": 1113.8672710039828,
+          "detectMs": 881.6456250024203,
+          "recognizeMs": 229.83987500265357,
+          "detectCalls": 1.0,
+          "recognizeCalls": 3.0
+        },
+        "skew-horizontal": {
+          "scanMs": 1036.1457705002977,
+          "detectMs": 905.7494164990203,
+          "recognizeMs": 128.13639549858635,
+          "detectCalls": 1.0,
+          "recognizeCalls": 1.0
+        },
+        "mixed-page": {
+          "scanMs": 4889.802687001065,
+          "detectMs": 4530.677353501233,
+          "recognizeMs": 340.9379370023089,
+          "detectCalls": 5.0,
+          "recognizeCalls": 3.0
+        },
+        "blank": {
+          "scanMs": 922.1074164997844,
+          "detectMs": 917.337562499597,
+          "recognizeMs": 0.0,
+          "detectCalls": 1.0,
+          "recognizeCalls": 0.0
+        },
+        "sparse-page-14": {
+          "scanMs": 4749.917895998806,
+          "detectMs": 4640.556958995148,
+          "recognizeMs": 93.77037550075329,
+          "detectCalls": 5.0,
+          "recognizeCalls": 1.0
+        },
+        "sparse-page-24": {
+          "scanMs": 4914.45468800157,
+          "detectMs": 4798.887417000515,
+          "recognizeMs": 99.59429200171144,
+          "detectCalls": 5.0,
+          "recognizeCalls": 1.0
+        },
+        "sparse-page-40": {
+          "scanMs": 5487.6027289974445,
+          "detectMs": 5349.030687004415,
+          "recognizeMs": 120.10177099728025,
+          "detectCalls": 5.0,
+          "recognizeCalls": 1.0
+        },
+        "blank-large": {
+          "scanMs": 5825.815062500624,
+          "detectMs": 5803.649146502721,
+          "recognizeMs": 0.0,
+          "detectCalls": 5.0,
+          "recognizeCalls": 0.0
+        }
+      },
+      "changedFixtures": [],
+      "pipelineText": {
+        "exact": 10,
+        "regions": 13,
+        "edits": 7,
+        "characters": 84,
+        "characterErrorRate": 0.08333333333333333
+      },
+      "geometry": {
+        "small-horizontal": {
+          "truePositive": 1,
+          "falsePositive": 0,
+          "falseNegative": 0,
+          "correctOrientation": 1
+        },
+        "small-vertical": {
+          "truePositive": 1,
+          "falsePositive": 0,
+          "falseNegative": 0,
+          "correctOrientation": 0
+        },
+        "sentence-horizontal": {
+          "truePositive": 1,
+          "falsePositive": 0,
+          "falseNegative": 0,
+          "correctOrientation": 1
+        },
+        "sentence-vertical": {
+          "truePositive": 1,
+          "falsePositive": 0,
+          "falseNegative": 0,
+          "correctOrientation": 1
+        },
+        "small-font": {
+          "truePositive": 1,
+          "falsePositive": 0,
+          "falseNegative": 0,
+          "correctOrientation": 1
+        },
+        "low-contrast": {
+          "truePositive": 0,
+          "falsePositive": 2,
+          "falseNegative": 1,
+          "correctOrientation": 0
+        },
+        "skew-horizontal": {
+          "truePositive": 1,
+          "falsePositive": 0,
+          "falseNegative": 0,
+          "correctOrientation": 1
+        },
+        "mixed-page": {
+          "truePositive": 3,
+          "falsePositive": 0,
+          "falseNegative": 0,
+          "correctOrientation": 3
+        },
+        "blank": {
+          "truePositive": 0,
+          "falsePositive": 0,
+          "falseNegative": 0,
+          "correctOrientation": 0
+        },
+        "sparse-page-14": {
+          "truePositive": 1,
+          "falsePositive": 0,
+          "falseNegative": 0,
+          "correctOrientation": 1
+        },
+        "sparse-page-24": {
+          "truePositive": 1,
+          "falsePositive": 0,
+          "falseNegative": 0,
+          "correctOrientation": 1
+        },
+        "sparse-page-40": {
+          "truePositive": 1,
+          "falsePositive": 0,
+          "falseNegative": 0,
+          "correctOrientation": 1
+        },
+        "blank-large": {
+          "truePositive": 0,
+          "falsePositive": 0,
+          "falseNegative": 0,
+          "correctOrientation": 0
+        }
+      },
+      "textCases": [
+        {
+          "fixture": "small-horizontal",
+          "cases": [
+            {
+              "reference": "学校へ",
+              "predicted": "学校",
+              "edits": 1,
+              "characters": 3,
+              "exact": false
+            }
+          ],
+          "extraPredictions": [],
+          "edits": 1,
+          "characters": 3,
+          "exact": 0
+        },
+        {
+          "fixture": "small-vertical",
+          "cases": [
+            {
+              "reference": "学校へ",
+              "predicted": "学校",
+              "edits": 1,
+              "characters": 3,
+              "exact": false
+            }
+          ],
+          "extraPredictions": [],
+          "edits": 1,
+          "characters": 3,
+          "exact": 0
+        },
+        {
+          "fixture": "sentence-horizontal",
+          "cases": [
+            {
+              "reference": "今日は学校に行きます。",
+              "predicted": "今日は学校に行きます。",
+              "edits": 0,
+              "characters": 11,
+              "exact": true
+            }
+          ],
+          "extraPredictions": [],
+          "edits": 0,
+          "characters": 11,
+          "exact": 1
+        },
+        {
+          "fixture": "sentence-vertical",
+          "cases": [
+            {
+              "reference": "無理はダメだよ",
+              "predicted": "無理はダメだよ",
+              "edits": 0,
+              "characters": 7,
+              "exact": true
+            }
+          ],
+          "extraPredictions": [],
+          "edits": 0,
+          "characters": 7,
+          "exact": 1
+        },
+        {
+          "fixture": "small-font",
+          "cases": [
+            {
+              "reference": "食べました。",
+              "predicted": "食べました。",
+              "edits": 0,
+              "characters": 6,
+              "exact": true
+            }
+          ],
+          "extraPredictions": [],
+          "edits": 0,
+          "characters": 6,
+          "exact": 1
+        },
+        {
+          "fixture": "low-contrast",
+          "cases": [
+            {
+              "reference": "お兄ちゃん、待って！",
+              "predicted": "兄ちゃん、は",
+              "edits": 5,
+              "characters": 10,
+              "exact": false
+            }
+          ],
+          "extraPredictions": [],
+          "edits": 5,
+          "characters": 10,
+          "exact": 0
+        },
+        {
+          "fixture": "skew-horizontal",
+          "cases": [
+            {
+              "reference": "今日は学校に行きます。",
+              "predicted": "今日は学校に行きます。",
+              "edits": 0,
+              "characters": 11,
+              "exact": true
+            }
+          ],
+          "extraPredictions": [],
+          "edits": 0,
+          "characters": 11,
+          "exact": 1
+        },
+        {
+          "fixture": "mixed-page",
+          "cases": [
+            {
+              "reference": "今日は学校に行きます。",
+              "predicted": "今日は学校に行きます。",
+              "edits": 0,
+              "characters": 11,
+              "exact": true
+            },
+            {
+              "reference": "無理はダメだよ",
+              "predicted": "無理はダメだよ",
+              "edits": 0,
+              "characters": 7,
+              "exact": true
+            },
+            {
+              "reference": "食べました。",
+              "predicted": "食べました。",
+              "edits": 0,
+              "characters": 6,
+              "exact": true
+            }
+          ],
+          "extraPredictions": [],
+          "edits": 0,
+          "characters": 24,
+          "exact": 3
+        },
+        {
+          "fixture": "blank",
+          "cases": [],
+          "extraPredictions": [],
+          "edits": 0,
+          "characters": 0,
+          "exact": 0
+        },
+        {
+          "fixture": "sparse-page-14",
+          "cases": [
+            {
+              "reference": "学校へ",
+              "predicted": "学校へ",
+              "edits": 0,
+              "characters": 3,
+              "exact": true
+            }
+          ],
+          "extraPredictions": [],
+          "edits": 0,
+          "characters": 3,
+          "exact": 1
+        },
+        {
+          "fixture": "sparse-page-24",
+          "cases": [
+            {
+              "reference": "学校へ",
+              "predicted": "学校へ",
+              "edits": 0,
+              "characters": 3,
+              "exact": true
+            }
+          ],
+          "extraPredictions": [],
+          "edits": 0,
+          "characters": 3,
+          "exact": 1
+        },
+        {
+          "fixture": "sparse-page-40",
+          "cases": [
+            {
+              "reference": "学校へ",
+              "predicted": "学校へ",
+              "edits": 0,
+              "characters": 3,
+              "exact": true
+            }
+          ],
+          "extraPredictions": [],
+          "edits": 0,
+          "characters": 3,
+          "exact": 1
+        },
+        {
+          "fixture": "blank-large",
+          "cases": [],
+          "extraPredictions": [],
+          "edits": 0,
+          "characters": 0,
+          "exact": 0
+        }
+      ]
+    },
+    "optimized": {
+      "scans": 26,
+      "medianMs": {
+        "scanMs": 1001.3605419990199,
+        "detectMs": 876.8839579970518,
+        "recognizeMs": 115.94618749950314,
+        "forwardMs": 872.3076459973527,
+        "refineMs": 1.813980004953919
+      },
+      "perFixture": {
+        "small-horizontal": {
+          "scanMs": 986.1742289976974,
+          "detectMs": 829.6952290002082,
+          "recognizeMs": 155.56291699613212,
+          "detectCalls": 1.0,
+          "recognizeCalls": 2.0
+        },
+        "small-vertical": {
+          "scanMs": 992.1283964977192,
+          "detectMs": 835.5552914981672,
+          "recognizeMs": 155.66518750347313,
+          "detectCalls": 1.0,
+          "recognizeCalls": 2.0
+        },
+        "sentence-horizontal": {
+          "scanMs": 960.6666664985823,
+          "detectMs": 842.5999585015234,
+          "recognizeMs": 115.94618749950314,
+          "detectCalls": 1.0,
+          "recognizeCalls": 1.0
+        },
+        "sentence-vertical": {
+          "scanMs": 981.9763125015015,
+          "detectMs": 876.2553750020743,
+          "recognizeMs": 103.51110400006291,
+          "detectCalls": 1.0,
+          "recognizeCalls": 1.0
+        },
+        "small-font": {
+          "scanMs": 989.2376045027049,
+          "detectMs": 885.5255415001011,
+          "recognizeMs": 101.85743750116671,
+          "detectCalls": 1.0,
+          "recognizeCalls": 1.0
+        },
+        "low-contrast": {
+          "scanMs": 1093.4750209999038,
+          "detectMs": 866.8168329968466,
+          "recognizeMs": 223.7723959988216,
+          "detectCalls": 1.0,
+          "recognizeCalls": 3.0
+        },
+        "skew-horizontal": {
+          "scanMs": 1020.9635625033116,
+          "detectMs": 891.6861875004543,
+          "recognizeMs": 126.63006250295439,
+          "detectCalls": 1.0,
+          "recognizeCalls": 1.0
+        },
+        "mixed-page": {
+          "scanMs": 4848.480332999316,
+          "detectMs": 4486.723791993427,
+          "recognizeMs": 334.9488755084167,
+          "detectCalls": 5.0,
+          "recognizeCalls": 3.0
+        },
+        "blank": {
+          "scanMs": 5.932791504164925,
+          "detectMs": 0.0,
+          "recognizeMs": 0.0,
+          "detectCalls": 0.0,
+          "recognizeCalls": 0.0
+        },
+        "sparse-page-14": {
+          "scanMs": 2013.1064994966437,
+          "detectMs": 1879.683125000156,
+          "recognizeMs": 96.38870849448722,
+          "detectCalls": 2.0,
+          "recognizeCalls": 1.0
+        },
+        "sparse-page-24": {
+          "scanMs": 2004.522603998339,
+          "detectMs": 1875.9974585009331,
+          "recognizeMs": 97.87872949891607,
+          "detectCalls": 2.0,
+          "recognizeCalls": 1.0
+        },
+        "sparse-page-40": {
+          "scanMs": 2206.531937499676,
+          "detectMs": 2048.2341880015156,
+          "recognizeMs": 124.75095850095386,
+          "detectCalls": 2.0,
+          "recognizeCalls": 1.0
+        },
+        "blank-large": {
+          "scanMs": 24.421937501756474,
+          "detectMs": 0.0,
+          "recognizeMs": 0.0,
+          "detectCalls": 0.0,
+          "recognizeCalls": 0.0
+        }
+      },
+      "changedFixtures": [],
+      "pipelineText": {
+        "exact": 10,
+        "regions": 13,
+        "edits": 7,
+        "characters": 84,
+        "characterErrorRate": 0.08333333333333333
+      },
+      "geometry": {
+        "small-horizontal": {
+          "truePositive": 1,
+          "falsePositive": 0,
+          "falseNegative": 0,
+          "correctOrientation": 1
+        },
+        "small-vertical": {
+          "truePositive": 1,
+          "falsePositive": 0,
+          "falseNegative": 0,
+          "correctOrientation": 0
+        },
+        "sentence-horizontal": {
+          "truePositive": 1,
+          "falsePositive": 0,
+          "falseNegative": 0,
+          "correctOrientation": 1
+        },
+        "sentence-vertical": {
+          "truePositive": 1,
+          "falsePositive": 0,
+          "falseNegative": 0,
+          "correctOrientation": 1
+        },
+        "small-font": {
+          "truePositive": 1,
+          "falsePositive": 0,
+          "falseNegative": 0,
+          "correctOrientation": 1
+        },
+        "low-contrast": {
+          "truePositive": 0,
+          "falsePositive": 2,
+          "falseNegative": 1,
+          "correctOrientation": 0
+        },
+        "skew-horizontal": {
+          "truePositive": 1,
+          "falsePositive": 0,
+          "falseNegative": 0,
+          "correctOrientation": 1
+        },
+        "mixed-page": {
+          "truePositive": 3,
+          "falsePositive": 0,
+          "falseNegative": 0,
+          "correctOrientation": 3
+        },
+        "blank": {
+          "truePositive": 0,
+          "falsePositive": 0,
+          "falseNegative": 0,
+          "correctOrientation": 0
+        },
+        "sparse-page-14": {
+          "truePositive": 1,
+          "falsePositive": 0,
+          "falseNegative": 0,
+          "correctOrientation": 1
+        },
+        "sparse-page-24": {
+          "truePositive": 1,
+          "falsePositive": 0,
+          "falseNegative": 0,
+          "correctOrientation": 1
+        },
+        "sparse-page-40": {
+          "truePositive": 1,
+          "falsePositive": 0,
+          "falseNegative": 0,
+          "correctOrientation": 1
+        },
+        "blank-large": {
+          "truePositive": 0,
+          "falsePositive": 0,
+          "falseNegative": 0,
+          "correctOrientation": 0
+        }
+      },
+      "textCases": [
+        {
+          "fixture": "small-horizontal",
+          "cases": [
+            {
+              "reference": "学校へ",
+              "predicted": "学校",
+              "edits": 1,
+              "characters": 3,
+              "exact": false
+            }
+          ],
+          "extraPredictions": [],
+          "edits": 1,
+          "characters": 3,
+          "exact": 0
+        },
+        {
+          "fixture": "small-vertical",
+          "cases": [
+            {
+              "reference": "学校へ",
+              "predicted": "学校",
+              "edits": 1,
+              "characters": 3,
+              "exact": false
+            }
+          ],
+          "extraPredictions": [],
+          "edits": 1,
+          "characters": 3,
+          "exact": 0
+        },
+        {
+          "fixture": "sentence-horizontal",
+          "cases": [
+            {
+              "reference": "今日は学校に行きます。",
+              "predicted": "今日は学校に行きます。",
+              "edits": 0,
+              "characters": 11,
+              "exact": true
+            }
+          ],
+          "extraPredictions": [],
+          "edits": 0,
+          "characters": 11,
+          "exact": 1
+        },
+        {
+          "fixture": "sentence-vertical",
+          "cases": [
+            {
+              "reference": "無理はダメだよ",
+              "predicted": "無理はダメだよ",
+              "edits": 0,
+              "characters": 7,
+              "exact": true
+            }
+          ],
+          "extraPredictions": [],
+          "edits": 0,
+          "characters": 7,
+          "exact": 1
+        },
+        {
+          "fixture": "small-font",
+          "cases": [
+            {
+              "reference": "食べました。",
+              "predicted": "食べました。",
+              "edits": 0,
+              "characters": 6,
+              "exact": true
+            }
+          ],
+          "extraPredictions": [],
+          "edits": 0,
+          "characters": 6,
+          "exact": 1
+        },
+        {
+          "fixture": "low-contrast",
+          "cases": [
+            {
+              "reference": "お兄ちゃん、待って！",
+              "predicted": "兄ちゃん、は",
+              "edits": 5,
+              "characters": 10,
+              "exact": false
+            }
+          ],
+          "extraPredictions": [],
+          "edits": 5,
+          "characters": 10,
+          "exact": 0
+        },
+        {
+          "fixture": "skew-horizontal",
+          "cases": [
+            {
+              "reference": "今日は学校に行きます。",
+              "predicted": "今日は学校に行きます。",
+              "edits": 0,
+              "characters": 11,
+              "exact": true
+            }
+          ],
+          "extraPredictions": [],
+          "edits": 0,
+          "characters": 11,
+          "exact": 1
+        },
+        {
+          "fixture": "mixed-page",
+          "cases": [
+            {
+              "reference": "今日は学校に行きます。",
+              "predicted": "今日は学校に行きます。",
+              "edits": 0,
+              "characters": 11,
+              "exact": true
+            },
+            {
+              "reference": "無理はダメだよ",
+              "predicted": "無理はダメだよ",
+              "edits": 0,
+              "characters": 7,
+              "exact": true
+            },
+            {
+              "reference": "食べました。",
+              "predicted": "食べました。",
+              "edits": 0,
+              "characters": 6,
+              "exact": true
+            }
+          ],
+          "extraPredictions": [],
+          "edits": 0,
+          "characters": 24,
+          "exact": 3
+        },
+        {
+          "fixture": "blank",
+          "cases": [],
+          "extraPredictions": [],
+          "edits": 0,
+          "characters": 0,
+          "exact": 0
+        },
+        {
+          "fixture": "sparse-page-14",
+          "cases": [
+            {
+              "reference": "学校へ",
+              "predicted": "学校へ",
+              "edits": 0,
+              "characters": 3,
+              "exact": true
+            }
+          ],
+          "extraPredictions": [],
+          "edits": 0,
+          "characters": 3,
+          "exact": 1
+        },
+        {
+          "fixture": "sparse-page-24",
+          "cases": [
+            {
+              "reference": "学校へ",
+              "predicted": "学校へ",
+              "edits": 0,
+              "characters": 3,
+              "exact": true
+            }
+          ],
+          "extraPredictions": [],
+          "edits": 0,
+          "characters": 3,
+          "exact": 1
+        },
+        {
+          "fixture": "sparse-page-40",
+          "cases": [
+            {
+              "reference": "学校へ",
+              "predicted": "学校へ",
+              "edits": 0,
+              "characters": 3,
+              "exact": true
+            }
+          ],
+          "extraPredictions": [],
+          "edits": 0,
+          "characters": 3,
+          "exact": 1
+        },
+        {
+          "fixture": "blank-large",
+          "cases": [],
+          "extraPredictions": [],
+          "edits": 0,
+          "characters": 0,
+          "exact": 0
+        }
+      ]
+    },
+    "no-tiles": {
+      "scans": 26,
+      "medianMs": {
+        "scanMs": 1009.4696664964431,
+        "detectMs": 889.525541500916,
+        "recognizeMs": 117.51927049772348,
+        "forwardMs": 880.9459584990691,
+        "refineMs": 1.1402085001464002
+      },
+      "perFixture": {
+        "small-horizontal": {
+          "scanMs": 988.8266040034068,
+          "detectMs": 833.0704374966444,
+          "recognizeMs": 154.92918800009647,
+          "detectCalls": 1.0,
+          "recognizeCalls": 2.0
+        },
+        "small-vertical": {
+          "scanMs": 999.4024164952862,
+          "detectMs": 842.5485210027546,
+          "recognizeMs": 156.0566874977667,
+          "detectCalls": 1.0,
+          "recognizeCalls": 2.0
+        },
+        "sentence-horizontal": {
+          "scanMs": 966.2705000046117,
+          "detectMs": 846.8595210033527,
+          "recognizeMs": 117.51927049772348,
+          "detectCalls": 1.0,
+          "recognizeCalls": 1.0
+        },
+        "sentence-vertical": {
+          "scanMs": 970.3348749972065,
+          "detectMs": 864.5659370013163,
+          "recognizeMs": 103.90779199951794,
+          "detectCalls": 1.0,
+          "recognizeCalls": 1.0
+        },
+        "small-font": {
+          "scanMs": 986.8423334992258,
+          "detectMs": 884.4945210003061,
+          "recognizeMs": 100.77197949794936,
+          "detectCalls": 1.0,
+          "recognizeCalls": 1.0
+        },
+        "low-contrast": {
+          "scanMs": 1107.0836460021383,
+          "detectMs": 867.566603999876,
+          "recognizeMs": 237.0281459952821,
+          "detectCalls": 1.0,
+          "recognizeCalls": 3.0
+        },
+        "skew-horizontal": {
+          "scanMs": 1006.5535834983166,
+          "detectMs": 882.9353954970429,
+          "recognizeMs": 121.32104149713996,
+          "detectCalls": 1.0,
+          "recognizeCalls": 1.0
+        },
+        "mixed-page": {
+          "scanMs": 1246.6134794995014,
+          "detectMs": 900.533499501762,
+          "recognizeMs": 331.6718125024636,
+          "detectCalls": 1.0,
+          "recognizeCalls": 3.0
+        },
+        "blank": {
+          "scanMs": 931.1523955002485,
+          "detectMs": 926.3838125007169,
+          "recognizeMs": 0.0,
+          "detectCalls": 1.0,
+          "recognizeCalls": 0.0
+        },
+        "sparse-page-14": {
+          "scanMs": 1029.67689599609,
+          "detectMs": 924.9366664989793,
+          "recognizeMs": 91.41047850062023,
+          "detectCalls": 1.0,
+          "recognizeCalls": 1.0
+        },
+        "sparse-page-24": {
+          "scanMs": 1041.963666499214,
+          "detectMs": 930.5762500007404,
+          "recognizeMs": 97.82672949950211,
+          "detectCalls": 1.0,
+          "recognizeCalls": 1.0
+        },
+        "sparse-page-40": {
+          "scanMs": 1192.5887289980892,
+          "detectMs": 1048.75843750051,
+          "recognizeMs": 129.0814585008775,
+          "detectCalls": 1.0,
+          "recognizeCalls": 1.0
+        },
+        "blank-large": {
+          "scanMs": 1171.2380419994588,
+          "detectMs": 1153.4627495020686,
+          "recognizeMs": 0.0,
+          "detectCalls": 1.0,
+          "recognizeCalls": 0.0
+        }
+      },
+      "changedFixtures": [],
+      "pipelineText": {
+        "exact": 10,
+        "regions": 13,
+        "edits": 7,
+        "characters": 84,
+        "characterErrorRate": 0.08333333333333333
+      },
+      "geometry": {
+        "small-horizontal": {
+          "truePositive": 1,
+          "falsePositive": 0,
+          "falseNegative": 0,
+          "correctOrientation": 1
+        },
+        "small-vertical": {
+          "truePositive": 1,
+          "falsePositive": 0,
+          "falseNegative": 0,
+          "correctOrientation": 0
+        },
+        "sentence-horizontal": {
+          "truePositive": 1,
+          "falsePositive": 0,
+          "falseNegative": 0,
+          "correctOrientation": 1
+        },
+        "sentence-vertical": {
+          "truePositive": 1,
+          "falsePositive": 0,
+          "falseNegative": 0,
+          "correctOrientation": 1
+        },
+        "small-font": {
+          "truePositive": 1,
+          "falsePositive": 0,
+          "falseNegative": 0,
+          "correctOrientation": 1
+        },
+        "low-contrast": {
+          "truePositive": 0,
+          "falsePositive": 2,
+          "falseNegative": 1,
+          "correctOrientation": 0
+        },
+        "skew-horizontal": {
+          "truePositive": 1,
+          "falsePositive": 0,
+          "falseNegative": 0,
+          "correctOrientation": 1
+        },
+        "mixed-page": {
+          "truePositive": 3,
+          "falsePositive": 0,
+          "falseNegative": 0,
+          "correctOrientation": 3
+        },
+        "blank": {
+          "truePositive": 0,
+          "falsePositive": 0,
+          "falseNegative": 0,
+          "correctOrientation": 0
+        },
+        "sparse-page-14": {
+          "truePositive": 1,
+          "falsePositive": 0,
+          "falseNegative": 0,
+          "correctOrientation": 1
+        },
+        "sparse-page-24": {
+          "truePositive": 1,
+          "falsePositive": 0,
+          "falseNegative": 0,
+          "correctOrientation": 1
+        },
+        "sparse-page-40": {
+          "truePositive": 1,
+          "falsePositive": 0,
+          "falseNegative": 0,
+          "correctOrientation": 1
+        },
+        "blank-large": {
+          "truePositive": 0,
+          "falsePositive": 0,
+          "falseNegative": 0,
+          "correctOrientation": 0
+        }
+      },
+      "textCases": [
+        {
+          "fixture": "small-horizontal",
+          "cases": [
+            {
+              "reference": "学校へ",
+              "predicted": "学校",
+              "edits": 1,
+              "characters": 3,
+              "exact": false
+            }
+          ],
+          "extraPredictions": [],
+          "edits": 1,
+          "characters": 3,
+          "exact": 0
+        },
+        {
+          "fixture": "small-vertical",
+          "cases": [
+            {
+              "reference": "学校へ",
+              "predicted": "学校",
+              "edits": 1,
+              "characters": 3,
+              "exact": false
+            }
+          ],
+          "extraPredictions": [],
+          "edits": 1,
+          "characters": 3,
+          "exact": 0
+        },
+        {
+          "fixture": "sentence-horizontal",
+          "cases": [
+            {
+              "reference": "今日は学校に行きます。",
+              "predicted": "今日は学校に行きます。",
+              "edits": 0,
+              "characters": 11,
+              "exact": true
+            }
+          ],
+          "extraPredictions": [],
+          "edits": 0,
+          "characters": 11,
+          "exact": 1
+        },
+        {
+          "fixture": "sentence-vertical",
+          "cases": [
+            {
+              "reference": "無理はダメだよ",
+              "predicted": "無理はダメだよ",
+              "edits": 0,
+              "characters": 7,
+              "exact": true
+            }
+          ],
+          "extraPredictions": [],
+          "edits": 0,
+          "characters": 7,
+          "exact": 1
+        },
+        {
+          "fixture": "small-font",
+          "cases": [
+            {
+              "reference": "食べました。",
+              "predicted": "食べました。",
+              "edits": 0,
+              "characters": 6,
+              "exact": true
+            }
+          ],
+          "extraPredictions": [],
+          "edits": 0,
+          "characters": 6,
+          "exact": 1
+        },
+        {
+          "fixture": "low-contrast",
+          "cases": [
+            {
+              "reference": "お兄ちゃん、待って！",
+              "predicted": "兄ちゃん、は",
+              "edits": 5,
+              "characters": 10,
+              "exact": false
+            }
+          ],
+          "extraPredictions": [],
+          "edits": 5,
+          "characters": 10,
+          "exact": 0
+        },
+        {
+          "fixture": "skew-horizontal",
+          "cases": [
+            {
+              "reference": "今日は学校に行きます。",
+              "predicted": "今日は学校に行きます。",
+              "edits": 0,
+              "characters": 11,
+              "exact": true
+            }
+          ],
+          "extraPredictions": [],
+          "edits": 0,
+          "characters": 11,
+          "exact": 1
+        },
+        {
+          "fixture": "mixed-page",
+          "cases": [
+            {
+              "reference": "今日は学校に行きます。",
+              "predicted": "今日は学校に行きます。",
+              "edits": 0,
+              "characters": 11,
+              "exact": true
+            },
+            {
+              "reference": "無理はダメだよ",
+              "predicted": "無理はダメだよ",
+              "edits": 0,
+              "characters": 7,
+              "exact": true
+            },
+            {
+              "reference": "食べました。",
+              "predicted": "食べました。",
+              "edits": 0,
+              "characters": 6,
+              "exact": true
+            }
+          ],
+          "extraPredictions": [],
+          "edits": 0,
+          "characters": 24,
+          "exact": 3
+        },
+        {
+          "fixture": "blank",
+          "cases": [],
+          "extraPredictions": [],
+          "edits": 0,
+          "characters": 0,
+          "exact": 0
+        },
+        {
+          "fixture": "sparse-page-14",
+          "cases": [
+            {
+              "reference": "学校へ",
+              "predicted": "学校へ",
+              "edits": 0,
+              "characters": 3,
+              "exact": true
+            }
+          ],
+          "extraPredictions": [],
+          "edits": 0,
+          "characters": 3,
+          "exact": 1
+        },
+        {
+          "fixture": "sparse-page-24",
+          "cases": [
+            {
+              "reference": "学校へ",
+              "predicted": "学校へ",
+              "edits": 0,
+              "characters": 3,
+              "exact": true
+            }
+          ],
+          "extraPredictions": [],
+          "edits": 0,
+          "characters": 3,
+          "exact": 1
+        },
+        {
+          "fixture": "sparse-page-40",
+          "cases": [
+            {
+              "reference": "学校へ",
+              "predicted": "学校へ",
+              "edits": 0,
+              "characters": 3,
+              "exact": true
+            }
+          ],
+          "extraPredictions": [],
+          "edits": 0,
+          "characters": 3,
+          "exact": 1
+        },
+        {
+          "fixture": "blank-large",
+          "cases": [],
+          "extraPredictions": [],
+          "edits": 0,
+          "characters": 0,
+          "exact": 0
+        }
+      ]
+    }
+  },
+  "modelInputsVerifiedAfterTiming": {
+    "manga-ocr-base/config.json": "8c0e395de8fa699daaac21aee33a4ba9bd1309cfbff03147813d2a025f39f349",
+    "manga-ocr-base/preprocessor_config.json": "af4eb4d79cf61b47010fc0bc9352ee967579c417423b4917188d809b7e048948",
+    "manga-ocr-base/pytorch_model.bin": "c63e0bb5b3ff798c5991de18a8e0956c7ee6d1563aca6729029815eda6f5c2eb",
+    "manga-ocr-base/special_tokens_map.json": "303df45a03609e4ead04bc3dc1536d0ab19b5358db685b6f3da123d05ec200e3",
+    "manga-ocr-base/tokenizer_config.json": "d775ad1deac162dc56b84e9b8638f95ed8a1f263d0f56f4f40834e26e205e266",
+    "manga-ocr-base/vocab.txt": "344fbb6b8bf18c57839e924e2c9365434697e0227fac00b88bb4899b78aa594d",
+    "comictextdetector.pt.onnx": "1a86ace74961413cbd650002e7bb4dcec4980ffa21b2f19b86933372071d718f",
+    "comic-text-detector/inference.py": "5173c4e98efa4db2e230c783341875d3a0a68aeb9d001a207b283ce49f1644f2",
+    "comic-text-detector/basemodel.py": "0795a8e3903751d7b8c4a2e62083a743ae56327c85c50f6119e6becea7ceff77",
+    "comic-text-detector/utils/yolov5_utils.py": "62c72d7fa1529b8259cac5a21b93ba43a4c9fd32071f735678f8a95ee012571e",
+    "comic-text-detector/utils/db_utils.py": "60a9eec8160effe90d959ffbe643cacec9650fd6944578d187de2bd61bc1e899",
+    "comic-text-detector/utils/imgproc_utils.py": "a6940ea705d38830cd24114b924146d2cb1790663fdd42c2af26b2d6e8e95ae0",
+    "comic-text-detector/utils/textblock.py": "a15041d2803aa654dcf1ba1dae3b0c91c902f39676d3a3b31b7e28b94dc511f3",
+    "comic-text-detector/utils/textmask.py": "f233adecc2f478b19ef6aa374ec45b63e9fe534b40086687346b1c2279c21088",
+    "comic-text-detector/LICENSE": "3972dc9744f6499f0f9b2dbf76696f2ae7ad8af9b23dde66d6af86c9dfb36986"
+  },
+  "supportingSourceSha256": {
+    "services/ocr/app/pipeline/geometry.py": "e041135c85358bcf93c4e514e58e894923e1966a3a2bac72d9f0ef5412b818a5",
+    "services/ocr/app/pipeline/ocr_tokenizer.py": "77e5bc28342e5c5aabb166a1728c760d6620a792c94a2fa561809551188e7581"
+  },
+  "baselineDetectorShares": {
+    "forwardWrapperFraction": 0.9951813339628361,
+    "refineMaskFraction": 0.0013207205831010235,
+    "forwardScope": "blob construction plus OpenCV network forward; excludes outer detector pre/postprocessing"
+  },
+  "onnxSourceSmoke": {
+    "fixtures": 9,
+    "sameFullOutputs": true,
+    "blockedModulesLoaded": [],
+    "onnxruntime": "1.22.1",
+    "sha256": "2b862dd27d101aa1385794e42ef947c63db4822b46a1171a50dffe6afb499cea"
+  },
+  "evidenceSha256": {
+    "comparison.json": "5ad1d21061a35262a0a34948488f7bb08990ff3397333197afc7ebbca98e9235",
+    "measured-benchmark.py": "b8fd7c8c373bd327691782a605eb6f0f3d1142debdcd269d14127979af22d250",
+    "measured-candidate.py": "778cda6c23aa8cb6b76906c6405f33276ed47d16383f61902abf19880a1db6b6",
+    "baseline_real_ocr.py": "bc40af4c02d86fa5cc6586f3a1f73360c34cf829a6a03717d90a65702c4f2ba0"
+  },
+  "disabledTileAblationShipped": false,
+  "modelOrDependencyBundleChanged": false,
+  "publicationApproved": false
+}

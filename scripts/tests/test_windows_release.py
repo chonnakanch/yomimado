@@ -534,6 +534,8 @@ class WindowsReleaseTests(unittest.TestCase):
         self.assertFalse(target.with_name("target.download").exists())
 
     def resources(self):
+        import prepare_lindera
+
         notices = self.root / "notices"
         notices.mkdir()
         for name in [
@@ -550,6 +552,26 @@ class WindowsReleaseTests(unittest.TestCase):
         runtime.mkdir()
         exe = runtime / "yomimado-ocr.exe"
         exe.write_bytes(b"MZsynthetic")
+        # Keep native/inventory tests synthetic while exercising the new
+        # dictionary, notice and frozen-pin checks with real hashes.
+        word = self.root / "assets/lindera-ipadic/dict.words"
+        word.parent.mkdir(parents=True)
+        word.write_bytes(b"synthetic dictionary")
+        pins = {
+            "dictionary": {"files": {"dict.words": release.digest(word)}},
+            "noticeHashes": {},
+        }
+        original = self.root / "fixture-lindera-inputs.json"
+        release.write_json(original, pins)
+        (runtime / "_internal/app/tokenizer").mkdir(parents=True)
+        (notices / "lindera").mkdir()
+        shutil.copyfile(
+            original, runtime / "_internal/app/tokenizer/lindera-inputs.json"
+        )
+        shutil.copyfile(original, notices / "lindera/lindera-inputs.json")
+        pinned = patch.object(prepare_lindera, "INPUTS", original)
+        pinned.start()
+        self.addCleanup(pinned.stop)
         release.write_json(
             notices / "windows-inventory.json",
             {
@@ -566,6 +588,12 @@ class WindowsReleaseTests(unittest.TestCase):
             shutil.copy2(release.SERVICE / name, notices / name)
         release.seal_resources(self.root)
         return exe
+
+    def test_replaced_sudachi_resource_is_rejected(self):
+        self.resources()
+        (self.root / "runtime/_internal/SudachiPy-0.6.10.dist-info").mkdir()
+        with self.assertRaisesRegex(ValueError, "Sudachi resources remain"):
+            self.verify()
 
     def verify(self, machine="0x8664", **kwargs):
         with (
@@ -604,7 +632,7 @@ class WindowsReleaseTests(unittest.TestCase):
     def test_historical_manifest_does_not_skip_exact_asset_verification(self):
         self.resources()
         assets = self.root / "assets"
-        assets.mkdir()
+        assets.mkdir(exist_ok=True)
         asset = assets / "synthetic.txt"
         asset.write_text("synthetic asset")
         release.write_json(

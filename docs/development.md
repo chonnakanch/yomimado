@@ -2,18 +2,23 @@
 
 Run commands below from the repository root unless a `cd` is shown. The desktop
 requires Node.js, npm, Rust, and Tauri platform prerequisites. The development
-OCR service requires Python 3.9 or later; release builders use their pinned
+OCR service requires Python 3.10 or later; release builders use their pinned
 interpreters and dependencies.
 
 ## Start the app
 
-Start the OCR service in one terminal (Python 3.9+):
+The source and packaging recipes use Lindera/IPADIC for learning analysis.
+See the [migration report](lindera-migration.md) for measured differences from
+Sudachi and the remaining release checks. Published v0.1.0 evidence is historical.
+
+Start the OCR service in one terminal (Python 3.10+):
 
 ```sh
 cd services/ocr
 python3 -m venv .venv
 . .venv/bin/activate
 pip install -e '.[dev,tokenization]'
+python ../../scripts/prepare_lindera.py --download
 uvicorn app.main:app --reload --port 8765
 ```
 
@@ -41,6 +46,11 @@ Expand **Geometry** or **Detector stage** for coordinates, individual crops,
 recognitions and filter reasons. Medium and large captures receive a bounded retry on
 overlapping image tiles; duplicate boxes are merged, and the detector list
 labels tile results.
+Exactly uniform RGB captures and retry tiles skip model inference; any pixel
+variation retains the existing detection path. Debug retry counts reflect the
+nonuniform tiles attempted. Identical crop bounds can reuse recognition within
+one scan; results are never reused across captures. See the
+[retry/crop optimization measurements](detector-retry-optimization.md).
 Gray boxes were filtered; their reasons appear in the detector list. The first
 filter only removes nearly uniform crops and recognized text
 without Japanese characters. It does not reliably distinguish manga artwork
@@ -75,6 +85,7 @@ cd services/ocr
 py -3 -m venv .venv
 .\.venv\Scripts\Activate.ps1
 pip install -e '.[dev,tokenization]'
+python ../../scripts/prepare_lindera.py --download
 uvicorn app.main:app --reload --port 8765
 ```
 
@@ -106,11 +117,27 @@ outside this repository until their distribution terms are reviewed.
 
 ## Local translation model (optional)
 
+If Settings → Reading cannot connect to the local service, ensure the separate
+development service is running on port 8765. `npm run tauri dev` does not start
+that service. With the existing local experiment environment and resources, run
+`services/ocr/build/release-venv/bin/python scripts/dev_lindera_service.py` from
+the repository root in another terminal, then choose **Try again** in Settings.
+The launcher validates local OCR paths; it does not download or automatically
+activate a translation model. Installed release apps start their bundled service
+automatically.
+
+Translation weights are omitted from the installer. **Settings → Reading →
+Local translation** offers **Import local model** and **Ollama**. A fresh setup
+has no active translator. Import a compatible Marian folder or install/select a
+local model through Ollama. The old built-in/default model option is removed;
+`YOMIMADO_TRANSLATION_MODEL` alone no longer activates translation through the API.
+See [model selection and platform formats](translation-model-selection.md).
+
 The on-demand popup can translate Japanese text to English with the free,
 user-installed [Helsinki-NLP/opus-mt-ja-en](https://huggingface.co/Helsinki-NLP/opus-mt-ja-en)
 model. This is a baseline model, not a manga-specific or contextual translator.
 Neither model weights nor Japanese text are sent to a cloud translation service
-at runtime. No model is downloaded by YomiMado itself.
+at runtime. Ollama model downloads start only on an explicit user click.
 
 Install the optional Python dependencies in the OCR service environment and
 download the model to the git-ignored local model directory:
@@ -119,12 +146,13 @@ download the model to the git-ignored local model directory:
 cd services/ocr
 pip install -e '.[dev,translation]'
 hf download Helsinki-NLP/opus-mt-ja-en --local-dir ./local-models/opus-mt-ja-en
-export YOMIMADO_TRANSLATION_MODEL="$PWD/local-models/opus-mt-ja-en"
 uvicorn app.main:app --reload --port 8765
 ```
 
-The popup reports a setup error until the model and optional dependencies are
-available. Successful translations are cached locally in
+Choose **Import local model** in Settings and import that downloaded folder.
+Alternatively, run Ollama locally and use its model selection/download controls.
+The popup reports a setup error until a model is explicitly installed and
+selected. Successful translations are cached locally in
 `~/.cache/yomimado/translation.sqlite3` (override with
 `YOMIMADO_TRANSLATION_CACHE`). Only the selected Japanese text is sent from
 the desktop window to this loopback service; screenshots are not submitted for
@@ -143,18 +171,27 @@ can still exceed the upload byte limit.
 
 ## Japanese tokenization
 
-The `tokenization` Python extra installs pinned SudachiPy 0.6.10 and the
-Sudachi core dictionary 20250515. It works without a translation model or
-network service. The selected OCR string is sent to the local
+The `tokenization` Python extra installs pinned Lindera 6.0.0. The explicit
+`prepare_lindera.py --download` setup command stages its hash-verified IPADIC
+dictionary under `services/ocr/local-dictionaries/lindera-ipadic`. Supply a local
+archive with `--archive /absolute/path/lindera-ipadic-6.0.0.zip` for offline setup.
+The running app never downloads this resource. Override the directory with
+`YOMIMADO_LINDERA_DICTIONARY` if needed; arbitrary dictionary versions are rejected.
+Analysis works without a translation model or network service.
+The selected OCR string is sent to the local
 `POST /api/v1/tokenize` endpoint when its popup opens; edited text is analyzed
 again only when **Analyze words** is pressed. The endpoint preserves the exact
 input and returns Unicode code-point offsets for word tokens. It omits
 punctuation-only and symbol-only study tokens, while keeping punctuation in the
-source sentence for translation. Readings are displayed in Sudachi's katakana
+source sentence for translation. Readings are returned in IPADIC's katakana
 form. The popup offers precise word selection in the OCR text, not directly on
 the manga image; the detector currently provides region polygons, not
 per-character positions. If the extra is not installed, OCR and translation
 continue to work and the popup shows a tokenization setup error.
+
+For historical comparisons only, install `.[tokenization-baseline]` and select
+`YOMIMADO_TOKENIZER=sudachi` in a source service. Packaged services require Lindera
+and exclude Sudachi. Manga OCR's UniDic setup is separate and remains unchanged.
 
 ## Local word dictionary
 
@@ -170,7 +207,7 @@ It rebuilds the index when the source file changes. Refresh your local copy
 regularly from EDRDG; YomiMado does not download or silently update it.
 
 Selecting a word in the popup requests its possible JMdict senses from the
-local OCR service. Inflected words also try their Sudachi dictionary form.
+local OCR service. Inflected words also try their Lindera dictionary form.
 Multiple senses are shown because this lookup does not choose a meaning from
 sentence context. The separate **Translate locally** action remains optional.
 If JMdict is missing, the popup shows the expected setup path and other
@@ -225,7 +262,12 @@ tests, strict Clippy and debug compilation run on macOS and Windows with Rust
 
 Service CI uses Python 3.11.17 and
 [requirements-ci.txt](../scripts/requirements-ci.txt), with exact wheel hashes
-and all image/tokenizer dependencies installed. It rejects skipped service tests.
+and all image/tokenizer dependencies installed. It runs service tests alongside
+the model-free decoder-cache, scan-accuracy and benchmark-comparison contracts,
+using pytest so both unittest classes and pytest functions are collected. It
+rejects skipped tests across this combined suite. The tests use synthetic data
+and fake inference sessions; CI does not install Torch or inference models.
+CI explicitly prepares the pinned IPADIC dictionary before testing.
 The lock supports Ubuntu x64 CI and local macOS Apple Silicon verification;
 Linux is a test runner, not a supported desktop distribution. Dependency/source
 refresh and installed-runtime verification remain separate release work.

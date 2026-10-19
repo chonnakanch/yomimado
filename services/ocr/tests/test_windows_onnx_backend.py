@@ -51,6 +51,15 @@ def test_export_manifest_cannot_select_extra_or_escaping_files(tmp_path):
         backend.verified_exports(path.parent)
 
 
+def test_ocr_runs_without_optional_translation_graphs(tmp_path):
+    graphs(tmp_path / "onnx")
+    for name in ("translation-encoder.onnx", "translation-decoder.onnx"):
+        (tmp_path / "onnx" / name).unlink()
+    assert backend.verified_exports(tmp_path / "onnx", "ocr")
+    with pytest.raises(FileNotFoundError):
+        backend.verified_exports(tmp_path / "onnx", "translation")
+
+
 def test_translator_is_lazy_and_rejects_missing_configuration(monkeypatch):
     monkeypatch.delenv("YOMIMADO_TRANSLATION_MODEL", raising=False)
     provider = backend.WindowsOnnxTranslator()
@@ -86,7 +95,9 @@ def test_windows_assembly_preserves_routes_and_does_not_load_models(monkeypatch,
     routes = list(translation.router.routes)
     backend.configure_backend()
     assert real_ocr._models is backend.cpu_models
-    assert isinstance(translation.service.provider, backend.WindowsOnnxTranslator)
+    from app.translation_preferences import ConfiguredTranslationProvider
+
+    assert isinstance(translation.service.provider, ConfiguredTranslationProvider)
     assert translation.router.routes == routes
     assert telemetry == [False]
     assert backend.cpu_models.cache_info().currsize == 0

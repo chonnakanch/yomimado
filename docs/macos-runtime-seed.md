@@ -1,6 +1,48 @@
 # Verified macOS runtime seed
 
-## Current 0.2.0 preparation — 2026-10-16
+## Current 0.3.0 seed — 2026-10-19
+
+Exact reviewed source: `f1b4fbaa8980ff0df0a1abf6f5a93df058f4678e`.
+The owner explicitly approved the prepared source/license delivery as
+`chonnakanch` on 2026-10-19. See [the review record](macos-runtime-review-0.3.0.md).
+The complete app/all-native source-only rebuild remains unverified; source
+approval does not approve new installers or publication.
+
+Private label: `macos-reviewed-seed-f1b4fba`. The [saved draft](https://github.com/chonnakanch/yomimado/releases/tag/untagged-fd2993054a279c9bf1ae)
+remains unpublished and targets the exact source commit. Independent signed-in
+browser inspection confirms exactly four uploaded assets and all SHA-256 values
+below. The runtime-reuse guard remains enforced; only these verified pins are
+activated. The optional translation ZIP is transferred separately from the DMG
+and checked against its embedded component manifest for smoke and packaging.
+
+| Input                                   | SHA-256                                                            |
+| --------------------------------------- | ------------------------------------------------------------------ |
+| `YomiMado_0.3.0_aarch64.dmg`            | `45175e90fcb116a9c8ac3b910f6b15a4bec8e436db94a97f09eada087d88f8eb` |
+| `YomiMado_0.3.0_notices_f1b4fba.tar.gz` | `9c124cf7803f0de74a69873638825ca3ac194043b5722da9c04f59b8b39d462c` |
+| `YomiMado_0.3.0_sources_f1b4fba.tar.gz` | `3d70eef8361bead6b48d056c1d8c9dd71c90bedbd64ad2dcbb9b42d4b788ceb5` |
+| `YomiMado_0.3.0_translation_torch.zip`  | `e1c6a0ae58777d1eb4e8085eddff7a908fe0035e95c82178707178b7690434ef` |
+
+The source delivery covers 476 entries across 76 archives and 112 unique native
+inputs. Lindera replaces Sudachi/Fugashi; all nine generated IPADIC files rebuild
+byte for byte. Independent filtering checks compare 163,760 retained source files
+without code/notice changes. All 29 frozen app modules match the approved source.
+Mounted source/signature/platform checks and frozen offline OCR, dictionary,
+translation and saved-data/cache restart smoke pass. The new source-approved seed
+DMG has its own hash, separate from the earlier private test installer.
+
+Local evidence: ignored `services/ocr/build/release-0.3.0/`, including
+`source-prepared/`, `seed-reviewed/`, `seed-artifacts.json` and
+`browser-verified-inputs.json`. Windows dictionary bytes/pins are unchanged.
+Real release builds, exact-installer owner checks and protected publication remain
+separate. Historical seed approvals and hashes follow.
+
+### Historical migration note — 2026-10-18
+
+The Lindera migration invalidated reuse of the old seed below. Its guard correctly
+rejected changed tokenizer/dictionary inputs; the fresh reviewed seed above now
+covers those changes. See the [migration report](lindera-migration.md).
+
+## Historical 0.2.0 preparation — 2026-10-16
 
 Replacement source revision: `fae4d286619543014edb8aff6302fd3c864783a1`.
 The owner explicitly approved the refreshed **source/licence delivery only**, as

@@ -9,6 +9,7 @@ from pathlib import Path
 import jaconv
 import numpy as np
 import onnxruntime as ort
+from app.pipeline.ocr_tokenizer import load_ocr_tokenizer
 from onnx_generation import Policy, beam_search
 from PIL import Image
 from transformers import AutoTokenizer, ViTImageProcessor
@@ -26,9 +27,7 @@ class OnnxRecognizer:
         self.encoder = session(exported / "ocr-encoder.onnx")
         self.decoder = session(exported / "ocr-decoder.onnx")
         self.processor = ViTImageProcessor.from_pretrained(model, local_files_only=True)
-        self.tokenizer = AutoTokenizer.from_pretrained(
-            model, tokenizer_type="bert-japanese", local_files_only=True
-        )
+        self.tokenizer = load_ocr_tokenizer(model)
         config = json.loads((exported / "policies.json").read_text(encoding="utf-8"))[
             "ocr"
         ]

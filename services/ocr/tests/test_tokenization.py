@@ -1,8 +1,8 @@
-import pytest
 from fastapi.testclient import TestClient
 
 from app.main import app
-from app.tokenizer.sudachi import SudachiTokenizer, _offsets
+from app.tokenizer.lindera import LinderaTokenizer
+from app.tokenizer.sudachi import _offsets
 
 client = TestClient(app, base_url="http://127.0.0.1", headers={"X-YomiMado-Client": "desktop"})
 
@@ -14,10 +14,8 @@ def test_offsets_accept_original_character_and_utf8_byte_indices() -> None:
 
 
 def test_tokenize_preserves_text_offsets_and_skips_symbol_only_tokens() -> None:
-    pytest.importorskip("sudachipy")
-    pytest.importorskip("sudachidict_core")
     text = "今日は学校に行きたくない。🙂!?"
-    tokens = SudachiTokenizer().tokenize(text)
+    tokens = LinderaTokenizer().tokenize(text)
 
     assert all(text[token.start : token.end] == token.surface for token in tokens)
     assert tokens[0].reading == "キョウ"
@@ -25,13 +23,11 @@ def test_tokenize_preserves_text_offsets_and_skips_symbol_only_tokens() -> None:
     assert not any(token.surface in {"。", "🙂", "!", "?"} for token in tokens)
     assert all(token.partOfSpeech for token in tokens)
 
-    emoji_first = SudachiTokenizer().tokenize("🙂学校")
+    emoji_first = LinderaTokenizer().tokenize("🙂学校")
     assert next(token for token in emoji_first if token.surface == "学校").start == 1
 
 
 def test_tokenize_endpoint_returns_original_text_and_structured_tokens() -> None:
-    pytest.importorskip("sudachipy")
-    pytest.importorskip("sudachidict_core")
     text = "学校に行く。!?"
     response = client.post("/api/v1/tokenize", json={"text": text})
 

@@ -1,0 +1,6 @@
+# Optional macOS ARM64 / CPython 3.11 benchmark inputs, not release dependencies.
+# Existing Sudachi/Fugashi/UniDic and isolated Lindera inputs remain separately pinned.
+vaporetto==0.3.3 \
+    --hash=sha256:077560b692a105b8326afb5bc243f7123e2a320832e299f5eb28f1f8ef9204b4
+zstandard==0.25.0 \
+    --hash=sha256:a3f79487c687b1fc69f19e487cd949bf3aae653d181dfb5fde3bf6d18894706f

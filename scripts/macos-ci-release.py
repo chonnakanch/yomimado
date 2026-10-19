@@ -17,7 +17,7 @@ import tarfile
 import tomllib
 from pathlib import Path
 
-SEED_REVISION = "fae4d286619543014edb8aff6302fd3c864783a1"
+SEED_REVISION = "f1b4fbaa8980ff0df0a1abf6f5a93df058f4678e"
 ROOT = Path(__file__).resolve().parent.parent
 
 
@@ -333,6 +333,15 @@ def package(directory: Path, sources: Path, notices: Path) -> dict:
         prefix + "_sources.tar.gz",
         prefix + "_notices.tar.gz",
     ]
+    component = notices / "translation-component.json"
+    if component.is_file():
+        from translation_component import copy_component
+
+        names.append(
+            copy_component(
+                component, ROOT / "services/ocr/build/translation-components", directory
+            )
+        )
     assets = {name: digest(directory / name) for name in names}
     record = {
         "sourceRevision": revision,
@@ -343,6 +352,8 @@ def package(directory: Path, sources: Path, notices: Path) -> dict:
         "installedAppVerified": False,
         "assets": assets,
     }
+    if component.is_file():
+        record["optionalTranslation"] = True
     for name, checksum in assets.items():
         (directory / (name + ".sha256")).write_text(f"{checksum}  {name}\n")
     write_json(directory / "release-candidate.json", record)
@@ -355,6 +366,8 @@ def verify_artifact(directory: Path, expected: dict) -> None:
         prefix + suffix
         for suffix in ("_aarch64.dmg", "_sources.tar.gz", "_notices.tar.gz")
     }
+    if expected.get("optionalTranslation") is True:
+        names.add(prefix + "_translation_torch.zip")
     if (
         set(expected["assets"]) != names
         or expected["tag"] != "v" + expected["version"]

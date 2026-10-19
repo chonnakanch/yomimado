@@ -2,6 +2,216 @@
 
 ## Current status
 
+**Version 0.3.0 release preparation — 2026-10-18:** the owner requests the
+version bump, merge into protected `main` and new release. App/npm/Tauri/Cargo
+versions agree on `0.3.0`; release notes describe Lindera, smaller OCR resources,
+user-installed translation and conservative scan work avoidance. The request
+authorizes preparation and protected-main integration. The old macOS runtime
+seed still rejects these changed inputs; new corresponding-source/native review
+and a verified replacement seed are required before its release build. Native
+Windows verification will use the real installer build, as requested. Exact
+installer acceptance and protected publication remain separate; no new hash or
+source approval is inferred from previous private tests.
+
+**Private packaging and real-page verification — 2026-10-18:** fresh macOS
+candidate `907636e` passes mounted/platform/signature verification, all 29 frozen
+application modules match source, and copied-app OCR/Lindera/dictionaries work
+without translation installed. Explicit Marian import and saved-data/cache restart
+pass. The native app starts its own service with isolated fresh app data, shows
+the unconfigured translation state and quits cleanly. Actual DMG/app file content
+is 625.63/1,205.22 MiB, versus 999.39/1,907.15 MiB for the retained older private
+test DMG. A rejected first build exposed obsolete Sudachi metadata; shared cleanup
+now fixes it, with 265 release-tool tests passing. Twenty-four alternating scans
+on one owner-selected manga screenshot and five variants/crops preserve all six
+complete outputs; the frozen app reproduces them. Dense-page speed is similar;
+existing merging/contrast/crop failures remain. Native Windows installers,
+runtime/source review and exact capture/installed acceptance remain open. No
+publication or seed approval changes. See the
+[evidence and limitations](resource-reduction-acceptance.md).
+
+The model-free CI service selection now includes the component/packaging regression
+suite: all 187 selected tests pass without skips. Workflow syntax checks pass;
+required gates, triggers, seed access and publication behavior are unchanged.
+
+**CI regression coverage — 2026-10-18:** Checks now collects the model-free
+decoder-cache and scan/benchmark metric suites alongside the service tests.
+Explicit pytest configuration and script import paths collect both unittest
+classes and pytest functions. A clean Python 3.11.17 environment using the
+existing hashed CI lock passes all 184 combined tests without skips, with no
+Torch, Manga OCR, ONNX Runtime or Transformers installed. The three existing
+release-gate suites pass 56 tests, and pinned actionlint validates both workflows.
+Push/PR filters, required `gates`, permissions and Release remain unchanged;
+feature-branch verification uses the existing manual Checks dispatch. No model,
+runtime seed or installer changes are involved.
+
+**Priority 4: detector retries and crop reuse — 2026-10-18:** exactly uniform RGB
+captures/tiles skip inference, and identical crop bounds reuse recognition only
+within one scan. All content-bearing tiles retain the existing bounded recovery
+path. In 78 alternating synthetic benchmark scans (baseline, optimized and a
+non-shipped no-tiles ablation), optimized responses preserve complete baseline
+outputs. Sparse pages drop from five to two detector passes and about 4.75–5.49 s
+to 2.00–2.21 s; uniform images drop to 6–24 ms. The mixed page retains five
+passes and similar timing. Crop-cache correctness has focused checks; measured
+fixtures do not hit that cache. All 169 service and 264 tooling tests, Ruff and
+documentation checks pass; Torch-free ONNX source smoke preserves nine original
+outputs. Native Windows/new frozen installer acceptance remains pending. No model,
+dependency bundle, runtime seed or release artifact changes. See
+[measurements and limits](detector-retry-optimization.md).
+
+**Priority 3 follow-up: cached ONNX and CoreML — 2026-10-18:** 216 isolated
+synthetic scans preserve identical complete OCR outputs across Torch, full-prefix
+ONNX CPU, cached ONNX CPU and CoreML encoder/cached CPU decoder profiles. Cached
+CPU recognition improves from a pooled 692 ms to 396 ms, versus Torch's 196 ms;
+all 48 next-token cache/beam numerical comparisons pass. Shared decoder weights
+add only 93,293 model-file bytes. CoreML recognition reaches 153 ms pooled, but
+uses about 5.25 GiB peak RSS, generates a 1.545 GiB encoder cache and needs
+17–18 seconds to load the cached encoder. The cached decoder fails CoreML
+initialization on dynamic shapes. Keep the current production backend; cached
+CPU ONNX remains a migration candidate requiring frozen verification and Marian
+import compatibility. All 264 research/release-tool tests and script Ruff checks
+pass, including five new cache-boundary tests. See the
+[follow-up evidence and limits](macos-onnx-cache-coreml.md). No production provider,
+dependency lock, runtime seed or installer is changed.
+
+**Priority 3: macOS ONNX investigation — 2026-10-18:** an isolated CPU comparison
+and private ARM64 freeze demonstrate a 231.16 MiB runtime-plus-OCR-weights saving
+against the retained Torch runtime. All 108 synthetic source scans preserve the
+same complete OCR responses; frozen scans, Lindera and word/kanji lookup pass
+without Torch. The current full-prefix ONNX decoder is slower, and source-process
+peak RSS is higher. CoreML is available but was not measured. Removing Torch also
+requires a migration plan for user-imported Marian Torch models; Ollama remains
+independent. Keep the current macOS backend as default while investigating decoder
+caching and CoreML. See [measurements and limits](macos-onnx-investigation.md).
+All 262 research/release-tool tests, Ruff and documentation formatting pass;
+model/export hashes, fixture bytes and measured-script identity are verified.
+No production provider, dependency lock, runtime seed or installer is changed.
+
+**User-installed local translation only — 2026-10-18:** at the owner's request,
+the built-in model choice and download card are removed. A fresh setup offers
+only local-model import and Ollama, with clear installation guidance. Translation
+requires explicit selection; existing default selections become unconfigured
+while their model files remain intact. No environment-path or default-model
+fallback activates translation. Service checks cover this migration and the
+unconfigured API error; frontend checks confirm only the two user-installed
+sources and no default-model status/download requests. All 161 service and 187
+frontend tests and the frontend build pass. Candidate smoke scripts explicitly
+import their verified model fixture before translation. Historical release
+records/component tooling are retained; no installer/component is published.
+
+**User-selected translation models — 2026-10-18:** at the owner's request,
+Settings → Reading supports importing compatible local Marian models and choosing
+or explicitly downloading local Ollama text models. Imports are copied, hashed
+and load-checked before activation; failures preserve the previous choice.
+Selection persists and each request snapshots its provider to keep cache entries
+separate. Ollama requests use loopback only and reject cloud aliases. Source
+verification passes 159 service, 192 frontend and 70 native tests, frontend build
+and strict Clippy. Real Marian import/inference/cache smokes pass with Torch and
+the ONNX CPU path on macOS; the latter is not native Windows acceptance.
+Ollama is absent locally, so its API behavior uses controlled fixtures; real
+Ollama inference/download and native Windows installed acceptance remain pending.
+See [model selection](translation-model-selection.md). No installer/component was
+published or approved.
+
+**Translation setup connection recovery — 2026-10-18:** the owner's development
+Settings page showed “Checking translation setup…” alongside WebKit's “Load
+failed” because the separate local service was not running. Starting the existing
+development launcher returns `ready` for the owner's installed model. The UI now
+ends the checking state on failure, gives restart/retry guidance, allows reconnecting
+after a failed download poll, and retains install-request errors until retry.
+The ready state explains how to request a translation. All 185 frontend tests,
+the production frontend build and formatting checks pass. The running development
+Settings page also reports ready. Packaged installer acceptance and public model
+component delivery remain separate future release checks.
+
+**OCR resources and optional translation — 2026-10-18:** at the owner's request,
+OCR uses a shared decode-only tokenizer without UniDic/Fugashi in frozen
+runtimes. Local translation becomes an explicit Settings → Reading download,
+verified against packaged archive/file pins and installed atomically in app data.
+macOS Torch and Windows ONNX components remain separate from installers and are
+bound by a new eight-file release layout; historical layouts remain supported.
+All 127 service, 180 frontend, 259 release-tool and 70 Rust tests pass. A private
+frozen macOS service matches all nine previous synthetic OCR results, and the
+ONNX CPU source path passes without Torch/dictionary imports. Measured macOS
+runtime reduction is 249.11 MiB plus 292.20 MiB of optional model data. See the
+[implementation and evidence](optional-translation-and-ocr-size.md). Native
+Windows/installer acceptance, a fresh macOS seed and publication remain future
+release work; no installer/component was published or approved.
+
+**Lindera/IPADIC migration — 2026-10-18:** at the owner's request, Lindera 6.0.0
+is now the default learning tokenizer. Both packaging recipes and native service
+launchers use a separate hash-pinned IPADIC resource and exclude Sudachi. The
+dictionary saves 161.73 MiB before binding costs; the known segmentation tradeoff
+is accepted. The API injects an engine-independent `JapaneseTokenizer` port;
+Lindera and source-only Sudachi implement its existing token contract.
+All 113 service tests, 256 release-tool tests and a private frozen
+macOS HTTP smoke pass, including concurrent analysis, OCR geometry, word/kanji
+lookup and translation. See the [migration report](lindera-migration.md).
+Native Windows execution, a newly reviewed macOS runtime seed and exact installer
+acceptance remain future release work. No installer is published or approved.
+The investigation entries below record their earlier defaults and results.
+
+**All suggested tokenizer candidates compared — 2026-10-17:** seven local native
+profiles cover Core, Small, Lindera/IPADIC, MeCab/IPADIC, existing UniDic Lite and
+Vaporetto kana/pronunciation. All source spans pass over 53 shared sentences plus
+six stress cases. Across 24 focused learning targets, Core matches 23; Lindera
+and MeCab/IPADIC match 20, UniDic Lite 19, Small 18, and Vaporetto 5/1 because
+the selected models lack base forms and pronunciation differs from dictionary
+readings. The [report](tokenizer-candidate-comparison.md) records 9,275 warm calls,
+resource sizes, limitations and exact retained inputs/notices. Seven new boundary
+tests and all 17 existing tokenizer tests pass. No production provider, default,
+release input or installer changes.
+
+**SudachiPy investigation — 2026-10-17:** confirms the current baseline is already
+Rust-backed SudachiPy 0.6.10. A same-corpus 39-sentence benchmark adds hash-verified
+Sudachi Small 20250515: 117.25 MiB versus Core's 207.06 MiB and Lindera's 45.33 MiB;
+focused learning checks pass 7/8, 8/8 and 7/8 respectively. Small differs from
+Core on ten sentences; Lindera differs on twenty. All source offsets pass.
+The [report](sudachipy-investigation.md) separates tokenizer quality from image
+OCR, records newer-version compatibility and keeps the production default.
+Only the benchmark and documentation change; release inputs remain unchanged.
+
+**Scan performance comparison — 2026-10-17:** 90 synthetic CPU scans return
+identical OCR text/geometry with Sudachi and Lindera. Median service scan times
+are 836/840 ms; the mixed page takes 4.37/4.53 seconds with five detector passes.
+Both share seven exact pipeline strings out of ten, 9.3% character error rate
+and the short-kana/low-contrast failures; supplied true-crop recognition is
+10/10 exact. The [report](scan-performance-comparison.md) separates detector,
+recognizer and learning quality and discloses the small synthetic scope. Seven
+metric tests pass. This adds benchmark/evidence only; production OCR, runtime
+inputs and installer acceptance are unchanged.
+
+**Lindera development launch repair — 2026-10-17:** the tokenizer-only service
+example omitted OCR model paths, so page scanning received the demo engine and
+rejected it. `scripts/dev_lindera_service.py` now resolves existing local OCR,
+Lindera and learning assets independently of the terminal directory, checks the
+required paths and starts the full development service. Three launcher tests
+and a temporary-port real HTTP smoke pass horizontal/vertical OCR geometry,
+tokenization, word/kanji lookup and local translation. The
+[experiment guide](lindera-tokenizer-experiment.md) contains the corrected command.
+No packaged runtime, release input or installer evidence is changed.
+
+**Lindera development experiment — 2026-10-17:** branch
+`codex/lindera-tokenizer-experiment` adds an opt-in, hash-pinned Lindera 6.0.0/IPADIC
+adapter. Its 45.33 MiB dictionary saves 161.73 MiB versus Sudachi Core, before
+native package costs. Source offsets pass over 39 sentences; 20 have different
+words/readings/base forms. Lindera passes seven of eight focused learning checks
+versus Sudachi's eight; strict parity fails on the whole-word `お兄ちゃん` case.
+All 110 service tests, a 100-request concurrent native HTTP smoke and the frontend
+production build pass. See the [experiment](lindera-tokenizer-experiment.md).
+Sudachi remains the default. Release locks, reviewed runtime seeds and installer
+evidence are unchanged; Windows/frozen-service and release-source review remain.
+
+**Tokenizer resource investigation — 2026-10-17:** an isolated source probe
+preserves the 6,144-entry OCR vocabulary, 12,804 decoding cases, ten synthetic
+recognitions, tokenizer serialization and Sudachi learning analysis without
+UniDic/Fugashi imports. Sudachi Small `20250515` saves 89.81 MiB versus Core's
+dictionary but changes ten of 32 analyzed sentences, including `お兄ちゃん`.
+The [investigation](tokenizer-resource-investigation.md) recommends keeping Core
+and pursuing removal of the approximately 248.4 MiB UniDic dependency from OCR.
+Production code, dependency locks, runtime seeds and installer evidence are
+unchanged. Frozen services and native Windows ONNX parity remain unverified;
+this investigation does not complete a packaging/release milestone.
+
 **0.2.2 packaging repair — 2026-10-17:** [PR #12](https://github.com/chonnakanch/yomimado/pull/12)
 merged at `32b5117`, with all source gates passing. The macOS installer passes,
 but Windows packaging stops at a GitHub API rate limit while collecting three
@@ -1268,3 +1478,23 @@ test scope are recorded in [the Windows test record](windows-installed-test.md).
 This closes the reported missing-overlay regression on that Windows setup.
 Protected publication, exact macOS installer acceptance and untested hardware
 cases remain separate; no additional publication approval was supplied.
+
+### 0.3.0 source preparation — 2026-10-19
+
+- Retained all 399 original Lindera Cargo.lock registry crates and notices;
+  pinned missing notices, with source-content checks for three old non-VCS crates.
+- Rebuilt pinned IPADIC source to all nine identical generated files and retained
+  its original data terms, exact recipe and separate release notice.
+- Updated the technical native inventory for 112 inputs and the new notice
+  supplement. Human source-delivery approval, a fresh runtime seed, main merge,
+  real Windows release build and exact-installer publication gates remain pending.
+
+### 0.3.0 reviewed seed — 2026-10-19
+
+- Owner chonnakanch approved the exact 476-entry/76-archive source/license delivery.
+- The matching clean-source macOS seed passes mounted source/signature/platform
+  and frozen OCR/dictionary/translation/persistence smoke checks.
+- All four private draft uploads have matching independently observed SHA-256
+  values; activate matching CI pins, preserving the runtime dependency guard.
+- Main merge, real Windows release build, exact-installer owner checks and
+  protected publication remain pending. Full source-only rebuilding is unverified.

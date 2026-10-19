@@ -46,8 +46,6 @@ if ($Prepare) {
         # Prebuilt Torch remains export-only; no Torch source compilation occurs.
         Invoke-Checked $RuntimePython @('scripts/build-opencv-windows.py', (Join-Path $Service 'build/onnx-prototype/smoke-detector.onnx'))
         Invoke-Checked $Python @('scripts/windows_opencv_runtime.py', 'replace')
-        # Small binding only: retain its deliberately resolved offline Cargo graph.
-        Invoke-Checked $Python @('scripts/windows_sudachi_runtime.py', 'build')
     } else {
         Invoke-Checked $RuntimePython @('-m', 'venv', (Join-Path $Build 'venv'))
         # Installing local, hash-verified inputs must not consult an index or resolve.
@@ -61,6 +59,7 @@ if ($Prepare) {
 }
 if (-not (Test-Path $Python)) { throw 'Prepare the isolated Windows runtime first.' }
 $env:PYTHONPATH = $Service
+Invoke-Checked $Python @('scripts/prepare_lindera.py', '--download')
 Invoke-Checked $Python @('-m', 'pytest', 'services/ocr/tests')
 Invoke-Checked $Python @('-m', 'unittest', 'discover', '-s', 'scripts/tests', '-p', 'test_windows*.py')
 if (-not $Prepare) { Invoke-Checked $Python @('scripts/windows_nsis_plugin.py') }
@@ -69,7 +68,7 @@ Invoke-Checked $Python @('scripts/windows_webview_runtime.py', 'stage')
 Invoke-Checked cargo @('test', '--locked', '--manifest-path', 'apps/desktop/src-tauri/Cargo.toml')
 Invoke-Checked $Python @('scripts/windows_release.py', 'assets')
 $Detector = Join-Path $Resources 'assets/comic-text-detector'
-$Freeze = @('-m', 'PyInstaller', '--noconfirm', '--clean', '--onedir', '--console', '--name', 'yomimado-ocr', '--distpath', (Join-Path $Build 'dist'), '--workpath', (Join-Path $Build 'pyinstaller'), '--specpath', $Build, '--paths', $Service, '--paths', $Detector, '--hidden-import', 'backports.tarfile', '--collect-all', 'unidic_lite', '--collect-all', 'sudachidict_core')
+$Freeze = @('-m', 'PyInstaller', '--noconfirm', '--clean', '--onedir', '--console', '--name', 'yomimado-ocr', '--distpath', (Join-Path $Build 'dist'), '--workpath', (Join-Path $Build 'pyinstaller'), '--specpath', $Build, '--paths', $Service, '--paths', $Detector, '--hidden-import', 'backports.tarfile', '--exclude-module', 'unidic_lite', '--exclude-module', 'unidic', '--exclude-module', 'fugashi', '--exclude-module', 'MeCab', '--collect-all', 'lindera', '--add-data', ((Join-Path $Service 'app/tokenizer/lindera-inputs.json') + ';app/tokenizer'), '--exclude-module', 'app.tokenizer.sudachi', '--exclude-module', 'sudachipy', '--exclude-module', 'sudachidict_core')
 if ($Onnx) {
     $Baseline = Join-Path $Build 'onnx-baseline/Scripts/python.exe'
     $Assets = Join-Path $Resources 'assets'
@@ -95,6 +94,10 @@ if (Test-Path $Runtime) { Remove-Item $Runtime -Recurse -Force }
 Copy-Item (Join-Path $Build 'dist/yomimado-ocr') $Runtime -Recurse
 # Remove unused native codec extensions before inventory and exact installed smoke.
 Invoke-Checked $Python @('scripts/windows_release.py', 'prune')
+Invoke-Checked $Python @('scripts/translation_component.py', '--resources', $Resources, '--prune-ocr')
+$Version = (Get-Content (Join-Path $Root 'apps/desktop/src-tauri/tauri.conf.json') -Raw | ConvertFrom-Json).version
+$TranslationBackend = if ($Onnx) { 'onnx' } else { 'torch' }
+Invoke-Checked $Python @('scripts/translation_component.py', '--resources', $Resources, '--output', (Join-Path $Build 'translation-components'), '--version', $Version, '--backend', $TranslationBackend)
 Invoke-Checked $Python @('scripts/windows_vc_runtime.py', 'stage')
 if (-not $Onnx) { Invoke-Checked $Python @('scripts/create-manga-ocr-warmup.py', (Join-Path $Runtime '_internal/manga_ocr/assets/example.jpg')) }
 $Notices = Join-Path $Resources 'notices'
@@ -110,7 +113,6 @@ Copy-Item (Join-Path $Build 'python-build.json') $Notices
 Copy-Item (Join-Path $Root 'docs/windows-source-review.md') $Notices
 Copy-Item (Join-Path $Root 'docs/windows-native-replacement.md') $Notices
 Copy-Item (Join-Path $Root 'docs/windows-numpy-runtime.md') $Notices
-Copy-Item (Join-Path $Root 'docs/windows-sudachi-runtime.md') $Notices
 Copy-Item (Join-Path $Root 'docs/windows-microsoft-runtime.md') $Notices
 Copy-Item (Join-Path $Root 'docs/windows-nsis-runtime.md') $Notices
 if ($Onnx) {
@@ -120,7 +122,6 @@ if ($Onnx) {
     Invoke-Checked $Python @('scripts/windows_opencv_runtime.py', 'retain')
     Invoke-Checked $Python @('scripts/windows_onnx_sources.py')
     Invoke-Checked $Python @('scripts/windows_native_sources.py')
-    Invoke-Checked $Python @('scripts/windows_sudachi_runtime.py', 'retain')
     Invoke-Checked $Python @('scripts/windows_python_rust_sources.py')
 }
 [IO.File]::WriteAllText((Join-Path $Notices 'project-revision.txt'), "$Revision`n")

@@ -148,9 +148,6 @@ export function ToolbarMenu() {
           <button
             role="menuitem"
             key={label}
-            aria-describedby={
-              view === "hideToolbar" ? "hide-toolbar-hint" : undefined
-            }
             disabled={
               view !== null &&
               (!state ||
@@ -163,12 +160,6 @@ export function ToolbarMenu() {
             {label}
           </button>
         ))}
-      {state?.trayAvailable && (
-        <p id="hide-toolbar-hint" className="toolbar-menu-hint">
-          Restore the toolbar from the YomiMado tray or menu bar icon. Hiding it
-          keeps OCR overlays visible.
-        </p>
-      )}
       {error && (
         <p className="toolbar-menu-error" role="alert">
           {error}

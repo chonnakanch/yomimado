@@ -344,7 +344,6 @@ def collect() -> None:
     output.mkdir(parents=True, exist_ok=True)
     # These verified texts resolve missing wheel texts; they confer no Windows approval.
     for package, group in {
-        "sudachipy": "sudachi-rs",
         "numpy": "lgpl-2.1",
         "loguru": "loguru",
         "sentencepiece": "sentencepiece",

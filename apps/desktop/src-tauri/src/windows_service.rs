@@ -199,6 +199,7 @@ pub fn start(app: &tauri::App) -> Result<Service, Box<dyn std::error::Error>> {
         .stderr(Stdio::null())
         .env_remove("PYTHONPATH")
         .env_remove("PYTHONHOME")
+        .env_remove("YOMIMADO_TRANSLATION_MODEL")
         .env("YOMIMADO_OCR_PORT", "8766")
         .env("YOMIMADO_READY_FILE", &ready)
         .env("YOMIMADO_SERVICE_INSTANCE", &instance)
@@ -208,7 +209,16 @@ pub fn start(app: &tauri::App) -> Result<Service, Box<dyn std::error::Error>> {
             crate::detector_model::installed_path(app.handle())?,
         )
         .env("YOMIMADO_MANGA_OCR_MODEL", assets.join("manga-ocr-base"))
-        .env("YOMIMADO_TRANSLATION_MODEL", assets.join("opus-mt-ja-en"))
+        .env(
+            "YOMIMADO_TRANSLATION_MANIFEST",
+            resources.join("notices/translation-component.json"),
+        )
+        .env(
+            "YOMIMADO_TRANSLATION_RESOURCES",
+            data.join("models/translation"),
+        )
+        .env("YOMIMADO_TOKENIZER", "lindera")
+        .env("YOMIMADO_LINDERA_DICTIONARY", assets.join("lindera-ipadic"))
         .env("YOMIMADO_JMDICT", assets.join("JMdict_e.gz"))
         .env("YOMIMADO_KANJIDIC2", assets.join("kanjidic2.xml.gz"))
         .env("YOMIMADO_JMDICT_INDEX", data.join("jmdict-index.sqlite3"))
