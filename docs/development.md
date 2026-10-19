@@ -5,6 +5,9 @@ requires Node.js, npm, Rust, and Tauri platform prerequisites. The development
 OCR service requires Python 3.10 or later; release builders use their pinned
 interpreters and dependencies.
 
+See [project structure](project-structure.md) for source responsibilities and local
+API examples, and [the reading guide](usage.md) for the app controls.
+
 ## Start the app
 
 The source and packaging recipes use Lindera/IPADIC for learning analysis.
@@ -251,6 +254,50 @@ missing, kanji meanings from KANJIDIC2 remain available.
 
 KANJIDIC2 is copyright the Electronic Dictionary Research and Development
 Group, provided under [CC BY-SA 4.0 and the EDRDG dictionary licence](https://www.edrdg.org/edrdg/licence.html).
+
+## Local checks
+
+Use the existing development environments from setup above. Frontend checks run
+from `apps/desktop`:
+
+```sh
+npm run format:check
+npm run typecheck
+npm test
+npm run build
+```
+
+`npm run dev` starts only the browser UI; `npm run tauri dev` starts the native
+desktop host as well. Capture, shortcuts, tray menus and native overlays require
+the desktop host. `npm run build` checks TypeScript and builds frontend assets;
+it does not create an installer.
+
+With the Python service environment active, run from `services/ocr`:
+
+```sh
+python -m ruff check app tests packaged_main.py windows_packaged_main.py windows_onnx_backend.py
+python -m ruff format --check app tests packaged_main.py windows_packaged_main.py windows_onnx_backend.py
+python -m pytest -q tests
+```
+
+The tokenizer tests require the prepared IPADIC resource. Optional inference or
+image dependencies affect which tests can run in a minimal development environment;
+the CI setup below provides the complete model-free regression environment.
+
+For native changes, run from the repository root on macOS or Windows using the
+Rust version pinned by CI:
+
+```sh
+cargo +1.98.1 fmt --manifest-path apps/desktop/src-tauri/Cargo.toml --all --check
+cargo +1.98.1 clippy --locked --all-targets --manifest-path apps/desktop/src-tauri/Cargo.toml -- -D warnings
+cargo +1.98.1 test --locked --manifest-path apps/desktop/src-tauri/Cargo.toml
+cargo +1.98.1 build --locked --manifest-path apps/desktop/src-tauri/Cargo.toml
+```
+
+These commands require the Tauri platform build prerequisites. They verify source
+and debug compilation; exact installer acceptance remains a separate release gate.
+For release-tool changes, follow the matching suites in
+[Checks](../.github/workflows/checks.yml) and [script roles](../scripts/README.md).
 
 ## Required CI checks
 

@@ -1,5 +1,33 @@
 # Reading with YomiMado
 
+## Quick start (current development source)
+
+For a source checkout, first follow [development setup](development.md) to start
+both the local service and desktop app. The minimal service returns a labeled
+demo boundary until OCR models are configured. Packaged apps start their service
+automatically; their exact features depend on the installed version.
+
+1. Open your manga in its usual reader. On macOS, grant Screen Recording permission
+   when requested and restart YomiMado.
+2. Configure the detector in **More actions → Settings → Scan & OCR** for a
+   packaged app, or configure the local OCR model paths for development.
+3. Choose **Selected Area** and drag around text, or press `Cmd+Shift+O` on macOS /
+   `Ctrl+Shift+O` on Windows. **Whole Screen** (`Cmd/Ctrl+Shift+S`) tries to find
+   the page and asks for a fallback area when needed.
+4. Click a detected region, then select a word or kanji in the learning popup.
+   Dashed regions need review; use **Edit OCR text** to correct recognition.
+   **Select text → Look up selection** lets you adjust a word boundary manually.
+5. Use **Save this word** or **Save sentence** explicitly, then open **More
+   actions → Saved** to review them. Translation is optional: configure a local
+   provider in **Settings → Reading**, then choose **Translate locally**.
+6. After changing pages, use **Rescan** if the reading area is unchanged, or run
+   a new scan if the page moved. Choose **More actions → Quit YomiMado** when done.
+
+Word and kanji meanings require local JMdict/KANJIDIC2 resources; the development
+guide explains their setup. Reading, dictionary lookup and inference stay local.
+The detailed controls below describe current source first, followed by the
+historical v0.1.0 interface. For a code map, see [project structure](project-structure.md).
+
 ## Redesigned toolbar (development source)
 
 YomiMado now starts with a compact always-on-top toolbar. Drag its handle, or

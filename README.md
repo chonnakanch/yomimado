@@ -11,7 +11,7 @@ interactive overlay to explore Japanese without replacing the original image.
 - Select a screen region or scan a manga page with a reusable area fallback.
 - Recognize horizontal and vertical Japanese and show aligned text regions.
 - Explore word readings, dictionary meanings, kanji, and example compounds.
-- Download the optional Japanese-to-English model and request local translation when needed.
+- Import an optional local translation model or select one through Ollama, then request translation when needed.
 - Save and review words and sentences locally.
 
 Screenshots stay local. Translation and saving require an explicit action.
@@ -36,13 +36,17 @@ for installation details.
 
 ## Read a page
 
+In the current development source:
+
 1. Press `Cmd+Shift+O` on macOS or `Ctrl+Shift+O` on Windows, then drag over text.
 2. Click a recognized region to open its learning popup.
 3. Select a word or kanji, request translation, or save an entry.
 
-For repeated scans, use **Scan manga page** or `Cmd/Ctrl+Shift+S`. Close the
-overlay before changing pages and scan again. See the
-[reading guide](docs/usage.md) for area selection and reading-order controls.
+For repeated scans, use **Whole Screen** or `Cmd/Ctrl+Shift+S`. **Rescan** captures
+the last successful area again; scan again after changing pages. Open **More
+actions → Saved** to review saved words and sentences. See the
+[reading guide](docs/usage.md) for setup, keyboard navigation and the historical
+v0.1.0 controls.
 
 ## Development quick start
 
@@ -82,6 +86,9 @@ checklists.
 ## Project documentation
 
 - [Documentation index](docs/README.md)
+- [Project structure, runtime flow and local API usage](docs/project-structure.md)
+- [Development setup and checks](docs/development.md)
+- [Reading and learning guide](docs/usage.md)
 - [Implementation status and remaining work](docs/implementation-plan.md)
 - [Feature roadmap](docs/feature-roadmap.md)
 - [Changelog](CHANGELOG.md)
