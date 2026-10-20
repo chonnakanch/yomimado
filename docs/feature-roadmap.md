@@ -1,5 +1,7 @@
 # YomiMado feature roadmap
 
+Last updated: **2026-10-20**.
+
 This tracks the feature ideas discussed on 2026-10-19. Unchecked features are
 proposals for future work, not authorization to implement them. Anki export is
 excluded from this roadmap at the owner's request.
@@ -11,14 +13,22 @@ See the [changelog](../CHANGELOG.md) for completed changes and the
 
 ## Feature checklist
 
+### Implemented (unreleased)
+
 - [x] **Manual word selection** — done on `develop`, unreleased.
 - [x] **JLPT vocabulary tags** — done on `develop`, unreleased.
 - [x] **Saved search and dictionary-style library** — done on `develop`, UI approved, unreleased.
-- [ ] **Saved tags and organization** — proposed.
 - [x] **Conjugation explanations (initial forms and contractions)** — done on `develop`, unreleased.
+
+### Planned
+
+- [ ] **Saved tags and organization** — proposed.
 - [ ] **Known / learning word states** — proposed.
 - [ ] **Personal manga glossary** — proposed.
 - [ ] **Local pronunciation playback** — proposed.
+
+Bubble OCR retry/redraw is removed and deferred, not a completed feature.
+Anki export remains excluded.
 
 ## Completed
 
@@ -36,7 +46,8 @@ Escape leaves selection mode. The previous popup layout is retained.
 All 197 frontend tests, formatting, TypeScript, the frontend build and the macOS
 preview build pass. Native macOS caret/selection, source protection and local
 lookup were checked. Windows interaction and exact installer acceptance remain
-unverified. See the [dated changelog entries](../CHANGELOG.md#2026-10-19).
+unverified. Implementation: [`5b94ee6`](https://github.com/chonnakanch/yomimado/commit/5b94ee6).
+See the [dated changelog entries](../CHANGELOG.md#2026-10-19).
 
 ### JLPT vocabulary tags
 
@@ -55,6 +66,7 @@ disambiguation, preference synchronization, source hashes and license retention.
 Windows interaction and exact-installer acceptance remain unverified. See the
 [changelog](../CHANGELOG.md#2026-10-19) and [data review](../THIRD_PARTY_LICENSES/jlpt/README.md).
 Kanji/grammar tags and JLPT filtering are separate future scope.
+Implementation: [`8ef36bf`](https://github.com/chonnakanch/yomimado/commit/8ef36bf).
 
 ### Conjugation explanations
 
@@ -68,6 +80,7 @@ remain uncertain. No external dataset, model, service or dependency is added.
 See the [supported slice and checked examples](conjugation-explanations.md) and
 [changelog](../CHANGELOG.md#2026-10-19). Broader manga speech, passive/potential,
 causatives, progressive forms and other grammar remain future scope.
+Implementation: [`53195de`](https://github.com/chonnakanch/yomimado/commit/53195de).
 
 ### Saved search and dictionary-style library
 
@@ -80,12 +93,19 @@ tests, formatting, TypeScript and frontend build pass. Native Windows interactio
 and exact-installer acceptance remain unverified. See the
 [search behavior and verification](saved-search.md).
 
+Queries remain independent between Words and Sentences, persist across reopening,
+and can be cleared with the clear button or Escape. Source sentences, saved dates
+and attribution stay accessible. Existing data, newest-first order and confirmed
+removal are preserved. No new API, database, model or dependency is required.
+Implementation: [`afa6e48`](https://github.com/chonnakanch/yomimado/commit/afa6e48).
+
 ## Proposed implementation slices
 
 ### Saved tags and organization
 
-Add optional user tags such as manga title and chapter, with filtering in Saved. JLPT filters
-can follow once vocabulary tags are available.
+Add optional user tags such as manga title and chapter, with filtering in Saved.
+JLPT vocabulary badges are already implemented; filtering by their estimated
+level remains proposed. User-created tags are separate from those derived levels.
 
 Completion: tags persist locally, existing saved databases remain
 readable, and organizing entries never triggers translation or changes their
