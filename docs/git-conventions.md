@@ -7,11 +7,13 @@ they do not install Git hooks or add a CI naming gate.
 
 ## Branches
 
-| Branch                 | Purpose                                                       | Normal PR target                             |
-| ---------------------- | ------------------------------------------------------------- | -------------------------------------------- |
-| `main`                 | Protected release source; a push starts the Release workflow. | Updated through a protected PR.              |
-| `develop`              | Integration branch for completed development work.            | `main` when preparing an authorized release. |
-| `codex/<type>/<topic>` | A focused task, based on current `develop`.                   | `develop`.                                   |
+Task branch names use `<type>/<topic>` without a tool-specific prefix.
+
+| Branch           | Purpose                                                       | Normal PR target                             |
+| ---------------- | ------------------------------------------------------------- | -------------------------------------------- |
+| `main`           | Protected release source; a push starts the Release workflow. | Updated through a protected PR.              |
+| `develop`        | Integration branch for completed development work.            | `main` when preparing an authorized release. |
+| `<type>/<topic>` | A focused task, based on current `develop`.                   | `develop`.                                   |
 
 Use lowercase ASCII letters, numbers and hyphens for `<topic>`. Keep it short and
 specific. Use one of the commit types below for `<type>`; the branch type describes
@@ -21,11 +23,11 @@ ambiguous descriptions such as `updates`, `stuff` or `final`.
 Examples:
 
 ```text
-codex/feat/kanji-compounds
-codex/fix/windows-overlay-position
-codex/docs/release-runbook
-codex/build/git-cliff-notes
-codex/chore/release-0-4-0
+feat/kanji-compounds
+fix/windows-overlay-position
+docs/release-runbook
+build/git-cliff-notes
+chore/release-0-4-0
 ```
 
 Start new substantial tasks on a topic branch. Continue an existing in-progress
@@ -37,14 +39,14 @@ From a clean checkout, create a new task branch from fetched development source:
 
 ```sh
 rtk git fetch origin
-rtk git switch -c codex/feat/kanji-compounds origin/develop
+rtk git switch -c feat/kanji-compounds origin/develop
 ```
 
 Push verified work to its existing upstream. For a newly created branch, set its
 upstream on the first push:
 
 ```sh
-rtk git push -u origin codex/feat/kanji-compounds
+rtk git push -u origin feat/kanji-compounds
 ```
 
 Do not push directly to `main`. A main-targeted urgent fix may branch from

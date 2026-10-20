@@ -397,10 +397,11 @@ Do not implement these in the first OCR prototype unless explicitly requested:
 ## Codex workflow
 
 Follow [`docs/git-conventions.md`](docs/git-conventions.md) for branches, commit
-messages and merges. New task branches use `codex/<type>/<topic>`; commits use
+messages and merges. New task branches use `<type>/<topic>`; commits use
 `type(scope): imperative summary` (scope optional). Continue the current task's
 selected branch unless a new branch is requested or needed. Preserve reviewed
 seed/source commit identities when merging; do not rewrite published history.
+Do not add a tool-specific prefix to new branch names.
 
 For new-version releases and macOS runtime-seed work, follow
 [`docs/release-runbook.md`](docs/release-runbook.md). It separates local preparation,

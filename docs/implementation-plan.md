@@ -8,7 +8,9 @@ completion is tracked separately from publication and installer acceptance.
 
 **Branch and commit conventions — 2026-10-20:** documented task branch names,
 git-cliff-compatible commit types, focused commit/PR guidance and merge rules that
-preserve reviewed seed/source identities. `AGENTS.md`, development instructions
+preserve reviewed seed/source identities. Task branches use `<type>/<topic>`
+without a tool-specific prefix, following the owner's preference.
+`AGENTS.md`, development instructions
 and the release runbook link the shared rules. Existing in-progress branches and
 historical commits remain intact. This is documented policy, with no new Git hook,
 CI naming gate, app/runtime input or publication change.
