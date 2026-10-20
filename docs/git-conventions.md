@@ -7,19 +7,21 @@ they do not install Git hooks or add a CI naming gate.
 
 ## Branches
 
-Task branch names use `<type>/<topic>` without a tool-specific prefix.
+Task branch names use `<type>/<topic>` without a tool-specific prefix. Release
+preparation uses `release/<version>`, for example `release/0.5.0`.
 
 `main` is the only integration branch. It contains completed, checked work for
 future releases; published version tags identify released source.
 
-| Branch           | Purpose                                 | Normal PR target               |
-| ---------------- | --------------------------------------- | ------------------------------ |
-| `main`           | Protected integration branch.           | Updated through protected PRs. |
-| `<type>/<topic>` | A focused task based on current `main`. | `main`.                        |
+| Branch              | Purpose                                      | Normal PR target               |
+| ------------------- | -------------------------------------------- | ------------------------------ |
+| `main`              | Protected integration branch.                | Updated through protected PRs. |
+| `<type>/<topic>`    | A focused task based on current `main`.      | `main`.                        |
+| `release/<version>` | Version preparation; merging starts Release. | `main`.                        |
 
 Use lowercase ASCII letters, numbers and hyphens for `<topic>`. Keep it short and
-specific. Use one of the commit types below for `<type>`; the branch type describes
-the task's primary purpose. Do not include spaces, underscores, personal names or
+specific. Use one of the commit types below for `<type>`, or `release` for version
+preparation; the branch type describes the task's primary purpose. Do not include spaces, underscores, personal names or
 ambiguous descriptions such as `updates`, `stuff` or `final`.
 
 Examples:
@@ -29,7 +31,7 @@ feat/kanji-compounds
 fix/windows-overlay-position
 docs/release-runbook
 build/git-cliff-notes
-chore/release-0-4-0
+release/0.5.0
 ```
 
 Start new substantial tasks on a topic branch. Continue an existing in-progress
@@ -52,10 +54,11 @@ rtk git push -u origin feat/kanji-compounds
 ```
 
 Do not push directly to `main`. Features, fixes and release preparation all use
-focused branches and protected PRs into `main`. A normal merge runs Checks only;
-installers are built through **Actions → Release → Run workflow → main** after
-Checks succeeds for that exact commit. Publication retains its separate owner
-approval. Main does not need a new version for every feature PR; bump the five app
+focused branches and protected PRs into `main`. Merging a same-repository
+`release/*` PR starts Release automatically; it waits for Checks on the exact
+main commit before building installers. Other PR merges run Checks only. Manual
+**Actions → Release → Run workflow → main** remains available for recovery.
+Publication retains its separate owner approval. Main does not need a new version for every feature PR; bump the five app
 version files together in a release-preparation PR when ready to ship.
 
 `develop` is retired as an integration target. Preserve all of its unmerged work
@@ -152,8 +155,10 @@ BREAKING CHANGE: explain the removed fields and how callers must migrate.
 
 Checks runs on pushes to `main`, PRs targeting `main` and manual runs. Its
 required `gates` covers frontend, service, release-tool and both native-platform
-jobs. Release is manual-only on `main` and requires successful GitHub Actions
-`gates` for its exact source before private input access. Keep main at the
+jobs. Release starts for a merged same-repository `release/*` PR into `main`, or
+a manual main dispatch, and waits up to 15 minutes for successful GitHub Actions
+`gates` for its exact source before private input access. Closed unmerged PRs,
+feature/fix merges and fork release branches cannot start builds. Keep main at the
 selected candidate until publication; an advanced main is still rejected.
 
 ## Release-note compatibility

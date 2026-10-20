@@ -64,10 +64,11 @@ native debug tests/builds in parallel. Its final `gates` job requires every job
 to succeed, including every native matrix entry. `requirements-ci.txt` is the
 test-only Python 3.11 environment with pinned wheel hashes; it is separate from
 the frozen release inputs. Checks accesses no private seed or model weights.
-[Release](../.github/workflows/release.yml) is manually dispatched on main after
-Checks / gates succeeds for the selected exact commit. Main merges do not start
-installer builds. Release builds both platforms and keeps one owner-approved
-publisher. Its script entrypoints are:
+[Release](../.github/workflows/release.yml) starts when a same-repository
+`release/*` PR merges into main, or through manual dispatch on main for recovery.
+It waits up to 15 minutes for Checks / gates on the exact merged commit before
+private-input access and installer builds. Other PR merges are skipped. Release
+builds both platforms and keeps one owner-approved publisher. Its script entrypoints are:
 
 - `desktop_release.py`: pinned input transfer, source/data/notice consolidation,
   exact-commit Checks, main protection, hash/provenance and uploaded release checks.

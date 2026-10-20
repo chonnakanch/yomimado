@@ -6,6 +6,18 @@ See the [feature roadmap](feature-roadmap.md) for proposed learning features and
 the [changelog](../CHANGELOG.md) for completed development changes. Source
 completion is tracked separately from publication and installer acceptance.
 
+**Release-branch merge trigger — 2026-10-20:** supersedes the manual-only
+trigger below. Merging a same-repository `release/*` PR into main starts Release;
+closed unmerged PRs, other topic branches, forks and mismatched merge SHAs are
+rejected. Manual main dispatch remains available for recovery. Release waits up
+to 15 minutes for successful `gates` on the exact merged main commit before any
+private-input access or installer build. Failed, cancelled, skipped or stale
+checks stop the run. Protected publication and reviewed seed pins are unchanged.
+Local verification: 91 release-tool tests pass, including merged/unmerged/fork
+trigger cases, waiting/success/failure/timeout checks and actual plan/publisher
+shell rehearsals. Ruff, formatting and actionlint pass. No PR merge, installer
+build or publication is authorized by this preparation.
+
 **Single integration branch and explicit releases — 2026-10-20:** main is the
 only integration target for new feature, fix and release-preparation PRs. Audited
 both active workflows: Checks retains frontend, service, release-tool, macOS and

@@ -1,8 +1,11 @@
 name: Release
 
-# Explicitly select main in Run workflow after Checks passes. Build that commit,
-# then wait for both exact installer confirmations before protected publication.
+# Release topics merge into main; wait for that commit's Checks before building.
+# Manual dispatch remains available for recovery. Publication needs owner review.
 "on":
+  pull_request:
+    types: [closed]
+    branches: [main]
   workflow_dispatch:
 
 permissions:
@@ -13,8 +16,16 @@ env:
 
 jobs:
   plan:
-    if: github.event_name == 'workflow_dispatch' && github.repository == 'chonnakanch/yomimado' && github.ref == 'refs/heads/main'
+    if: >-
+      github.repository == 'chonnakanch/yomimado' && github.ref == 'refs/heads/main' &&
+      (github.event_name == 'workflow_dispatch' ||
+       (github.event_name == 'pull_request' && github.event.action == 'closed' &&
+        github.event.pull_request.merged == true && github.event.pull_request.base.ref == 'main' &&
+        github.event.pull_request.head.repo.full_name == github.repository &&
+        startsWith(github.event.pull_request.head.ref, 'release/') &&
+        github.event.pull_request.merge_commit_sha == github.sha))
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     permissions:
       contents: read
       actions: read
@@ -57,8 +68,7 @@ jobs:
           fi
           # Reject stale frozen runtime inputs before private downloads or builds.
           python scripts/macos-ci-release.py verify-reuse
-          gh api "repos/$GITHUB_REPOSITORY/commits/$GITHUB_SHA/check-runs?check_name=gates&filter=latest&per_page=100" > "$RUNNER_TEMP/main-checks.json"
-          python scripts/desktop_release.py verify-main-checks --directory "$RUNNER_TEMP/main-checks.json"
+          python scripts/desktop_release.py wait-main-checks --directory "$RUNNER_TEMP/main-checks.json"
           test "$(gh api "repos/$GITHUB_REPOSITORY" --jq .default_branch)" = main
           gh api "repos/$GITHUB_REPOSITORY/rules/branches/main?per_page=100" > "$RUNNER_TEMP/main-rules.json"
           python scripts/desktop_release.py verify-main-rules --directory "$RUNNER_TEMP/main-rules.json"
