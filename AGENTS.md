@@ -4,10 +4,10 @@ Read `@/Users/chonnakan/.codex/RTK.md` for local command conventions.
 
 ## Project and current scope
 
-YomiMado (読み窓) is an open-source Japanese manga reading assistant for macOS
+YomiMado is an open-source Japanese manga reading assistant for macOS
 and Windows. **Capture → recognize → click → learn** preserves the original
-manga and adds interactive learning information. The working tagline is
-“Read beyond the page”; the name has not been trademark/domain/package cleared.
+manga and adds interactive learning information. The name has not been
+trademark/domain/package cleared.
 
 The first desktop milestone is complete. The current source includes the UI
 redesign, Lindera/IPADIC analysis, user-installed local translation, manual word
