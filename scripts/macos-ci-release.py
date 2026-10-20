@@ -169,6 +169,11 @@ def verify_reuse(root: Path = ROOT) -> None:
         ".gitignore",
         "scripts/README.md",
         "scripts/update_version.py",
+        # Standalone, pinned maintainer notes tooling; never frozen or bundled.
+        "cliff.toml",
+        "scripts/release_notes.py",
+        "THIRD_PARTY_LICENSES/git-cliff/README.md",
+        "THIRD_PARTY_LICENSES/git-cliff/LICENSE-MIT",
         # Reviewed 0.2.2 native tray inputs; none enter the frozen OCR runtime.
         # Keep this exact file list rather than allowing arbitrary icon/build
         # changes or relaxing the dependency/lock comparison below.

@@ -21,6 +21,25 @@ prefix or leading zeroes. `0.x.x` and suffixed versions are pre-releases;
 diff, then use the normal protected main PR and release flow. This command makes
 local file edits; it does not commit, push, create tags, build or publish.
 
+## Draft release notes with git-cliff
+
+Use Python 3.11+ from the repository root (`py -3.11` on Windows):
+
+```sh
+rtk python3 scripts/release_notes.py prepare
+rtk python3 scripts/release_notes.py generate --previous-tag v0.3.0 --revision HEAD --output services/ocr/build/release-notes/0.4.0-draft.md
+```
+
+Choose the actual previous published tag; the versions above are examples.
+Preparation downloads checksum-pinned git-cliff 2.14.2 for the current platform
+into ignored maintainer tooling, separate from the app and frozen OCR runtime.
+Generation runs locally, verifies full commit coverage and refuses existing output
+files. Review the net changes and copy the user-facing highlights into
+`docs/desktop-release-notes.md`, preserving its notices and placeholders. The tool
+does not update versions, tags, releases or the historical `CHANGELOG.md`.
+See [the full procedure](../docs/release-runbook.md#generate-and-review-release-notes)
+and [the exact-version terms](../THIRD_PARTY_LICENSES/git-cliff/README.md).
+
 ## Current release and checks
 
 [Checks](../.github/workflows/checks.yml) runs frontend and service tests,

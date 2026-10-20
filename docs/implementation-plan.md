@@ -6,6 +6,24 @@ See the [feature roadmap](feature-roadmap.md) for proposed learning features and
 the [changelog](../CHANGELOG.md) for completed development changes. Source
 completion is tracked separately from publication and installer acceptance.
 
+**git-cliff release-note drafts — 2026-10-20:** added pinned maintainer tooling
+to generate a local draft between an explicit previous published tag and exact
+target commit. All commits, including unconventional messages, merges and reverts,
+are grouped and checked against the Git range before output; existing files are
+never overwritten. The human runbook and personal release skill route note
+preparation through this draft and review net changes before updating the curated
+publisher notes. The tool and its exact MIT terms are separate from app/runtime
+dependencies. Checks exercises synthetic histories with the real binary; the
+macOS reuse guard permits only the specific independent tool/config/notice paths.
+No app version, installer, seed pin, main merge or publication approval changes.
+
+Local verification: all 76 selected tests pass (nine real git-cliff history/cache
+cases, 30 release rules, 28 desktop delivery cases and nine version cases), along
+with script Ruff, Markdown/workflow formatting, pinned actionlint and skill
+validation. A real draft covers all 21 commits after `v0.3.0` through `a956791`.
+Execution is verified on macOS Apple Silicon; Windows and Linux CI-host execution
+remain separate from these local results.
+
 **0.4.0 runtime reuse and Checks repair — 2026-10-20:** the owner's PR #17 merge
 started Release `39371691358`, which stopped at the documented changelog/JLPT
 reuse boundary before building installers. The repair adds a technical,

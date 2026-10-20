@@ -1,0 +1,35 @@
+# Maintainer-only draft generation; no commits are silently filtered.
+[changelog]
+body = """
+{% if version %}## Changes for {{ version }}{% else %}## Changes{% endif %}
+{% for entry in commits | commit_groups(groups=commit_parsers_groups) %}
+### {{ entry.group }}
+{% for commit in entry.commits %}
+- {{ commit.message | split(pat="\n") | first }} ([{{ commit.id | truncate(length=7, end="") }}](https://github.com/chonnakanch/yomimado/commit/{{ commit.id }}))
+{% endfor %}
+{% endfor %}
+"""
+trim = true
+format = true
+
+[git]
+conventional_commits = false
+filter_unconventional = false
+require_conventional = false
+split_commits = false
+filter_commits = false
+fail_on_unmatched_commit = true
+commit_parsers = [
+  { message = '(?i)^feat(?:\(|!|:|\s)', group = "Features" },
+  { message = '(?i)^fix(?:\(|!|:|\s)', group = "Fixes" },
+  { message = '(?i)^perf(?:\(|!|:|\s)', group = "Performance" },
+  { message = '(?i)^revert(?:\(|!|:|\s)', group = "Reverts to review" },
+  { message = '(?i)^docs?(?:\(|!|:|\s)', group = "Documentation" },
+  { message = '(?i)^(?:build|ci|chore|refactor|test|style)(?:\(|!|:|\s)', group = "Maintenance" },
+  { message = '(?s).*', group = "Other changes" },
+]
+# Explicit start/end commits select the range; private seed tags are not releases.
+tag_pattern = '^v[0-9]+\.[0-9]+\.[0-9]+(-(alpha|beta|rc)\.[0-9]+)?$'
+topo_order = true
+topo_order_commits = true
+sort_commits = "oldest"

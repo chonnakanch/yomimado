@@ -133,6 +133,27 @@ class VersionTests(unittest.TestCase):
         ):
             ci.verify_reuse()
 
+    def test_release_notes_tooling_is_independent_of_frozen_runtime(self):
+        paths = (
+            "cliff.toml",
+            "scripts/release_notes.py",
+            "THIRD_PARTY_LICENSES/git-cliff/README.md",
+            "THIRD_PARTY_LICENSES/git-cliff/LICENSE-MIT",
+        )
+        with patch.object(ci, "git", return_value="\n".join(paths)):
+            ci.verify_reuse()
+        for path in (
+            "scripts/unreviewed-runtime.py",
+            "THIRD_PARTY_LICENSES/git-cliff/unreviewed-input.json",
+            "services/ocr/app/pipeline.py",
+        ):
+            with (
+                self.subTest(path=path),
+                patch.object(ci, "git", return_value=path),
+                self.assertRaisesRegex(ValueError, "new seed"),
+            ):
+                ci.verify_reuse()
+
     def test_tray_feature_alone_preserves_reviewed_runtime_dependencies(self):
         path = "apps/desktop/src-tauri/Cargo.toml"
         after = (ci.ROOT / path).read_text()
