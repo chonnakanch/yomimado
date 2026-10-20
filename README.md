@@ -1,6 +1,4 @@
-# YomiMado (読み窓)
-
-Read beyond the page.
+# YomiMado
 
 YomiMado is an open-source desktop assistant for reading Japanese manga on
 macOS and Windows. It recognizes text already visible on your screen and adds
