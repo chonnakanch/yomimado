@@ -6,6 +6,30 @@ See the [feature roadmap](feature-roadmap.md) for proposed learning features and
 the [changelog](../CHANGELOG.md) for completed development changes. Source
 completion is tracked separately from publication and installer acceptance.
 
+**PR-based release notes and README installation — 2026-10-20:** supersedes the
+manual version-highlight procedure below. GitHub supplies merged-PR titles/numbers
+for the previous published app tag through the exact source; Full Changelog is
+last. Installation, signing, detector/model setup and detailed source extraction
+guidance now live in README. Public notes contain only the PR list and Full
+Changelog; verification/limitations remain in the release checklist and metadata.
+The former template now documents this format. CI saves JSON/Markdown previews before publication
+approval, binds the JSON SHA-256 in job outputs and verifies it against the
+candidate source/version before composing the final body. The existing isolated
+input job's write token calls only GitHub's content-generation POST plus the
+existing private-input GETs; builders gain no credential or permission. git-cliff
+remains an optional complete commit audit. No app/runtime input, private seed,
+installer, tag or release classification changes. Existing source, acceptance
+and publication gates remain separate.
+
+Local verification: 144 selected release-tool tests pass, including real git-cliff
+audits, PR-note selection/source/hash cases and the actual publisher shell against
+fake APIs (including tampered-note rejection before tag creation). Script Ruff,
+formatting and pinned actionlint pass. GitHub's own v0.3.0 → v0.4.0 preview lists
+PRs #17–#19; the existing v0.4.0 description now uses only that list and Full
+Changelog. Its previous verification disclosure is retained in the release
+checklist. The new authenticated CLI/CI preview path awaits integration; no hosted
+workflow execution, installer rebuild or new release publication is claimed.
+
 **Current-version release notes — 2026-10-20:** the publication template now
 contains only the 0.4.0 highlights, covering net changes since v0.3.0. Removed
 older versions' change lists and moved the still-applicable translation setup

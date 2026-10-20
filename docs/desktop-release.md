@@ -1,5 +1,28 @@
 # Shared desktop release checklist
 
+0.4.0 public release metadata and retained disclosure — **2026-10-20**:
+[v0.4.0](https://github.com/chonnakanch/yomimado/releases/tag/v0.4.0) identifies
+source `bfdcbf2e313af824155cde6d3b08e27c0d5d2825` and nine uploaded files, plus
+GitHub's two automatic repository-source downloads. The public asset list reports
+macOS DMG SHA-256
+`785d80f97a10978b0cde56e8c4cbf38c1828245e8121ac7e15e74900fb50c066`
+and Windows setup SHA-256
+`601b4458299a6fe93b16c0dbda72dea9b5bab4794af497ed8f1d8277d1c1f684`.
+These are observed hosted metadata, without new local installer tests.
+
+The owner requests public notes with only PR titles/numbers and Full Changelog.
+The previous publisher's acceptance/limitations statement is retained here:
+
+> Both exact CI installers were confirmed by the maintainer through the protected
+> release environment. Fresh-macOS testing remains waived. Windows AMD,
+> mixed-monitor/left-of-primary layouts and missing-WebView2 hardware cases remain
+> untested.
+
+Complete source-only rebuilding remains unverified. Sources, notices, checksums
+and provenance remain downloadable assets. Moving this disclosure out of the
+public description adds no acceptance, waiver, installer or publication approval.
+Historical preparation/failure evidence follows unchanged.
+
 0.4.0 reuse/Checks repair — **2026-10-20**: after the owner's PR #17 merge at
 `ce2a3df`, [Release `39371691358`](https://github.com/chonnakanch/yomimado/actions/runs/39371691358)
 failed in `plan` at the known reuse rejection; both installer builders and
@@ -534,27 +557,24 @@ Complete this checklist before the protected main PR is merged:
 
 - [ ] Update the five app version files and commit the intended version/code
       changes so the notes generator reads the new version at the selected commit.
-- [ ] Select the actual previous published app tag, including a pre-release when
-      appropriate, and generate a complete git-cliff draft. From the repository
-      root, using Python 3.11+, the example commands are:
+- [ ] Preview PR-based notes from the actual previous published app tag to the
+      exact target source, using Python 3.11+ and authenticated GitHub CLI:
 
       ```sh
-      rtk python3 scripts/release_notes.py prepare
-      rtk python3 scripts/release_notes.py generate \
+      rtk python3 scripts/release_notes.py github \
         --previous-tag v0.3.0 \
-        --revision HEAD \
-        --output services/ocr/build/release-notes/0.4.0-draft.md
+        --revision v0.4.0 \
+        --output services/ocr/build/release-notes/0.4.0-pr-preview.json
       ```
 
-      Replace the example tag/path for the intended release. Use a new output
-      filename for another draft. See [generation details](release-runbook.md#generate-and-review-release-notes).
+      Replace the example tag/source/path. For a new release, use its committed
+      source rather than a precreated tag. Review titles, reverts and the final
+      diff; direct commits have no individual PR entry. The publisher generates
+      the list automatically. Public notes contain only the PR list and Full
+      Changelog. Keep installation/model setup and source/licence guidance in README;
+      retain verification evidence and limitations here and in release metadata.
+      See [generation details](release-runbook.md#generate-and-review-release-notes).
 
-- [ ] Review the draft against the final diff and `CHANGELOG.md`. Replace the
-      highlights in `docs/desktop-release-notes.md` with only net changes since the
-      previous published tag. Keep one `## Changes in VERSION` section and remove
-      older versions' highlights; do not advertise reverted features as available.
-      Preserve `VERSION`/`CLASSIFICATION`, known
-      limitations and installation/source notices. Commit the reviewed notes.
 - [ ] Run version/runtime-reuse preflight and resolve any required
       [macOS seed rebuild/review/activation](release-runbook.md#build-a-replacement-macos-seed).
       If the intended source changes during preparation, generate a fresh draft
@@ -563,8 +583,10 @@ Complete this checklist before the protected main PR is merged:
       the authorized merge. Follow the jobs below, then test the exact installers
       and obtain the separate protected publication approval.
 
-git-cliff creates a local draft. The publisher uses the reviewed notes committed
-above and appends the exact candidate source/download hashes.
+GitHub generates a PR-list preview in `release-notes-preview` before publication
+approval. The publisher checks its SHA-256 and source/version and puts Full
+Changelog last. Verification records, asset hashes and provenance remain separate
+from the public note body. git-cliff remains an optional local commit audit.
 
 ## Flow and permissions
 
@@ -580,7 +602,11 @@ above and appends the exact candidate source/download hashes.
 2. **seed-inputs** runs automatically on protected `main`, without an environment
    approval or personal token. GitHub requires
    `contents: write` to read unpublished drafts, so this isolated job uses a
-   short-lived job token and sends **GET requests only**. It checks current main,
+   short-lived job token. Private-input transfer sends **GET requests only**; the
+   same job also calls GitHub's **POST content-generation endpoint** for PR notes,
+   without creating a tag or release. It uploads the source-bound
+   `release-notes-preview` and passes its SHA-256 to the protected publisher.
+   It checks current main,
    effective main rules, publisher environment protection, unique private seed identity and declared/actual byte
    hashes. It exports three pinned macOS seed files and the pinned Windows
    dictionary snapshot into separate one-day artifacts. It creates no release or
@@ -604,7 +630,8 @@ above and appends the exact candidate source/download hashes.
    exists. The owner must test **both exact new installers** first. It verifies
    all six public files and their retained inputs, protection, current main,
    classification and absent tag,
-   creates one `v<version>` at that commit and uploads one private draft. Every
+   checks the saved PR-note preview hash/source/version, creates one
+   `v<version>` at that commit and uploads one private draft. Every
    uploaded asset's GitHub SHA-256 and state must match before publication; main
    is checked again after the upload. A failed platform/check or an advanced main
    prevents publication. Tags and existing assets are never overwritten.

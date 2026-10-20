@@ -150,7 +150,11 @@ The types above match [`cliff.toml`](../cliff.toml). git-cliff still includes ol
 or unconventional commits under a matching group or **Other changes**; new naming
 rules do not justify dropping history or rewriting old commits.
 
-The generated draft is a complete commit inventory. Review the net code changes
-before writing user-facing highlights: an added and then reverted feature is not
-available. Keep the reviewed notes, original source hashes and publication gates
-described in the [release-note procedure](release-runbook.md#generate-and-review-release-notes).
+Public release notes list GitHub PR titles and numbers since the previous app
+release, followed by a Full Changelog comparison. Use descriptive titles and merge
+features through PRs into `develop` so they have individual entries; direct commits
+have no invented PR number. Review titles and reverts before publication approval.
+The optional git-cliff audit still inventories every commit. Installation belongs
+in README; verification records and limitations stay in the release checklist and
+metadata. The [release-note procedure](release-runbook.md#generate-and-review-release-notes)
+preserves the existing publication gates.

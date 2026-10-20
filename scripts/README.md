@@ -21,23 +21,38 @@ prefix or leading zeroes. `0.x.x` and suffixed versions are pre-releases;
 diff, then use the normal protected main PR and release flow. This command makes
 local file edits; it does not commit, push, create tags, build or publish.
 
-## Draft release notes with git-cliff
+## Preview PR-based release notes
 
-Use Python 3.11+ from the repository root (`py -3.11` on Windows):
+With Python 3.11+ and authenticated GitHub CLI, preview the exact release range:
+
+```sh
+rtk python3 scripts/release_notes.py github --previous-tag v0.3.0 --revision v0.4.0 --output services/ocr/build/release-notes/0.4.0-pr-preview.json
+```
+
+This creates JSON plus a matching Markdown preview with GitHub's PR titles/numbers
+and Full Changelog link. It creates no tag or release. Omit `--previous-tag` to
+select the highest earlier published ancestor app version, including pre-releases
+and excluding private seeds/drafts. An existing target tag must match the source.
+Use new output paths and committed app metadata; GitHub CLI needs the API's
+`contents: write` permission to generate content. CI saves the preview before
+publication approval and verifies its SHA-256/source/version before `compose`
+writes the PR list and Full Changelog as the complete public body. Installation,
+model setup and source/licence guidance are in README. Verification/limitations
+stay in the release checklist and downloadable metadata. The public PR list is
+not manually written into `docs/desktop-release-notes.md`; that file now documents
+the format and is not a copied template.
+
+For an optional complete **commit audit**, the existing pinned maintainer tool
+remains separate from the app/frozen runtime:
 
 ```sh
 rtk python3 scripts/release_notes.py prepare
-rtk python3 scripts/release_notes.py generate --previous-tag v0.3.0 --revision HEAD --output services/ocr/build/release-notes/0.4.0-draft.md
+rtk python3 scripts/release_notes.py generate --previous-tag v0.3.0 --revision v0.4.0 --output services/ocr/build/release-notes/0.4.0-commit-audit.md
 ```
 
-Choose the actual previous published tag; the versions above are examples.
-Preparation downloads checksum-pinned git-cliff 2.14.2 for the current platform
-into ignored maintainer tooling, separate from the app and frozen OCR runtime.
-Generation runs locally, verifies full commit coverage and refuses existing output
-files. Review the net changes and copy the user-facing highlights into
-`docs/desktop-release-notes.md`, preserving its notices and placeholders. The tool
-does not update versions, tags, releases or the historical `CHANGELOG.md`.
-See [the full procedure](../docs/release-runbook.md#generate-and-review-release-notes)
+Preparation downloads checksum-pinned git-cliff 2.14.2. Generation is offline,
+checks every commit and refuses existing files. Neither command updates versions,
+tags, releases or historical `CHANGELOG.md`. See [the full procedure](../docs/release-runbook.md#generate-and-review-release-notes)
 and [the exact-version terms](../THIRD_PARTY_LICENSES/git-cliff/README.md).
 
 ## Current release and checks

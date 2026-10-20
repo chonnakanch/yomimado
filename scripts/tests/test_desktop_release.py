@@ -743,6 +743,7 @@ class PublisherRehearsalTests(unittest.TestCase):
                 "release_dictionaries.py",
                 "release_api.py",
                 "windows_release.py",
+                "release_notes.py",
             ):
                 shutil.copyfile(ROOT / "scripts" / name, scripts / name)
             for name in (
@@ -785,11 +786,22 @@ class PublisherRehearsalTests(unittest.TestCase):
                 mac, win, mr, wr = fixtures(root, version)
                 record = release.combine(mac, win, root / "candidate", mr, wr)
             env["EXPECTED_RECORD"] = json.dumps(record)
-            (root / "docs").mkdir()
-            shutil.copyfile(
-                ROOT / "docs/desktop-release-notes.md",
-                root / "docs/desktop-release-notes.md",
+            prepared = root / "release-notes-preview/notes.json"
+            prepared.parent.mkdir()
+            release.write_json(
+                prepared,
+                {
+                    "sourceRevision": REVISION,
+                    "version": version,
+                    "previousTag": "v0.0.0",
+                    "previousRevision": "c" * 40,
+                    "changes": "## What's Changed\n\n- Example change (#123)",
+                    "comparison": f"https://github.com/chonnakanch/yomimado/compare/v0.0.0...v{version}",
+                },
             )
+            env["NOTES_SHA256"] = hashlib.sha256(prepared.read_bytes()).hexdigest()
+            if scenario == "notes-tamper":
+                prepared.write_text("changed preview")
             release.write_json(root / "environment.json", ENVIRONMENT)
             release.write_json(root / "policies.json", POLICIES)
             release.write_json(root / "expected-main-rules.json", MAIN_RULES)
@@ -879,9 +891,11 @@ class PublisherRehearsalTests(unittest.TestCase):
                 calls = (root / "calls.txt").read_text()
                 self.assertEqual(calls.count("api --method POST"), 1)
                 self.assertEqual(calls.count("release create"), 1)
-                self.assertIn(
-                    "Both exact CI installers", (root / "release-notes.md").read_text()
-                )
+                public_notes = (root / "release-notes.md").read_text()
+                self.assertIn("Example change (#123)", public_notes)
+                self.assertNotIn("Both exact CI installers", public_notes)
+                self.assertNotIn("Release verification", public_notes)
+                self.assertTrue(public_notes.rstrip().endswith("...v" + version))
             else:
                 self.assertNotEqual(result.returncode, 0)
                 self.assertFalse((root / "published.txt").exists())
@@ -909,6 +923,7 @@ class PublisherRehearsalTests(unittest.TestCase):
             "advance-during-upload",
             "duplicate-draft",
             "wrong-draft-target",
+            "notes-tamper",
         ):
             with self.subTest(scenario=scenario):
                 self.rehearsal("0.1.0", scenario)

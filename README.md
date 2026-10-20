@@ -39,6 +39,24 @@ the app verifies the supported file's checksum before importing it. Translation
 is optional: import a compatible local model or select one through Ollama in
 **Settings → Reading**.
 
+Download the Apple Silicon `.dmg` for macOS or the per-user Windows 11 x64
+`_x64-setup.exe`. Only your platform's installer is needed to run YomiMado.
+Windows inference uses the CPU and requires no developer Python or CUDA.
+Translation components and models are separate optional downloads.
+
+Paid code signing is not used for this hobby release; macOS is ad-hoc signed and
+unnotarized. Follow the operating system's per-app approval flow and keep security
+protections enabled. Unexpected malware/damaged-file warnings need investigation.
+Windows setup requires acceptance of terms applying only to Microsoft's runtime
+components; YomiMado's GPL and other open-source component rights remain intact.
+
+Detector weights are excluded from the installers, release assets and corresponding
+sources. Import your own compatible detector ONNX file through model setup.
+For local Marian translation, macOS accepts compatible single Torch/Safetensors
+weights with tokenizer files; Windows requires the compatible Marian ONNX export
+folder. GGUF and other model families use Ollama, installed separately on the same
+computer. See [translation model setup](docs/translation-model-selection.md).
+
 ## Read a page
 
 1. Open your manga in its usual reader.
@@ -100,3 +118,20 @@ Text detection uses comic-text-detector, recognition uses Manga OCR, and word
 and kanji lookup use EDRDG dictionary data. See the
 [third-party notices](THIRD_PARTY_LICENSES/README.md) and
 [model and dictionary credits](THIRD_PARTY_LICENSES/MODEL_CREDITS.md).
+
+### Sources and licenses
+
+Each release includes corresponding project/dependency sources, build recipes,
+licences, data notices and checksums. For the complete source delivery, download
+both `YomiMado_<version>_sources_macos.tar.gz` and
+`YomiMado_<version>_sources_windows.tar.gz`. Extract each outer archive and then
+the archives inside; original paths, platform source archives and dictionary
+snapshots are retained. GitHub's automatic source-code downloads do not include
+all bundled dependency sources.
+
+`YomiMado_<version>_notices.tar.gz` contains platform notices, the native input
+inventory and original verification records. `desktop-SHA256SUMS.txt` checks the
+installers, sources, notices, optional translation ZIPs and
+`desktop-release-candidate.json`, which records provenance and original input
+hashes. Complete source-only rebuilding remains unverified. Installed-app testing
+and hardware limits apply to the exact installer hashes recorded for each release.
