@@ -582,7 +582,7 @@ Future packaging checklist:
 
 ## Prepare each new release before merging main
 
-Follow the [manual release steps](release-runbook.md#release-a-new-app-version).
+Follow the [release steps](release-runbook.md#release-a-new-app-version).
 Complete this checklist before the protected main PR is merged:
 
 - [ ] Update the five app version files and commit the intended version/code
@@ -610,10 +610,11 @@ Complete this checklist before the protected main PR is merged:
       If the intended source changes during preparation, generate a fresh draft
       and reconcile any changed behavior before merging.
 - [ ] Push the focused changes and require passing Checks for the main PR before
-      the authorized merge. Wait for successful `gates` on the resulting main
-      commit, then manually start Release on main. Routine merges do not build
-      installers. Follow the jobs below, test the exact installers and obtain the
-      separate protected publication approval.
+      authorized merge of `release/<version>` into main. Release starts
+      automatically and waits for successful `gates` on that exact main commit.
+      Routine feature/fix merges do not build installers; manual main dispatch
+      remains available for recovery. Follow the jobs below, test the exact
+      installers and obtain the separate protected publication approval.
 
 GitHub generates a PR-list preview in `release-notes-preview` before publication
 approval. The publisher checks its SHA-256 and source/version and puts Full
@@ -622,8 +623,10 @@ from the public note body. git-cliff remains an optional local commit audit.
 
 ## Flow and permissions
 
-1. **Plan** runs only on an explicit manual dispatch on this repository's `main`.
-   It requires successful GitHub Actions `gates` for the exact selected commit,
+1. **Plan** runs when a same-repository `release/*` PR merges into `main`, or on
+   an explicit manual main dispatch for recovery. It rejects closed unmerged PRs,
+   other head branches, forks and a mismatched merge SHA. It waits up to 15 minutes
+   for successful GitHub Actions `gates` for the exact selected main commit,
    then checks matching Tauri/npm/Cargo versions, default branch and the
    `desktop-release` protection. A released
    version with its tag is skipped; an existing incomplete tag fails closed.
@@ -633,7 +636,7 @@ from the public note body. git-cliff remains an optional local commit audit.
    `alpha.N`/`beta.N`/`rc.N` versions are pre-releases; `1.0.0` and later without
    suffixes are stable.
    Release titles use only the version: **YomiMado v0.1.0**.
-2. **seed-inputs** follows a successful manual Release plan on protected `main`,
+2. **seed-inputs** follows a successful Release plan on protected `main`,
    without a separate input-transfer approval or personal token. GitHub requires
    `contents: write` to read unpublished drafts, so this isolated job uses a
    short-lived job token. Private-input transfer sends **GET requests only**; the

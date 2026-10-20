@@ -1,4 +1,4 @@
-# Manual releases and macOS runtime seeds
+# Version releases and macOS runtime seeds
 
 Use this runbook for a new version or replacement macOS runtime seed. It describes
 the checked-in workflow, not the live status of a GitHub run. Read the current
@@ -10,7 +10,7 @@ recorded candidates.
 
 The personal Codex skill is `$yomimado-release`. Example requests:
 
-> Use $yomimado-release to prepare version 0.5.0 on a topic branch from main. Check whether the
+> Use $yomimado-release to prepare version 0.5.0 on release/0.5.0 from main. Check whether the
 > existing macOS seed can be reused, update the release notes, and run the relevant
 > checks. Do not merge into main or publish.
 
@@ -24,7 +24,7 @@ The personal Codex skill is `$yomimado-release`. Example requests:
 An agent without the installed skill can use:
 
 > Follow docs/release-runbook.md and AGENTS.md for this release task. Prepare
-> version 0.5.0 on a topic branch from main, check runtime-seed compatibility, and stop before
+> version 0.5.0 on release/0.5.0 from main, check runtime-seed compatibility, and stop before
 > main integration or publication.
 
 Replace the example version and requested scope. Existing user authorization
@@ -72,12 +72,13 @@ notice or frozen-service changes.
 ## Release a new app version
 
 Use the [branch and commit rules](git-conventions.md), for example
-`chore/release-0-5-0` and `chore(release): prepare v0.5.0`. Main is the only
+`release/0.5.0` and `chore(release): prepare v0.5.0`. Main is the only
 integration branch; every feature/fix/release topic targets `main` through a
-protected PR. A merge runs Checks, not Release. Published tags identify released
+protected PR. A same-repository `release/*` PR merge starts Release automatically;
+ordinary feature/fix merges run Checks only. Published tags identify released
 versions. Preserve exact reviewed seed/source commits when merging.
 
-1. Start a release topic from fetched `origin/main`, with a clean working directory
+1. Start `release/<version>` from fetched `origin/main`, with a clean working directory
    and intended feature PRs already integrated. Preserve unrelated work. Use Python
    3.11 or newer. Continue an existing selected topic when appropriate.
 2. Preview and update all five app version files together. These commands use an
@@ -103,13 +104,16 @@ versions. Preserve exact reviewed seed/source commits when merging.
    Run relevant checks, commit and push focused changes. Run the seed guard against
    the committed source; resolve rejected frozen inputs before main integration.
 
-4. Prepare the release topic's protected PR into `main`. Merge when authorized
-   and required checks pass. Wait for **Checks / gates** on the resulting exact
-   main commit; PR-merge checks alone do not satisfy Release's source check.
-5. Start **Actions → Release → Run workflow → main** explicitly. There is no
-   version input: the workflow reads the committed five app version files.
+4. Prepare the same-repository `release/<version>` topic's protected PR into
+   `main`. Merge when authorized and required checks pass. Release starts on the
+   merged PR's `closed` event and waits up to 15 minutes for **Checks / gates**
+   on the resulting exact main commit. PR checks alone do not satisfy this gate.
+   Closed unmerged PRs, fork release branches and other head branches are skipped.
+5. Follow the automatic Release run. There is no version input: the workflow
+   reads the committed five app version files. Manual **Actions → Release → Run
+   workflow → main** remains available for recovery after investigating a failure.
    Dispatching on a topic, tag or retired `develop` ref cannot build or publish.
-   An ordinary main push does not start Release. Confirm both builders and
+   A direct main push does not start Release. Confirm both builders and
    `verify-transfer`, then download `verified-desktop-candidate` before expiry.
 6. Verify delivery hashes and test both exact installers using the
    [macOS](macos-clean-mac-test.md) and [Windows](windows-installed-test.md)
@@ -184,7 +188,7 @@ stop generation rather than publishing incomplete notes. If the target tag
 already exists, it must point at the selected source because GitHub ignores
 `target_commitish` for an existing tag.
 
-On a manually dispatched main run with successful exact-commit Checks,
+On a merged `release/*` PR or manual main run with successful exact-commit Checks,
 `seed-inputs` generates this preview before the builders
 and uploads `release-notes-preview` for 14 days. Its job summary shows the PR list
 and comparison. The preview record is bound to the exact source/version and its

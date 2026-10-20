@@ -404,8 +404,10 @@ seed/source commit identities when merging; do not rewrite published history.
 Do not add a tool-specific prefix to new branch names. `main` is the only
 integration branch: start new topics from fetched main and target their PRs to
 main. `develop` is retired; preserve its unmerged history during migration. Main
-merges run Checks only. Start Release explicitly on main after its exact-commit
-Checks pass; installer publication retains the owner's separate approval.
+merges run Checks. Merging a same-repository `release/*` PR into main starts
+Release automatically; it waits for exact-commit Checks before building. Manual
+main dispatch remains available for recovery. Installer publication retains the
+owner's separate approval.
 
 For new-version releases and macOS runtime-seed work, follow
 [`docs/release-runbook.md`](docs/release-runbook.md). It separates local preparation,

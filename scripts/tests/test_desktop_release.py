@@ -579,9 +579,66 @@ class PrivateInputTests(unittest.TestCase):
         ):
             with (
                 patch.dict(os.environ, {**valid, field: value}),
-                self.assertRaisesRegex(ValueError, "manual main workflow"),
+                self.assertRaisesRegex(ValueError, "merged release/"),
             ):
                 release.main_scope()
+
+    def test_only_merged_same_repository_release_pr_at_exact_main_can_read_inputs(self):
+        valid = {
+            "action": "closed",
+            "pull_request": {
+                "merged": True,
+                "merge_commit_sha": REVISION,
+                "base": {"ref": "main", "repo": {"full_name": release.REPOSITORY}},
+                "head": {
+                    "ref": "release/0.5.0",
+                    "repo": {"full_name": release.REPOSITORY},
+                },
+            },
+        }
+        with tempfile.TemporaryDirectory() as temporary:
+            event_path = Path(temporary) / "event.json"
+            env = {
+                "GITHUB_ACTIONS": "true",
+                "GITHUB_REPOSITORY": release.REPOSITORY,
+                "GITHUB_REF": "refs/heads/main",
+                "GITHUB_EVENT_NAME": "pull_request",
+                "GITHUB_EVENT_PATH": str(event_path),
+                "GITHUB_SHA": REVISION,
+            }
+            for scenario in (
+                "merged",
+                "closed-unmerged",
+                "opened",
+                "feature",
+                "fork",
+                "other-base",
+                "other-base-repo",
+                "wrong-sha",
+            ):
+                event = copy.deepcopy(valid)
+                pr = event["pull_request"]
+                if scenario == "closed-unmerged":
+                    pr["merged"] = False
+                elif scenario == "opened":
+                    event["action"] = "opened"
+                elif scenario == "feature":
+                    pr["head"]["ref"] = "feat/example"
+                elif scenario == "fork":
+                    pr["head"]["repo"]["full_name"] = "other/repo"
+                elif scenario == "other-base":
+                    pr["base"]["ref"] = "develop"
+                elif scenario == "other-base-repo":
+                    pr["base"]["repo"]["full_name"] = "other/repo"
+                elif scenario == "wrong-sha":
+                    pr["merge_commit_sha"] = "b" * 40
+                release.write_json(event_path, event)
+                with self.subTest(scenario=scenario), patch.dict(os.environ, env):
+                    if scenario == "merged":
+                        release.main_scope()
+                    else:
+                        with self.assertRaises(ValueError):
+                            release.main_scope()
 
     def test_private_seed_requires_pinned_digests_and_unambiguous_draft(self):
         for platform, pinned in release.INPUTS.items():
@@ -674,6 +731,70 @@ class PrivateInputTests(unittest.TestCase):
 
 
 class MainChecksTests(unittest.TestCase):
+    def test_waits_for_missing_and_running_checks_then_saves_success(self):
+        valid = {
+            "name": "gates",
+            "head_sha": REVISION,
+            "app": {"id": 15368},
+            "status": "completed",
+            "conclusion": "success",
+        }
+        reports = [
+            {"total_count": 0, "check_runs": []},
+            {
+                "total_count": 1,
+                "check_runs": [{**valid, "status": "in_progress", "conclusion": None}],
+            },
+            {"total_count": 1, "check_runs": [valid]},
+        ]
+        with (
+            tempfile.TemporaryDirectory() as temporary,
+            patch.dict(os.environ, {"GITHUB_SHA": REVISION}),
+            patch.object(release, "main_scope"),
+            patch.object(release, "request", side_effect=reports) as api,
+            patch.object(release.time, "sleep") as sleep,
+            patch("builtins.print"),
+        ):
+            path = Path(temporary) / "checks.json"
+            release.wait_main_checks(path)
+            self.assertEqual(release.read_json(path), reports[-1])
+            self.assertEqual(api.call_count, 3)
+            self.assertEqual(sleep.call_count, 2)
+            self.assertTrue(
+                all(REVISION in call.args[0] for call in api.call_args_list)
+            )
+
+    def test_failed_checks_stop_immediately_and_missing_checks_time_out(self):
+        failed = {
+            "total_count": 1,
+            "check_runs": [
+                {
+                    "name": "gates",
+                    "head_sha": REVISION,
+                    "app": {"id": 15368},
+                    "status": "completed",
+                    "conclusion": "failure",
+                }
+            ],
+        }
+        for report, count, message in (
+            (failed, 1, "successful Checks"),
+            ({"total_count": 0, "check_runs": []}, 91, "Timed out"),
+        ):
+            with (
+                self.subTest(report=report),
+                tempfile.TemporaryDirectory() as temporary,
+                patch.dict(os.environ, {"GITHUB_SHA": REVISION}),
+                patch.object(release, "main_scope"),
+                patch.object(release, "request", return_value=report) as api,
+                patch.object(release.time, "sleep") as sleep,
+                patch("builtins.print"),
+                self.assertRaisesRegex(ValueError, message),
+            ):
+                release.wait_main_checks(Path(temporary) / "checks.json")
+            self.assertEqual(api.call_count, count)
+            self.assertEqual(sleep.call_count, count - 1)
+
     def test_release_requires_completed_actions_gates_on_the_exact_commit(self):
         valid = {
             "name": "gates",
@@ -775,6 +896,14 @@ class PlanRehearsalTests(unittest.TestCase):
                     "python": (
                         "if sys.argv[1].endswith('macos-ci-release.py'):\n"
                         "    if sys.argv[2]=='plan': print(json.dumps({'version':'0.5.0','tag':'v0.5.0','prerelease':True}))\n"
+                        "    sys.exit(0)\n"
+                        "if sys.argv[2]=='wait-main-checks':\n"
+                        "    sys.path.insert(0,str(Path('scripts').resolve()))\n"
+                        "    import desktop_release as release\n"
+                        "    from unittest.mock import patch\n"
+                        "    report=json.loads((Path(os.environ['RUNNER_TEMP'])/'replies.json').read_text())['checks']\n"
+                        "    with patch.object(release,'main_scope'), patch.object(release,'request',return_value=report), patch.object(release.time,'sleep'):\n"
+                        "        release.wait_main_checks(Path(sys.argv[4]))\n"
                         "    sys.exit(0)\n"
                         "os.execv(sys.executable,[sys.executable,*sys.argv[1:]])"
                     ),
@@ -1118,8 +1247,21 @@ class PublisherRehearsalTests(unittest.TestCase):
         triggers = workflow.split("\npermissions:", 1)[0]
         self.assertIn("  workflow_dispatch:\n", triggers)
         self.assertNotIn("  push:", triggers)
-        self.assertNotIn("  pull_request:", triggers)
+        self.assertIn(
+            "  pull_request:\n    types: [closed]\n    branches: [main]", triggers
+        )
         self.assertIn("github.event_name == 'workflow_dispatch'", workflow)
+        self.assertIn("github.event.pull_request.merged == true", workflow)
+        self.assertIn(
+            "startsWith(github.event.pull_request.head.ref, 'release/')", workflow
+        )
+        self.assertIn(
+            "github.event.pull_request.head.repo.full_name == github.repository",
+            workflow,
+        )
+        self.assertIn(
+            "github.event.pull_request.merge_commit_sha == github.sha", workflow
+        )
 
 
 if __name__ == "__main__":

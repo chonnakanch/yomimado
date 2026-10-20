@@ -318,15 +318,17 @@ For release-tool changes, follow the matching suites in
 
 The complete active workflow inventory is:
 
-| Workflow | Trigger                                       | Coverage and permissions                                                                                                                                                                                                                     |
-| -------- | --------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Checks   | PRs into `main`, main pushes, manual dispatch | Frontend, service, release tools, macOS/Windows native jobs and required `gates`; read-only token, no private seed or publication.                                                                                                           |
-| Release  | Manual dispatch on `main` only                | Exact-commit green Checks, version/seed/protection checks, isolated private-input transfer and notes preview, both installer builders, combined verification and protected owner publication. Builders receive no private-input credentials. |
+| Workflow | Trigger                                                    | Coverage and permissions                                                                                                                                                                                                                     |
+| -------- | ---------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Checks   | PRs into `main`, main pushes, manual dispatch              | Frontend, service, release tools, macOS/Windows native jobs and required `gates`; read-only token, no private seed or publication.                                                                                                           |
+| Release  | Merged `release/*` PR into `main`, or manual main recovery | Exact-commit green Checks, version/seed/protection checks, isolated private-input transfer and notes preview, both installer builders, combined verification and protected owner publication. Builders receive no private-input credentials. |
 
 Main can accumulate completed features without a version bump on each merge.
-When ready to release, merge a version-preparation PR, wait for its main Checks,
-and start Release explicitly. The public version tag is created only after the
-existing installer/publication approval. Keep main at that candidate until
+When ready to release, merge a same-repository `release/<version>` PR into main.
+Release starts automatically and waits up to 15 minutes for exact main Checks
+before private inputs/builds. Closed unmerged PRs and ordinary feature/fix merges
+are skipped. Manual main dispatch remains available for recovery. The public
+version tag is created only after the existing installer/publication approval. Keep main at that candidate until
 publication; further features can continue on topic branches meanwhile.
 
 [Checks](../.github/workflows/checks.yml) runs on main pushes, PRs into main and

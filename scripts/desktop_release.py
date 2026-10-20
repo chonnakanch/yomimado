@@ -17,6 +17,7 @@ import os
 import re
 import shutil
 import tarfile
+import time
 from pathlib import Path
 from urllib.request import Request, build_opener
 
@@ -61,16 +62,35 @@ COMBINED_LAYOUTS = {
 
 
 def main_scope() -> None:
+    event_name = os.environ.get("GITHUB_EVENT_NAME")
+    allowed_event = event_name == "workflow_dispatch"
+    if event_name == "pull_request" and os.environ.get("GITHUB_EVENT_PATH"):
+        event = read_json(Path(os.environ["GITHUB_EVENT_PATH"]))
+        pr = event.get("pull_request", {})
+        head = pr.get("head", {})
+        allowed_event = (
+            event.get("action") == "closed"
+            and pr.get("merged") is True
+            and pr.get("base", {}).get("ref") == "main"
+            and pr.get("base", {}).get("repo", {}).get("full_name") == REPOSITORY
+            and head.get("repo", {}).get("full_name") == REPOSITORY
+            and head.get("ref", "").startswith("release/")
+            and pr.get("merge_commit_sha") == os.environ.get("GITHUB_SHA")
+        )
     if (
         os.environ.get("GITHUB_ACTIONS") != "true"
         or os.environ.get("GITHUB_REPOSITORY") != REPOSITORY
         or os.environ.get("GITHUB_REF") != "refs/heads/main"
-        or os.environ.get("GITHUB_EVENT_NAME") != "workflow_dispatch"
+        or not allowed_event
         or not re.fullmatch(r"[0-9a-f]{40}", os.environ.get("GITHUB_SHA", ""))
     ):
         raise ValueError(
-            "Release input access requires this repository's manual main workflow"
+            "Release input access requires main and a merged release/* PR or manual dispatch"
         )
+
+
+class ChecksPending(ValueError):
+    """The exact main commit has no completed gates result yet."""
 
 
 def verify_main_checks(report: dict) -> None:
@@ -89,6 +109,15 @@ def verify_main_checks(report: dict) -> None:
         for run in runs
         if run.get("name") == "gates" and run.get("app", {}).get("id") == 15368
     ]
+    if not runs or (
+        len(gates) == 1
+        and gates[0].get("head_sha") == revision
+        and gates[0].get("status") in {"queued", "in_progress", "waiting", "pending"}
+        and gates[0].get("conclusion") is None
+    ):
+        raise ChecksPending(
+            "Release requires successful Checks; exact main gates pending"
+        )
     if (
         len(gates) != 1
         or gates[0].get("head_sha") != revision
@@ -98,6 +127,27 @@ def verify_main_checks(report: dict) -> None:
         raise ValueError(
             "Release requires successful Checks / gates for the exact main commit"
         )
+
+
+def wait_main_checks(path: Path) -> None:
+    """Allow main push Checks up to 15 minutes to complete after the PR closes."""
+    main_scope()
+    revision = os.environ["GITHUB_SHA"]
+    for attempt in range(91):
+        report = request(
+            f"{API}/commits/{revision}/check-runs?check_name=gates&filter=latest&per_page=100"
+        )
+        write_json(path, report)
+        try:
+            verify_main_checks(report)
+            return
+        except ChecksPending:
+            if attempt == 90:
+                raise ValueError(
+                    "Timed out waiting for successful Checks on main"
+                ) from None
+            print("Waiting for Checks / gates on " + revision, flush=True)
+            time.sleep(10)
 
 
 def verify_main_rules(rules: list[dict]) -> None:
@@ -734,6 +784,7 @@ def main() -> None:
             "download-inputs",
             "verify-main-rules",
             "verify-main-checks",
+            "wait-main-checks",
             "verify-inputs",
             "restore-dictionaries",
             "windows-record",
@@ -760,6 +811,8 @@ def main() -> None:
         verify_main_rules(read_json(args.directory))
     elif args.action == "verify-main-checks":
         verify_main_checks(read_json(args.directory))
+    elif args.action == "wait-main-checks":
+        wait_main_checks(args.directory)
     elif args.action == "verify-inputs":
         verify_inputs(args.directory, args.platform)
     elif args.action == "restore-dictionaries":
