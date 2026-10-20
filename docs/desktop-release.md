@@ -1,5 +1,15 @@
 # Shared desktop release checklist
 
+0.4.0 reuse/Checks repair — **2026-10-20**: after the owner's PR #17 merge at
+`ce2a3df`, [Release `39371691358`](https://github.com/chonnakanch/yomimado/actions/runs/39371691358)
+failed in `plan` at the known reuse rejection; both installer builders and
+publication were skipped. A [technical repair](macos-runtime-reuse-0.4.0.md)
+accepts only the exact frontend JLPT source/data/notice hashes, delivers their
+separate terms and provenance, and adds real seed compatibility to required
+Checks. Frozen runtime/seed pins and original approvals remain unchanged. Repair
+integration and a fresh Release remain separate; retrying the old run uses its
+old guard. Historical preparation evidence follows.
+
 0.4.0 preparation — **2026-10-20**: version and release notes are prepared from
 `develop`; local application/release checks pass. The existing macOS seed input
 hashes verify, but committed-source reuse rejects the new JLPT source/data/notices

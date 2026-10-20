@@ -6,6 +6,19 @@ See the [feature roadmap](feature-roadmap.md) for proposed learning features and
 the [changelog](../CHANGELOG.md) for completed development changes. Source
 completion is tracked separately from publication and installer acceptance.
 
+**0.4.0 runtime reuse and Checks repair — 2026-10-20:** the owner's PR #17 merge
+started Release `39371691358`, which stopped at the documented changelog/JLPT
+reuse boundary before building installers. The repair adds a technical,
+hash-pinned exception for 15 exact frontend data/notice/generator files and
+treats the changelog as project documentation. Source preparation retains the
+dataset's separate terms, committed source bytes and explicit provenance without
+extending the original seed approval. Frozen service/dependency inputs, seed
+revision and all private-input pins remain unchanged. Checks now fetches the
+seed history and runs the real version/reuse preflight in the required
+`release-tools` dependency of `gates`. See the
+[review, regression coverage and integration limits](macos-runtime-reuse-0.4.0.md).
+Main integration, a fresh installer build and publication remain separate.
+
 **Version 0.4.0 preparation — 2026-10-20:** bumped the five app version files
 from clean, current `develop` with the version updater and added release notes for
 manual selection, conjugation explanations, JLPT tags, Saved search and toolbar

@@ -61,6 +61,14 @@ pass. A documented, narrowly reviewed runtime-independent exception is different
 from approving new frozen inputs. The seed version need not match every later
 app version when its runtime remains compatible.
 
+Checks also runs `plan` and `verify-reuse` with full Git history in its
+`release-tools` job. The required `gates` depends on that job: runtime/source
+incompatibility must be resolved before a main PR can pass Checks. This step is
+read-only and does not download private inputs. The
+[0.4.0 frontend-data review](macos-runtime-reuse-0.4.0.md) documents one exact,
+hash-pinned runtime-independent exception; it does not permit arbitrary data,
+notice or frozen-service changes.
+
 ## Release a new app version
 
 1. Start on an up-to-date `develop` with a clean working directory and intended

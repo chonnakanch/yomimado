@@ -1,5 +1,11 @@
 # Version 0.4.0 preparation — 2026-10-20
 
+Follow-up: the owner merged PR #17 at `ce2a3df`; Release `39371691358` then failed
+in `plan` at the recorded reuse rejection, before either builder ran. The
+[subsequent technical review and repair](macos-runtime-reuse-0.4.0.md) covers the
+exact frontend data separately and adds the real preflight to required Checks.
+The preparation evidence and original blocker below are retained historically.
+
 Scope: prepare from `develop`, run the release checks and stop before merging or
 publishing. Preparation started from clean, fetched `develop` at
 `1111f874aa91ea157e33bb4ec8f6ac5ad8c51a0f`, matching `origin/develop`.
