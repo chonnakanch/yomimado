@@ -549,9 +549,11 @@ Complete this checklist before the protected main PR is merged:
       Replace the example tag/path for the intended release. Use a new output
       filename for another draft. See [generation details](release-runbook.md#generate-and-review-release-notes).
 
-- [ ] Review the draft against the final diff and `CHANGELOG.md`. Describe net
-      features/fixes/removals in `docs/desktop-release-notes.md`; do not advertise
-      reverted features as available. Preserve `VERSION`/`CLASSIFICATION`, known
+- [ ] Review the draft against the final diff and `CHANGELOG.md`. Replace the
+      highlights in `docs/desktop-release-notes.md` with only net changes since the
+      previous published tag. Keep one `## Changes in VERSION` section and remove
+      older versions' highlights; do not advertise reverted features as available.
+      Preserve `VERSION`/`CLASSIFICATION`, known
       limitations and installation/source notices. Commit the reviewed notes.
 - [ ] Run version/runtime-reuse preflight and resolve any required
       [macOS seed rebuild/review/activation](release-runbook.md#build-a-replacement-macos-seed).

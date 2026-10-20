@@ -105,8 +105,10 @@ commits when merging.
    Replace the previous tag with the actual previous published release and choose
    a new draft filename. Review every group, including reverts, against the final
    code diff and changelog. Then update
-   [release notes](desktop-release-notes.md), retaining `VERSION` and
-   `CLASSIFICATION` placeholders and installation/source notices. Review the diff,
+   [release notes](desktop-release-notes.md) with only the net changes since that
+   previous published release. Replace the previous highlights instead of appending
+   another version's section; keep one `## Changes in VERSION` section. Retain
+   `VERSION` and `CLASSIFICATION` placeholders and installation/source notices. Review the diff,
    run relevant checks, commit and push focused changes. Run the seed guard against
    the committed source. If it rejects frozen inputs, complete the seed procedure
    before main integration.
@@ -181,7 +183,11 @@ is a complete commit inventory, not an automatic claim about available features.
 
 Review it against the final diff and [CHANGELOG.md](../CHANGELOG.md). Summarize the
 net features, fixes, removals and relevant dependency changes in the curated
-[release notes](desktop-release-notes.md). In particular, an added-then-reverted
+[release notes](desktop-release-notes.md). That file is the current release's
+publication body, not a cumulative changelog: replace its highlights with the net
+changes since the selected previous published tag, keeping only one
+`## Changes in VERSION` section. Older changes remain in historical GitHub releases
+and Git history; preserve `CHANGELOG.md` as the historical log. In particular, an added-then-reverted
 feature belongs in the review history, not in available features. Keep known
 limitations, `VERSION`/`CLASSIFICATION` placeholders and installation/source/data
 notices. Do not overwrite the historical changelog with raw generated entries.

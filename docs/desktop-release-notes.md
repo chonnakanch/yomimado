@@ -5,7 +5,7 @@ screen: capture a region, recognize Japanese locally, then click to view reading
 dictionary/kanji information and an on-demand local translation. Saved words,
 sentences and translation cache stay on the computer.
 
-## Changes in 0.4.0
+## Changes in VERSION
 
 - Select Japanese text within or across automatic word boundaries and look up
   the selection in local JMdict. A visible caret and keyboard selection help
@@ -27,68 +27,6 @@ sentences and translation cache stay on the computer.
 Check OCR remains an uncertainty indicator. Manual OCR correction and ordinary
 Rescan remain available; single-bubble retry/redraw is deferred.
 
-## Changes in 0.3.0
-
-- Smaller local learning resources: Lindera/IPADIC replaces Sudachi, retaining
-  word readings, dictionary forms and source-text offsets. Some word boundaries
-  differ from earlier versions. JMdict word meanings and KANJIDIC2 kanji
-  information remain available offline.
-- OCR no longer carries an unused UniDic dictionary or its binding. Exactly
-  uniform captures and blank recovery tiles avoid unnecessary inference;
-  repeated identical recognition crops can reuse their result within a scan.
-- Translation models are separate from the installer. Settings → Reading starts
-  unconfigured and supports importing a compatible Japanese-to-English Marian
-  model or selecting/downloading a local text model through Ollama. Translation
-  runs only on request. Existing model files and saved learning data are preserved.
-- Imported models are copied, checked and selected explicitly; model selection
-  persists across restarts and translation caches stay separate between models.
-  Setup failures show recovery guidance instead of a permanent checking state.
-- macOS retains its Torch OCR backend; Windows retains ONNX CPU inference.
-  Experimental macOS ONNX/CoreML comparisons are not enabled in this release.
-
-Local Marian import formats differ by platform: macOS accepts compatible single
-Torch/Safetensors weights with tokenizer files; Windows requires the compatible
-Marian ONNX export folder. GGUF and other model families use Ollama. See
-[translation model setup](https://github.com/chonnakanch/yomimado/blob/main/docs/translation-model-selection.md).
-Ollama must be installed separately on the same computer.
-
-## Changes in 0.2.2
-
-- Native macOS menu bar and Windows notification-area icons provide toolbar
-  show/hide, Saved, Settings, Sources & licenses and Quit. On Windows, left-click
-  restores the toolbar and right-click opens the menu. Hiding the toolbar keeps
-  OCR overlays, results and shortcuts available.
-- Tray window actions are guarded during scans. The toolbar remains available
-  if the tray cannot start, and Quit uses the existing OCR service cleanup.
-- Automatic Windows manga-page scans exclude the monitor area reserved for the
-  taskbar while preserving physical/logical coordinate mapping. Manual selections
-  remain exact.
-- Windows native tests include the Common Controls manifest needed by tray/menu
-  code; the installed app retains the same system-component dependency.
-
-## Changes in 0.2.1
-
-- Fix Windows scans completing without visible or interactive OCR regions. The
-  overlay now starts from the loaded capture page's app URL, with its OCR state
-  available before page initialization; it never navigates from a new WebView2's
-  temporary blank URL. This applies to Selected Area, Whole Screen and rescans.
-- Shared publication approval uses the clearer `desktop-release` environment name
-  for both platforms, with the existing reviewer and branch protections.
-
-## Changes in 0.2.0
-
-- Redesigned floating toolbar starts at the bottom center of the screen, with
-  Selected Area, smart Whole Screen, Rescan and compact controls.
-- Clearer orange OCR outlines, improved character coverage and compact capture
-  guidance that stays out of the selection area.
-- Read with keyboard navigates OCR regions and opens the learning popup.
-- Compact dictionary/learning popup with word readings, kanji, example compounds,
-  OCR correction and on-demand translation.
-- Saved words and sentences share one library; Saved, Settings and Sources each
-  open in their own window.
-- Capture debug previews match the design; detailed hover tooltips appear only
-  in debug mode. Cold-start capture and overlapping OCR requests are handled.
-
 ## Downloads and installation
 
 Download the Apple Silicon `.dmg` for macOS or the per-user Windows 11 x64
@@ -107,6 +45,12 @@ Corresponding project/dependency sources, build recipes, licences, data notices
 and checksums accompany both installers. Source-only rebuilding of the complete
 delivery remains unverified. Hardware coverage and fresh-machine limitations are
 disclosed below; a successful hosted build is separate from installed-app testing.
+
+Local Marian import formats differ by platform: macOS accepts compatible single
+Torch/Safetensors weights with tokenizer files; Windows requires the compatible
+Marian ONNX export folder. GGUF and other model families use Ollama. See
+[translation model setup](https://github.com/chonnakanch/yomimado/blob/main/docs/translation-model-selection.md).
+Ollama must be installed separately on the same computer.
 
 Only the installer for your platform is needed to run YomiMado. Translation models
 are separate optional downloads. For the complete corresponding-source delivery,

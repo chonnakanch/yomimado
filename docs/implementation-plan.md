@@ -6,6 +6,17 @@ See the [feature roadmap](feature-roadmap.md) for proposed learning features and
 the [changelog](../CHANGELOG.md) for completed development changes. Source
 completion is tracked separately from publication and installer acceptance.
 
+**Current-version release notes — 2026-10-20:** the publication template now
+contains only the 0.4.0 highlights, covering net changes since v0.3.0. Removed
+older versions' change lists and moved the still-applicable translation setup
+guidance into Downloads and installation. The changes heading uses `VERSION`,
+which the publisher already substitutes. The runbook requires replacing the
+highlights on each release while preserving installation, source, licence and
+acceptance disclosures. Historical changelog/release records remain intact.
+The existing public v0.4.0 description received the same cleanup separately;
+its source and acceptance footer and nine attached assets were preserved. No
+installer, seed, tag or publication classification change is made here.
+
 **Branch and commit conventions — 2026-10-20:** documented task branch names,
 git-cliff-compatible commit types, focused commit/PR guidance and merge rules that
 preserve reviewed seed/source identities. Task branches use `<type>/<topic>`
