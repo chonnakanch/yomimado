@@ -2,57 +2,67 @@
 
 Read beyond the page.
 
-YomiMado is a local-first desktop assistant for reading Japanese manga already
-visible on your screen. Capture text, recognize it locally, and click an
-interactive overlay to explore Japanese without replacing the original image.
+YomiMado is an open-source desktop assistant for reading Japanese manga on
+macOS and Windows. It recognizes text already visible on your screen and adds
+interactive learning overlays while preserving the original manga image.
+
+**Capture → recognize → click → learn**
 
 ## Features
 
-- Select a screen region or scan a manga page with a reusable area fallback.
-- Recognize horizontal and vertical Japanese and show aligned text regions.
-- Explore word readings, dictionary meanings, kanji, and example compounds.
-- Development source: show optional, offline estimated JLPT vocabulary tags in word definitions and Saved.
-- Development source: expand local conjugation explanations for common verb/adjective forms and ちゃう／じゃう contractions.
-- Import an optional local translation model or select one through Ollama, then request translation when needed.
+- Scan a selected area or detect a manga page, then reuse its bounds with Rescan.
+- Recognize horizontal and vertical Japanese locally.
+- Look up word readings, dictionary meanings, kanji, and example compounds.
+- Adjust word boundaries manually and correct OCR text.
+- Show optional estimated JLPT vocabulary tags and conjugation explanations.
+- Request local translation using an imported model or Ollama.
 - Save and review words and sentences locally.
 
-Screenshots stay local. Translation and saving require an explicit action.
+These features describe the current development source. Published installers may
+have different features; see the [changelog](CHANGELOG.md).
 
-## Release status
+Screenshots, OCR, and dictionary lookup stay local. Translation runs only when
+you request it, and saving is explicit.
 
-The first desktop pre-release, v0.1.0, passed macOS Apple Silicon and Windows
-11 x64 acceptance and was published on 2026-10-12. On 2026-10-13 the owner removed
-its tag; the public release/downloads are currently unavailable. The
-[shared release checklist](docs/desktop-release.md) preserves the original exact
-installer hashes, passing results, disclosed limitations and future release gates.
+## Installation
 
-| Target                           | First release format                                        |
-| -------------------------------- | ----------------------------------------------------------- |
-| macOS 14 or later, Apple Silicon | Unnotarized hobby DMG; requires per-app Gatekeeper approval |
-| Windows 11 x64                   | Unsigned per-user NSIS installer; requires WebView2         |
+For installers and release notes, see [GitHub Releases](https://github.com/chonnakanch/yomimado/releases).
 
-Detector weights are installed separately through **Select detector model file**.
-The app checks the supported file's checksum before importing it. See the
-[installation guide](docs/usage.md)
-for installation details.
+| Platform | Requirements                                                                       |
+| -------- | ---------------------------------------------------------------------------------- |
+| macOS    | macOS 14 or later, Apple Silicon; unnotarized DMG with per-app Gatekeeper approval |
+| Windows  | Windows 11 x64; unsigned per-user installer with WebView2                          |
+
+Follow the [installation and reading guide](docs/usage.md) for setup and platform
+permissions. macOS capture requires Screen Recording permission.
+
+Detector weights are installed separately through **Select detector model file**;
+the app verifies the supported file's checksum before importing it. Translation
+is optional: import a compatible local model or select one through Ollama in
+**Settings → Reading**.
 
 ## Read a page
 
-In the current development source:
+1. Open your manga in its usual reader.
+2. Press `Cmd+Shift+O` on macOS or `Ctrl+Shift+O` on Windows, then drag around text.
+3. Click a recognized region and select a word or kanji in the learning popup.
+4. Look up a selection, request translation, or save a word or sentence.
 
-1. Press `Cmd+Shift+O` on macOS or `Ctrl+Shift+O` on Windows, then drag over text.
-2. Click a recognized region to open its learning popup.
-3. Select a word or kanji, request translation, or save an entry.
+For page scanning, use **Whole Screen** or `Cmd/Ctrl+Shift+S`. After changing
+pages, **Rescan** captures the last successful area again; start a new scan if the
+page moved. Open **More actions → Saved** to review saved entries.
 
-For repeated scans, use **Whole Screen** or `Cmd/Ctrl+Shift+S`. **Rescan** captures
-the last successful area again; scan again after changing pages. Open **More
-actions → Saved** to review saved words and sentences. See the
-[reading guide](docs/usage.md) for setup, keyboard navigation and the historical
-v0.1.0 controls.
+OCR can make mistakes, especially with stylized text. **Check OCR** marks text
+that needs review; use **Edit OCR text** to correct it. Reading order is estimated
+from text positions, and page detection may need a saved or drawn area. See the
+[reading guide](docs/usage.md) for keyboard navigation and detailed controls.
 
-## Development quick start
+## Development
 
-Start the OCR service (macOS shell):
+Requires Python 3.10+, Node.js/npm, Rust, and the Tauri platform prerequisites.
+See [development setup](docs/development.md) for dependencies and Windows commands.
+
+Start the local service in one terminal (macOS shell):
 
 ```sh
 cd services/ocr
@@ -63,7 +73,7 @@ python ../../scripts/prepare_lindera.py --download
 uvicorn app.main:app --reload --port 8765
 ```
 
-Start the desktop app in a second terminal:
+Start the desktop app in another terminal:
 
 ```sh
 cd apps/desktop
@@ -71,39 +81,24 @@ npm ci
 npm run tauri dev
 ```
 
-This minimal setup shows a labeled demo boundary until local OCR models are
-configured. See [development setup](docs/development.md) for Windows commands,
-models, dictionaries, translation, capture diagnostics, and packaged builds.
-macOS capture requires Screen Recording permission.
+This minimal setup returns a labeled demo boundary until local OCR models are
+configured. Follow the [development guide](docs/development.md) to configure OCR
+models, word/kanji dictionaries, optional translation, and diagnostics.
 
-## Limitations
+## Documentation
 
-OCR and translation can be inaccurate, especially for stylized text and complex
-layouts. Recognition confidence is unknown; approximate regions are marked for
-review. Page cropping may need a saved area, and estimated reading order uses
-text positions rather than panel detection. There is no continuous background
-OCR or automatic translation. Platform test coverage is recorded in the release
-checklists.
-
-## Project documentation
-
-- [Documentation index](docs/README.md)
-- [Project structure, runtime flow and local API usage](docs/project-structure.md)
-- [Development setup and checks](docs/development.md)
-- [Reading and learning guide](docs/usage.md)
-- [Implementation status and remaining work](docs/implementation-plan.md)
-- [Feature roadmap](docs/feature-roadmap.md)
-- [Changelog](CHANGELOG.md)
-- [Initial product and technical design](docs/initial-design.md)
-- [App resources and data flow](docs/app-resources.md)
-- [macOS release guide](docs/macos-release.md)
-- [Windows release guide](docs/windows-release.md)
-- [Dictionary update procedure](docs/dictionary-updates.md)
+- [Reading and installation guide](docs/usage.md)
+- [Development setup](docs/development.md)
+- [Feature roadmap](docs/feature-roadmap.md) and [changelog](CHANGELOG.md)
+- [Implementation status](docs/implementation-plan.md) and [release checklist](docs/desktop-release.md)
+- [Full documentation index](docs/README.md)
 
 ## License and credits
 
-YomiMado's own source is licensed under [GPL-3.0-only](LICENSE). Models,
-dictionaries, and other third-party components retain their separate terms.
-The detector uses comic-text-detector code; recognition uses Manga OCR and
-dictionaries use EDRDG data. See [third-party notices](THIRD_PARTY_LICENSES/README.md)
-and [model and dictionary credits](THIRD_PARTY_LICENSES/MODEL_CREDITS.md).
+YomiMado's source is licensed under [GPL-3.0-only](LICENSE). Models, dictionaries,
+and other third-party components retain their own terms.
+
+Text detection uses comic-text-detector, recognition uses Manga OCR, and word
+and kanji lookup use EDRDG dictionary data. See the
+[third-party notices](THIRD_PARTY_LICENSES/README.md) and
+[model and dictionary credits](THIRD_PARTY_LICENSES/MODEL_CREDITS.md).

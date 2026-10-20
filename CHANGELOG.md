@@ -23,6 +23,13 @@ Verified with 265 frontend tests, 70 native tests, formatting, TypeScript,
 strict Clippy and frontend/macOS native debug builds. Windows native interaction
 and exact-installer acceptance were not performed.
 
+#### Changed
+
+- **README cleanup:** simplified the feature overview, installation, reading
+  flow and documentation links. Removed the obsolete downloads-unavailable
+  notice and release history; linked Releases and the detailed checklist instead.
+  Development features are distinguished from published installer features.
+
 ### 2026-10-19
 
 #### Added
