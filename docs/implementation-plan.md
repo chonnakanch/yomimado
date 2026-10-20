@@ -6,6 +6,24 @@ See the [feature roadmap](feature-roadmap.md) for proposed learning features and
 the [changelog](../CHANGELOG.md) for completed development changes. Source
 completion is tracked separately from publication and installer acceptance.
 
+**0.4.0 macOS optional-component packaging repair — 2026-10-20:** after the
+owner merged PR #18 at `097cf7d`, Release `39378092468` passed planning, private
+input transfer, source preparation and macOS DMG build/verification. Packaging
+then failed `verify-artifact` because the reused translation ZIP retained its
+0.3.0 filename inside a 0.4.0 candidate. Windows build/verification passed;
+combined transfer and publication were skipped. The focused repair verifies the
+original component hash/size, gives only its output copy the current release
+filename and keeps the original bytes/descriptor and seed pins unchanged.
+
+All 148 selected release-tool tests pass, including package-to-verifier coverage
+for older/same-version seeds, no component, tampering and wrong backend. Script
+Ruff/format, document formatting, pinned actionlint and committed-source reuse
+pass. A rehearsal with the real 306,394,404-byte retained ZIP passes packaging
+and artifact verification with unchanged SHA-256; its installer/source fixtures
+are synthetic and establish no installer acceptance. See the
+[exact failed-run evidence](desktop-release.md). Repair integration and a fresh
+source-bound release remain separate; no merge or publication is performed here.
+
 **git-cliff release-note drafts — 2026-10-20:** added pinned maintainer tooling
 to generate a local draft between an explicit previous published tag and exact
 target commit. All commits, including unconventional messages, merges and reverts,

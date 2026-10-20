@@ -399,13 +399,19 @@ def package(directory: Path, sources: Path, notices: Path) -> dict:
     ]
     component = notices / "translation-component.json"
     if component.is_file():
-        from translation_component import copy_component
+        from translation_component import copy_component, read_manifest
 
-        names.append(
-            copy_component(
-                component, ROOT / "services/ocr/build/translation-components", directory
-            )
+        if read_manifest(component)["backend"] != "torch":
+            raise ValueError("macOS optional translation component must use Torch")
+        seed_name = copy_component(
+            component, ROOT / "services/ocr/build/translation-components", directory
         )
+        # The verified seed may predate the app version. Preserve its archive
+        # bytes/descriptor while publishing the copy under this release's name.
+        release_name = prefix + "_translation_torch.zip"
+        if seed_name != release_name:
+            (directory / seed_name).rename(directory / release_name)
+        names.append(release_name)
     assets = {name: digest(directory / name) for name in names}
     record = {
         "sourceRevision": revision,
