@@ -23,6 +23,36 @@ and provenance remain downloadable assets. Moving this disclosure out of the
 public description adds no acceptance, waiver, installer or publication approval.
 Historical preparation/failure evidence follows unchanged.
 
+0.4.0 macOS packaging repair — **2026-10-20**:
+[Release `39378092468`](https://github.com/chonnakanch/yomimado/actions/runs/39378092468)
+at `097cf7d6805e7530231dc918e3828d6502afbd56` passes planning, seed transfer,
+source preparation and macOS DMG build/verification. The macOS job fails after
+**11m 7s** during `Assemble only release files and bind their digests`:
+`verify-artifact` rejects the candidate because the reused optional ZIP is named
+`YomiMado_0.3.0_translation_torch.zip` instead of the current release's 0.4.0 name.
+The repair changes only the verified output copy's filename. Its bytes, hash,
+embedded descriptor (including the original 0.3.0 download URL), member/model
+identity, size and source notices are preserved. The original public component
+remains the descriptor's download source; the new release carries identical ZIP
+bytes under its own versioned asset name. The strict artifact-name/hash checks
+remain enforced, and ONNX cannot be relabelled as the macOS Torch component.
+
+The Windows builder passes in **44m 59s**, reporting setup SHA-256
+`140cc02bef0b7e30b75ee3629206b1bf0305b5861539ecadecf52590edde16cf`.
+This is hosted evidence, without new local exact-installer acceptance. Combined
+verification and publication are skipped; no verified joint candidate exists.
+The macOS output is not uploaded after its packaging gate fails.
+
+Local repair verification: 148 release-tool tests, script lint/format, document
+formatting, pinned actionlint and runtime reuse pass. A synthetic installer/source
+packaging rehearsal uses the actual retained Torch ZIP, preserving its
+306,394,404 bytes and SHA-256
+`e1c6a0ae58777d1eb4e8085eddff7a908fe0035e95c82178707178b7690434ef`.
+The current-version output, sidecar and candidate record pass the strict
+verifier. No installer was rebuilt for this local repair. A future authorized
+repair merge must start a fresh Release; old run retries retain the old code.
+Seed pins, installer acceptance and publication approval remain unchanged.
+
 0.4.0 reuse/Checks repair — **2026-10-20**: after the owner's PR #17 merge at
 `ce2a3df`, [Release `39371691358`](https://github.com/chonnakanch/yomimado/actions/runs/39371691358)
 failed in `plan` at the known reuse rejection; both installer builders and
