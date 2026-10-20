@@ -34,11 +34,6 @@ For installers and release notes, see [GitHub Releases](https://github.com/chonn
 Follow the [installation and reading guide](docs/usage.md) for setup and platform
 permissions. macOS capture requires Screen Recording permission.
 
-Detector weights are installed separately through **Select detector model file**;
-the app verifies the supported file's checksum before importing it. Translation
-is optional: import a compatible local model or select one through Ollama in
-**Settings → Reading**.
-
 Download the Apple Silicon `.dmg` for macOS or the per-user Windows 11 x64
 `_x64-setup.exe`. Only your platform's installer is needed to run YomiMado.
 Windows inference uses the CPU and requires no developer Python or CUDA.
@@ -50,8 +45,10 @@ protections enabled. Unexpected malware/damaged-file warnings need investigation
 Windows setup requires acceptance of terms applying only to Microsoft's runtime
 components; YomiMado's GPL and other open-source component rights remain intact.
 
-Detector weights are excluded from the installers, release assets and corresponding
-sources. Import your own compatible detector ONNX file through model setup.
+Detector weights are excluded from installers, release assets and corresponding
+sources. Import your compatible detector ONNX file through **Select detector model
+file**; the app verifies its checksum. Translation is optional and configured in
+**Settings → Reading**.
 For local Marian translation, macOS accepts compatible single Torch/Safetensors
 weights with tokenizer files; Windows requires the compatible Marian ONNX export
 folder. GGUF and other model families use Ollama, installed separately on the same
@@ -109,11 +106,16 @@ models, word/kanji dictionaries, optional translation, and diagnostics.
 
 ## Documentation
 
-- [Reading and installation guide](docs/usage.md)
-- [Development setup](docs/development.md)
-- [Feature roadmap](docs/feature-roadmap.md) and [changelog](CHANGELOG.md)
-- [Implementation status](docs/implementation-plan.md) and [release checklist](docs/desktop-release.md)
-- [Full documentation index](docs/README.md)
+- [Reading and installation](docs/usage.md) and [translation model setup](docs/translation-model-selection.md)
+- [Development setup](docs/development.md) and [architecture/resources](docs/architecture.md)
+- [Implementation status and feature roadmap](docs/implementation-plan.md)
+- [Design system](docs/design-system.md) and [native UI testing](docs/ui-testing.md)
+- [Release runbook](docs/release-runbook.md) and [exact release/installer records](docs/desktop-release.md)
+- [Changelog](CHANGELOG.md) and [full documentation index](docs/README.md)
+
+The guides describe current development source. Dated reviews and release records
+retain their exact source/installer scope; use the release records for published
+versions and acceptance limits.
 
 ## License and credits
 

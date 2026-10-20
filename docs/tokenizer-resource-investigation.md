@@ -185,4 +185,4 @@ identities; no font files, model weights or screenshots are added to Git.
 
 The app's two dictionaries for meanings remain separate resources; this result
 does not require consolidating or removing JMdict/KANJIDIC2. See
-[the resource-flow guide](app-resources.md) for their roles.
+[the resource-flow guide](architecture.md#resources-and-data-flow) for their roles.
