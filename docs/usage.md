@@ -26,7 +26,7 @@ automatically; their exact features depend on the installed version.
 Word and kanji meanings require local JMdict/KANJIDIC2 resources; the development
 guide explains their setup. Reading, dictionary lookup and inference stay local.
 The detailed controls below describe current source first, followed by the
-historical v0.1.0 interface. For a code map, see [project structure](project-structure.md).
+historical v0.1.0 interface. For a code map, see [project structure](architecture.md#repository-map).
 
 ## Redesigned toolbar (development source)
 
@@ -212,7 +212,7 @@ The app includes adjacent analyzed endings and shows steps such as
 analyzed base for local dictionary lookup. Common past/negative/polite forms and
 ちゃう／じゃう contractions are supported; **Not covered** marks unsupported
 forms. Explanations do not start translation or infer a context-specific meaning.
-See the [supported forms and limits](conjugation-explanations.md).
+See the [supported forms and limits](implementation-plan.md#conjugation-behavior-and-supported-forms).
 
 The sentence and its actions stay above scrollable details as the popup grows
 to its work-area limit. Long sentences have their own scroll area.
@@ -306,5 +306,5 @@ review the exact capture and recognized text; expand Geometry or Detector stage
 for diagnostic details. See [development setup](development.md) to enable it.
 
 The native adapter is implemented for source review. Windows, mixed-DPI and rapid
-pointer-entry acceptance remain tracked in [native UI checks](ui-overlay-testing.md).
+pointer-entry acceptance remain tracked in [native UI checks](ui-testing.md#native-overlay-checks).
 These changes do not change the published v0.1.0 installers.

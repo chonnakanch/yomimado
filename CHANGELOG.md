@@ -6,7 +6,7 @@ Published releases and exact-installer evidence remain in the
 [release checklist](docs/desktop-release.md) and
 [GitHub releases](https://github.com/chonnakanch/yomimado/releases).
 
-The [feature roadmap](docs/feature-roadmap.md) tracks completed and proposed work.
+The [feature roadmap](docs/implementation-plan.md#feature-checklist) tracks completed and proposed work.
 
 ## Unreleased
 
@@ -39,7 +39,7 @@ The [feature roadmap](docs/feature-roadmap.md) tracks completed and proposed wor
   Existing saved data/order and confirmed removal remain. All 288 frontend tests,
   formatting, TypeScript and frontend build pass. No API/database/dependency
   change; installer publication and acceptance remain separate. See the
-  [search behavior and verification](docs/saved-search.md).
+  [search behavior and verification](docs/implementation-plan.md#saved-search-behavior-and-verification).
 
 #### Removed
 
@@ -54,6 +54,12 @@ and exact-installer acceptance were not performed.
 
 #### Changed
 
+- **Documentation consolidation:** combine status/roadmap and short feature notes,
+  source/resource architecture, UI specifications and native test checklists.
+  Remove 13 superseded/duplicate documents, update README and contributor-agent
+  instructions, and index every retained guide. Dedicated release, source/licence,
+  build-input and measurement evidence remains unchanged. See the
+  [consolidation map](docs/README.md#consolidation-record--2026-10-20).
 - **README cleanup:** simplified the feature overview, installation, reading
   flow and documentation links. Removed the obsolete downloads-unavailable
   notice and release history; linked Releases and the detailed checklist instead.
@@ -69,14 +75,14 @@ and exact-installer acceptance were not performed.
   full-page Rescan target were retained. Errors, empty replies, cancellation and
   stale requests preserved the old result. The updated popup reopened and
   retained its review indicator. Used the existing local capture/OCR pipeline.
-  See [bubble retry](docs/bubble-ocr-retry.md).
+  See [bubble retry](docs/implementation-plan.md#deferred).
 - **Conjugation explanations — done in development source.** Expand Conjugation
   in word details for step-by-step common verb past/negative/polite forms,
   i-adjectives and ちゃう／じゃう contractions. Complete manual expressions can
   reuse their analyzed dictionary base. Unsupported forms stay explicit;
   context-dependent meanings are not inferred. Uses the existing local
   tokenizer with no added dataset, model or dependency. See the
-  [supported forms](docs/conjugation-explanations.md).
+  [supported forms](docs/implementation-plan.md#conjugation-behavior-and-supported-forms).
 - **JLPT vocabulary tags — done in development source.** Estimated N5–N1 badges
   in dictionary matches and Saved use a bundled, hash-pinned snapshot of 8,113
   spelling/reading pairs from Jonathan Waller's lists as adapted by Stephen
