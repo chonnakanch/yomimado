@@ -21,8 +21,9 @@ Local verification: 88 release-tool tests pass, including actual plan/publisher
 shell rehearsals and the prior macOS archive-name regression. Script Ruff/format,
 formatting for changed documentation/workflows, pinned actionlint for both active
 workflows and 128 local Markdown link targets pass. Main and develop tips are both
-ancestors of the migration branch. Hosted Checks on the final main-targeted PR
-remain to be recorded; no installer build is needed for this CI-only change.
+ancestors of the migration branch. Hosted Checks must pass on the final
+main-targeted PR before merge; its run evidence is reported in the PR. No installer
+build is needed for this CI-only change.
 
 The topic branch incorporates the existing main packaging repair with both sets
 of historical release records retained. All existing develop/main commits remain

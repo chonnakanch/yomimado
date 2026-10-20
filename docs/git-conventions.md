@@ -144,9 +144,11 @@ BREAKING CHANGE: explain the removed fields and how callers must migrate.
 - Squash or rebase only unpublished, unreviewed work when no pinned candidate,
   source approval or other contributor depends on the original commits. Do not
   force-push shared branches or rewrite published history to fix message style.
-- Before a main merge, require passing Checks for the current PR base and the
+- Before any main merge, require passing Checks for the current PR base. For a
+  version-preparation PR, also complete the
   [release preparation checklist](desktop-release.md#prepare-each-new-release-before-merging-main).
-  Main integration and installer publication retain their separate authorization.
+  Ordinary feature/fix PRs do not need a version bump. Main integration and
+  installer publication retain their separate authorization.
 
 Checks runs on pushes to `main`, PRs targeting `main` and manual runs. Its
 required `gates` covers frontend, service, release-tool and both native-platform
