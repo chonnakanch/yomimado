@@ -12,6 +12,18 @@ The [feature roadmap](docs/feature-roadmap.md) tracks completed and proposed wor
 
 ### 2026-10-20
 
+#### Added
+
+- **Saved search and dictionary-style library — done in development source,
+  UI approved by the owner.** Search words by Japanese surface/base, reading, meaning or source;
+  search sentences by Japanese or saved translation. Kana, character width and
+  case differences are ignored. Separate queries persist locally. The Saved
+  design presents larger headwords and numbered senses with expandable context.
+  Existing saved data/order and confirmed removal remain. All 288 frontend tests,
+  formatting, TypeScript and frontend build pass. No API/database/dependency
+  change; installer publication and acceptance remain separate. See the
+  [search behavior and verification](docs/saved-search.md).
+
 #### Removed
 
 - **Single-bubble OCR retry/redraw**, at the owner's request. Removed its popup

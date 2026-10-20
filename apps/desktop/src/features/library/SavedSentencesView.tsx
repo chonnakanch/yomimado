@@ -8,6 +8,8 @@ import {
   useRemovalFocus,
 } from "./CollectionPanel";
 import { useSavedCollection } from "./useSavedCollection";
+import { SavedSearch, NoSearchResults, useSavedQuery } from "./SavedSearch";
+import { matchesSavedSentence } from "./saved-search";
 
 export function SavedSentencesView({ active }: { active: boolean }) {
   const collection = useSavedCollection(
@@ -16,6 +18,10 @@ export function SavedSentencesView({ active }: { active: boolean }) {
     deleteSavedSentence,
   );
   const removeWithFocus = useRemovalFocus();
+  const [query, setQuery] = useSavedQuery("sentences");
+  const filtered = collection.items.filter((sentence) =>
+    matchesSavedSentence(sentence, query),
+  );
   return (
     <section
       className="library-panel"
@@ -25,23 +31,33 @@ export function SavedSentencesView({ active }: { active: boolean }) {
       tabIndex={0}
       hidden={!active}
     >
+      <SavedSearch kind="sentences" query={query} onChange={setQuery} />
       <div className="library-heading">
         <div>
-          <h2>Saved sentences</h2>
-          <p className="library-count">
+          <h2 className="visually-hidden">Saved sentences</h2>
+          <p
+            className="library-count"
+            role="status"
+            aria-live={active ? "polite" : "off"}
+          >
             {collection.loading
               ? "Updating…"
-              : `${collection.items.length} ${collection.error ? "shown" : "saved"}`}
+              : query.trim()
+                ? `${filtered.length} of ${collection.items.length} sentences`
+                : `${collection.items.length} ${collection.error ? "shown" : "saved"} ${collection.items.length === 1 ? "sentence" : "sentences"}`}
           </p>
         </div>
-        <button
-          className="utility-button"
-          data-refresh
-          onClick={() => void collection.refresh()}
-          disabled={collection.loading || collection.removingId !== null}
-        >
-          Refresh
-        </button>
+        <div className="library-heading-actions">
+          <span className="library-order">Newest first</span>
+          <button
+            className="utility-button"
+            data-refresh
+            onClick={() => void collection.refresh()}
+            disabled={collection.loading || collection.removingId !== null}
+          >
+            Refresh
+          </button>
+        </div>
       </div>
       <CollectionFeedback
         kind="sentences"
@@ -51,8 +67,17 @@ export function SavedSentencesView({ active }: { active: boolean }) {
         removed={collection.removed}
         onRetry={() => void collection.refresh()}
       />
-      <ul className="library-list">
-        {collection.items.map((sentence) => (
+      {!collection.loading &&
+        collection.items.length > 0 &&
+        filtered.length === 0 && (
+          <NoSearchResults kind="sentences" onClear={() => setQuery("")} />
+        )}
+      <ul
+        className="library-list"
+        id="saved-sentences-results"
+        aria-label="Saved sentence entries"
+      >
+        {filtered.map((sentence) => (
           <li className="library-row" key={sentence.id}>
             <div className="library-row-heading">
               <p lang="ja" className="library-sentence">

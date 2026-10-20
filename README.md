@@ -14,7 +14,7 @@ interactive learning overlays while preserving the original manga image.
 - Adjust word boundaries manually and correct OCR text.
 - Show optional estimated JLPT vocabulary tags and conjugation explanations.
 - Request local translation using an imported model or Ollama.
-- Save and review words and sentences locally.
+- Save, search, and review words and sentences locally.
 
 These features describe the current development source. Published installers may
 have different features; see the [changelog](CHANGELOG.md).

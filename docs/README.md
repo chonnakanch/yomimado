@@ -8,6 +8,7 @@
 - [Script roles](../scripts/README.md): release entrypoints, runtime dependencies and manual rebuild tools.
 - [Implementation plan](implementation-plan.md): completed milestone and current maintenance scope.
 - [Feature roadmap](feature-roadmap.md): proposed features, completed work and completion criteria.
+- [Saved search and dictionary layout](saved-search.md): matching, remembered queries and the approved Saved UI.
 - [Conjugation explanations](conjugation-explanations.md): supported forms, lookup behavior and limits.
 - [Changelog](../CHANGELOG.md): dated development changes and verification limits.
 - [Code quality review](code-review-2026-10-13.md): fixed boundary/state issues, duplication and refactor follow-ups.

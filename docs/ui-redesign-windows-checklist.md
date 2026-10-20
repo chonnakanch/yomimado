@@ -60,6 +60,16 @@ scale so a fresh-process result is recorded. Start W1 before any Selected Area s
 
 ## Transitions and recovery
 
+- [ ] **Saved search and dictionary layout:** search a saved word by Japanese,
+      reading (both hiragana and katakana), meaning and source text; search
+      sentences by Japanese and saved English. Check that each tab remembers its
+      query after reopening, Clear/Escape restores all entries, and IME Escape
+      does not interrupt composition. Refresh retains the query and failed
+      refresh retains the previous results. At narrow sizes and larger text,
+      headwords/meanings stack and source/date/attribution remain reachable.
+      Removing a filtered entry still requires confirmation and keeps other
+      entries. Record the tested source and scales; browser checks alone do not
+      establish native Windows acceptance.
 - [ ] **W5 menu sizing regression:** at each scale above, open/close More actions
       repeatedly after a fresh launch. With tray recovery available, all six rows
       include Hide Toolbar and Quit; without it, only Hide Toolbar is omitted.

@@ -83,11 +83,20 @@ Choose **More actions → Saved** to open the shared library. Use **Words** and
 **Sentences** tabs to switch collections; Left/Right or Home/End moves between
 tabs by keyboard. Each collection keeps its Refresh, loading/error/empty states
 and confirmed Remove action. Opening the library or returning to a tab refreshes
-that collection. Settings and Sources remain separate toolbar actions; Saved and
-Settings are also available through navigation in the secondary window.
+that collection. Settings and Sources remain separate toolbar actions.
 
-Words show their stored reading and numbered meanings. Expand **Source and saved
-date** for the original Japanese context and local save time. Sentences show the
+Search words by Japanese surface, base form, reading, meaning, or source sentence.
+Search sentences by Japanese text or a saved English translation. Matching
+ignores letter case, full/half width and hiragana/katakana differences. Multiple
+terms must all match; no romaji conversion or translation is performed. Each tab
+remembers its last query locally. Use **Clear search**, the search-field clear
+button, or Escape to clear it. Refresh keeps the query and results retain their
+stored newest-first order. Searching makes no lookup or translation request.
+
+Words show larger Japanese headwords, their stored reading and numbered meanings.
+Expand **Source sentence** for Japanese context, local save time and dictionary
+attribution. Wider windows place headwords beside meanings; narrow windows stack
+them. Sentences show the
 Japanese and any English translation already saved; **Saved date** reveals their
 local save time. Opening Saved never starts dictionary lookup or translation.
 

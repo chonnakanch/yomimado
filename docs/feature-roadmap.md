@@ -13,7 +13,8 @@ See the [changelog](../CHANGELOG.md) for completed changes and the
 
 - [x] **Manual word selection** — done on `develop`, unreleased.
 - [x] **JLPT vocabulary tags** — done on `develop`, unreleased.
-- [ ] **Saved search and organization** — proposed.
+- [x] **Saved search and dictionary-style library** — done on `develop`, UI approved, unreleased.
+- [ ] **Saved tags and organization** — proposed.
 - [x] **Conjugation explanations (initial forms and contractions)** — done on `develop`, unreleased.
 - [ ] **Known / learning word states** — proposed.
 - [ ] **Personal manga glossary** — proposed.
@@ -68,15 +69,25 @@ See the [supported slice and checked examples](conjugation-explanations.md) and
 [changelog](../CHANGELOG.md#2026-10-19). Broader manga speech, passive/potential,
 causatives, progressive forms and other grammar remain future scope.
 
+### Saved search and dictionary-style library
+
+Completed and UI-approved on 2026-10-20. Searches saved words by surface, dictionary
+form, reading, meaning and source sentence; sentences by Japanese and saved
+translation. Matching ignores case, kana script and character width. Separate
+queries are remembered locally. The approved dictionary-style Saved layout uses
+larger headwords, numbered senses and expandable source details. All 288 frontend
+tests, formatting, TypeScript and frontend build pass. Native Windows interaction
+and exact-installer acceptance remain unverified. See the
+[search behavior and verification](saved-search.md).
+
 ## Proposed implementation slices
 
-### Saved search and organization
+### Saved tags and organization
 
-Search saved words by Japanese surface, reading or stored meaning. Add optional
-user tags such as manga title and chapter, with filtering in Saved. JLPT filters
+Add optional user tags such as manga title and chapter, with filtering in Saved. JLPT filters
 can follow once vocabulary tags are available.
 
-Completion: searches and tags persist locally, existing saved databases remain
+Completion: tags persist locally, existing saved databases remain
 readable, and organizing entries never triggers translation or changes their
 stored dictionary meanings.
 

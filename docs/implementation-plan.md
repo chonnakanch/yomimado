@@ -6,6 +6,19 @@ See the [feature roadmap](feature-roadmap.md) for proposed learning features and
 the [changelog](../CHANGELOG.md) for completed development changes. Source
 completion is tracked separately from publication and installer acceptance.
 
+**Saved search and dictionary-style library — 2026-10-20:** the owner
+approved the working preview of search and the dictionary-like Saved UI.
+The implementation searches word surface/base/reading/meanings/context and
+saved Japanese/English sentences, normalize kana/case/width, and remember each
+collection's query locally. The new Saved-only layout uses prominent search,
+larger headwords, numbered senses, quiet separators and expandable source/date/
+attribution details. Existing storage, ordering, refresh/error and confirmed
+removal behavior remain. All 288 frontend tests (23 new search cases), TypeScript,
+Prettier and frontend build pass; browser checks cover search/disclosures and
+narrow layout. No API, database, dependency or release changes. Development
+source is complete; native Windows and exact-installer checks remain separate. See
+[Saved search scope and checks](saved-search.md).
+
 **Bubble retry removed — 2026-10-20:** removed the Check OCR retry/redraw actions,
 native commands, capture/session branches, group metadata, popup reopening and
 feature-specific tests at the owner's request. Restored the pre-feature capture,
