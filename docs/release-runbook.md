@@ -95,8 +95,8 @@ commits when merging.
    merge feature branches through PRs into `develop`. Direct commits have no
    individual PR entry; Full Changelog still includes them. Review the PR list
    and reverts against the final diff and `CHANGELOG.md`. CI generates the list
-   automatically; [the format document](desktop-release-notes.md) is not a copied
-   template. Public notes contain the PR list and Full Changelog only. Keep
+   automatically, using the [format below](#generate-and-review-release-notes).
+   Public notes contain the PR list and Full Changelog only. Keep
    installation/model setup in [README.md](../README.md#installation), and
    source/installer evidence and limitations in the release checklist and metadata.
    Run relevant checks, commit and push focused changes. Run the seed guard against
@@ -138,7 +138,21 @@ between app releases. The **Full Changelog** link is the final line. There are n
 installation instructions or verification sections in the public body. Installation,
 translation setup and source/licence guidance live in [README.md](../README.md#installation).
 Exact-installer evidence and limitations stay in [the release checklist](desktop-release.md);
-hashes and provenance remain downloadable release assets. See [the note format](desktop-release-notes.md).
+hashes and provenance remain downloadable release assets.
+
+The public body follows this format (example PR numbers and versions):
+
+```markdown
+## What's Changed
+
+- Descriptive PR title (#123)
+- Another PR title (#124)
+
+**Full Changelog**: https://github.com/chonnakanch/yomimado/compare/v0.4.0...v0.5.0
+```
+
+GitHub supplies actual PR titles, authors and links. There is no separate
+release-note template to maintain; the workflow publishes the generated preview.
 
 To preview locally with Python 3.11+, installed GitHub CLI and its normal signed-in
 session (no token in command arguments):

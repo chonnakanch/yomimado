@@ -116,7 +116,7 @@ publisher is waiting; no public tag or release is created.
       offline capture/lookup, the shortcut after reboot and saved-entry
       persistence after relaunch. Page scan, uncached translation and removal
       of the two synthetic entries also pass with maintainer confirmation.
-- [x] Prepare [shared release notes](desktop-release-notes.md) with installation,
+- [x] Prepare [historical shared release notes](https://github.com/chonnakanch/yomimado/blob/cbeddb5e3e0a66d02e786eaf2251b3b9f3012574/docs/desktop-release-notes.md) with installation,
       detector import, permissions, data credits and known limitations.
 - [ ] Finalize release notes with unnotarized status, install steps, fresh-Mac
       limitation, source commit, dictionary dates, download links and hashes.

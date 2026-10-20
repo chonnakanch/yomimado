@@ -6,6 +6,13 @@ See the [feature roadmap](feature-roadmap.md) for proposed learning features and
 the [changelog](../CHANGELOG.md) for completed development changes. Source
 completion is tracked separately from publication and installer acceptance.
 
+**Release-note documentation consolidation — 2026-10-20:** removed the optional
+standalone format document and placed its brief example in the release runbook.
+Updated active documentation links and personal release instructions; historical
+preparation/checklist links point to the original template in Git history.
+The shared release checklist, verification records and release workflow remain.
+Documentation only; formatting, references and historical link targets checked.
+
 **PR-based release notes and README installation — 2026-10-20:** supersedes the
 manual version-highlight procedure below. GitHub supplies merged-PR titles/numbers
 for the previous published app tag through the exact source; Full Changelog is

@@ -38,9 +38,9 @@ Use new output paths and committed app metadata; GitHub CLI needs the API's
 publication approval and verifies its SHA-256/source/version before `compose`
 writes the PR list and Full Changelog as the complete public body. Installation,
 model setup and source/licence guidance are in README. Verification/limitations
-stay in the release checklist and downloadable metadata. The public PR list is
-not manually written into `docs/desktop-release-notes.md`; that file now documents
-the format and is not a copied template.
+stay in the release checklist and downloadable metadata. There is no separate
+template to maintain; the public format is documented in the
+[release runbook](../docs/release-runbook.md#generate-and-review-release-notes).
 
 For an optional complete **commit audit**, the existing pinned maintainer tool
 remains separate from the app/frozen runtime:
