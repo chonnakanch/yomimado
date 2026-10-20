@@ -1,9 +1,9 @@
 # Architecture and resources
 
-YomiMado (読み窓) is a local-first Japanese manga reading assistant for macOS
+YomiMado is a local-first Japanese manga reading assistant for macOS
 and Windows: **Capture → recognize → click → learn**. It preserves the original
-manga and adds interactive learning information. The working tagline is
-“Read beyond the page”; the name has not been trademark/domain/package cleared.
+manga and adds interactive learning information. The name has not been
+trademark/domain/package cleared.
 
 This guide describes the implemented source. Setup belongs in
 [development](development.md), user controls in [usage](usage.md), and priorities

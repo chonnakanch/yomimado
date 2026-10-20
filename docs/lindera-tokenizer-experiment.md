@@ -57,14 +57,14 @@ also differ between dictionary schemas and are excluded from that change count.
 
 ## Representative behavior differences
 
-| Text                                 | Sudachi Core                      | Lindera + IPADIC                                                           |
-| ------------------------------------ | --------------------------------- | -------------------------------------------------------------------------- |
-| `お兄ちゃん、待って！`               | `お兄ちゃん` / `オニイチャン`     | `お` + `兄ちゃん` / `ニイチャン`; fails the whole-word compatibility check |
-| `食べました。`                       | `食べ` → `食べる`, reading `タベ` | Same base form and reading                                                 |
-| `スマートフォン`                     | One word                          | `スマート` + `フォン`                                                      |
-| `孫悟空`                             | `孫` + `悟空`                     | One word, reading `ソンゴクウ`                                             |
-| `私` in `私は読み窓を使っています。` | `ワタクシ`                        | `ワタシ`                                                                   |
-| ASCII `ABC123`                       | Supplies normalized readings      | Unknown ASCII tokens retain their original surface as fallback             |
+| Text                                      | Sudachi Core                      | Lindera + IPADIC                                                           |
+| ----------------------------------------- | --------------------------------- | -------------------------------------------------------------------------- |
+| `お兄ちゃん、待って！`                    | `お兄ちゃん` / `オニイチャン`     | `お` + `兄ちゃん` / `ニイチャン`; fails the whole-word compatibility check |
+| `食べました。`                            | `食べ` → `食べる`, reading `タベ` | Same base form and reading                                                 |
+| `スマートフォン`                          | One word                          | `スマート` + `フォン`                                                      |
+| `孫悟空`                                  | `孫` + `悟空`                     | One word, reading `ソンゴクウ`                                             |
+| `私` in the recorded first-person example | `ワタクシ`                        | `ワタシ`                                                                   |
+| ASCII `ABC123`                            | Supplies normalized readings      | Unknown ASCII tokens retain their original surface as fallback             |
 
 This is a small diagnostic corpus, not a manga accuracy benchmark. Some
 differences may be useful, while others make the current word-selection UI less
