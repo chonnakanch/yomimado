@@ -6,6 +6,17 @@ See the [feature roadmap](feature-roadmap.md) for proposed learning features and
 the [changelog](../CHANGELOG.md) for completed development changes. Source
 completion is tracked separately from publication and installer acceptance.
 
+**Git-cliff audit retired — 2026-10-20:** removed the unused commit-audit
+configuration, binary download/cache/extraction code, prepare/generate commands,
+audit-only tests and tool notices. Checks now tests the GitHub PR-note preview and
+source/hash-bound publication directly, without downloading a separate note tool.
+Updated active runbook/branch guidance and removed obsolete seed-guard exceptions.
+GitHub PR titles/numbers, Full Changelog, source verification and owner publication
+approval remain enforced. Earlier audit records below describe historical work.
+Local verification: 83 release-tool tests pass, including PR-note selection,
+shallow-history rejection and the actual protected publisher shell rehearsals.
+Ruff, formatting and both workflows' actionlint pass. No installer is built.
+
 **Release-branch merge trigger — 2026-10-20:** supersedes the manual-only
 trigger below. Merging a same-repository `release/*` PR into main starts Release;
 closed unmerged PRs, other topic branches, forks and mismatched merge SHAs are

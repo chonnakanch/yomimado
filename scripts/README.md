@@ -42,19 +42,6 @@ stay in the release checklist and downloadable metadata. There is no separate
 template to maintain; the public format is documented in the
 [release runbook](../docs/release-runbook.md#generate-and-review-release-notes).
 
-For an optional complete **commit audit**, the existing pinned maintainer tool
-remains separate from the app/frozen runtime:
-
-```sh
-rtk python3 scripts/release_notes.py prepare
-rtk python3 scripts/release_notes.py generate --previous-tag v0.3.0 --revision v0.4.0 --output services/ocr/build/release-notes/0.4.0-commit-audit.md
-```
-
-Preparation downloads checksum-pinned git-cliff 2.14.2. Generation is offline,
-checks every commit and refuses existing files. Neither command updates versions,
-tags, releases or historical `CHANGELOG.md`. See [the full procedure](../docs/release-runbook.md#generate-and-review-release-notes)
-and [the exact-version terms](../THIRD_PARTY_LICENSES/git-cliff/README.md).
-
 ## Current release and checks
 
 [Checks](../.github/workflows/checks.yml) runs on main pushes, PRs into main and

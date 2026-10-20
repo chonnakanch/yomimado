@@ -30,7 +30,7 @@ Examples:
 feat/kanji-compounds
 fix/windows-overlay-position
 docs/release-runbook
-build/git-cliff-notes
+build/release-notes
 release/0.5.0
 ```
 
@@ -79,19 +79,19 @@ lowercase type and scope, one space after the colon, and a concise English summa
 starting with a verb such as `add`, `fix`, `preserve`, `remove` or `document`.
 Keep the header at most 72 characters and omit a trailing period.
 
-| Type       | Use for                                                  | git-cliff group   |
-| ---------- | -------------------------------------------------------- | ----------------- |
-| `feat`     | New user-visible behavior                                | Features          |
-| `fix`      | Correcting faulty behavior                               | Fixes             |
-| `perf`     | Improving performance without changing intended behavior | Performance       |
-| `docs`     | Documentation and agent instructions                     | Documentation     |
-| `refactor` | Restructuring code without a behavior change             | Maintenance       |
-| `test`     | Tests and test fixtures                                  | Maintenance       |
-| `build`    | Build, packaging and release tooling                     | Maintenance       |
-| `ci`       | CI workflow configuration                                | Maintenance       |
-| `chore`    | Version preparation and other maintenance                | Maintenance       |
-| `style`    | Formatting-only changes                                  | Maintenance       |
-| `revert`   | Reversing an earlier change                              | Reverts to review |
+| Type       | Use for                                                  |
+| ---------- | -------------------------------------------------------- |
+| `feat`     | New user-visible behavior                                |
+| `fix`      | Correcting faulty behavior                               |
+| `perf`     | Improving performance without changing intended behavior |
+| `docs`     | Documentation and agent instructions                     |
+| `refactor` | Restructuring code without a behavior change             |
+| `test`     | Tests and test fixtures                                  |
+| `build`    | Build, packaging and release tooling                     |
+| `ci`       | CI workflow configuration                                |
+| `chore`    | Version preparation and other maintenance                |
+| `style`    | Formatting-only changes                                  |
+| `revert`   | Reversing an earlier change                              |
 
 Useful scopes include `capture`, `overlay`, `ocr`, `tokenizer`, `dictionary`,
 `translation`, `saved`, `ui`, `release`, `deps` and `agent`. Use a scope that helps
@@ -104,7 +104,7 @@ feat(dictionary): show example kanji compounds
 fix(overlay): preserve coordinates at 150 percent scaling
 perf(ocr): reuse identical recognition crops within a scan
 docs(release): explain source review and seed activation
-build(release): add pinned git-cliff note generation
+build(release): bind PR notes to the verified candidate
 ci(release): verify runtime compatibility before merge
 chore(release): prepare v0.4.0
 revert(ocr): remove bubble retry actions
@@ -163,15 +163,11 @@ selected candidate until publication; an advanced main is still rejected.
 
 ## Release-note compatibility
 
-The types above match [`cliff.toml`](../cliff.toml). git-cliff still includes older
-or unconventional commits under a matching group or **Other changes**; new naming
-rules do not justify dropping history or rewriting old commits.
-
 Public release notes list GitHub PR titles and numbers since the previous app
 release, followed by a Full Changelog comparison. Use descriptive titles and merge
 features through PRs into `main` so they have individual entries; direct commits
 have no invented PR number. Review titles and reverts before publication approval.
-The optional git-cliff audit still inventories every commit. Installation belongs
-in README; verification records and limitations stay in the release checklist and
+The Full Changelog comparison includes direct commits. Naming rules do not justify
+rewriting old commits or dropping history. Installation belongs in README; verification records and limitations stay in the release checklist and
 metadata. The [release-note procedure](release-runbook.md#generate-and-review-release-notes)
 preserves the existing publication gates.
