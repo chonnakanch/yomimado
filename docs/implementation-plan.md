@@ -6,6 +6,13 @@ See the [feature roadmap](feature-roadmap.md) for proposed learning features and
 the [changelog](../CHANGELOG.md) for completed development changes. Source
 completion is tracked separately from publication and installer acceptance.
 
+**Branch and commit conventions — 2026-10-20:** documented task branch names,
+git-cliff-compatible commit types, focused commit/PR guidance and merge rules that
+preserve reviewed seed/source identities. `AGENTS.md`, development instructions
+and the release runbook link the shared rules. Existing in-progress branches and
+historical commits remain intact. This is documented policy, with no new Git hook,
+CI naming gate, app/runtime input or publication change.
+
 **Release-note step in release checklists — 2026-10-20:** the manual numbered
 release sequence and shared pre-merge checklist now include the git-cliff commands,
 explicit previous-tag selection, review of reverts/net changes and committing the

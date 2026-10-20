@@ -5,6 +5,8 @@
 - [Reading guide](usage.md): capture, page scan, learning popups and saved entries.
 - [Project structure](project-structure.md): implemented source tree, entry points, scan flow and local API usage.
 - [Development setup](development.md): local service, models, dictionaries and diagnostics.
+- [Branch and commit rules](git-conventions.md): task branch names, commit types,
+  PR conventions and preservation of reviewed source history.
 - [Script roles](../scripts/README.md): release entrypoints, runtime dependencies and manual rebuild tools.
 - [Implementation plan](implementation-plan.md): completed milestone and current maintenance scope.
 - [Feature roadmap](feature-roadmap.md): proposed features, completed work and completion criteria.

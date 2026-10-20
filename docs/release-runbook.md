@@ -71,6 +71,12 @@ notice or frozen-service changes.
 
 ## Release a new app version
 
+Use the [branch and commit rules](git-conventions.md), for example
+`codex/chore/release-0-4-0` and `chore(release): prepare v0.4.0`. Integrate a release
+topic into `develop` before the protected `develop` → `main` PR, or continue the
+already selected integration branch. Preserve the exact reviewed seed/source
+commits when merging.
+
 1. Start on an up-to-date `develop` with a clean working directory and intended
    changes committed. Preserve unrelated work. Use Python 3.11 or newer.
 2. Preview and update all five app version files together. These commands use an

@@ -8,6 +8,10 @@ interpreters and dependencies.
 See [project structure](project-structure.md) for source responsibilities and local
 API examples, and [the reading guide](usage.md) for the app controls.
 
+Follow the [branch and commit rules](git-conventions.md) when starting a task,
+writing commits or merging changes. New task branches use `codex/<type>/<topic>`;
+commit headers use `type(scope): imperative summary`, with an optional scope.
+
 ## Start the app
 
 The source and packaging recipes use Lindera/IPADIC for learning analysis.
