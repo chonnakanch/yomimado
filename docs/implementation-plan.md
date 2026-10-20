@@ -31,25 +31,26 @@ at the owner's request.
 
 ## Maintenance priorities
 
-- [ ] Triage the Python and Rust findings in the dated
-      [security review](security-review-2026-10-13.md). Update exact locks, hashes,
-      sources and notices together; do not assume guards patch dependencies.
-- [ ] Consider per-launch service authentication. The desktop client header
-      guards browser requests; another native process can still supply it.
-      Recognition concurrency is already bounded to one worker, including lazy model
-      initialization and work continuing after client cancellation.
-- [ ] Record future native Windows/mixed-DPI and window lifecycle checks through
-      [UI testing](ui-testing.md), without converting browser/CI coverage into a
-      physical hardware pass. Actual Ollama inference/download remains unverified in
-      the [model-selection evidence](translation-model-selection.md#verification-scope).
-- [ ] For the next requested version, follow the release runbook, verify seed
-      compatibility and exact private input hashes, then retain source/notices and
-      exact-installer evidence. Complete source-only rebuilding remains unverified.
-- [ ] Address the [code review's refactor opportunities](code-review-2026-10-13.md#remaining-refactor-opportunities)
-      when those areas change; preserve coordinate behavior and platform coverage.
+- [ ] **Revalidate dependency/security findings.** Compare the dated
+      [security review](security-review-2026-10-13.md) with current Python/Rust
+      inventories and upstream advisories, then record which findings still apply.
+      Any dependency update must retain matching locks, hashes, sources and notices.
+- [ ] **Decide on per-launch service authentication.** The desktop client header
+      guards browser requests; another native process can still supply it. Record
+      the decision and scope before implementing authentication. Existing one-worker
+      recognition admission remains in place.
+- [ ] **Complete unrecorded native UI checks.** Use the Windows/mixed-DPI and
+      window lifecycle cases in [UI testing](ui-testing.md), recording source,
+      hardware and results. Browser/CI coverage does not establish a hardware pass.
+- [ ] **Verify real Ollama inference and downloads.** Exercise model download,
+      explicit selection, translation and failure recovery against a running local
+      Ollama instance. Retain results with the
+      [model-selection evidence](translation-model-selection.md#verification-scope).
 
 Fresh-Mac testing remains waived in the recorded release disclosure. Windows AMD,
 mixed-monitor/left-of-primary and missing-WebView2 hardware cases remain untested.
+Complete source-only rebuilding remains unverified in the
+[release record](desktop-release.md).
 Preserve historical candidate hashes and waivers. Do not request more v0.1.0
 acceptance or publish an installer without a new owner request/authorization.
 
