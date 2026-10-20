@@ -6,6 +6,89 @@ See the [feature roadmap](feature-roadmap.md) for proposed learning features and
 the [changelog](../CHANGELOG.md) for completed development changes. Source
 completion is tracked separately from publication and installer acceptance.
 
+**Single integration branch and explicit releases — 2026-10-20:** main is the
+only integration target for new feature, fix and release-preparation PRs. Audited
+both active workflows: Checks retains frontend, service, release-tool, macOS and
+Windows native jobs and required `gates`, triggered by main pushes, main PRs and
+manual dispatch. Release is manual-only on main and now requires completed,
+successful GitHub Actions `gates` for the exact source before private-input access.
+Pending, failed, stale-source and non-Actions check reports are rejected. Added
+only read access to Checks metadata in the release plan; builders stay read-only
+and isolated private inputs/publication approvals remain enforced. Reviewed seed
+pins, app versions, installer identities and published tags are unchanged.
+
+Local verification: 88 release-tool tests pass, including actual plan/publisher
+shell rehearsals and the prior macOS archive-name regression. Script Ruff/format,
+formatting for changed documentation/workflows, pinned actionlint for both active
+workflows and 128 local Markdown link targets pass. Main and develop tips are both
+ancestors of the migration branch. Hosted Checks must pass on the final
+main-targeted PR before merge; its run evidence is reported in the PR. No installer
+build is needed for this CI-only change.
+
+The topic branch incorporates the existing main packaging repair with both sets
+of historical release records retained. All existing develop/main commits remain
+reachable. Develop is retired as an integration target; its remote branch must
+remain until the migration is merged and its ancestry/open-PR dependencies are
+checked. This migration is prepared for a protected main PR, without merging it,
+dispatching installer builds, deleting branches or publishing a release.
+
+**Release-note documentation consolidation — 2026-10-20:** removed the optional
+standalone format document and placed its brief example in the release runbook.
+Updated active documentation links and personal release instructions; historical
+preparation/checklist links point to the original template in Git history.
+The shared release checklist, verification records and release workflow remain.
+Documentation only; formatting, references and historical link targets checked.
+
+**PR-based release notes and README installation — 2026-10-20:** supersedes the
+manual version-highlight procedure below. GitHub supplies merged-PR titles/numbers
+for the previous published app tag through the exact source; Full Changelog is
+last. Installation, signing, detector/model setup and detailed source extraction
+guidance now live in README. Public notes contain only the PR list and Full
+Changelog; verification/limitations remain in the release checklist and metadata.
+The former template now documents this format. CI saves JSON/Markdown previews before publication
+approval, binds the JSON SHA-256 in job outputs and verifies it against the
+candidate source/version before composing the final body. The existing isolated
+input job's write token calls only GitHub's content-generation POST plus the
+existing private-input GETs; builders gain no credential or permission. git-cliff
+remains an optional complete commit audit. No app/runtime input, private seed,
+installer, tag or release classification changes. Existing source, acceptance
+and publication gates remain separate.
+
+Local verification: 144 selected release-tool tests pass, including real git-cliff
+audits, PR-note selection/source/hash cases and the actual publisher shell against
+fake APIs (including tampered-note rejection before tag creation). Script Ruff,
+formatting and pinned actionlint pass. GitHub's own v0.3.0 → v0.4.0 preview lists
+PRs #17–#19; the existing v0.4.0 description now uses only that list and Full
+Changelog. Its previous verification disclosure is retained in the release
+checklist. The new authenticated CLI/CI preview path awaits integration; no hosted
+workflow execution, installer rebuild or new release publication is claimed.
+
+**Current-version release notes — 2026-10-20:** the publication template now
+contains only the 0.4.0 highlights, covering net changes since v0.3.0. Removed
+older versions' change lists and moved the still-applicable translation setup
+guidance into Downloads and installation. The changes heading uses `VERSION`,
+which the publisher already substitutes. The runbook requires replacing the
+highlights on each release while preserving installation, source, licence and
+acceptance disclosures. Historical changelog/release records remain intact.
+The existing public v0.4.0 description received the same cleanup separately;
+its source and acceptance footer and nine attached assets were preserved. No
+installer, seed, tag or publication classification change is made here.
+
+**Branch and commit conventions — 2026-10-20:** documented task branch names,
+git-cliff-compatible commit types, focused commit/PR guidance and merge rules that
+preserve reviewed seed/source identities. Task branches use `<type>/<topic>`
+without a tool-specific prefix, following the owner's preference.
+`AGENTS.md`, development instructions
+and the release runbook link the shared rules. Existing in-progress branches and
+historical commits remain intact. This is documented policy, with no new Git hook,
+CI naming gate, app/runtime input or publication change.
+
+**Release-note step in release checklists — 2026-10-20:** the manual numbered
+release sequence and shared pre-merge checklist now include the git-cliff commands,
+explicit previous-tag selection, review of reverts/net changes and committing the
+curated notes before merging. Documentation only; release execution and existing
+installer/source/publication evidence remain separate.
+
 **0.4.0 macOS optional-component packaging repair — 2026-10-20:** after the
 owner merged PR #18 at `097cf7d`, Release `39378092468` passed planning, private
 input transfer, source preparation and macOS DMG build/verification. Packaging

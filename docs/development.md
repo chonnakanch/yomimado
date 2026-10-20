@@ -8,6 +8,11 @@ interpreters and dependencies.
 See [project structure](project-structure.md) for source responsibilities and local
 API examples, and [the reading guide](usage.md) for the app controls.
 
+Follow the [branch and commit rules](git-conventions.md) when starting a task,
+writing commits or merging changes. Main is the only integration branch; create
+new task branches from `origin/main` and open PRs into `main`. New task branches
+use `<type>/<topic>`; commit headers use `type(scope): imperative summary`, with an optional scope.
+
 ## Start the app
 
 The source and packaging recipes use Lindera/IPADIC for learning analysis.
@@ -311,8 +316,21 @@ For release-tool changes, follow the matching suites in
 
 ## Required CI checks
 
-[Checks](../.github/workflows/checks.yml) runs on develop/main pushes and main
-pull requests. Frontend formatting, TypeScript, Vitest and the Vite production
+The complete active workflow inventory is:
+
+| Workflow | Trigger                                       | Coverage and permissions                                                                                                                                                                                                                     |
+| -------- | --------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Checks   | PRs into `main`, main pushes, manual dispatch | Frontend, service, release tools, macOS/Windows native jobs and required `gates`; read-only token, no private seed or publication.                                                                                                           |
+| Release  | Manual dispatch on `main` only                | Exact-commit green Checks, version/seed/protection checks, isolated private-input transfer and notes preview, both installer builders, combined verification and protected owner publication. Builders receive no private-input credentials. |
+
+Main can accumulate completed features without a version bump on each merge.
+When ready to release, merge a version-preparation PR, wait for its main Checks,
+and start Release explicitly. The public version tag is created only after the
+existing installer/publication approval. Keep main at that candidate until
+publication; further features can continue on topic branches meanwhile.
+
+[Checks](../.github/workflows/checks.yml) runs on main pushes, PRs into main and
+manual dispatches. Frontend formatting, TypeScript, Vitest and the Vite production
 build run alongside the Python service and release-tool tests. Native formatting,
 tests, strict Clippy and debug compilation run on macOS and Windows with Rust
 1.98.1. These checks build no installer and require no detector/model downloads.

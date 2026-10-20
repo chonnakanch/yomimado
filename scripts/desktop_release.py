@@ -65,10 +65,38 @@ def main_scope() -> None:
         os.environ.get("GITHUB_ACTIONS") != "true"
         or os.environ.get("GITHUB_REPOSITORY") != REPOSITORY
         or os.environ.get("GITHUB_REF") != "refs/heads/main"
+        or os.environ.get("GITHUB_EVENT_NAME") != "workflow_dispatch"
         or not re.fullmatch(r"[0-9a-f]{40}", os.environ.get("GITHUB_SHA", ""))
     ):
         raise ValueError(
-            "Release input access requires this repository's main workflow"
+            "Release input access requires this repository's manual main workflow"
+        )
+
+
+def verify_main_checks(report: dict) -> None:
+    """Require completed GitHub Actions gates on the selected commit, not a PR SHA."""
+    revision = os.environ.get("GITHUB_SHA", "")
+    runs = report.get("check_runs") if isinstance(report, dict) else None
+    if (
+        not re.fullmatch(r"[0-9a-f]{40}", revision)
+        or not isinstance(runs, list)
+        or report.get("total_count") != len(runs)
+        or len(runs) >= 100
+    ):
+        raise ValueError("Invalid or incomplete main Checks report")
+    gates = [
+        run
+        for run in runs
+        if run.get("name") == "gates" and run.get("app", {}).get("id") == 15368
+    ]
+    if (
+        len(gates) != 1
+        or gates[0].get("head_sha") != revision
+        or gates[0].get("status") != "completed"
+        or gates[0].get("conclusion") != "success"
+    ):
+        raise ValueError(
+            "Release requires successful Checks / gates for the exact main commit"
         )
 
 
@@ -705,6 +733,7 @@ def main() -> None:
         choices=(
             "download-inputs",
             "verify-main-rules",
+            "verify-main-checks",
             "verify-inputs",
             "restore-dictionaries",
             "windows-record",
@@ -729,6 +758,8 @@ def main() -> None:
         download_inputs(args.directory)
     elif args.action == "verify-main-rules":
         verify_main_rules(read_json(args.directory))
+    elif args.action == "verify-main-checks":
+        verify_main_checks(read_json(args.directory))
     elif args.action == "verify-inputs":
         verify_inputs(args.directory, args.platform)
     elif args.action == "restore-dictionaries":

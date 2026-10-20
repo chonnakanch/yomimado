@@ -562,6 +562,7 @@ class PrivateInputTests(unittest.TestCase):
             "GITHUB_ACTIONS": "true",
             "GITHUB_REPOSITORY": release.REPOSITORY,
             "GITHUB_REF": "refs/heads/main",
+            "GITHUB_EVENT_NAME": "workflow_dispatch",
             "GITHUB_SHA": REVISION,
         }
         with patch.dict(os.environ, valid):
@@ -569,12 +570,16 @@ class PrivateInputTests(unittest.TestCase):
         for field, value in (
             ("GITHUB_ACTIONS", "false"),
             ("GITHUB_REF", "refs/heads/develop"),
+            ("GITHUB_REF", "refs/pull/20/merge"),
+            ("GITHUB_EVENT_NAME", "push"),
+            ("GITHUB_EVENT_NAME", "pull_request"),
+            ("GITHUB_EVENT_NAME", ""),
             ("GITHUB_REPOSITORY", "other/repo"),
             ("GITHUB_SHA", "main"),
         ):
             with (
                 patch.dict(os.environ, {**valid, field: value}),
-                self.assertRaisesRegex(ValueError, "main workflow"),
+                self.assertRaisesRegex(ValueError, "manual main workflow"),
             ):
                 release.main_scope()
 
@@ -668,7 +673,153 @@ class PrivateInputTests(unittest.TestCase):
             )
 
 
+class MainChecksTests(unittest.TestCase):
+    def test_release_requires_completed_actions_gates_on_the_exact_commit(self):
+        valid = {
+            "name": "gates",
+            "head_sha": REVISION,
+            "app": {"id": 15368},
+            "status": "completed",
+            "conclusion": "success",
+        }
+        with patch.dict(os.environ, {"GITHUB_SHA": REVISION}):
+            release.verify_main_checks({"total_count": 1, "check_runs": [valid]})
+            invalid = [
+                [],
+                [valid, valid],
+                [{**valid, "head_sha": "b" * 40}],
+                [{**valid, "app": {"id": 123}}],
+                [{**valid, "name": "frontend"}],
+                [{**valid, "status": "in_progress", "conclusion": None}],
+                *[
+                    [{**valid, "conclusion": conclusion}]
+                    for conclusion in (
+                        "failure",
+                        "cancelled",
+                        "skipped",
+                        "neutral",
+                        "timed_out",
+                        None,
+                    )
+                ],
+            ]
+            for runs in invalid:
+                with (
+                    self.subTest(runs=runs),
+                    self.assertRaisesRegex(ValueError, "successful Checks"),
+                ):
+                    release.verify_main_checks(
+                        {"total_count": len(runs), "check_runs": runs}
+                    )
+            for report in (
+                {},
+                {"total_count": 2, "check_runs": [valid]},
+                {"total_count": 0, "check_runs": None},
+            ):
+                with (
+                    self.subTest(report=report),
+                    self.assertRaisesRegex(ValueError, "incomplete"),
+                ):
+                    release.verify_main_checks(report)
+
+
 class PlanRehearsalTests(unittest.TestCase):
+    def test_actual_plan_refuses_unpassed_or_wrong_source_checks_before_inputs(self):
+        workflow = (ROOT / ".github/workflows/release.yml").read_text()
+        block = workflow.split("id: plan\n", 1)[1].split("  seed-inputs:", 1)[0]
+        shell = textwrap.dedent(block.split("run: |\n", 1)[1].split("\n  #", 1)[0])
+        for scenario in ("success", "running", "failed", "wrong-source"):
+            with (
+                self.subTest(scenario=scenario),
+                tempfile.TemporaryDirectory() as temporary,
+            ):
+                root = Path(temporary)
+                scripts, binary = root / "scripts", root / "bin"
+                scripts.mkdir()
+                binary.mkdir()
+                for name in (
+                    "desktop_release.py",
+                    "macos-ci-release.py",
+                    "release_dictionaries.py",
+                    "release_api.py",
+                    "windows_release.py",
+                ):
+                    shutil.copyfile(ROOT / "scripts" / name, scripts / name)
+                report = {
+                    "total_count": 1,
+                    "check_runs": [
+                        {
+                            "name": "gates",
+                            "head_sha": "b" * 40
+                            if scenario == "wrong-source"
+                            else REVISION,
+                            "app": {"id": 15368},
+                            "status": "in_progress"
+                            if scenario == "running"
+                            else "completed",
+                            "conclusion": "failure"
+                            if scenario == "failed"
+                            else "success",
+                        }
+                    ],
+                }
+                replies = {
+                    "checks": report,
+                    "rules": MAIN_RULES,
+                    "environment": ENVIRONMENT,
+                    "policies": POLICIES,
+                }
+                release.write_json(root / "replies.json", replies)
+                bodies = {
+                    "git": "sys.exit(1)",
+                    "python": (
+                        "if sys.argv[1].endswith('macos-ci-release.py'):\n"
+                        "    if sys.argv[2]=='plan': print(json.dumps({'version':'0.5.0','tag':'v0.5.0','prerelease':True}))\n"
+                        "    sys.exit(0)\n"
+                        "os.execv(sys.executable,[sys.executable,*sys.argv[1:]])"
+                    ),
+                    "gh": (
+                        "endpoint=sys.argv[2]; data=json.loads((Path(os.environ['RUNNER_TEMP'])/'replies.json').read_text())\n"
+                        "if '/check-runs?' in endpoint: print(json.dumps(data['checks']))\n"
+                        "elif '/rules/' in endpoint: print(json.dumps(data['rules']))\n"
+                        "elif endpoint.endswith('/deployment-branch-policies'): print(json.dumps(data['policies']))\n"
+                        "elif '/environments/' in endpoint: print(json.dumps(data['environment']))\n"
+                        "else: print('main')"
+                    ),
+                }
+                for name, body in bodies.items():
+                    path = binary / name
+                    path.write_text(
+                        f"#!{sys.executable}\nimport json,os,sys\nfrom pathlib import Path\n"
+                        + body
+                        + "\n"
+                    )
+                    path.chmod(0o755)
+                result = subprocess.run(
+                    ["bash", "-c", shell],
+                    cwd=root,
+                    env={
+                        **os.environ,
+                        "PATH": str(binary) + os.pathsep + os.environ["PATH"],
+                        "GITHUB_SHA": REVISION,
+                        "GITHUB_REPOSITORY": release.REPOSITORY,
+                        "GITHUB_OUTPUT": str(root / "outputs"),
+                        "RUNNER_TEMP": str(root),
+                    },
+                    text=True,
+                    capture_output=True,
+                    check=False,
+                )
+                outputs = (root / "outputs").read_text()
+                self.assertEqual(
+                    result.returncode == 0, scenario == "success", result.stderr
+                )
+                self.assertEqual(
+                    "release=true" in outputs.splitlines(), scenario == "success"
+                )
+                if scenario != "success":
+                    self.assertIn("successful Checks", result.stderr)
+
     def test_published_version_skips_but_missing_tag_checks_runtime_before_builds(self):
         workflow = (ROOT / ".github/workflows/release.yml").read_text()
         plan_step = workflow.split("id: plan\n", 1)[1].split("  seed-inputs:", 1)[0]
@@ -743,6 +894,7 @@ class PublisherRehearsalTests(unittest.TestCase):
                 "release_dictionaries.py",
                 "release_api.py",
                 "windows_release.py",
+                "release_notes.py",
             ):
                 shutil.copyfile(ROOT / "scripts" / name, scripts / name)
             for name in (
@@ -785,11 +937,22 @@ class PublisherRehearsalTests(unittest.TestCase):
                 mac, win, mr, wr = fixtures(root, version)
                 record = release.combine(mac, win, root / "candidate", mr, wr)
             env["EXPECTED_RECORD"] = json.dumps(record)
-            (root / "docs").mkdir()
-            shutil.copyfile(
-                ROOT / "docs/desktop-release-notes.md",
-                root / "docs/desktop-release-notes.md",
+            prepared = root / "release-notes-preview/notes.json"
+            prepared.parent.mkdir()
+            release.write_json(
+                prepared,
+                {
+                    "sourceRevision": REVISION,
+                    "version": version,
+                    "previousTag": "v0.0.0",
+                    "previousRevision": "c" * 40,
+                    "changes": "## What's Changed\n\n- Example change (#123)",
+                    "comparison": f"https://github.com/chonnakanch/yomimado/compare/v0.0.0...v{version}",
+                },
             )
+            env["NOTES_SHA256"] = hashlib.sha256(prepared.read_bytes()).hexdigest()
+            if scenario == "notes-tamper":
+                prepared.write_text("changed preview")
             release.write_json(root / "environment.json", ENVIRONMENT)
             release.write_json(root / "policies.json", POLICIES)
             release.write_json(root / "expected-main-rules.json", MAIN_RULES)
@@ -879,9 +1042,11 @@ class PublisherRehearsalTests(unittest.TestCase):
                 calls = (root / "calls.txt").read_text()
                 self.assertEqual(calls.count("api --method POST"), 1)
                 self.assertEqual(calls.count("release create"), 1)
-                self.assertIn(
-                    "Both exact CI installers", (root / "release-notes.md").read_text()
-                )
+                public_notes = (root / "release-notes.md").read_text()
+                self.assertIn("Example change (#123)", public_notes)
+                self.assertNotIn("Both exact CI installers", public_notes)
+                self.assertNotIn("Release verification", public_notes)
+                self.assertTrue(public_notes.rstrip().endswith("...v" + version))
             else:
                 self.assertNotEqual(result.returncode, 0)
                 self.assertFalse((root / "published.txt").exists())
@@ -909,6 +1074,7 @@ class PublisherRehearsalTests(unittest.TestCase):
             "advance-during-upload",
             "duplicate-draft",
             "wrong-draft-target",
+            "notes-tamper",
         ):
             with self.subTest(scenario=scenario):
                 self.rehearsal("0.1.0", scenario)
@@ -945,9 +1111,15 @@ class PublisherRehearsalTests(unittest.TestCase):
         self.assertIn(
             "\n  gates:\n", checks
         )  # Required main status context stays unchanged.
-        self.assertIn("branches: [develop, main]", checks)
+        self.assertIn("push:\n    branches: [main]", checks)
         self.assertIn("pull_request:\n    branches: [main]", checks)
+        self.assertNotIn("develop", checks)
         self.assertNotIn("paths:", checks)
+        triggers = workflow.split("\npermissions:", 1)[0]
+        self.assertIn("  workflow_dispatch:\n", triggers)
+        self.assertNotIn("  push:", triggers)
+        self.assertNotIn("  pull_request:", triggers)
+        self.assertIn("github.event_name == 'workflow_dispatch'", workflow)
 
 
 if __name__ == "__main__":

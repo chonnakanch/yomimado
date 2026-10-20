@@ -1,10 +1,8 @@
 name: Release
 
-# Merge a versioned change into main. Build the merged commit, then wait for
-# both exact installer confirmations before one tag and public hobby release.
+# Explicitly select main in Run workflow after Checks passes. Build that commit,
+# then wait for both exact installer confirmations before protected publication.
 "on":
-  push:
-    branches: [main]
   workflow_dispatch:
 
 permissions:
@@ -15,11 +13,12 @@ env:
 
 jobs:
   plan:
-    if: github.repository == 'chonnakanch/yomimado' && github.ref == 'refs/heads/main'
+    if: github.event_name == 'workflow_dispatch' && github.repository == 'chonnakanch/yomimado' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     permissions:
       contents: read
       actions: read
+      checks: read
     outputs:
       release: ${{ steps.plan.outputs.release }}
       version: ${{ steps.plan.outputs.version }}
@@ -58,6 +57,8 @@ jobs:
           fi
           # Reject stale frozen runtime inputs before private downloads or builds.
           python scripts/macos-ci-release.py verify-reuse
+          gh api "repos/$GITHUB_REPOSITORY/commits/$GITHUB_SHA/check-runs?check_name=gates&filter=latest&per_page=100" > "$RUNNER_TEMP/main-checks.json"
+          python scripts/desktop_release.py verify-main-checks --directory "$RUNNER_TEMP/main-checks.json"
           test "$(gh api "repos/$GITHUB_REPOSITORY" --jq .default_branch)" = main
           gh api "repos/$GITHUB_REPOSITORY/rules/branches/main?per_page=100" > "$RUNNER_TEMP/main-rules.json"
           python scripts/desktop_release.py verify-main-rules --directory "$RUNNER_TEMP/main-rules.json"
@@ -66,8 +67,8 @@ jobs:
           python scripts/macos-ci-release.py verify-environment --directory "$RUNNER_TEMP/release-environment.json" --policies "$RUNNER_TEMP/release-policies.json"
           echo "release=true" >> "$GITHUB_OUTPUT"
 
-  # Push access is required to read unpublished seeds. Keep it out of builders,
-  # run this GET-only job on protected main, with no personal token or build approval.
+  # Push access is required to read unpublished seeds and to generate notes content
+  # through GitHub's API. Keep it out of builders; no tag/release is created here.
   seed-inputs:
     needs: plan
     if: needs.plan.outputs.release == 'true'
@@ -75,14 +76,34 @@ jobs:
     timeout-minutes: 30
     permissions:
       contents: write
+    outputs:
+      notes-sha256: ${{ steps.notes.outputs.sha256 }}
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
         with:
           ref: ${{ github.sha }}
+          fetch-depth: 0
           persist-credentials: false
       - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
         with:
           python-version: "3.11.17"
+      - name: Preview PR release notes without creating a tag or release
+        id: notes
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          python scripts/release_notes.py github --revision "$GITHUB_SHA" \
+            --output "$RUNNER_TEMP/release-notes-preview/notes.json"
+          echo "sha256=$(sha256sum "$RUNNER_TEMP/release-notes-preview/notes.json" | cut -d ' ' -f 1)" >> "$GITHUB_OUTPUT"
+          cat "$RUNNER_TEMP/release-notes-preview/notes.md" >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: release-notes-preview
+          path: ${{ runner.temp }}/release-notes-preview/
+          if-no-files-found: error
+          retention-days: 14
       - name: Read and hash private seeds without publishing or approving installers
         env:
           GH_TOKEN: ${{ github.token }}
@@ -507,7 +528,7 @@ jobs:
           compression-level: 0
 
   publish:
-    needs: [plan, verify-transfer]
+    needs: [plan, seed-inputs, verify-transfer]
     runs-on: ubuntu-latest
     timeout-minutes: 20
     environment: desktop-release
@@ -529,12 +550,17 @@ jobs:
         with:
           name: verified-desktop-candidate
           path: candidate
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: release-notes-preview
+          path: release-notes-preview
       - name: Recheck files, protection, main and tag before publishing
         env:
           GH_TOKEN: ${{ github.token }}
           EXPECTED_RECORD: ${{ needs.verify-transfer.outputs.record }}
           RELEASE_TAG: ${{ needs.plan.outputs.tag }}
           RELEASE_PRERELEASE: ${{ needs.plan.outputs.prerelease }}
+          NOTES_SHA256: ${{ needs.seed-inputs.outputs.notes-sha256 }}
         shell: bash
         run: |
           set -euo pipefail
@@ -550,20 +576,9 @@ jobs:
           main_sha="$(gh api "repos/$GITHUB_REPOSITORY/git/ref/heads/main" --jq .object.sha)"
           test "$main_sha" = "$GITHUB_SHA"
           test -z "$(git ls-remote --tags origin "refs/tags/$RELEASE_TAG" "refs/tags/$RELEASE_TAG^{}")"
-          python3 - <<'PYNOTES'
-          import json, os
-          from pathlib import Path
-          record = json.loads(os.environ["EXPECTED_RECORD"])
-          notes = Path("docs/desktop-release-notes.md").read_text()
-          label = "pre-release" if record["prerelease"] else "release"
-          notes = notes.replace("VERSION", record["version"]).replace("CLASSIFICATION", label)
-          notes += "Source commit: `" + record["sourceRevision"] + "`.\n\n"
-          notes += "Both exact CI installers were confirmed by the maintainer through the protected release environment. Fresh-macOS testing remains waived. Windows AMD, mixed-monitor/left-of-primary layouts and missing-WebView2 hardware cases remain untested.\n\n"
-          for name, digest in record["assets"].items():
-              url = f'https://github.com/{os.environ["GITHUB_REPOSITORY"]}/releases/download/{record["tag"]}/{name}'
-              notes += f"- [{name}]({url}) — SHA-256 `{digest}`\n"
-          Path(os.environ["RUNNER_TEMP"], "release-notes.md").write_text(notes)
-          PYNOTES
+          python3 scripts/release_notes.py compose --input release-notes-preview/notes.json \
+            --sha256 "$NOTES_SHA256" --record "$EXPECTED_RECORD" \
+            --output "$RUNNER_TEMP/release-notes.md"
           # Create the version tag only after the main merge and installer
           # approval. Failure during upload leaves the release unpublished.
           gh api --method POST "repos/$GITHUB_REPOSITORY/git/refs" \

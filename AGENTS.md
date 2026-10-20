@@ -396,6 +396,17 @@ Do not implement these in the first OCR prototype unless explicitly requested:
 
 ## Codex workflow
 
+Follow [`docs/git-conventions.md`](docs/git-conventions.md) for branches, commit
+messages and merges. New task branches use `<type>/<topic>`; commits use
+`type(scope): imperative summary` (scope optional). Continue the current task's
+selected branch unless a new branch is requested or needed. Preserve reviewed
+seed/source commit identities when merging; do not rewrite published history.
+Do not add a tool-specific prefix to new branch names. `main` is the only
+integration branch: start new topics from fetched main and target their PRs to
+main. `develop` is retired; preserve its unmerged history during migration. Main
+merges run Checks only. Start Release explicitly on main after its exact-commit
+Checks pass; installer publication retains the owner's separate approval.
+
 For new-version releases and macOS runtime-seed work, follow
 [`docs/release-runbook.md`](docs/release-runbook.md). It separates local preparation,
 source approval, verified private input activation and exact-installer publication.

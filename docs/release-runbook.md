@@ -10,12 +10,12 @@ recorded candidates.
 
 The personal Codex skill is `$yomimado-release`. Example requests:
 
-> Use $yomimado-release to prepare version 0.4.0 on develop. Check whether the
+> Use $yomimado-release to prepare version 0.5.0 on a topic branch from main. Check whether the
 > existing macOS seed can be reused, update the release notes, and run the relevant
 > checks. Do not merge into main or publish.
 
 > Use $yomimado-release to prepare a replacement macOS runtime seed for the current
-> committed develop source. Build and verify the local candidate and prepare the
+> committed topic-branch source based on main. Build and verify the local candidate and prepare the
 > complete source/licence delivery for my review.
 
 > Use $yomimado-release to activate the source-approved seed and its verified
@@ -24,7 +24,7 @@ The personal Codex skill is `$yomimado-release`. Example requests:
 An agent without the installed skill can use:
 
 > Follow docs/release-runbook.md and AGENTS.md for this release task. Prepare
-> version 0.4.0 on develop, check runtime-seed compatibility, and stop before
+> version 0.5.0 on a topic branch from main, check runtime-seed compatibility, and stop before
 > main integration or publication.
 
 Replace the example version and requested scope. Existing user authorization
@@ -71,31 +71,46 @@ notice or frozen-service changes.
 
 ## Release a new app version
 
-1. Start on an up-to-date `develop` with a clean working directory and intended
-   changes committed. Preserve unrelated work. Use Python 3.11 or newer.
+Use the [branch and commit rules](git-conventions.md), for example
+`chore/release-0-5-0` and `chore(release): prepare v0.5.0`. Main is the only
+integration branch; every feature/fix/release topic targets `main` through a
+protected PR. A merge runs Checks, not Release. Published tags identify released
+versions. Preserve exact reviewed seed/source commits when merging.
+
+1. Start a release topic from fetched `origin/main`, with a clean working directory
+   and intended feature PRs already integrated. Preserve unrelated work. Use Python
+   3.11 or newer. Continue an existing selected topic when appropriate.
 2. Preview and update all five app version files together. These commands use an
    example version, without `v`:
 
    ```sh
-   rtk python3 scripts/update_version.py 0.4.0 --dry-run
-   rtk python3 scripts/update_version.py 0.4.0
+   rtk python3 scripts/update_version.py 0.5.0 --dry-run
+   rtk python3 scripts/update_version.py 0.5.0
    ```
 
    Review and commit the intended version/code changes before selecting `HEAD`
    for the draft: the generator reads the version from the committed source.
 
-3. [Generate and review a git-cliff draft](#generate-and-review-release-notes)
-   for the previous published tag through the proposed release commit. Update
-   [release notes](desktop-release-notes.md), retaining `VERSION` and
-   `CLASSIFICATION` placeholders and installation/source notices. Review the diff,
-   run relevant checks, commit and push focused changes. Run the seed guard against
-   the committed source. If it rejects frozen inputs, complete the seed procedure
-   before main integration.
-4. Prepare the protected `develop` → `main` PR. Merge when authorized and required
-   checks pass. A main push starts **Release** automatically. To dispatch manually,
-   use **Actions → Release → Run workflow → main**; there is no version input.
-5. Confirm **Checks / gates** for that exact main commit, both builders and
-   `verify-transfer`. Download `verified-desktop-candidate` before expiry.
+3. [Preview PR release notes](#generate-and-review-release-notes) for the previous
+   published app tag through the proposed source. Use descriptive PR titles and
+   merge feature branches through PRs into `main`. Direct commits have no
+   individual PR entry; Full Changelog still includes them. Review the PR list
+   and reverts against the final diff and `CHANGELOG.md`. CI generates the list
+   automatically, using the [format below](#generate-and-review-release-notes).
+   Public notes contain the PR list and Full Changelog only. Keep
+   installation/model setup in [README.md](../README.md#installation), and
+   source/installer evidence and limitations in the release checklist and metadata.
+   Run relevant checks, commit and push focused changes. Run the seed guard against
+   the committed source; resolve rejected frozen inputs before main integration.
+
+4. Prepare the release topic's protected PR into `main`. Merge when authorized
+   and required checks pass. Wait for **Checks / gates** on the resulting exact
+   main commit; PR-merge checks alone do not satisfy Release's source check.
+5. Start **Actions → Release → Run workflow → main** explicitly. There is no
+   version input: the workflow reads the committed five app version files.
+   Dispatching on a topic, tag or retired `develop` ref cannot build or publish.
+   An ordinary main push does not start Release. Confirm both builders and
+   `verify-transfer`, then download `verified-desktop-candidate` before expiry.
 6. Verify delivery hashes and test both exact installers using the
    [macOS](macos-clean-mac-test.md) and [Windows](windows-installed-test.md)
    checklists. Record hashes, results, waivers and untested cases without
@@ -122,53 +137,88 @@ source delivery.
 
 ## Generate and review release notes
 
-The repository uses **git-cliff 2.14.2** as a standalone maintainer tool. Python
-3.11+ prepares its checksum-pinned executable outside the app and OCR runtime:
+Public notes use GitHub's generated merged-PR titles and numbers for the range
+between app releases. The **Full Changelog** link is the final line. There are no
+installation instructions or verification sections in the public body. Installation,
+translation setup and source/licence guidance live in [README.md](../README.md#installation).
+Exact-installer evidence and limitations stay in [the release checklist](desktop-release.md);
+hashes and provenance remain downloadable release assets.
+
+The public body follows this format (example PR numbers and versions):
+
+```markdown
+## What's Changed
+
+- Descriptive PR title (#123)
+- Another PR title (#124)
+
+**Full Changelog**: https://github.com/chonnakanch/yomimado/compare/v0.4.0...v0.5.0
+```
+
+GitHub supplies actual PR titles, authors and links. There is no separate
+release-note template to maintain; the workflow publishes the generated preview.
+
+To preview locally with Python 3.11+, installed GitHub CLI and its normal signed-in
+session (no token in command arguments):
+
+```sh
+rtk python3 scripts/release_notes.py github \
+  --previous-tag v0.3.0 \
+  --revision v0.4.0 \
+  --output services/ocr/build/release-notes/0.4.0-pr-preview.json
+```
+
+Use the intended previous published app tag and exact target source; the example
+replays the 0.4.0 range. For a future release, commit the version/code first and
+select that commit or `HEAD`. The command creates a new JSON record plus a matching
+Markdown preview and refuses existing paths. It calls GitHub's release-note
+**content generation** endpoint; it does not create a tag, draft release, approval
+or publication. Its token needs `contents: write`, as required by that API.
+
+Without `--previous-tag`, selection uses the highest earlier published app version
+whose tag is an ancestor of the target. It includes published pre-releases,
+ignores drafts/private seed tags, reads every release-list page and verifies full
+local history. It does not use the stable-only latest-release endpoint. Missing
+history, no suitable previous release, a conflicting target tag or API errors
+stop generation rather than publishing incomplete notes. If the target tag
+already exists, it must point at the selected source because GitHub ignores
+`target_commitish` for an existing tag.
+
+On a manually dispatched main run with successful exact-commit Checks,
+`seed-inputs` generates this preview before the builders
+and uploads `release-notes-preview` for 14 days. Its job summary shows the PR list
+and comparison. The preview record is bound to the exact source/version and its
+SHA-256 is passed to the protected publisher. Before creating any tag, the publisher
+checks that hash and candidate identity, then uses the PR list and comparison
+as the complete public body. It reuses the saved preview rather than regenerating
+mutable PR titles after approval. Builds, installer review, source/licence delivery,
+hashes, provenance and publication gates remain separate and enforced.
+
+Review PR titles and reverts before approval; GitHub generation reports merge
+history, not whether a later PR reverted a feature. Direct commits are visible
+in the final comparison but cannot be assigned invented PR numbers. Historical
+`CHANGELOG.md` and published releases remain unchanged.
+
+### Optional commit audit with git-cliff
+
+The pinned git-cliff 2.14.2 tool remains available to audit all commits, including
+unconventional messages, merges and reverts. It is separate from the app/OCR
+runtime and is no longer the source of the public feature list:
 
 ```sh
 rtk python3 scripts/release_notes.py prepare
-```
-
-On Windows, use `rtk py -3.11` in place of `rtk python3`. Preparation is the explicit
-network/download step. If the interpreter has no configured CA bundle, point
-`SSL_CERT_FILE` to an existing trusted certifi bundle; keep TLS verification
-enabled. Generation uses only the prepared tool and local Git history.
-
-Fetch current history/tags if necessary, then select the previous **published app
-release** yourself, including a pre-release when appropriate. Do not use a private
-seed tag, an unpublished candidate tag or GitHub's stable-only latest endpoint.
-The example below assumes `v0.3.0` is that release and the committed `HEAD` contains
-the intended changes/version:
-
-```sh
-rtk git fetch origin --tags
 rtk python3 scripts/release_notes.py generate \
   --previous-tag v0.3.0 \
-  --revision HEAD \
-  --output services/ocr/build/release-notes/0.4.0-draft.md
+  --revision v0.4.0 \
+  --output services/ocr/build/release-notes/0.4.0-commit-audit.md
 ```
 
-The wrapper reads the app version at the selected commit and records the exact
-previous/target SHAs, commit count and comparison link. It requires full history,
-an existing release tag ancestral to the target, a nonempty range and a new output
-path. Existing files are never overwritten. A tag, release, approval or version
-bump is not created by this command.
-
-`cliff.toml` groups every commit, including unconventional messages, merge commits
-and reverts. The wrapper compares git-cliff's context against `git rev-list` and
-checks rendered commit links; omissions or duplicates fail before writing. This
-is a complete commit inventory, not an automatic claim about available features.
-
-Review it against the final diff and [CHANGELOG.md](../CHANGELOG.md). Summarize the
-net features, fixes, removals and relevant dependency changes in the curated
-[release notes](desktop-release-notes.md). In particular, an added-then-reverted
-feature belongs in the review history, not in available features. Keep known
-limitations, `VERSION`/`CLASSIFICATION` placeholders and installation/source/data
-notices. Do not overwrite the historical changelog with raw generated entries.
-
-If the selected source changes, generate a new draft with a new output filename.
-The protected publisher still uses the reviewed notes file and appends candidate
-source/download hashes. See the [tool/version licence record](../THIRD_PARTY_LICENSES/git-cliff/README.md).
+Use Python 3.11+ (`rtk py -3.11` on Windows), full Git history and a new output
+path. Preparation explicitly downloads and checksum-verifies the pinned binary;
+generation is local/offline. Keep TLS verification enabled. The wrapper checks
+all commit IDs against `git rev-list` and refuses omissions/duplicates. The
+result is a local inventory, not a published feature list or a replacement for
+historical `CHANGELOG.md`. See the [tool/version licence record](../THIRD_PARTY_LICENSES/git-cliff/README.md).
 
 ## Build a replacement macOS seed
 

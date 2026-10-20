@@ -11,7 +11,7 @@ publishing. Preparation started from clean, fetched `develop` at
 `1111f874aa91ea157e33bb4ec8f6ac5ad8c51a0f`, matching `origin/develop`.
 The five npm/Tauri/Cargo version files now agree on `0.4.0` (pre-release), using
 `scripts/update_version.py` after its dry run. The
-[release notes](desktop-release-notes.md) preserve `VERSION` and `CLASSIFICATION`
+[release notes at the preparation commit](https://github.com/chonnakanch/yomimado/blob/eb77c5341db66657c270e9fd6b10916f874e2ae8/docs/desktop-release-notes.md) preserve `VERSION` and `CLASSIFICATION`
 and describe the final feature set, including the deferred bubble retry and the
 current separate platform source archives.
 

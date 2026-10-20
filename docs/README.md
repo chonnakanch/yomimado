@@ -5,6 +5,8 @@
 - [Reading guide](usage.md): capture, page scan, learning popups and saved entries.
 - [Project structure](project-structure.md): implemented source tree, entry points, scan flow and local API usage.
 - [Development setup](development.md): local service, models, dictionaries and diagnostics.
+- [Branch and commit rules](git-conventions.md): task branch names, commit types,
+  PR conventions and preservation of reviewed source history.
 - [Script roles](../scripts/README.md): release entrypoints, runtime dependencies and manual rebuild tools.
 - [Implementation plan](implementation-plan.md): completed milestone and current maintenance scope.
 - [Feature roadmap](feature-roadmap.md): proposed features, completed work and completion criteria.
@@ -32,9 +34,9 @@
   source review, seed builds/uploads, pin activation and agent invocation examples.
 - [Shared release checklist](desktop-release.md): published v0.1.0 identities,
   Checks/Release workflows, future six-file delivery and protected publication.
-- [Release notes template](desktop-release-notes.md): generated notes for future versions.
-- [Generate release-note drafts](release-runbook.md#generate-and-review-release-notes):
-  pinned git-cliff, explicit tag/commit ranges and review of net changes.
+- [Release-note format and previews](release-runbook.md#generate-and-review-release-notes):
+  generated PR titles/numbers, Full Changelog, exact release ranges and optional
+  git-cliff commit audits.
 - [macOS release guide](macos-release.md) and [Windows release guide](windows-release.md):
   platform packaging and retained preparation evidence.
 - [Verified macOS runtime seed](macos-runtime-seed.md): private input hashes,
