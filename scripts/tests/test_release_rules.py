@@ -1,14 +1,17 @@
 """Exercise shared release rules and macOS reviewed-runtime/artifact gates."""
 
 import copy
+import hashlib
 import importlib.util
 import json
 import re
 import shutil
 import subprocess
+import sys
 import tarfile
 import tempfile
 import unittest
+import zipfile
 from pathlib import Path
 from unittest.mock import patch
 
@@ -396,6 +399,119 @@ class ArtifactTests(unittest.TestCase):
 
     def test_exact_artifacts_accepted(self):
         ci.verify_artifact(self.root, self.record)
+
+    def package_fixture(self, root, seed_version=None, backend="torch"):
+        sources, notices, output = (root / n for n in ("sources", "notices", "output"))
+        for path in (sources, notices, output):
+            path.mkdir()
+        (sources / "README.md").write_text("synthetic source delivery")
+        (output / "YomiMado_0.4.0_aarch64.dmg").write_bytes(b"synthetic installer")
+        archive = None
+        if seed_version is not None:
+            cache = root / "services/ocr/build/translation-components"
+            cache.mkdir(parents=True)
+            archive = cache / f"YomiMado_{seed_version}_translation_{backend}.zip"
+            with zipfile.ZipFile(archive, "w") as bundle:
+                bundle.writestr("model/config.json", b"{}")
+            files = {
+                "model/config.json": {
+                    "bytes": 2,
+                    "sha256": hashlib.sha256(b"{}").hexdigest(),
+                }
+            }
+            ci.write_json(
+                notices / "translation-component.json",
+                {
+                    "schemaVersion": 1,
+                    "backend": backend,
+                    "id": hashlib.sha256(
+                        json.dumps(files, sort_keys=True).encode()
+                    ).hexdigest(),
+                    "files": files,
+                    "archive": {
+                        "url": f"https://github.com/chonnakanch/yomimado/releases/download/v{seed_version}/{archive.name}",
+                        "sha256": ci.digest(archive),
+                        "bytes": archive.stat().st_size,
+                    },
+                },
+            )
+        return sources, notices, output, archive
+
+    def run_package(self, root, sources, notices, output):
+        with (
+            patch.object(ci, "ROOT", root),
+            patch.object(ci, "version", return_value="0.4.0"),
+            patch.object(ci, "git", return_value="a" * 40),
+            patch.object(sys, "path", [str(Path(__file__).parents[1]), *sys.path]),
+        ):
+            return ci.package(output, sources, notices)
+
+    def test_package_and_verify_reused_and_same_version_optional_components(self):
+        for seed_version in ("0.3.0", "0.4.0"):
+            with self.subTest(seed=seed_version), tempfile.TemporaryDirectory() as temp:
+                root = Path(temp)
+                sources, notices, output, archive = self.package_fixture(
+                    root, seed_version
+                )
+                original_manifest = (
+                    notices / "translation-component.json"
+                ).read_bytes()
+                record = self.run_package(root, sources, notices, output)
+                name = "YomiMado_0.4.0_translation_torch.zip"
+                self.assertEqual(record["assets"][name], ci.digest(archive))
+                self.assertEqual((output / name).read_bytes(), archive.read_bytes())
+                self.assertEqual(
+                    (notices / "translation-component.json").read_bytes(),
+                    original_manifest,
+                )
+                self.assertIs(record["optionalTranslation"], True)
+                ci.verify_artifact(output, record)
+                with tarfile.open(output / "YomiMado_0.4.0_notices.tar.gz") as bundle:
+                    self.assertEqual(
+                        bundle.extractfile(
+                            "YomiMado-notices/translation-component.json"
+                        ).read(),
+                        original_manifest,
+                    )
+                with (
+                    patch(
+                        "sys.argv",
+                        [
+                            "macos-ci-release.py",
+                            "verify-artifact",
+                            "--directory",
+                            str(output),
+                            "--expected",
+                            json.dumps(record),
+                        ],
+                    ),
+                    patch.dict("os.environ", {"GITHUB_SHA": "a" * 40}),
+                ):
+                    ci.main()
+
+    def test_package_without_optional_component_still_verifies(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            sources, notices, output, _ = self.package_fixture(root)
+            record = self.run_package(root, sources, notices, output)
+            self.assertNotIn("optionalTranslation", record)
+            ci.verify_artifact(output, record)
+
+    def test_reused_component_tampering_cannot_be_hidden_by_current_filename(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            sources, notices, output, archive = self.package_fixture(root, "0.3.0")
+            content = archive.read_bytes()
+            archive.write_bytes(b"x" + content[1:])
+            with self.assertRaisesRegex(ValueError, "archive differs"):
+                self.run_package(root, sources, notices, output)
+
+    def test_macos_package_rejects_an_onnx_component(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            sources, notices, output, _ = self.package_fixture(root, "0.3.0", "onnx")
+            with self.assertRaisesRegex(ValueError, "Torch"):
+                self.run_package(root, sources, notices, output)
 
     def test_release_classification_tampering_rejected(self):
         for value in (False, "true", 1, None):
