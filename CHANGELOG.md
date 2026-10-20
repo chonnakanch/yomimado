@@ -12,6 +12,23 @@ The [feature roadmap](docs/feature-roadmap.md) tracks completed and proposed wor
 
 ### 2026-10-20
 
+#### Fixed
+
+- **Small-text and vertical OCR accuracy — initial selection recovery.** Small
+  single-region selections can retain a missing edge kana, such as 学校へ
+  previously returning 学校. Recovery requires the original recognized substring
+  with at least two Japanese script characters and one additional script
+  character. Short vertical runs can correct a horizontal detector label when
+  both selection and detected bounds support it. Whole-selection results now
+  explicitly request review and retain unknown confidence. Uses the existing
+  inference calls; local models, dependencies and coordinates are unchanged.
+  The original synthetic set improves from 7/10 to 9/10 exact strings and
+  7/75 to 5/75 character edits. All 194 service tests, seven benchmark-metric
+  tests, 37 frontend response/coordinate tests, Ruff and frontend build pass;
+  macOS ONNX CPU source outputs match Torch. Native Windows, private real pages
+  and new exact installers remain unverified.
+  See [scope and remaining accuracy work](docs/implementation-plan.md#small-text-and-vertical-ocr-accuracy).
+
 #### Added
 
 - **Saved search and dictionary-style library — done in development source,

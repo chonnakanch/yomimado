@@ -1,0 +1,493 @@
+{
+  "date": "2026-10-20",
+  "scope": "Synthetic local source-function comparison; shared warmed Torch models; two repetitions per fixture with alternating baseline/candidate order. No other agent inference job during retained timing run.",
+  "limitations": [
+    "Small synthetic sample; no general manga accuracy estimate.",
+    "Uncontrolled background load and thermal state; two samples do not establish a speedup.",
+    "Function timings exclude screen capture, HTTP/IPC and overlay rendering.",
+    "ONNX CPU smoke ran on macOS, not native Windows or a frozen installer.",
+    "Private real-page, native Windows and exact-installer acceptance remain unverified."
+  ],
+  "baselineCommit": "04c961781f3a080538fc2790384dc76a81e8f69c",
+  "baselinePipelineSha256": "778cda6c23aa8cb6b76906c6405f33276ed47d16383f61902abf19880a1db6b6",
+  "candidatePipelineSha256": "1ebc984cfb1ebeab73ac52dd2fdf56385962d7873ebef35e8bc56426e3711cb9",
+  "sharedGeometrySha256": "e041135c85358bcf93c4e514e58e894923e1966a3a2bac72d9f0ef5412b818a5",
+  "benchmarkSha256": "4eae7da6b5d7f57863709309a457e5f75876bbf17fa7e1f72f08b2ce2ce3ca20",
+  "rawComparisonSha256": "95d8eb3433bce3ed71363510d026ed952245c68eedbff9d646838987a671a7ca",
+  "rawOnnxSmokeSha256": "3a1828b94287d8ab864dd6841bb0dd4f556ff6a50fad11638960d9e647fb4937",
+  "reproduce": "rtk services/ocr/build/release-venv/bin/python scripts/benchmark_detector_retries.py --baseline-ref 04c9617 --repeats 2 --skip-no-tiles --output services/ocr/build/small-text-accuracy-20261020/sequential",
+  "retainedLocalOutputs": "services/ocr/build/small-text-accuracy-20261020",
+  "metadata": {
+    "platform": "macOS-26.6.2-arm64-arm-64bit",
+    "python": "3.11.17",
+    "torch": "2.8.0",
+    "torchThreads": 4,
+    "opencv": "4.11.0",
+    "opencvThreads": 10,
+    "parallelFramework": "Parallel framework:            GCD",
+    "transformers": "4.57.3",
+    "Pillow": "11.3.0",
+    "numpy": "1.26.4"
+  },
+  "inputSha256": {
+    "detector": "1a86ace74961413cbd650002e7bb4dcec4980ffa21b2f19b86933372071d718f",
+    "font": "833776a6fd68e2c71c0c52fd8041195bd3d0a336cdb278170b7ad71c7e1b3475",
+    "recognizer": {
+      "config.json": "8c0e395de8fa699daaac21aee33a4ba9bd1309cfbff03147813d2a025f39f349",
+      "preprocessor_config.json": "af4eb4d79cf61b47010fc0bc9352ee967579c417423b4917188d809b7e048948",
+      "pytorch_model.bin": "c63e0bb5b3ff798c5991de18a8e0956c7ee6d1563aca6729029815eda6f5c2eb",
+      "special_tokens_map.json": "303df45a03609e4ead04bc3dc1536d0ab19b5358db685b6f3da123d05ec200e3",
+      "tokenizer_config.json": "d775ad1deac162dc56b84e9b8638f95ed8a1f263d0f56f4f40834e26e205e266",
+      "vocab.txt": "344fbb6b8bf18c57839e924e2c9365434697e0227fac00b88bb4899b78aa594d"
+    },
+    "fixtures": {
+      "small-horizontal": "ef7a7532fb25faed99921899b1d4aa2d4b3ba6c7bbe63d2ff9866eeed2979256",
+      "small-vertical": "a141e9bb04a1c10e4b49129eaf51fa012529fd6bedca2b7738898a15134c9ae5",
+      "sentence-horizontal": "c2ea04297bad3b93db13e866e14a8248afc2ec23c50867ccc84f647cc739d896",
+      "sentence-vertical": "7148fd3993a02b7ba1f3b15d5f3506a6fe5aab19a29c52ef20b2992b72e29daa",
+      "small-font": "c5555265bbc9713ffd5a18d81c64101e9523a1745c883a97425a043a298a2277",
+      "low-contrast": "f82cf0758292a7dfc4be16a875ef4fe0be9835f46d99e32170d83fa72a118746",
+      "skew-horizontal": "e266b8bde668c802dd90046f1dd9d1df345ab16a832ac7a9adaa1949b2dbb678",
+      "mixed-page": "92e3b15eb56769c1aa6f69df090055bee293cfcd6a70331a847dee52a92d18cc",
+      "blank": "da7d9081dac7f8b874771a62103078b78a1f8bff984f43c27808457f1c870eb1",
+      "sparse-page-14": "3057d9ba000ca68a814a0dbb5971d20046a822c7d5a9416e758ee44eb0095629",
+      "sparse-page-24": "60f0b54d1400f274584804f1a34fcaa3b8a1e60e46019dc7d445e06ec7d47df5",
+      "sparse-page-40": "2e871c99dca7c88de1c84062de7cdea28f740e14b41568b8a9ed3789ea8caead",
+      "blank-large": "ac8a85867284bb0501d4aaa5dae3e1937533d3d6d741e1ce139495a31c002526"
+    }
+  },
+  "originalNineFixtures": {
+    "baseline": {
+      "exact": 7,
+      "regions": 10,
+      "edits": 7,
+      "characters": 75,
+      "characterErrorRate": 0.09333333333333334
+    },
+    "optimized": {
+      "exact": 9,
+      "regions": 10,
+      "edits": 5,
+      "characters": 75,
+      "characterErrorRate": 0.06666666666666667
+    }
+  },
+  "extendedThirteenFixtures": {
+    "baseline": {
+      "exact": 10,
+      "regions": 13,
+      "edits": 7,
+      "characters": 84,
+      "characterErrorRate": 0.08333333333333333
+    },
+    "optimized": {
+      "exact": 12,
+      "regions": 13,
+      "edits": 5,
+      "characters": 84,
+      "characterErrorRate": 0.05952380952380952
+    }
+  },
+  "changedFixtures": ["small-horizontal", "small-vertical"],
+  "inferenceCountsUnchanged": true,
+  "scanMedianMs": {
+    "baseline": 1071.6272499994375,
+    "optimized": 1099.9337710018153
+  },
+  "perFixture": {
+    "small-horizontal": {
+      "baseline": {
+        "scanMs": 1045.7451044967456,
+        "detectMs": 888.9382295019459,
+        "recognizeMs": 155.87993699955405,
+        "detectCalls": 1.0,
+        "recognizeCalls": 2.0,
+        "geometry": {
+          "truePositive": 1,
+          "falsePositive": 0,
+          "falseNegative": 0,
+          "correctOrientation": 1
+        }
+      },
+      "optimized": {
+        "scanMs": 1129.0799165035423,
+        "detectMs": 961.7111039988231,
+        "recognizeMs": 166.32693750216276,
+        "detectCalls": 1.0,
+        "recognizeCalls": 2.0,
+        "geometry": {
+          "truePositive": 0,
+          "falsePositive": 1,
+          "falseNegative": 1,
+          "correctOrientation": 0
+        }
+      }
+    },
+    "small-vertical": {
+      "baseline": {
+        "scanMs": 1086.998582999513,
+        "detectMs": 926.049312496616,
+        "recognizeMs": 159.98031249910127,
+        "detectCalls": 1.0,
+        "recognizeCalls": 2.0,
+        "geometry": {
+          "truePositive": 1,
+          "falsePositive": 0,
+          "falseNegative": 0,
+          "correctOrientation": 0
+        }
+      },
+      "optimized": {
+        "scanMs": 1099.9337710018153,
+        "detectMs": 922.7149795005971,
+        "recognizeMs": 176.22277099872008,
+        "detectCalls": 1.0,
+        "recognizeCalls": 2.0,
+        "geometry": {
+          "truePositive": 0,
+          "falsePositive": 1,
+          "falseNegative": 1,
+          "correctOrientation": 0
+        }
+      }
+    },
+    "sentence-horizontal": {
+      "baseline": {
+        "scanMs": 1027.3597500017786,
+        "detectMs": 903.198166997754,
+        "recognizeMs": 122.09083350171568,
+        "detectCalls": 1.0,
+        "recognizeCalls": 1.0,
+        "geometry": {
+          "truePositive": 1,
+          "falsePositive": 0,
+          "falseNegative": 0,
+          "correctOrientation": 1
+        }
+      },
+      "optimized": {
+        "scanMs": 1029.7129999999015,
+        "detectMs": 906.3286040000094,
+        "recognizeMs": 121.33020849796594,
+        "detectCalls": 1.0,
+        "recognizeCalls": 1.0,
+        "geometry": {
+          "truePositive": 1,
+          "falsePositive": 0,
+          "falseNegative": 0,
+          "correctOrientation": 1
+        }
+      }
+    },
+    "sentence-vertical": {
+      "baseline": {
+        "scanMs": 991.2557290044788,
+        "detectMs": 886.0137500014389,
+        "recognizeMs": 103.23010399952182,
+        "detectCalls": 1.0,
+        "recognizeCalls": 1.0,
+        "geometry": {
+          "truePositive": 1,
+          "falsePositive": 0,
+          "falseNegative": 0,
+          "correctOrientation": 1
+        }
+      },
+      "optimized": {
+        "scanMs": 1055.3392295005324,
+        "detectMs": 945.9435835015029,
+        "recognizeMs": 107.42137550187181,
+        "detectCalls": 1.0,
+        "recognizeCalls": 1.0,
+        "geometry": {
+          "truePositive": 1,
+          "falsePositive": 0,
+          "falseNegative": 0,
+          "correctOrientation": 1
+        }
+      }
+    },
+    "small-font": {
+      "baseline": {
+        "scanMs": 996.6645415006496,
+        "detectMs": 896.3812704969314,
+        "recognizeMs": 98.5563545000332,
+        "detectCalls": 1.0,
+        "recognizeCalls": 1.0,
+        "geometry": {
+          "truePositive": 1,
+          "falsePositive": 0,
+          "falseNegative": 0,
+          "correctOrientation": 1
+        }
+      },
+      "optimized": {
+        "scanMs": 1004.0551245001552,
+        "detectMs": 904.8228959982225,
+        "recognizeMs": 97.50818800239358,
+        "detectCalls": 1.0,
+        "recognizeCalls": 1.0,
+        "geometry": {
+          "truePositive": 1,
+          "falsePositive": 0,
+          "falseNegative": 0,
+          "correctOrientation": 1
+        }
+      }
+    },
+    "low-contrast": {
+      "baseline": {
+        "scanMs": 1136.4707709981303,
+        "detectMs": 897.6787085011892,
+        "recognizeMs": 235.83847999907448,
+        "detectCalls": 1.0,
+        "recognizeCalls": 3.0,
+        "geometry": {
+          "truePositive": 0,
+          "falsePositive": 2,
+          "falseNegative": 1,
+          "correctOrientation": 0
+        }
+      },
+      "optimized": {
+        "scanMs": 1128.931333503715,
+        "detectMs": 894.376000000193,
+        "recognizeMs": 231.6720839953632,
+        "detectCalls": 1.0,
+        "recognizeCalls": 3.0,
+        "geometry": {
+          "truePositive": 0,
+          "falsePositive": 2,
+          "falseNegative": 1,
+          "correctOrientation": 0
+        }
+      }
+    },
+    "skew-horizontal": {
+      "baseline": {
+        "scanMs": 1048.2195414988382,
+        "detectMs": 921.5653540013591,
+        "recognizeMs": 123.90422849784954,
+        "detectCalls": 1.0,
+        "recognizeCalls": 1.0,
+        "geometry": {
+          "truePositive": 1,
+          "falsePositive": 0,
+          "falseNegative": 0,
+          "correctOrientation": 1
+        }
+      },
+      "optimized": {
+        "scanMs": 1056.1623545036127,
+        "detectMs": 927.5655415003712,
+        "recognizeMs": 125.97354199897381,
+        "detectCalls": 1.0,
+        "recognizeCalls": 1.0,
+        "geometry": {
+          "truePositive": 1,
+          "falsePositive": 0,
+          "falseNegative": 0,
+          "correctOrientation": 1
+        }
+      }
+    },
+    "mixed-page": {
+      "baseline": {
+        "scanMs": 5641.942187499808,
+        "detectMs": 5234.421958499297,
+        "recognizeMs": 377.2051249979995,
+        "detectCalls": 5.0,
+        "recognizeCalls": 3.0,
+        "geometry": {
+          "truePositive": 3,
+          "falsePositive": 0,
+          "falseNegative": 0,
+          "correctOrientation": 3
+        }
+      },
+      "optimized": {
+        "scanMs": 5651.942291497107,
+        "detectMs": 5283.998562998022,
+        "recognizeMs": 335.1717709992954,
+        "detectCalls": 5.0,
+        "recognizeCalls": 3.0,
+        "geometry": {
+          "truePositive": 3,
+          "falsePositive": 0,
+          "falseNegative": 0,
+          "correctOrientation": 3
+        }
+      }
+    },
+    "blank": {
+      "baseline": {
+        "scanMs": 7.169479002186563,
+        "detectMs": 0.0,
+        "recognizeMs": 0.0,
+        "detectCalls": 0.0,
+        "recognizeCalls": 0.0,
+        "geometry": {
+          "truePositive": 0,
+          "falsePositive": 0,
+          "falseNegative": 0,
+          "correctOrientation": 0
+        }
+      },
+      "optimized": {
+        "scanMs": 6.606416998693021,
+        "detectMs": 0.0,
+        "recognizeMs": 0.0,
+        "detectCalls": 0.0,
+        "recognizeCalls": 0.0,
+        "geometry": {
+          "truePositive": 0,
+          "falsePositive": 0,
+          "falseNegative": 0,
+          "correctOrientation": 0
+        }
+      }
+    },
+    "sparse-page-14": {
+      "baseline": {
+        "scanMs": 2473.148916498758,
+        "detectMs": 2293.7479369938956,
+        "recognizeMs": 132.73656250021304,
+        "detectCalls": 2.0,
+        "recognizeCalls": 1.0,
+        "geometry": {
+          "truePositive": 1,
+          "falsePositive": 0,
+          "falseNegative": 0,
+          "correctOrientation": 1
+        }
+      },
+      "optimized": {
+        "scanMs": 2863.161167002545,
+        "detectMs": 2681.048562997603,
+        "recognizeMs": 135.08289600213175,
+        "detectCalls": 2.0,
+        "recognizeCalls": 1.0,
+        "geometry": {
+          "truePositive": 1,
+          "falsePositive": 0,
+          "falseNegative": 0,
+          "correctOrientation": 1
+        }
+      }
+    },
+    "sparse-page-24": {
+      "baseline": {
+        "scanMs": 2548.760791498353,
+        "detectMs": 2360.800979000487,
+        "recognizeMs": 142.34279149968643,
+        "detectCalls": 2.0,
+        "recognizeCalls": 1.0,
+        "geometry": {
+          "truePositive": 1,
+          "falsePositive": 0,
+          "falseNegative": 0,
+          "correctOrientation": 1
+        }
+      },
+      "optimized": {
+        "scanMs": 2652.657000500767,
+        "detectMs": 2466.5439374985,
+        "recognizeMs": 140.65481249781442,
+        "detectCalls": 2.0,
+        "recognizeCalls": 1.0,
+        "geometry": {
+          "truePositive": 1,
+          "falsePositive": 0,
+          "falseNegative": 0,
+          "correctOrientation": 1
+        }
+      }
+    },
+    "sparse-page-40": {
+      "baseline": {
+        "scanMs": 2787.984228998539,
+        "detectMs": 2588.433228997019,
+        "recognizeMs": 148.56197900007828,
+        "detectCalls": 2.0,
+        "recognizeCalls": 1.0,
+        "geometry": {
+          "truePositive": 1,
+          "falsePositive": 0,
+          "falseNegative": 0,
+          "correctOrientation": 1
+        }
+      },
+      "optimized": {
+        "scanMs": 2903.396249999787,
+        "detectMs": 2691.9161870027892,
+        "recognizeMs": 157.83870849918458,
+        "detectCalls": 2.0,
+        "recognizeCalls": 1.0,
+        "geometry": {
+          "truePositive": 1,
+          "falsePositive": 0,
+          "falseNegative": 0,
+          "correctOrientation": 1
+        }
+      }
+    },
+    "blank-large": {
+      "baseline": {
+        "scanMs": 28.13208300358383,
+        "detectMs": 0.0,
+        "recognizeMs": 0.0,
+        "detectCalls": 0.0,
+        "recognizeCalls": 0.0,
+        "geometry": {
+          "truePositive": 0,
+          "falsePositive": 0,
+          "falseNegative": 0,
+          "correctOrientation": 0
+        }
+      },
+      "optimized": {
+        "scanMs": 24.504375000105938,
+        "detectMs": 0.0,
+        "recognizeMs": 0.0,
+        "detectCalls": 0.0,
+        "recognizeCalls": 0.0,
+        "geometry": {
+          "truePositive": 0,
+          "falsePositive": 0,
+          "falseNegative": 0,
+          "correctOrientation": 0
+        }
+      }
+    }
+  },
+  "onnxCpuSourceSmoke": {
+    "pipelineText": {
+      "exact": 9,
+      "regions": 10,
+      "edits": 5,
+      "characters": 75,
+      "characterErrorRate": 0.06666666666666667
+    },
+    "allNineOutputsMatchTorchCandidate": true,
+    "metadata": {
+      "platform": "macOS-26.6.2-arm64-arm-64bit",
+      "python": "3.11.17",
+      "onnxruntime": "1.22.1",
+      "availableProviders": [
+        "CoreMLExecutionProvider",
+        "AzureExecutionProvider",
+        "CPUExecutionProvider"
+      ],
+      "activeProviders": ["CPUExecutionProvider"],
+      "ortThreads": 2,
+      "opencv": "4.11.0",
+      "opencvThreads": 10,
+      "transformers": "4.57.3",
+      "numpy": "1.26.4",
+      "lindera": "6.0.0",
+      "blockedModulesLoaded": []
+    },
+    "exports": "services/ocr/build/resource-reduction-20261018/onnx-export",
+    "exportManifestSha256": "5ae1a2060fbde77c8faed3258502618da5d5b800acdbd8900e6dab6679b2e1f2"
+  }
+}

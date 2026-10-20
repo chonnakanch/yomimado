@@ -1,4 +1,4 @@
-"""Compare conservative OCR work avoidance and a no-tiles ablation locally.
+"""Compare the current OCR pipeline with Git and an optional no-tiles ablation.
 
 Loads the baseline pipeline from Git, shares warmed models, alternates profile
 order and retains every output. No server, model downloads or release changes.
@@ -94,6 +94,11 @@ def main():
         default=Path("/System/Library/Fonts/ヒラギノ角ゴシック W3.ttc"),
     )
     parser.add_argument("--repeats", type=int, default=3)
+    parser.add_argument(
+        "--skip-no-tiles",
+        action="store_true",
+        help="Compare only baseline and current pipeline, retaining normal tile retries",
+    )
     args = parser.parse_args()
     if args.repeats < 1:
         parser.error("Requires positive repeats")
@@ -130,9 +135,14 @@ def main():
     import inference
 
     refinement = TimedModel(inference.refine_mask)
+    profiles = (
+        ("baseline", "optimized")
+        if args.skip_no_tiles
+        else ("baseline", "optimized", "no-tiles")
+    )
     samples, outputs = (
         [],
-        {profile: {} for profile in ("baseline", "optimized", "no-tiles")},
+        {profile: {} for profile in profiles},
     )
     with (
         patch.object(real_ocr, "_models", return_value=(detector, recognizer)),

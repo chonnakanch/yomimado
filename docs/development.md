@@ -68,7 +68,13 @@ as PNG files. On the first launch after this change, YomiMado removes its older
 with one incomplete or missing detector region, the service also tries Manga OCR
 on the whole selected crop. If it recovers plausible text, the overlay uses a
 dashed, approximate selection-area box rather than claiming precise text
-geometry. Choose **Show overlay** to continue or **Close** to cancel. Hover tooltips
+geometry. This also recovers a single omitted Japanese character when the
+detected substring has at least two Japanese script characters and the selection
+adds one more, rather than only punctuation or a changed reading. A short run
+can be relabeled vertical when both the selection and detected bounds are tall;
+all whole-selection recoveries carry explicit review metadata and unknown
+confidence. See the [OCR accuracy scope](implementation-plan.md#small-text-and-vertical-ocr-accuracy).
+Choose **Show overlay** to continue or **Close** to cancel. Hover tooltips
 on OCR boxes, toolbar buttons and the popup's Check OCR indicator also require this
 flag; accessible labels and review details remain available in normal mode.
 This flag is read when Vite

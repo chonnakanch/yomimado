@@ -19,6 +19,8 @@ See the [changelog](../CHANGELOG.md) for completed changes and the
 - [x] **JLPT vocabulary tags** — done on `develop`, unreleased.
 - [x] **Saved search and dictionary-style library** — done on `develop`, UI approved, unreleased.
 - [x] **Conjugation explanations (initial forms and contractions)** — done on `develop`, unreleased.
+- [x] **Small-text and vertical OCR accuracy: initial selection recovery** — implemented
+      in source; [scope, evidence and remaining work](implementation-plan.md#small-text-and-vertical-ocr-accuracy).
 
 ### Planned
 
@@ -26,6 +28,8 @@ See the [changelog](../CHANGELOG.md) for completed changes and the
 - [ ] **Known / learning word states** — proposed.
 - [ ] **Personal manga glossary** — proposed.
 - [ ] **Local pronunciation playback** — proposed.
+- [ ] **OCR accuracy follow-ups** — page-scale small text, low-contrast dialogue and
+      private real-page evaluation; [completion criteria](implementation-plan.md#small-text-and-vertical-ocr-accuracy).
 
 Bubble OCR retry/redraw is removed and deferred, not a completed feature.
 Anki export remains excluded.

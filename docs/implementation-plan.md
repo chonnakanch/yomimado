@@ -1,5 +1,65 @@
 # YomiMado — Implementation Plan
 
+## Small-text and vertical OCR accuracy
+
+The initial selection-recovery slice is implemented in development source.
+Ordinary scans of selections up to 320 × 320 captured image pixels can recover
+one omitted Japanese character, such as 学校へ previously returning 学校. The
+whole-selection result must retain the complete recognized substring, containing
+at least two Japanese script characters, and add exactly one Japanese script
+character. A punctuation-only addition, changed reading or one-character seed
+does not qualify for this new rule. The existing longer-text fallback remains.
+
+When that fallback recovers a short run, a horizontal detector label can become
+vertical only when both the selection and detected bounds are at least 1.5 times
+taller than wide, and the original text contains one to three Japanese script
+characters. Capture shape alone cannot change a detected horizontal line.
+Recovered text keeps the whole selection's image-space polygon, explicit review
+metadata and unknown confidence (`0`). The original detector result remains in
+debug output. Recognition uses the existing full-selection call: there are no
+additional inference passes, models, dependencies or coordinate transformations.
+
+- [x] Recover a single missing edge character in small, single-region selections.
+- [x] Correct supported short vertical selection orientation and expose uncertainty.
+- [ ] Improve page-scale small-text detection/cropping while keeping adjacent
+      dialogue and furigana separate.
+- [ ] Recover low-contrast dialogue without joining separate text regions.
+- [ ] Evaluate private real-page fixtures across both supported native platforms.
+
+Follow-up changes must improve measured character errors or missed text without
+regressing blank/artwork negatives, neighboring regions or image-space geometry;
+record inference counts and scan-time cost alongside accuracy. This milestone
+does not restore the removed single-bubble retry/redraw UI.
+
+Verification and synthetic accuracy measurements are recorded with the
+[OCR accuracy results](small-text-accuracy-results.json). These do not establish a
+general manga accuracy rate or acceptance of a new installer.
+
+The retained comparison uses `04c9617` as baseline, unchanged local models,
+two alternating repetitions and 13 synthetic images (52 scans). On the original
+nine images, exact reference strings improve from 7/10 to 9/10 and character
+edits from 7/75 to 5/75 (9.3% → 6.7% CER). With the sparse-page fixtures, exact
+strings improve from 10/13 to 12/13 and edits from 7/84 to 5/84. Only the small
+horizontal/vertical selection responses change; low-contrast dialogue remains
+incorrect. The larger selection polygons represent approximate recovery areas,
+not improved detector localization; strict box-IoU scores are retained in the
+results. Detector and recognition call counts are unchanged. Pooled scan medians
+are 1,072 → 1,100 ms; the small uncontrolled sample establishes no speedup.
+
+All 194 service tests (including 25 new recovery cases), seven benchmark-metric
+tests, 37 frontend response/coordinate tests, Ruff and the frontend production
+build pass. A separate ONNX CPU source run on macOS matches all nine Torch
+candidate responses with Torch/Manga OCR/UniDic/Fugashi imports blocked. Native
+Windows, private real manga and new exact installers remain unverified.
+
+Reproduce the retained source comparison with existing local resources:
+
+```sh
+rtk services/ocr/build/release-venv/bin/python scripts/benchmark_detector_retries.py \
+  --baseline-ref 04c9617 --repeats 2 --skip-no-tiles \
+  --output services/ocr/build/small-text-accuracy-20261020/sequential
+```
+
 ## Current status
 
 See the [feature roadmap](feature-roadmap.md) for proposed learning features and

@@ -10,7 +10,7 @@ from io import BytesIO
 from os import environ
 from pathlib import Path
 from types import SimpleNamespace
-from typing import Any
+from typing import Any, Literal
 
 from app.models import OcrDebug, OcrDebugDetection, OcrResponse, Point, TextRegion
 from app.pipeline.geometry import extend_to_visible_ink
@@ -34,6 +34,7 @@ EXPANDED_REVIEW_REASON = (
     "Short vertical text recovered from an expanded crop; area approximate—verify on page"
 )
 INK_REVIEW_REASON = "Detector boundary extended around visible strokes; verify on page"
+SELECTION_REVIEW_REASON = "Text recovered from the whole selection; area approximate—verify on page"
 logger = logging.getLogger(__name__)
 
 
@@ -329,7 +330,38 @@ def _text_filter_reason(text: str) -> str | None:
 def _selection_adds_text(selection_text: str, detected_text: str) -> bool:
     full = "".join(selection_text.split())
     partial = "".join(detected_text.split())
-    return bool(partial) and partial in full and len(full) >= len(partial) + 2
+    if not partial or partial not in full:
+        return False
+    if len(full) >= len(partial) + 2:
+        return True
+    # A crop may omit just one kana (学校へ -> 学校). Require two existing
+    # Japanese characters and one additional script character; punctuation or
+    # a changed reading is not evidence for this smaller recovery.
+    return (
+        len(full) == len(partial) + 1
+        and _japanese_character_count(partial) >= 2
+        and _japanese_character_count(full) == _japanese_character_count(partial) + 1
+    )
+
+
+def _selection_orientation(
+    width: int, height: int, regions: list[TextRegion]
+) -> Literal["vertical", "horizontal"]:
+    if not regions:
+        return "vertical" if height > width else "horizontal"
+    region = regions[0]
+    xs = [point.x for point in region.polygon]
+    ys = [point.y for point in region.polygon]
+    # A short vertical run can be mislabeled horizontal. Require both the
+    # selected area and the detected ink bounds to agree, rather than using
+    # capture aspect alone (which can include arbitrary surrounding whitespace).
+    if (
+        height >= width * 1.5
+        and max(ys) - min(ys) >= (max(xs) - min(xs)) * 1.5
+        and 1 <= _japanese_character_count(region.text) <= 3
+    ):
+        return "vertical"
+    return region.orientation
 
 
 def _apply_selection_fallback(
@@ -347,13 +379,13 @@ def _apply_selection_fallback(
         id="region-1",
         text=selection_text,
         polygon=_box_polygon((0, 0, width, height)),
-        orientation=regions[0].orientation
-        if regions
-        else ("vertical" if height > width else "horizontal"),
+        orientation=_selection_orientation(width, height, regions),
         confidence=0,
         type=regions[0].type if regions else "other",
         tokens=[],
         geometrySource="selection",
+        needsReview=True,
+        reviewReason=SELECTION_REVIEW_REASON,
     )
     return [fallback], True
 

@@ -25,6 +25,8 @@
 - [SudachiPy investigation](sudachipy-investigation.md): former Rust-backed engine, Core/Small/Lindera comparison and newer-version compatibility.
 - [All suggested tokenizer candidates](tokenizer-candidate-comparison.md): seven local profiles covering Sudachi, Lindera, MeCab/IPADIC, OCR UniDic reuse and Vaporetto, with size, latency and learning targets.
 - [Scan performance and accuracy](scan-performance-comparison.md): stage timings and ground-truth synthetic detection/recognition results for both tokenizers.
+- [Small-text and vertical OCR accuracy](implementation-plan.md#small-text-and-vertical-ocr-accuracy):
+  initial selection recovery, uncertainty and remaining accuracy work.
 - [App icon](app-icon.md): the current icon's origin and generation record.
 - [Dictionary updates](dictionary-updates.md): snapshot replacement and attribution.
 
