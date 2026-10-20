@@ -20,6 +20,45 @@ from pathlib import Path
 SEED_REVISION = "f1b4fbaa8980ff0df0a1abf6f5a93df058f4678e"
 ROOT = Path(__file__).resolve().parent.parent
 
+# Technical review: docs/macos-runtime-reuse-0.4.0.md. These exact frontend
+# data/notice/recipe bytes are independent of the reused frozen service. Do not
+# allow the directory or repin the runtime: later data/terms edits need review.
+FRONTEND_DATA_HASHES = {
+    "THIRD_PARTY_LICENSES/ASSET_NOTICES.md": "bb6ba2e8235245b34cfe07e0684493acab959b9ad79d0f168ff217fab3709203",
+    "THIRD_PARTY_LICENSES/README.md": "3f38408d212750403c71944dc6b00bec18fc0f101e8433abd84a3f188cd05ace",
+    "THIRD_PARTY_LICENSES/jlpt/LICENSE.txt": "7abe19ec9bb73b36141b999b861d24ad855e808bafe0f81e84cce28556f6c297",
+    "THIRD_PARTY_LICENSES/jlpt/README.md": "5cad01beb4c9dcf93ac09ddc56063fe54602fed0e62a920637c3ebb39dcbaa4c",
+    "THIRD_PARTY_LICENSES/jlpt/UPSTREAM_README.md": "4efd40eecf18c01a61ca54d4c1731daa0756a384b0f4ade551b43914a087869a",
+    "THIRD_PARTY_LICENSES/jlpt/source/index.json": "1eb3c86c7d19e6314a8061b2f6a7478e99d7e65cafcac16c071d2dcb71da3513",
+    "THIRD_PARTY_LICENSES/jlpt/source/term_meta_bank_1.json": "80698c74b0d4efe476db35626b60324007f66d5ca32c0178bf3f9456a0290abf",
+    "THIRD_PARTY_LICENSES/jlpt/source/term_meta_bank_2.json": "c58e20a6fc2dececf6a5e42bd1163212615ef79deec85e77c6f7c7deb4d4cc7e",
+    "THIRD_PARTY_LICENSES/jlpt/source/term_meta_bank_3.json": "baeee2da06c41ea973cb54a6118834682b33857128f7d97577f21cbaaae7c51b",
+    "THIRD_PARTY_LICENSES/jlpt/source/term_meta_bank_4.json": "844590546217e084f8244f3cf9e6eb6054f5f7a370857bf5917fe19d4d83d7a8",
+    "THIRD_PARTY_LICENSES/jlpt/source/term_meta_bank_5.json": "a169779f5b8e4dbf4aaa86c367e2b0e24721b5d247c8e0c5b37b18189bc1be83",
+    "THIRD_PARTY_LICENSES/jlpt/sources.json": "e13ab93e53b020e0a9a210f1e60b1fea08606658d942e34001f5df2dc2ac3141",
+    "scripts/prepare_jlpt.py": "549804cc65d0f7fdca4539d933081f55e91f4afb609eafb9ff648ddd41993535",
+    "apps/desktop/src/features/jlpt/vocabulary.json": "2c280b1168ab93458c365f35c77c0def20345c2d4daa94a9d53310d4f94e50a7",
+    "apps/desktop/src/features/jlpt/LICENSE.txt": "7abe19ec9bb73b36141b999b861d24ad855e808bafe0f81e84cce28556f6c297",
+}
+
+
+def committed_bytes(path: str, root: Path = ROOT) -> bytes:
+    return subprocess.check_output(["git", "show", f"HEAD:{path}"], cwd=root)
+
+
+def verify_frontend_data(root: Path = ROOT) -> dict:
+    for path, checksum in FRONTEND_DATA_HASHES.items():
+        if hashlib.sha256(committed_bytes(path, root)).hexdigest() != checksum:
+            raise ValueError("Frontend data/source review hash changed: " + path)
+    return {
+        "id": "frontend:jlpt-vocabulary",
+        "license": "CC-BY-SA-4.0",
+        "upstreamRevision": "b062d4e38c4bdd0950ae1d4ec55f04b176182e03",
+        "review": "docs/macos-runtime-reuse-0.4.0.md",
+        "noticeDirectory": "frontend-jlpt",
+        "files": dict(FRONTEND_DATA_HASHES),
+    }
+
 
 def git(*args: str, root: Path = ROOT) -> str:
     return subprocess.check_output(["git", *args], cwd=root, text=True).strip()
@@ -125,10 +164,16 @@ def verify_reuse(root: Path = ROOT) -> None:
         # reviewed seed does not invalidate its unchanged runtime. Their original
         # definitions remain recoverable in Git history.
         "README.md",
+        "CHANGELOG.md",
         "AGENTS.md",
         ".gitignore",
         "scripts/README.md",
         "scripts/update_version.py",
+        # Standalone, pinned maintainer notes tooling; never frozen or bundled.
+        "cliff.toml",
+        "scripts/release_notes.py",
+        "THIRD_PARTY_LICENSES/git-cliff/README.md",
+        "THIRD_PARTY_LICENSES/git-cliff/LICENSE-MIT",
         # Reviewed 0.2.2 native tray inputs; none enter the frozen OCR runtime.
         # Keep this exact file list rather than allowing arbitrary icon/build
         # changes or relaxing the dependency/lock comparison below.
@@ -218,6 +263,8 @@ def verify_reuse(root: Path = ROOT) -> None:
     )
     deleted = None
     changed = git("diff", "--name-only", SEED_REVISION, "HEAD", root=root).splitlines()
+    if set(changed) & FRONTEND_DATA_HASHES.keys():
+        verify_frontend_data(root)
     for path in changed:
         if Path(path).suffix.lower() in {".onnx", ".pt", ".pth", ".safetensors"}:
             raise ValueError("Model weights must not enter the release source: " + path)
@@ -226,7 +273,11 @@ def verify_reuse(root: Path = ROOT) -> None:
             after = git("show", f"HEAD:{path}", root=root)
             if runtime_compatible_config(path, before, after):
                 continue
-        elif path in allowed_files or path.startswith(allowed_prefixes):
+        elif (
+            path in FRONTEND_DATA_HASHES
+            or path in allowed_files
+            or path.startswith(allowed_prefixes)
+        ):
             continue
         elif path == "apps/desktop/src-tauri/icons/placeholder.svg" or path.startswith(
             removable_prefixes
@@ -257,6 +308,7 @@ def prepare_sources(seed: Path, notices: Path, output: Path, root: Path = ROOT) 
     manifest = read_json(seed / "source-delivery.json")
     if manifest["projectRevision"] != SEED_REVISION:
         raise ValueError("Incorrect reviewed seed revision")
+    frontend_data = verify_frontend_data(root)
     shutil.copytree(seed, output)
     project = next(e for e in manifest["components"] if e["id"] == "project:yomimado")
     old_archive = project["archive"]
@@ -280,18 +332,30 @@ def prepare_sources(seed: Path, notices: Path, output: Path, root: Path = ROOT) 
         archive=archive.name,
         sha256=checksum,
         originalArchiveSha256=checksum,
-        licenseEvidence=f"GPL-3.0-only; complete Git source at {revision}. Dependency/runtime inputs match reviewed seed {SEED_REVISION}.",
+        licenseEvidence=f"GPL-3.0-only application software; separate CC-BY-SA-4.0 JLPT data (see ci-followup.json). Complete Git source at {revision}. Frozen dependency/runtime inputs match reviewed seed {SEED_REVISION}.",
     )
     manifest["projectRevision"] = revision
     followup = {
         "seedRevision": SEED_REVISION,
         "projectRevision": revision,
-        "scope": "Desktop source/version and release documentation/automation; dependency sources, frozen OCR code and licence choices unchanged.",
+        "scope": "Rebuilt desktop source/version and separate frontend JLPT data; frozen OCR code, dependency sources and their licence choices unchanged. Original seed approval is not extended to the frontend dataset.",
+        "frontendData": frontend_data,
         "status": "automated-input-comparison; no new human source or installer approval claimed",
     }
     manifest["ciFollowup"] = followup
-    write_json(output / "source-delivery.json", manifest)
     write_json(output / "ci-followup.json", followup)
+    # Keep these additions separate from the original runtime notices/review.
+    # Read committed bytes, just like the project archive and reuse guard.
+    for path in FRONTEND_DATA_HASHES:
+        target = notices / frontend_data["noticeDirectory"] / path
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_bytes(committed_bytes(path, root))
+    write_json(notices / "frontend-data.json", frontend_data)
+    project.setdefault("noticeFiles", []).append(
+        "frontend-jlpt/THIRD_PARTY_LICENSES/jlpt/LICENSE.txt"
+    )
+    # Both manifests carry the added notice reference.
+    write_json(output / "source-delivery.json", manifest)
     worksheet = read_json(output / "source-delivery.worksheet.json")
     worksheet["projectRevision"] = revision
     next(e for e in worksheet["components"] if e["id"] == "project:yomimado").update(

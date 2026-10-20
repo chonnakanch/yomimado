@@ -61,6 +61,14 @@ pass. A documented, narrowly reviewed runtime-independent exception is different
 from approving new frozen inputs. The seed version need not match every later
 app version when its runtime remains compatible.
 
+Checks also runs `plan` and `verify-reuse` with full Git history in its
+`release-tools` job. The required `gates` depends on that job: runtime/source
+incompatibility must be resolved before a main PR can pass Checks. This step is
+read-only and does not download private inputs. The
+[0.4.0 frontend-data review](macos-runtime-reuse-0.4.0.md) documents one exact,
+hash-pinned runtime-independent exception; it does not permit arbitrary data,
+notice or frozen-service changes.
+
 ## Release a new app version
 
 1. Start on an up-to-date `develop` with a clean working directory and intended
@@ -73,10 +81,16 @@ app version when its runtime remains compatible.
    rtk python3 scripts/update_version.py 0.4.0
    ```
 
-3. Update [release notes](desktop-release-notes.md), retaining `VERSION` and
-   `CLASSIFICATION` placeholders. Review the diff, run relevant checks, commit and
-   push the focused changes. Run the seed guard against the committed source. If
-   it rejects frozen inputs, complete the seed procedure before main integration.
+   Review and commit the intended version/code changes before selecting `HEAD`
+   for the draft: the generator reads the version from the committed source.
+
+3. [Generate and review a git-cliff draft](#generate-and-review-release-notes)
+   for the previous published tag through the proposed release commit. Update
+   [release notes](desktop-release-notes.md), retaining `VERSION` and
+   `CLASSIFICATION` placeholders and installation/source notices. Review the diff,
+   run relevant checks, commit and push focused changes. Run the seed guard against
+   the committed source. If it rejects frozen inputs, complete the seed procedure
+   before main integration.
 4. Prepare the protected `develop` → `main` PR. Merge when authorized and required
    checks pass. A main push starts **Release** automatically. To dispatch manually,
    use **Actions → Release → Run workflow → main**; there is no version input.
@@ -105,6 +119,56 @@ two platform source archives, combined notices, checksums, provenance and two
 translation ZIPs. Follow the candidate's validated layout; older layouts remain
 historical. GitHub's automatic repository source links do not replace dependency
 source delivery.
+
+## Generate and review release notes
+
+The repository uses **git-cliff 2.14.2** as a standalone maintainer tool. Python
+3.11+ prepares its checksum-pinned executable outside the app and OCR runtime:
+
+```sh
+rtk python3 scripts/release_notes.py prepare
+```
+
+On Windows, use `rtk py -3.11` in place of `rtk python3`. Preparation is the explicit
+network/download step. If the interpreter has no configured CA bundle, point
+`SSL_CERT_FILE` to an existing trusted certifi bundle; keep TLS verification
+enabled. Generation uses only the prepared tool and local Git history.
+
+Fetch current history/tags if necessary, then select the previous **published app
+release** yourself, including a pre-release when appropriate. Do not use a private
+seed tag, an unpublished candidate tag or GitHub's stable-only latest endpoint.
+The example below assumes `v0.3.0` is that release and the committed `HEAD` contains
+the intended changes/version:
+
+```sh
+rtk git fetch origin --tags
+rtk python3 scripts/release_notes.py generate \
+  --previous-tag v0.3.0 \
+  --revision HEAD \
+  --output services/ocr/build/release-notes/0.4.0-draft.md
+```
+
+The wrapper reads the app version at the selected commit and records the exact
+previous/target SHAs, commit count and comparison link. It requires full history,
+an existing release tag ancestral to the target, a nonempty range and a new output
+path. Existing files are never overwritten. A tag, release, approval or version
+bump is not created by this command.
+
+`cliff.toml` groups every commit, including unconventional messages, merge commits
+and reverts. The wrapper compares git-cliff's context against `git rev-list` and
+checks rendered commit links; omissions or duplicates fail before writing. This
+is a complete commit inventory, not an automatic claim about available features.
+
+Review it against the final diff and [CHANGELOG.md](../CHANGELOG.md). Summarize the
+net features, fixes, removals and relevant dependency changes in the curated
+[release notes](desktop-release-notes.md). In particular, an added-then-reverted
+feature belongs in the review history, not in available features. Keep known
+limitations, `VERSION`/`CLASSIFICATION` placeholders and installation/source/data
+notices. Do not overwrite the historical changelog with raw generated entries.
+
+If the selected source changes, generate a new draft with a new output filename.
+The protected publisher still uses the reviewed notes file and appends candidate
+source/download hashes. See the [tool/version licence record](../THIRD_PARTY_LICENSES/git-cliff/README.md).
 
 ## Build a replacement macOS seed
 

@@ -6,6 +6,37 @@ See the [feature roadmap](feature-roadmap.md) for proposed learning features and
 the [changelog](../CHANGELOG.md) for completed development changes. Source
 completion is tracked separately from publication and installer acceptance.
 
+**git-cliff release-note drafts — 2026-10-20:** added pinned maintainer tooling
+to generate a local draft between an explicit previous published tag and exact
+target commit. All commits, including unconventional messages, merges and reverts,
+are grouped and checked against the Git range before output; existing files are
+never overwritten. The human runbook and personal release skill route note
+preparation through this draft and review net changes before updating the curated
+publisher notes. The tool and its exact MIT terms are separate from app/runtime
+dependencies. Checks exercises synthetic histories with the real binary; the
+macOS reuse guard permits only the specific independent tool/config/notice paths.
+No app version, installer, seed pin, main merge or publication approval changes.
+
+Local verification: all 76 selected tests pass (nine real git-cliff history/cache
+cases, 30 release rules, 28 desktop delivery cases and nine version cases), along
+with script Ruff, Markdown/workflow formatting, pinned actionlint and skill
+validation. A real draft covers all 21 commits after `v0.3.0` through `a956791`.
+Execution is verified on macOS Apple Silicon; Windows and Linux CI-host execution
+remain separate from these local results.
+
+**0.4.0 runtime reuse and Checks repair — 2026-10-20:** the owner's PR #17 merge
+started Release `39371691358`, which stopped at the documented changelog/JLPT
+reuse boundary before building installers. The repair adds a technical,
+hash-pinned exception for 15 exact frontend data/notice/generator files and
+treats the changelog as project documentation. Source preparation retains the
+dataset's separate terms, committed source bytes and explicit provenance without
+extending the original seed approval. Frozen service/dependency inputs, seed
+revision and all private-input pins remain unchanged. Checks now fetches the
+seed history and runs the real version/reuse preflight in the required
+`release-tools` dependency of `gates`. See the
+[review, regression coverage and integration limits](macos-runtime-reuse-0.4.0.md).
+Main integration, a fresh installer build and publication remain separate.
+
 **Version 0.4.0 preparation — 2026-10-20:** bumped the five app version files
 from clean, current `develop` with the version updater and added release notes for
 manual selection, conjugation explanations, JLPT tags, Saved search and toolbar

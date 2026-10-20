@@ -133,6 +133,27 @@ class VersionTests(unittest.TestCase):
         ):
             ci.verify_reuse()
 
+    def test_release_notes_tooling_is_independent_of_frozen_runtime(self):
+        paths = (
+            "cliff.toml",
+            "scripts/release_notes.py",
+            "THIRD_PARTY_LICENSES/git-cliff/README.md",
+            "THIRD_PARTY_LICENSES/git-cliff/LICENSE-MIT",
+        )
+        with patch.object(ci, "git", return_value="\n".join(paths)):
+            ci.verify_reuse()
+        for path in (
+            "scripts/unreviewed-runtime.py",
+            "THIRD_PARTY_LICENSES/git-cliff/unreviewed-input.json",
+            "services/ocr/app/pipeline.py",
+        ):
+            with (
+                self.subTest(path=path),
+                patch.object(ci, "git", return_value=path),
+                self.assertRaisesRegex(ValueError, "new seed"),
+            ):
+                ci.verify_reuse()
+
     def test_tray_feature_alone_preserves_reviewed_runtime_dependencies(self):
         path = "apps/desktop/src-tauri/Cargo.toml"
         after = (ci.ROOT / path).read_text()
@@ -262,6 +283,91 @@ class VersionTests(unittest.TestCase):
             self.assertRaisesRegex(ValueError, "new seed"),
         ):
             ci.verify_reuse()
+
+
+class FrontendDataReuseTests(unittest.TestCase):
+    def setUp(self):
+        self.temp = tempfile.TemporaryDirectory()
+        self.addCleanup(self.temp.cleanup)
+        self.root = Path(self.temp.name)
+        self.command("init", "-q")
+        self.command("config", "user.name", "Test")
+        self.command("config", "user.email", "test@example.invalid")
+        runtime = self.root / "services/ocr/app/pipeline.py"
+        runtime.parent.mkdir(parents=True)
+        runtime.write_text("# original frozen service\n")
+        self.commit()
+        seed = ci.git("rev-parse", "HEAD", root=self.root)
+        seed_patch = patch.object(ci, "SEED_REVISION", seed)
+        seed_patch.start()
+        self.addCleanup(seed_patch.stop)
+        self.originals = {}
+        for path in ci.FRONTEND_DATA_HASHES:
+            content = ci.committed_bytes(path)
+            self.originals[path] = content
+            target = self.root / path
+            target.parent.mkdir(parents=True, exist_ok=True)
+            target.write_bytes(content)
+        self.commit()
+
+    def command(self, *args):
+        subprocess.run(["git", *args], cwd=self.root, check=True, capture_output=True)
+
+    def commit(self):
+        self.command("add", ".")
+        self.command("commit", "-qm", "test source")
+
+    def test_exact_frontend_data_and_changelog_preserve_frozen_runtime(self):
+        (self.root / "CHANGELOG.md").write_text("# Release notes\n")
+        self.commit()
+        ci.verify_reuse(self.root)
+
+    def test_every_data_notice_and_generator_pin_is_enforced(self):
+        for path, content in self.originals.items():
+            with self.subTest(path=path):
+                target = self.root / path
+                target.write_bytes(content + b"\n")
+                self.commit()
+                with self.assertRaisesRegex(ValueError, "review hash changed"):
+                    ci.verify_reuse(self.root)
+                target.write_bytes(content)
+                self.commit()
+
+    def test_guard_uses_committed_data_not_dirty_worktree(self):
+        path = "THIRD_PARTY_LICENSES/jlpt/LICENSE.txt"
+        (self.root / path).write_text("licence removed")
+        ci.verify_reuse(self.root)
+        self.commit()
+        with self.assertRaisesRegex(ValueError, "review hash changed"):
+            ci.verify_reuse(self.root)
+
+    def test_additional_third_party_data_is_not_allowlisted(self):
+        (self.root / "THIRD_PARTY_LICENSES/jlpt/unreviewed.json").write_text("{}")
+        self.commit()
+        with self.assertRaisesRegex(ValueError, "new seed"):
+            ci.verify_reuse(self.root)
+
+    def test_valid_frontend_data_cannot_hide_changed_frozen_code(self):
+        (self.root / "services/ocr/app/pipeline.py").write_text("# changed runtime\n")
+        self.commit()
+        with self.assertRaisesRegex(ValueError, "new seed"):
+            ci.verify_reuse(self.root)
+
+    def test_pr_checks_run_real_preflight_with_seed_history(self):
+        text = (ci.ROOT / ".github/workflows/checks.yml").read_text()
+        job = text.split("  release-tools:\n", 1)[1].split("  native:\n", 1)[0]
+        self.assertIn("          fetch-depth: 0\n", job)
+        self.assertIn("          python scripts/macos-ci-release.py plan\n", job)
+        self.assertIn(
+            "          python scripts/macos-ci-release.py verify-reuse\n", job
+        )
+        step = job.split(
+            "      - name: Check release version and reviewed runtime compatibility\n",
+            1,
+        )[1].split("      - name:", 1)[0]
+        self.assertNotIn("if:", step)
+        self.assertNotIn("continue-on-error", step)
+        self.assertIn("needs: [frontend, service, release-tools, native]", text)
 
 
 class ArtifactTests(unittest.TestCase):
@@ -420,6 +526,10 @@ class SourceFollowupTests(unittest.TestCase):
             ):
                 subprocess.run(["git", *args], cwd=checkout, check=True)
             (checkout / "feature.txt").write_text("merged feature")
+            for path in ci.FRONTEND_DATA_HASHES:
+                target = checkout / path
+                target.parent.mkdir(parents=True, exist_ok=True)
+                target.write_bytes(ci.committed_bytes(path))
             subprocess.run(["git", "add", "."], cwd=checkout, check=True)
             subprocess.run(
                 ["git", "commit", "-qm", "feature"], cwd=checkout, check=True
@@ -460,6 +570,28 @@ class SourceFollowupTests(unittest.TestCase):
             )
             self.assertEqual(result["components"][1], original["components"][1])
             self.assertEqual(ci.read_json(seed / "source-delivery.json"), original)
+            followup = result["ciFollowup"]
+            self.assertIn("not extended", followup["scope"])
+            self.assertEqual(followup["frontendData"]["license"], "CC-BY-SA-4.0")
+            self.assertEqual(followup["frontendData"]["files"], ci.FRONTEND_DATA_HASHES)
+            self.assertEqual(
+                ci.read_json(output / "source-delivery.worksheet.json")["components"][
+                    0
+                ],
+                result["components"][0],
+            )
+            self.assertIn(
+                "frontend-jlpt/THIRD_PARTY_LICENSES/jlpt/LICENSE.txt",
+                result["components"][0]["noticeFiles"],
+            )
+            for path, checksum in ci.FRONTEND_DATA_HASHES.items():
+                self.assertEqual(ci.digest(notices / "frontend-jlpt" / path), checksum)
+                self.assertEqual(
+                    ci.digest(output / "notices/frontend-jlpt" / path), checksum
+                )
+            self.assertEqual(
+                ci.read_json(notices / "frontend-data.json"), followup["frontendData"]
+            )
             self.assertEqual(
                 (notices / "project-revision.txt").read_text().strip(), revision
             )
@@ -469,6 +601,11 @@ class SourceFollowupTests(unittest.TestCase):
                     archive.extractfile("yomimado/feature.txt").read(),
                     b"merged feature",
                 )
+                for path in ci.FRONTEND_DATA_HASHES:
+                    self.assertEqual(
+                        archive.extractfile("yomimado/" + path).read(),
+                        ci.committed_bytes(path),
+                    )
 
 
 if __name__ == "__main__":

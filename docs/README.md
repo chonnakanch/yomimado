@@ -33,6 +33,8 @@
 - [Shared release checklist](desktop-release.md): published v0.1.0 identities,
   Checks/Release workflows, future six-file delivery and protected publication.
 - [Release notes template](desktop-release-notes.md): generated notes for future versions.
+- [Generate release-note drafts](release-runbook.md#generate-and-review-release-notes):
+  pinned git-cliff, explicit tag/commit ranges and review of net changes.
 - [macOS release guide](macos-release.md) and [Windows release guide](windows-release.md):
   platform packaging and retained preparation evidence.
 - [Verified macOS runtime seed](macos-runtime-seed.md): private input hashes,
