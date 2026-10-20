@@ -203,27 +203,6 @@ history, not whether a later PR reverted a feature. Direct commits are visible
 in the final comparison but cannot be assigned invented PR numbers. Historical
 `CHANGELOG.md` and published releases remain unchanged.
 
-### Optional commit audit with git-cliff
-
-The pinned git-cliff 2.14.2 tool remains available to audit all commits, including
-unconventional messages, merges and reverts. It is separate from the app/OCR
-runtime and is no longer the source of the public feature list:
-
-```sh
-rtk python3 scripts/release_notes.py prepare
-rtk python3 scripts/release_notes.py generate \
-  --previous-tag v0.3.0 \
-  --revision v0.4.0 \
-  --output services/ocr/build/release-notes/0.4.0-commit-audit.md
-```
-
-Use Python 3.11+ (`rtk py -3.11` on Windows), full Git history and a new output
-path. Preparation explicitly downloads and checksum-verifies the pinned binary;
-generation is local/offline. Keep TLS verification enabled. The wrapper checks
-all commit IDs against `git rev-list` and refuses omissions/duplicates. The
-result is a local inventory, not a published feature list or a replacement for
-historical `CHANGELOG.md`. See the [tool/version licence record](../THIRD_PARTY_LICENSES/git-cliff/README.md).
-
 ## Build a replacement macOS seed
 
 ### 1. Fix the source revision and local inputs

@@ -123,9 +123,8 @@ jobs:
           python -m unittest discover -s scripts/tests -p test_desktop_release.py
           python -m unittest discover -s scripts/tests -p test_release_rules.py
           python -m unittest discover -s scripts/tests -p test_update_version.py
-      - name: Verify PR previews and complete git-cliff commit audits
+      - name: Verify PR release-note previews and publication binding
         run: |
-          python scripts/release_notes.py prepare
           python -m unittest discover -s scripts/tests -p test_release_notes.py
       - name: Verify offline JLPT data and license provenance
         run: python -m unittest discover -s scripts/tests -p test_prepare_jlpt.py

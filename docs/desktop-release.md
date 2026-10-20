@@ -619,7 +619,7 @@ Complete this checklist before the protected main PR is merged:
 GitHub generates a PR-list preview in `release-notes-preview` before publication
 approval. The publisher checks its SHA-256 and source/version and puts Full
 Changelog last. Verification records, asset hashes and provenance remain separate
-from the public note body. git-cliff remains an optional local commit audit.
+from the public note body.
 
 ## Flow and permissions
 

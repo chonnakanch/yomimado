@@ -137,17 +137,12 @@ class VersionTests(unittest.TestCase):
             ci.verify_reuse()
 
     def test_release_notes_tooling_is_independent_of_frozen_runtime(self):
-        paths = (
-            "cliff.toml",
-            "scripts/release_notes.py",
-            "THIRD_PARTY_LICENSES/git-cliff/README.md",
-            "THIRD_PARTY_LICENSES/git-cliff/LICENSE-MIT",
-        )
+        paths = ("scripts/release_notes.py",)
         with patch.object(ci, "git", return_value="\n".join(paths)):
             ci.verify_reuse()
         for path in (
             "scripts/unreviewed-runtime.py",
-            "THIRD_PARTY_LICENSES/git-cliff/unreviewed-input.json",
+            "THIRD_PARTY_LICENSES/release-tools/unreviewed-input.json",
             "services/ocr/app/pipeline.py",
         ):
             with (
