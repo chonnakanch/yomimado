@@ -5,7 +5,7 @@ requires Node.js, npm, Rust, and Tauri platform prerequisites. The development
 OCR service requires Python 3.10 or later; release builders use their pinned
 interpreters and dependencies.
 
-See [project structure](project-structure.md) for source responsibilities and local
+See [project structure](architecture.md#repository-map) for source responsibilities and local
 API examples, and [the reading guide](usage.md) for the app controls.
 
 Follow the [branch and commit rules](git-conventions.md) when starting a task,
