@@ -85,12 +85,26 @@ notice or frozen-service changes.
    for the draft: the generator reads the version from the committed source.
 
 3. [Generate and review a git-cliff draft](#generate-and-review-release-notes)
-   for the previous published tag through the proposed release commit. Update
+   for the previous published tag through the proposed release commit. For example,
+   after committing the version/code changes, run from the repository root:
+
+   ```sh
+   rtk python3 scripts/release_notes.py prepare
+   rtk python3 scripts/release_notes.py generate \
+     --previous-tag v0.3.0 \
+     --revision HEAD \
+     --output services/ocr/build/release-notes/0.4.0-draft.md
+   ```
+
+   Replace the previous tag with the actual previous published release and choose
+   a new draft filename. Review every group, including reverts, against the final
+   code diff and changelog. Then update
    [release notes](desktop-release-notes.md), retaining `VERSION` and
    `CLASSIFICATION` placeholders and installation/source notices. Review the diff,
    run relevant checks, commit and push focused changes. Run the seed guard against
    the committed source. If it rejects frozen inputs, complete the seed procedure
    before main integration.
+
 4. Prepare the protected `develop` → `main` PR. Merge when authorized and required
    checks pass. A main push starts **Release** automatically. To dispatch manually,
    use **Actions → Release → Run workflow → main**; there is no version input.

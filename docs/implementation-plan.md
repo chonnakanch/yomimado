@@ -6,6 +6,12 @@ See the [feature roadmap](feature-roadmap.md) for proposed learning features and
 the [changelog](../CHANGELOG.md) for completed development changes. Source
 completion is tracked separately from publication and installer acceptance.
 
+**Release-note step in release checklists — 2026-10-20:** the manual numbered
+release sequence and shared pre-merge checklist now include the git-cliff commands,
+explicit previous-tag selection, review of reverts/net changes and committing the
+curated notes before merging. Documentation only; release execution and existing
+installer/source/publication evidence remain separate.
+
 **git-cliff release-note drafts — 2026-10-20:** added pinned maintainer tooling
 to generate a local draft between an explicit previous published tag and exact
 target commit. All commits, including unconventional messages, merges and reverts,

@@ -527,6 +527,43 @@ Future packaging checklist:
       Local acceptance for the new installer hashes is not recorded; no additional
       current-release test is requested under the owner's direction.
 
+## Prepare each new release before merging main
+
+Follow the [manual release steps](release-runbook.md#release-a-new-app-version).
+Complete this checklist before the protected main PR is merged:
+
+- [ ] Update the five app version files and commit the intended version/code
+      changes so the notes generator reads the new version at the selected commit.
+- [ ] Select the actual previous published app tag, including a pre-release when
+      appropriate, and generate a complete git-cliff draft. From the repository
+      root, using Python 3.11+, the example commands are:
+
+      ```sh
+      rtk python3 scripts/release_notes.py prepare
+      rtk python3 scripts/release_notes.py generate \
+        --previous-tag v0.3.0 \
+        --revision HEAD \
+        --output services/ocr/build/release-notes/0.4.0-draft.md
+      ```
+
+      Replace the example tag/path for the intended release. Use a new output
+      filename for another draft. See [generation details](release-runbook.md#generate-and-review-release-notes).
+
+- [ ] Review the draft against the final diff and `CHANGELOG.md`. Describe net
+      features/fixes/removals in `docs/desktop-release-notes.md`; do not advertise
+      reverted features as available. Preserve `VERSION`/`CLASSIFICATION`, known
+      limitations and installation/source notices. Commit the reviewed notes.
+- [ ] Run version/runtime-reuse preflight and resolve any required
+      [macOS seed rebuild/review/activation](release-runbook.md#build-a-replacement-macos-seed).
+      If the intended source changes during preparation, generate a fresh draft
+      and reconcile any changed behavior before merging.
+- [ ] Push the focused changes and require passing Checks for the main PR before
+      the authorized merge. Follow the jobs below, then test the exact installers
+      and obtain the separate protected publication approval.
+
+git-cliff creates a local draft. The publisher uses the reviewed notes committed
+above and appends the exact candidate source/download hashes.
+
 ## Flow and permissions
 
 1. **Plan** runs only on this repository's `main`, checks matching Tauri/npm/Cargo
