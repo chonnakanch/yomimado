@@ -78,6 +78,10 @@ from text positions, and page detection may need a saved or drawn area. See the
 Requires Python 3.10+, Node.js/npm, Rust, and the Tauri platform prerequisites.
 See [development setup](docs/development.md) for dependencies and Windows commands.
 
+Use a short-lived branch from `main` and open a PR into `main`. Merges run CI;
+maintainers start versioned releases separately through the manual Release workflow.
+See [branch and commit rules](docs/git-conventions.md).
+
 Start the local service in one terminal (macOS shell):
 
 ```sh

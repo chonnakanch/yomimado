@@ -9,11 +9,13 @@ they do not install Git hooks or add a CI naming gate.
 
 Task branch names use `<type>/<topic>` without a tool-specific prefix.
 
-| Branch           | Purpose                                                       | Normal PR target                             |
-| ---------------- | ------------------------------------------------------------- | -------------------------------------------- |
-| `main`           | Protected release source; a push starts the Release workflow. | Updated through a protected PR.              |
-| `develop`        | Integration branch for completed development work.            | `main` when preparing an authorized release. |
-| `<type>/<topic>` | A focused task, based on current `develop`.                   | `develop`.                                   |
+`main` is the only integration branch. It contains completed, checked work for
+future releases; published version tags identify released source.
+
+| Branch           | Purpose                                 | Normal PR target               |
+| ---------------- | --------------------------------------- | ------------------------------ |
+| `main`           | Protected integration branch.           | Updated through protected PRs. |
+| `<type>/<topic>` | A focused task based on current `main`. | `main`.                        |
 
 Use lowercase ASCII letters, numbers and hyphens for `<topic>`. Keep it short and
 specific. Use one of the commit types below for `<type>`; the branch type describes
@@ -39,7 +41,7 @@ From a clean checkout, create a new task branch from fetched development source:
 
 ```sh
 rtk git fetch origin
-rtk git switch -c feat/kanji-compounds origin/develop
+rtk git switch -c feat/kanji-compounds origin/main
 ```
 
 Push verified work to its existing upstream. For a newly created branch, set its
@@ -49,10 +51,17 @@ upstream on the first push:
 rtk git push -u origin feat/kanji-compounds
 ```
 
-Do not push directly to `main`. A main-targeted urgent fix may branch from
-`origin/main` when that is the requested scope; it still uses the protected PR,
-version, seed-compatibility and release checks. Bring the resulting fix back into
-`develop` so a subsequent release retains it.
+Do not push directly to `main`. Features, fixes and release preparation all use
+focused branches and protected PRs into `main`. A normal merge runs Checks only;
+installers are built through **Actions → Release → Run workflow → main** after
+Checks succeeds for that exact commit. Publication retains its separate owner
+approval. Main does not need a new version for every feature PR; bump the five app
+version files together in a release-preparation PR when ready to ship.
+
+`develop` is retired as an integration target. Preserve all of its unmerged work
+and any main-only repairs in the migration PR. Retarget outstanding PRs to `main`.
+Only remove the old branch after its tip is an ancestor of merged `main` and no
+active PR still depends on it; do not force-push or discard its commits.
 
 ## Commit messages
 
@@ -129,7 +138,7 @@ BREAKING CHANGE: explain the removed fields and how callers must migrate.
 - Use a descriptive PR title in the same commit-header format. State the problem,
   resulting behavior, relevant checks and material limitations in the PR body.
 - Prefer merge commits for task integration. Use a merge that preserves commits
-  for `develop` → `main` and for branches containing reviewed runtime seeds or
+  for branches containing reviewed runtime seeds or
   exact-source release evidence. Their pinned source commits must remain in the
   fetched history; squashing or rebasing them can invalidate reuse/source checks.
 - Squash or rebase only unpublished, unreviewed work when no pinned candidate,
@@ -139,10 +148,11 @@ BREAKING CHANGE: explain the removed fields and how callers must migrate.
   [release preparation checklist](desktop-release.md#prepare-each-new-release-before-merging-main).
   Main integration and installer publication retain their separate authorization.
 
-Checks currently runs on pushes to `develop`/`main` and on PRs targeting `main`.
-A topic PR targeting `develop` does not itself receive that workflow under the
-current triggers. Run its applicable local checks before integration and inspect
-the develop push run afterward; do not describe an unrun PR check as passed.
+Checks runs on pushes to `main`, PRs targeting `main` and manual runs. Its
+required `gates` covers frontend, service, release-tool and both native-platform
+jobs. Release is manual-only on `main` and requires successful GitHub Actions
+`gates` for its exact source before private input access. Keep main at the
+selected candidate until publication; an advanced main is still rejected.
 
 ## Release-note compatibility
 
@@ -152,7 +162,7 @@ rules do not justify dropping history or rewriting old commits.
 
 Public release notes list GitHub PR titles and numbers since the previous app
 release, followed by a Full Changelog comparison. Use descriptive titles and merge
-features through PRs into `develop` so they have individual entries; direct commits
+features through PRs into `main` so they have individual entries; direct commits
 have no invented PR number. Review titles and reverts before publication approval.
 The optional git-cliff audit still inventories every commit. Installation belongs
 in README; verification records and limitations stay in the release checklist and

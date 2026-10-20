@@ -10,12 +10,12 @@ recorded candidates.
 
 The personal Codex skill is `$yomimado-release`. Example requests:
 
-> Use $yomimado-release to prepare version 0.4.0 on develop. Check whether the
+> Use $yomimado-release to prepare version 0.5.0 on a topic branch from main. Check whether the
 > existing macOS seed can be reused, update the release notes, and run the relevant
 > checks. Do not merge into main or publish.
 
 > Use $yomimado-release to prepare a replacement macOS runtime seed for the current
-> committed develop source. Build and verify the local candidate and prepare the
+> committed topic-branch source based on main. Build and verify the local candidate and prepare the
 > complete source/licence delivery for my review.
 
 > Use $yomimado-release to activate the source-approved seed and its verified
@@ -24,7 +24,7 @@ The personal Codex skill is `$yomimado-release`. Example requests:
 An agent without the installed skill can use:
 
 > Follow docs/release-runbook.md and AGENTS.md for this release task. Prepare
-> version 0.4.0 on develop, check runtime-seed compatibility, and stop before
+> version 0.5.0 on a topic branch from main, check runtime-seed compatibility, and stop before
 > main integration or publication.
 
 Replace the example version and requested scope. Existing user authorization
@@ -72,19 +72,20 @@ notice or frozen-service changes.
 ## Release a new app version
 
 Use the [branch and commit rules](git-conventions.md), for example
-`chore/release-0-4-0` and `chore(release): prepare v0.4.0`. Integrate a release
-topic into `develop` before the protected `develop` → `main` PR, or continue the
-already selected integration branch. Preserve the exact reviewed seed/source
-commits when merging.
+`chore/release-0-5-0` and `chore(release): prepare v0.5.0`. Main is the only
+integration branch; every feature/fix/release topic targets `main` through a
+protected PR. A merge runs Checks, not Release. Published tags identify released
+versions. Preserve exact reviewed seed/source commits when merging.
 
-1. Start on an up-to-date `develop` with a clean working directory and intended
-   changes committed. Preserve unrelated work. Use Python 3.11 or newer.
+1. Start a release topic from fetched `origin/main`, with a clean working directory
+   and intended feature PRs already integrated. Preserve unrelated work. Use Python
+   3.11 or newer. Continue an existing selected topic when appropriate.
 2. Preview and update all five app version files together. These commands use an
    example version, without `v`:
 
    ```sh
-   rtk python3 scripts/update_version.py 0.4.0 --dry-run
-   rtk python3 scripts/update_version.py 0.4.0
+   rtk python3 scripts/update_version.py 0.5.0 --dry-run
+   rtk python3 scripts/update_version.py 0.5.0
    ```
 
    Review and commit the intended version/code changes before selecting `HEAD`
@@ -92,7 +93,7 @@ commits when merging.
 
 3. [Preview PR release notes](#generate-and-review-release-notes) for the previous
    published app tag through the proposed source. Use descriptive PR titles and
-   merge feature branches through PRs into `develop`. Direct commits have no
+   merge feature branches through PRs into `main`. Direct commits have no
    individual PR entry; Full Changelog still includes them. Review the PR list
    and reverts against the final diff and `CHANGELOG.md`. CI generates the list
    automatically, using the [format below](#generate-and-review-release-notes).
@@ -102,11 +103,14 @@ commits when merging.
    Run relevant checks, commit and push focused changes. Run the seed guard against
    the committed source; resolve rejected frozen inputs before main integration.
 
-4. Prepare the protected `develop` → `main` PR. Merge when authorized and required
-   checks pass. A main push starts **Release** automatically. To dispatch manually,
-   use **Actions → Release → Run workflow → main**; there is no version input.
-5. Confirm **Checks / gates** for that exact main commit, both builders and
-   `verify-transfer`. Download `verified-desktop-candidate` before expiry.
+4. Prepare the release topic's protected PR into `main`. Merge when authorized
+   and required checks pass. Wait for **Checks / gates** on the resulting exact
+   main commit; PR-merge checks alone do not satisfy Release's source check.
+5. Start **Actions → Release → Run workflow → main** explicitly. There is no
+   version input: the workflow reads the committed five app version files.
+   Dispatching on a topic, tag or retired `develop` ref cannot build or publish.
+   An ordinary main push does not start Release. Confirm both builders and
+   `verify-transfer`, then download `verified-desktop-candidate` before expiry.
 6. Verify delivery hashes and test both exact installers using the
    [macOS](macos-clean-mac-test.md) and [Windows](windows-installed-test.md)
    checklists. Record hashes, results, waivers and untested cases without
@@ -180,7 +184,8 @@ stop generation rather than publishing incomplete notes. If the target tag
 already exists, it must point at the selected source because GitHub ignores
 `target_commitish` for an existing tag.
 
-On an eligible main run, `seed-inputs` generates this preview before the builders
+On a manually dispatched main run with successful exact-commit Checks,
+`seed-inputs` generates this preview before the builders
 and uploads `release-notes-preview` for 14 days. Its job summary shows the PR list
 and comparison. The preview record is bound to the exact source/version and its
 SHA-256 is passed to the protected publisher. Before creating any tag, the publisher

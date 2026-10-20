@@ -610,8 +610,10 @@ Complete this checklist before the protected main PR is merged:
       If the intended source changes during preparation, generate a fresh draft
       and reconcile any changed behavior before merging.
 - [ ] Push the focused changes and require passing Checks for the main PR before
-      the authorized merge. Follow the jobs below, then test the exact installers
-      and obtain the separate protected publication approval.
+      the authorized merge. Wait for successful `gates` on the resulting main
+      commit, then manually start Release on main. Routine merges do not build
+      installers. Follow the jobs below, test the exact installers and obtain the
+      separate protected publication approval.
 
 GitHub generates a PR-list preview in `release-notes-preview` before publication
 approval. The publisher checks its SHA-256 and source/version and puts Full
@@ -620,8 +622,10 @@ from the public note body. git-cliff remains an optional local commit audit.
 
 ## Flow and permissions
 
-1. **Plan** runs only on this repository's `main`, checks matching Tauri/npm/Cargo
-   versions, default branch and the `desktop-release` protection. A released
+1. **Plan** runs only on an explicit manual dispatch on this repository's `main`.
+   It requires successful GitHub Actions `gates` for the exact selected commit,
+   then checks matching Tauri/npm/Cargo versions, default branch and the
+   `desktop-release` protection. A released
    version with its tag is skipped; an existing incomplete tag fails closed.
    For an absent tag, frozen-runtime reuse is checked before downloads/builds;
    changed shared runtime/dependency inputs require a newly reviewed seed.
@@ -629,8 +633,8 @@ from the public note body. git-cliff remains an optional local commit audit.
    `alpha.N`/`beta.N`/`rc.N` versions are pre-releases; `1.0.0` and later without
    suffixes are stable.
    Release titles use only the version: **YomiMado v0.1.0**.
-2. **seed-inputs** runs automatically on protected `main`, without an environment
-   approval or personal token. GitHub requires
+2. **seed-inputs** follows a successful manual Release plan on protected `main`,
+   without a separate input-transfer approval or personal token. GitHub requires
    `contents: write` to read unpublished drafts, so this isolated job uses a
    short-lived job token. Private-input transfer sends **GET requests only**; the
    same job also calls GitHub's **POST content-generation endpoint** for PR notes,
@@ -638,7 +642,7 @@ from the public note body. git-cliff remains an optional local commit audit.
    `release-notes-preview` and passes its SHA-256 to the protected publisher.
    It checks current main,
    effective main rules, publisher environment protection, unique private seed identity and declared/actual byte
-   hashes. It exports three pinned macOS seed files and the pinned Windows
+   hashes. It exports four pinned macOS seed files and the pinned Windows
    dictionary snapshot into separate one-day artifacts. It creates no release or
    tag and approves no installer. No personal token or new secret is needed.
 3. **Build macOS Apple Silicon** retains the reviewed frozen runtime, 74 dependency
@@ -689,7 +693,7 @@ pretend to have performed the separate human test.
       review count is zero for this solo-maintainer project. The separate installer
       publication approval remains required.
 - [x] Remove build approval; check effective main rules before private inputs and
-      publication. Gate checks run on every main PR and develop/main push without
+      publication. Gate checks run on every main PR and main push without
       path filters, so a documentation-only PR can satisfy the required check.
 - [x] Historical private setup `756b7dc6…`: automated suite and hash-confirmed
       local six-check report pass on Windows 11 x64. New main setups need fresh

@@ -57,17 +57,20 @@ and [the exact-version terms](../THIRD_PARTY_LICENSES/git-cliff/README.md).
 
 ## Current release and checks
 
-[Checks](../.github/workflows/checks.yml) runs frontend and service tests,
+[Checks](../.github/workflows/checks.yml) runs on main pushes, PRs into main and
+manual dispatches. It runs frontend and service tests,
 format/type checks, release-rule/version tests, workflow lint and macOS/Windows
 native debug tests/builds in parallel. Its final `gates` job requires every job
 to succeed, including every native matrix entry. `requirements-ci.txt` is the
 test-only Python 3.11 environment with pinned wheel hashes; it is separate from
 the frozen release inputs. Checks accesses no private seed or model weights.
-[Release](../.github/workflows/release.yml) builds both platforms and keeps
-one owner-approved publisher. Its script entrypoints are:
+[Release](../.github/workflows/release.yml) is manually dispatched on main after
+Checks / gates succeeds for the selected exact commit. Main merges do not start
+installer builds. Release builds both platforms and keeps one owner-approved
+publisher. Its script entrypoints are:
 
 - `desktop_release.py`: pinned input transfer, source/data/notice consolidation,
-  hash/provenance verification and uploaded release checks.
+  exact-commit Checks, main protection, hash/provenance and uploaded release checks.
 - `macos-ci-release.py`: version/classification, reviewed seed scope, current
   project sources, macOS packaging and release-environment checks.
 - `build-windows-prerelease.ps1`: prepare, freeze, inventory and build Windows NSIS.

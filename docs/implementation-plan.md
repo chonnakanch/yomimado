@@ -6,6 +6,31 @@ See the [feature roadmap](feature-roadmap.md) for proposed learning features and
 the [changelog](../CHANGELOG.md) for completed development changes. Source
 completion is tracked separately from publication and installer acceptance.
 
+**Single integration branch and explicit releases — 2026-10-20:** main is the
+only integration target for new feature, fix and release-preparation PRs. Audited
+both active workflows: Checks retains frontend, service, release-tool, macOS and
+Windows native jobs and required `gates`, triggered by main pushes, main PRs and
+manual dispatch. Release is manual-only on main and now requires completed,
+successful GitHub Actions `gates` for the exact source before private-input access.
+Pending, failed, stale-source and non-Actions check reports are rejected. Added
+only read access to Checks metadata in the release plan; builders stay read-only
+and isolated private inputs/publication approvals remain enforced. Reviewed seed
+pins, app versions, installer identities and published tags are unchanged.
+
+Local verification: 88 release-tool tests pass, including actual plan/publisher
+shell rehearsals and the prior macOS archive-name regression. Script Ruff/format,
+formatting for changed documentation/workflows, pinned actionlint for both active
+workflows and 128 local Markdown link targets pass. Main and develop tips are both
+ancestors of the migration branch. Hosted Checks on the final main-targeted PR
+remain to be recorded; no installer build is needed for this CI-only change.
+
+The topic branch incorporates the existing main packaging repair with both sets
+of historical release records retained. All existing develop/main commits remain
+reachable. Develop is retired as an integration target; its remote branch must
+remain until the migration is merged and its ancestry/open-PR dependencies are
+checked. This migration is prepared for a protected main PR, without merging it,
+dispatching installer builds, deleting branches or publishing a release.
+
 **Release-note documentation consolidation — 2026-10-20:** removed the optional
 standalone format document and placed its brief example in the release runbook.
 Updated active documentation links and personal release instructions; historical
