@@ -1,5 +1,33 @@
 # Reading with YomiMado
 
+## Quick start (current development source)
+
+For a source checkout, first follow [development setup](development.md) to start
+both the local service and desktop app. The minimal service returns a labeled
+demo boundary until OCR models are configured. Packaged apps start their service
+automatically; their exact features depend on the installed version.
+
+1. Open your manga in its usual reader. On macOS, grant Screen Recording permission
+   when requested and restart YomiMado.
+2. Configure the detector in **More actions → Settings → Scan & OCR** for a
+   packaged app, or configure the local OCR model paths for development.
+3. Choose **Selected Area** and drag around text, or press `Cmd+Shift+O` on macOS /
+   `Ctrl+Shift+O` on Windows. **Whole Screen** (`Cmd/Ctrl+Shift+S`) tries to find
+   the page and asks for a fallback area when needed.
+4. Click a detected region, then select a word or kanji in the learning popup.
+   Dashed regions need review; use **Edit OCR text** to correct recognition.
+   **Select text → Look up selection** lets you adjust a word boundary manually.
+5. Use **Save this word** or **Save sentence** explicitly, then open **More
+   actions → Saved** to review them. Translation is optional: configure a local
+   provider in **Settings → Reading**, then choose **Translate locally**.
+6. After changing pages, use **Rescan** if the reading area is unchanged, or run
+   a new scan if the page moved. Choose **More actions → Quit YomiMado** when done.
+
+Word and kanji meanings require local JMdict/KANJIDIC2 resources; the development
+guide explains their setup. Reading, dictionary lookup and inference stay local.
+The detailed controls below describe current source first, followed by the
+historical v0.1.0 interface. For a code map, see [project structure](project-structure.md).
+
 ## Redesigned toolbar (development source)
 
 YomiMado now starts with a compact always-on-top toolbar. Drag its handle, or
@@ -55,11 +83,20 @@ Choose **More actions → Saved** to open the shared library. Use **Words** and
 **Sentences** tabs to switch collections; Left/Right or Home/End moves between
 tabs by keyboard. Each collection keeps its Refresh, loading/error/empty states
 and confirmed Remove action. Opening the library or returning to a tab refreshes
-that collection. Settings and Sources remain separate toolbar actions; Saved and
-Settings are also available through navigation in the secondary window.
+that collection. Settings and Sources remain separate toolbar actions.
 
-Words show their stored reading and numbered meanings. Expand **Source and saved
-date** for the original Japanese context and local save time. Sentences show the
+Search words by Japanese surface, base form, reading, meaning, or source sentence.
+Search sentences by Japanese text or a saved English translation. Matching
+ignores letter case, full/half width and hiragana/katakana differences. Multiple
+terms must all match; no romaji conversion or translation is performed. Each tab
+remembers its last query locally. Use **Clear search**, the search-field clear
+button, or Escape to clear it. Refresh keeps the query and results retain their
+stored newest-first order. Searching makes no lookup or translation request.
+
+Words show larger Japanese headwords, their stored reading and numbered meanings.
+Expand **Source sentence** for Japanese context, local save time and dictionary
+attribution. Wider windows place headwords beside meanings; narrow windows stack
+them. Sentences show the
 Japanese and any English translation already saved; **Saved date** reveals their
 local save time. Opening Saved never starts dictionary lookup or translation.
 
@@ -135,8 +172,48 @@ Alternative dictionary matches are collapsed; each has its own Save this word
 action. Display readings use hiragana, while saved/lookup readings retain the
 original dictionary data. Missing dictionaries still allow Save without meaning.
 
+If a word boundary is wrong, choose **Select text** above the learning details.
+Drag over any continuous part of the Japanese sentence, or click to place the
+visible cursor. Arrow keys move the cursor; Shift + arrow keys extend the
+highlighted selection. The selection box blocks typing, deletion, paste, cut and
+drop; use **Edit OCR text** to change the original sentence. Choose **Look up selection** to look
+up that exact expression in local JMdict. Selection can cross automatic word
+boundaries or include only part of a word, and works even if word analysis fails.
+Leading/trailing whitespace is ignored; the lookup limit is 100 characters.
+No match keeps the selection available to adjust and try again. Manual lookup
+does not infer a base form or reading; dictionary matches show their own readings.
+Saving a match keeps its expression as the dictionary form, its reading/meanings,
+the selected surface and the original sentence. Kanji exploration still works.
+Choose **Back to normal**, or press Escape once, to return to automatic words;
+Escape returns keyboard focus to **Select text** before a later Escape closes
+the popup. Selecting or looking up text never changes OCR text or starts translation.
+
 Select a kanji below the word for meanings and on’yomi/kun’yomi. Expand Example
 compounds to load short local JMdict words; this does not require translation.
+
+Word matches and Saved words can show a small **N5–N1** badge. These are estimated
+JLPT vocabulary levels from a bundled community dataset, matched by dictionary
+spelling and reading. Unlisted words and missing readings receive no badge;
+an absent badge does not mean N1 or "beyond JLPT." Existing saved words use their
+stored dictionary form and reading. The badge does not rate an entire sentence
+or assign a separate level to its individual kanji.
+
+Use **Settings → Reading → Show estimated JLPT levels** to hide or restore badges.
+The choice is saved locally and updates open learning/library windows. Tags work
+offline and require no extra setup, model, API key or lookup service. See
+**Sources & licenses** for attribution and the full data license.
+
+**Check OCR** marks uncertain or approximate text for review against the page.
+Use **Edit OCR text** to correct a known recognition error, or scan the area again.
+
+For an inflected verb or i-adjective, expand **Conjugation** in its word details.
+The app includes adjacent analyzed endings and shows steps such as
+食べました → 食べます → 食べる. Complete manual selections can also use their
+analyzed base for local dictionary lookup. Common past/negative/polite forms and
+ちゃう／じゃう contractions are supported; **Not covered** marks unsupported
+forms. Explanations do not start translation or infer a context-specific meaning.
+See the [supported forms and limits](conjugation-explanations.md).
+
 The sentence and its actions stay above scrollable details as the popup grows
 to its work-area limit. Long sentences have their own scroll area.
 

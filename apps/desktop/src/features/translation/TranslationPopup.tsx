@@ -17,8 +17,10 @@ import { saveSentence } from "../../lib/sentence-client";
 import type { TextToken } from "../../lib/ocr-types";
 import { debugTooltip } from "../../lib/debug-mode";
 import { ClickableSentence, isWord } from "./ClickableSentence";
+import { ManualWordSelection } from "./ManualWordSelection";
 import { WordDefinition } from "./WordDefinition";
 import { KanjiDetail } from "./KanjiDetail";
+import { explainConjugation, type ConjugationAnalysis } from "./conjugation";
 import "./popup.css";
 
 interface PopupState {
@@ -49,6 +51,8 @@ export function TranslationPopup() {
   const editorRef = useRef<HTMLTextAreaElement>(null);
   const editButtonRef = useRef<HTMLButtonElement>(null);
   const returnEditorFocus = useRef(false);
+  const selectTextButtonRef = useRef<HTMLButtonElement>(null);
+  const [selectingText, setSelectingText] = useState(false);
   const [editing, setEditing] = useState(state?.demo ?? false);
   const [draft, setDraft] = useState(state?.demo ? "" : (state?.text ?? ""));
   const [copied, setCopied] = useState(false);
@@ -73,6 +77,10 @@ export function TranslationPopup() {
     null,
   );
   const tokenRequestId = useRef(0);
+  const [selectedToken, setSelectedToken] = useState<TextToken | null>(null);
+  const [conjugation, setConjugation] = useState<ConjugationAnalysis | null>(
+    null,
+  );
   const wordRequestId = useRef(0);
   const [wordEntries, setWordEntries] = useState<WordEntry[] | null>(null);
   const [wordError, setWordError] = useState<string | null>(null);
@@ -96,6 +104,8 @@ export function TranslationPopup() {
 
   const resetWordSelection = () => {
     setSelectedTokenIndex(null);
+    setSelectedToken(null);
+    setConjugation(null);
     wordRequestId.current++;
     setWordEntries(null);
     setWordError(null);
@@ -116,17 +126,23 @@ export function TranslationPopup() {
     setExamplesOpen(false);
   };
 
-  const selectWord = async (tokenIndex: number) => {
-    const token = tokens?.[tokenIndex];
-    if (!token) return;
-    if (
-      tokenIndex === selectedTokenIndex &&
-      (wordLoading || wordEntries !== null)
-    )
-      return;
+  const lookupWord = async (token: TextToken, tokenIndex: number | null) => {
     const requestId = ++wordRequestId.current;
+    const explanation = explainConjugation(
+      source,
+      tokens ?? [],
+      token,
+      tokenIndex === null,
+    );
+    setConjugation(explanation);
+    // An exact, supported manual expression can reuse the tokenizer's base form.
+    // The selected source text and its offsets remain unchanged.
+    if (tokenIndex === null && explanation?.status === "supported") {
+      token = { ...token, dictionaryForm: explanation.dictionaryForm };
+    }
     kanjiRequestId.current++;
     setSelectedTokenIndex(tokenIndex);
+    setSelectedToken(token);
     setWordEntries(null);
     setWordError(null);
     setWordLoading(true);
@@ -154,6 +170,17 @@ export function TranslationPopup() {
     }
   };
 
+  const selectWord = (tokenIndex: number) => {
+    const token = tokens?.[tokenIndex];
+    if (!token) return;
+    if (
+      tokenIndex === selectedTokenIndex &&
+      (wordLoading || wordEntries !== null)
+    )
+      return;
+    void lookupWord(token, tokenIndex);
+  };
+
   const selectKanji = async (character: string) => {
     if (character === selectedKanji && (kanjiLoading || kanjiEntry)) return;
     const requestId = ++kanjiRequestId.current;
@@ -178,7 +205,7 @@ export function TranslationPopup() {
   };
 
   const loadExamples = async () => {
-    const token = tokens?.[selectedTokenIndex ?? -1];
+    const token = selectedToken;
     if (!selectedKanji || !token || exampleLoading) return;
     const requestId = ++exampleRequestId.current;
     setExampleLoading(true);
@@ -208,6 +235,11 @@ export function TranslationPopup() {
         cancelEdit();
         return;
       }
+      if (selectingText) {
+        setSelectingText(false);
+        selectTextButtonRef.current?.focus();
+        return;
+      }
       void invoke("close_translation_popup", {
         returnFocus: true,
         viewQuery,
@@ -215,7 +247,7 @@ export function TranslationPopup() {
     };
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, [editing, source, viewQuery]);
+  }, [editing, selectingText, source, viewQuery]);
 
   useEffect(() => {
     if (editing) editorRef.current?.focus();
@@ -354,7 +386,7 @@ export function TranslationPopup() {
   };
 
   const saveWord = async (entry: WordEntry | null, entryIndex: number) => {
-    const token = tokens?.[selectedTokenIndex ?? -1];
+    const token = selectedToken;
     if (!token) return;
     const requestId = ++saveRequestId.current;
     setSavingWord(true);
@@ -364,7 +396,7 @@ export function TranslationPopup() {
       await saveVocabularyWord({
         surface: token.surface,
         reading: entry?.reading ?? token.reading,
-        dictionaryForm: token.dictionaryForm,
+        dictionaryForm: entry?.expression ?? token.dictionaryForm,
         meanings: entry?.senses.map((sense) => sense.glosses.join("; ")) ?? [],
         sourceText: source,
       });
@@ -428,7 +460,6 @@ export function TranslationPopup() {
     }
   };
 
-  const selectedToken = tokens?.[selectedTokenIndex ?? -1];
   // Match the native 70% work-area cap; sentence scrolling cannot grow on resize.
   const popupHeightCap = state.placement
     ? Math.max(
@@ -496,21 +527,41 @@ export function TranslationPopup() {
               learning tools.
             </p>
           )}
-          <div
-            className="sentence-scroll"
-            style={{ maxHeight: sentenceMaxHeight }}
-          >
-            <ClickableSentence
+          {selectingText ? (
+            <ManualWordSelection
               source={source}
-              tokens={tokens}
-              selectedTokenIndex={selectedTokenIndex}
-              onSelect={(index) => {
+              maxHeight={sentenceMaxHeight}
+              onLookup={(token) => {
                 detailsRef.current?.scrollTo?.({ top: 0 });
-                void selectWord(index);
+                void lookupWord(token, null);
               }}
             />
-          </div>
+          ) : (
+            <div
+              className="sentence-scroll"
+              style={{ maxHeight: sentenceMaxHeight }}
+            >
+              <ClickableSentence
+                source={source}
+                tokens={tokens}
+                selectedTokenIndex={selectedTokenIndex}
+                onSelect={(index) => {
+                  detailsRef.current?.scrollTo?.({ top: 0 });
+                  selectWord(index);
+                }}
+              />
+            </div>
+          )}
           <div className="sentence-save-actions">
+            <button
+              ref={selectTextButtonRef}
+              className="utility-button"
+              aria-pressed={selectingText}
+              disabled={editing || !source.trim()}
+              onClick={() => setSelectingText(!selectingText)}
+            >
+              {selectingText ? "Back to normal" : "Select text"}
+            </button>
             <button
               className="utility-button"
               disabled={!source.trim()}
@@ -561,9 +612,11 @@ export function TranslationPopup() {
                 ? "Analyzing words…"
                 : tokenError
                   ? null
-                  : tokens && !tokens.some(isWord)
-                    ? "No words found in this text."
-                    : "Select a word in the sentence to explore its meaning."}
+                  : selectingText
+                    ? "Select text and choose Look up selection to explore its meaning."
+                    : tokens && !tokens.some(isWord)
+                      ? "No words found in this text."
+                      : "Select a word in the sentence to explore its meaning."}
             </div>
             {tokenError && (
               <div role="alert">
@@ -578,9 +631,14 @@ export function TranslationPopup() {
               </div>
             )}
             {selectedToken && (
-              <div className="tokenization-selected" key={selectedTokenIndex}>
+              <div
+                className="tokenization-selected"
+                key={`${selectedToken.start}-${selectedToken.end}-${selectedTokenIndex}`}
+              >
                 <WordDefinition
                   token={selectedToken}
+                  manualSelection={selectedTokenIndex === null}
+                  conjugation={conjugation}
                   entries={wordEntries}
                   loading={wordLoading}
                   error={wordError}
@@ -588,7 +646,9 @@ export function TranslationPopup() {
                   savedIndex={savedEntryIndex}
                   saveError={saveError}
                   onSave={(entry, index) => void saveWord(entry, index)}
-                  onRetry={() => void selectWord(selectedTokenIndex!)}
+                  onRetry={() =>
+                    void lookupWord(selectedToken, selectedTokenIndex)
+                  }
                 />
                 <KanjiDetail
                   token={selectedToken}
@@ -641,6 +701,7 @@ export function TranslationPopup() {
                 ref={editButtonRef}
                 className="utility-button"
                 onClick={() => {
+                  setSelectingText(false);
                   setDraft(source);
                   setEditing(true);
                 }}

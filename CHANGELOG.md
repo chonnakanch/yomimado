@@ -1,0 +1,140 @@
+# Changelog
+
+This log starts with feature work after v0.3.0. Changes under **Unreleased** are
+development-source changes and are not included in published installers yet.
+Published releases and exact-installer evidence remain in the
+[release checklist](docs/desktop-release.md) and
+[GitHub releases](https://github.com/chonnakanch/yomimado/releases).
+
+The [feature roadmap](docs/feature-roadmap.md) tracks completed and proposed work.
+
+## Unreleased
+
+### 2026-10-20
+
+#### Added
+
+- **Saved search and dictionary-style library — done in development source,
+  UI approved by the owner.** Search words by Japanese surface/base, reading, meaning or source;
+  search sentences by Japanese or saved translation. Kana, character width and
+  case differences are ignored. Separate queries persist locally. The Saved
+  design presents larger headwords and numbered senses with expandable context.
+  Existing saved data/order and confirmed removal remain. All 288 frontend tests,
+  formatting, TypeScript and frontend build pass. No API/database/dependency
+  change; installer publication and acceptance remain separate. See the
+  [search behavior and verification](docs/saved-search.md).
+
+#### Removed
+
+- **Single-bubble OCR retry/redraw**, at the owner's request. Removed its popup
+  actions, native commands and capture/session handling, including the multiple
+  text-part fix. Check OCR remains a review indicator. Manual OCR text editing
+  and ordinary Rescan remain available. The roadmap marks the feature deferred.
+
+Verified with 265 frontend tests, 70 native tests, formatting, TypeScript,
+strict Clippy and frontend/macOS native debug builds. Windows native interaction
+and exact-installer acceptance were not performed.
+
+#### Changed
+
+- **README cleanup:** simplified the feature overview, installation, reading
+  flow and documentation links. Removed the obsolete downloads-unavailable
+  notice and release history; linked Releases and the detailed checklist instead.
+  Development features are distinguished from published installer features.
+
+### 2026-10-19
+
+#### Added
+
+- **Single-bubble OCR retry — subsequently removed on 2026-10-20.** Check OCR opened
+  retry and redraw actions for an existing uncertain/approximate region. Only
+  that bubble's text and geometry were replaced; unrelated regions and the
+  full-page Rescan target were retained. Errors, empty replies, cancellation and
+  stale requests preserved the old result. The updated popup reopened and
+  retained its review indicator. Used the existing local capture/OCR pipeline.
+  See [bubble retry](docs/bubble-ocr-retry.md).
+- **Conjugation explanations — done in development source.** Expand Conjugation
+  in word details for step-by-step common verb past/negative/polite forms,
+  i-adjectives and ちゃう／じゃう contractions. Complete manual expressions can
+  reuse their analyzed dictionary base. Unsupported forms stay explicit;
+  context-dependent meanings are not inferred. Uses the existing local
+  tokenizer with no added dataset, model or dependency. See the
+  [supported forms](docs/conjugation-explanations.md).
+- **JLPT vocabulary tags — done in development source.** Estimated N5–N1 badges
+  in dictionary matches and Saved use a bundled, hash-pinned snapshot of 8,113
+  spelling/reading pairs from Jonathan Waller's lists as adapted by Stephen
+  Kraus. Matching is reading-sensitive; absent words/readings stay unclassified.
+  Reading settings can hide badges across open windows. Full attribution and
+  CC BY-SA 4.0 terms are embedded in Sources & licenses. No runtime API, model
+  download or Python dependency is added. Original inputs and a reproducible
+  offline generator are retained; CI verifies their hashes and generated output.
+  See the [data review](THIRD_PARTY_LICENSES/jlpt/README.md).
+- **Manual word selection — done in development source.** Select text across or
+  within automatic word boundaries, explicitly look up the selection in local
+  JMdict, adjust unmatched selections, save the chosen entry with sentence
+  context, and explore its kanji. Lookup also works when tokenization fails.
+  Unicode offsets and stale-response guards are preserved.
+  [Implementation `5b94ee6`](https://github.com/chonnakanch/yomimado/commit/5b94ee6).
+
+#### Fixed
+
+- **Bubble redraw rejecting multiple text regions (removed with the feature on
+  2026-10-20):** retry and redraw accepted several detected lines/blocks,
+  preserving their individual geometry and tokens. Parts stayed linked so
+  another retry replaced the group without duplicates; unrelated bubbles stayed
+  intact. Empty/invalid results preserved the previous scan.
+- **Toolbar menu clipping and resize cycling:** More actions waits for the
+  tray-dependent item list before its first native reveal, then measures the
+  full content independently of the constrained scroll viewport. Quit stays
+  visible when there is room, or reachable by scrolling on short screens.
+  Reserved scrollbar space prevents wrapping from changing as scrolling starts.
+- **Saved dictionary identity:** new saves preserve the chosen dictionary
+  entry's expression, including alternative matches, so Saved can derive the
+  same JLPT label. Existing saved records are not rewritten and need no migration.
+- **Visible caret and keyboard selection.** Native arrow keys move the caret;
+  Shift + arrow keys extend the selection. Text edits are blocked, including
+  typing, deletion, paste, cut and drop, with source restoration for
+  non-cancelable input. Caret and selection colors are explicit.
+  [Fix `5ddad6c`](https://github.com/chonnakanch/yomimado/commit/5ddad6c).
+
+#### Changed
+
+- **Selection exit label:** renamed **Use word clicks** to **Back to normal**.
+  The action leaves selection mode and restores automatic word clicks.
+  [Change `e518005`](https://github.com/chonnakanch/yomimado/commit/e518005).
+- **Popup layout:** restored the previous layout at the owner's request. The
+  compact-controls experiment is reverted and is not a completed feature.
+  [Restoration `52fbfba`](https://github.com/chonnakanch/yomimado/commit/52fbfba).
+
+#### Verification and availability
+
+- Historical, before removal: the multiple-part bubble retry fix passed 280
+  frontend tests, 78 native tests,
+  formatting, TypeScript, strict Clippy and frontend/macOS native debug builds.
+  Full native interaction remains unverified under the limitation below.
+- Historical, before removal: bubble retry passed 278 frontend tests, 76 native
+  tests, formatting, TypeScript,
+  strict Clippy and frontend/macOS preview builds. UI layout is checked in the
+  browser; the full native retry flow remains unverified after the unsigned
+  preview's Screen Recording preflight blocked capture. Windows native checks
+  and exact-installer acceptance remain pending.
+- Conjugation explanations pass 265 frontend tests, formatting, TypeScript,
+  frontend/macOS preview builds and 36 real Lindera/IPADIC examples. Browser
+  checks confirm local dictionary lookup and narrow-popup wrapping. Native
+  Windows and exact-installer acceptance remain unverified.
+- Toolbar sizing passes 209 frontend tests, formatting, TypeScript and the
+  frontend/macOS preview builds. Native macOS checks confirm repeated complete
+  menu openings and keyboard navigation. Browser checks cover short-screen
+  scrolling; Windows native/mixed-DPI interaction remains unverified.
+- JLPT tags pass 202 frontend tests and six data/provenance tests, formatting,
+  TypeScript, frontend production build and macOS preview build. Browser checks confirm a real
+  local dictionary match and immediate cross-window hiding/restoring of tags.
+  Windows native interaction and new-installer acceptance are not established.
+- The caret fix passed all 197 frontend tests, formatting, TypeScript, frontend
+  production build and macOS preview app build. Native macOS checks confirmed
+  caret movement, keyboard selection, source protection and local lookup.
+- The subsequent label change passed all 26 popup tests, formatting, frontend
+  build and macOS preview build.
+- Manual selection remains on `develop`; native Windows interaction and
+  exact-installer acceptance are unverified. These changes do not approve or
+  publish an installer.

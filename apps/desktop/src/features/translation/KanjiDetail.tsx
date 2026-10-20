@@ -84,10 +84,16 @@ export function KanjiDetail({
             </div>
           </dl>
           <p className="popup-metadata">
-            Used here in <span lang="ja">{token.surface}</span> (whole-word
-            reading: <span lang="ja">{hiraganaReading(token.reading)}</span>).
-            Character readings are possibilities; the whole-word reading is not
-            split per character.
+            Used here in <span lang="ja">{token.surface}</span>
+            {token.reading && (
+              <>
+                {" "}
+                (whole-word reading:{" "}
+                <span lang="ja">{hiraganaReading(token.reading)}</span>)
+              </>
+            )}
+            . Character readings are possibilities; the whole-word reading is
+            not split per character.
           </p>
           <p className="popup-attribution">
             Source:{" "}

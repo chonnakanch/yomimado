@@ -2,6 +2,209 @@
 
 ## Current status
 
+See the [feature roadmap](feature-roadmap.md) for proposed learning features and
+the [changelog](../CHANGELOG.md) for completed development changes. Source
+completion is tracked separately from publication and installer acceptance.
+
+**Version 0.4.0 preparation — 2026-10-20:** bumped the five app version files
+from clean, current `develop` with the version updater and added release notes for
+manual selection, conjugation explanations, JLPT tags, Saved search and toolbar
+menu sizing. Local frontend (288), service/contracts (187, no skips), macOS native
+(70) and selected release-tool (128) tests pass, along with formatting/lint,
+TypeScript, frontend/native debug builds, pinned actionlint and JLPT provenance.
+The four retained macOS input files match their active hash pins. The committed
+source reuse guard rejects the changelog and new JLPT source/data/notice paths;
+main integration is blocked pending resolution of that review boundary. Seed
+pins and guard behavior remain unchanged. See the
+[preparation evidence and limits](release-preparation-0.4.0.md). The requested
+scope stops before merging or publishing; no new installer or approval is claimed.
+
+**Release runbook and agent skill — 2026-10-20:** added the manual new-version
+and macOS runtime-seed procedure, including the separate unsigned source worksheet,
+complete-delivery review, exact private-input hashes and all three pin consumers.
+`AGENTS.md` routes release work to the runbook; the personal `yomimado-release`
+skill supplies scoped agent entry points. Documentation and skill validation are
+separate from executing the procedure. No version, seed pin, installer, main merge
+or publication approval changes.
+
+**Saved search and dictionary-style library — 2026-10-20:** the owner
+approved the working preview of search and the dictionary-like Saved UI.
+The implementation searches word surface/base/reading/meanings/context and
+saved Japanese/English sentences, normalize kana/case/width, and remember each
+collection's query locally. The new Saved-only layout uses prominent search,
+larger headwords, numbered senses, quiet separators and expandable source/date/
+attribution details. Existing storage, ordering, refresh/error and confirmed
+removal behavior remain. All 288 frontend tests (23 new search cases), TypeScript,
+Prettier and frontend build pass; browser checks cover search/disclosures and
+narrow layout. No API, database, dependency or release changes. Development
+source is complete; native Windows and exact-installer checks remain separate. See
+[Saved search scope and checks](saved-search.md).
+
+**Bubble retry removed — 2026-10-20:** removed the Check OCR retry/redraw actions,
+native commands, capture/session branches, group metadata, popup reopening and
+feature-specific tests at the owner's request. Restored the pre-feature capture,
+overlay and popup behavior. Check OCR remains a static uncertainty indicator;
+manual OCR editing and ordinary Rescan remain. The feature is deferred in the
+roadmap. The two entries below record historical development evidence only;
+they no longer describe available functionality. No installer or version change.
+
+Removal verification: all 265 frontend tests and 70 native tests pass, along with
+Prettier, TypeScript/frontend build, Cargo formatting, strict all-target Clippy
+and the macOS native debug build. Windows native interaction and exact-installer
+acceptance were not performed.
+
+**Bubble retry with multiple detected parts — 2026-10-19:** fixed the owner's
+redraw error caused by requiring exactly one detected region. Both UI and native
+publication now accept multiple valid parts, preserve every polygon/token list,
+and allocate collision-free IDs while retaining the selected ID for the first
+part. Native group metadata links parts so retrying any part uses their combined
+bounds and atomically replaces the group without duplicates. Unrelated regions,
+original overlay coordinates and full-page Rescan remain intact. Empty, invalid,
+demo and stale replies retain the previous result. Regression cases cover retry
+and redraw publication, scaling, ID collisions, repeated group replacement and
+invalid later parts. All 280 frontend tests and 78 native tests pass, alongside
+Prettier, TypeScript/frontend build, Cargo formatting, strict all-target Clippy
+and a macOS native debug build. Native runtime/installer verification limits
+below still apply; no dependency, version or release changes.
+
+**Single-bubble OCR retry — 2026-10-19:** the existing Check OCR indicator now
+opens the review reason plus retry-current-bounds and redraw actions. The popup
+receives a native completed-session/region identity. A retry uses the existing
+capture selector/local OCR pipeline, publishes exactly one replacement and
+preserves the other regions, target ID/list position, original overlay metadata
+and full-page Rescan specification. Successful publication reopens the updated
+popup; keyboard dismissal can return to that region. Initially, empty/multiple/demo replies,
+failure, cancellation, stale generations and changed displays do not replace the
+old result. Redraw is limited to the original scanned area. Retried text remains
+marked for review because Manga OCR has no calibrated recognition confidence.
+The multiple-region restriction was subsequently removed by the fix above.
+
+All 278 frontend tests, 76 native tests, Prettier, TypeScript, Cargo formatting,
+strict all-target Clippy and frontend/macOS preview builds pass. Thirteen frontend
+and six native regression cases cover the actions, edit/duplicate guards,
+single-region publication, recovery, generation invalidation and reopening.
+Coordinate cases cover negative origins, 100/125/150/200% scale and differing
+image/physical dimensions. Browser UI checks with a synthetic popup identity
+confirm action expansion and wrapping at 420 px and 280 px.
+
+A temporary native fixture used owned Japanese text. An initial baseline capture
+completed, but a full retry/redraw cycle was not established: the rebuilt unsigned
+preview stopped at macOS Screen Recording preflight, including after restart.
+No full native macOS retry acceptance is claimed. Windows native/mixed-DPI and
+exact-installer acceptance remain unverified. Test harness pages/configuration
+remain outside the repository; no new model, dataset, dependency, API endpoint,
+version, installer or publication approval is added. The feature was later
+removed; see the [historical removal note](bubble-ocr-retry.md).
+
+**Conjugation explanations — 2026-10-19:** development source adds a collapsed
+Conjugation disclosure to selected verb/i-adjective details. It explains common
+past, negative and polite forms plus ちゃう／じゃう contractions as intermediate
+steps back to the analyzed base. Original rules reuse the existing local
+Lindera/IPADIC classes and source offsets; no vocabulary/grammar dataset, service,
+model, dependency, API or database change is added. Complete manual expressions
+can reuse a supported analyzed base for local dictionary lookup and saving.
+Unsupported forms remain explicit; contextual completion/regret/unintended-action
+nuances are not selected automatically. The existing popup layout is retained.
+
+All 265 frontend tests (including 56 new rule/integration cases), TypeScript,
+Prettier and frontend/macOS preview builds pass. A separate 36-example matrix
+using the existing pinned Lindera/IPADIC provider passes, including the split
+読ん／じゃ／う. Browser checks with the real local dictionary service confirmed
+polite past, both contraction variants, adjective negative past and complete
+manual lookup to 食べる. Explanation content wraps at 420 px and 280 px without
+horizontal overflow. No saved records or translation requests were created by
+the browser checks. Windows native interaction and exact installer acceptance
+remain unverified; no version or publication state changes. Supported forms,
+grammar references and limitations are in the
+[conjugation notes](conjugation-explanations.md).
+
+**Toolbar menu sizing repair — 2026-10-19:** the owner reported the More actions
+menu showing different item counts, missing Quit, and repeatedly resizing on
+Windows. A browser reproduction confirmed that the first five-item measurement
+set a 189 px viewport; adding Hide Toolbar left the final Quit row below it.
+The frontend now waits for the initial toolbar snapshot (or its error) before
+requesting native reveal. A separate intrinsic content wrapper supplies the full
+height independently of the capped scroll viewport. Scrollbar space is stable,
+and requests retain the existing native size limit and generation guards.
+
+Seven regression cases cover delayed tray state, intrinsic content growth under
+native height clamps at 100/125/150/200% scaling, oversized content and snapshot
+failure with Quit still available. All 209 frontend tests, TypeScript, formatting
+and the frontend/macOS preview builds pass. Browser checks confirm one stable
+full-size request, all six actions visible, and keyboard scrolling to Quit with a
+140 px height limit. Native macOS checks confirm repeated openings show all six
+rows, End focuses Quit, and Escape closes the popover and returns toolbar focus.
+Browser IPC simulations and macOS checks do not establish Windows WebView2 or
+mixed-monitor acceptance.
+No menu actions, native positioning policy, dependencies or installer are changed.
+
+**Offline JLPT vocabulary tags — 2026-10-19:** development source adds estimated
+N5–N1 badges beside dictionary matches and saved words. A pinned, locally bundled
+Jonathan Waller / Stephen Kraus dataset contains 8,113 spelling/reading pairs;
+exact normalized spelling and reading determine the label, with no inference
+for unlisted words or missing readings. Reading settings persist badge visibility
+and synchronize it across open windows. Source credit and the full CC BY-SA 4.0
+license are embedded in Sources & licenses. New saves retain the chosen entry's
+dictionary expression; existing saved databases are unchanged. There is no
+additional service, model, runtime download or Python package.
+
+The [data review](../THIRD_PARTY_LICENSES/jlpt/README.md) retains upstream inputs,
+revision, hashes, licence and adaptation details. The offline generator and six
+provenance tests are added to existing source CI without changing release gates.
+All 202 frontend tests, Prettier, TypeScript, the frontend/macOS preview builds, generator/data
+checks and script Ruff checks pass. Browser smoke confirms the real 学校／がっこう
+N5 badge and preference changes reaching an already-open popup. Windows native
+interaction and exact installer acceptance remain unverified. No released
+installer, version, runtime seed or publication approval is changed.
+The frontend bundle is 610.73 kB (174.83 kB gzip); Vite reports its non-fatal
+500 kB chunk-size warning. No warning threshold or packaging gate is relaxed.
+
+**Selection caret and keyboard fix — 2026-10-19:** development source uses a
+native editable caret for the selection box while canceling text edits. This
+avoids the native read-only control's invisible caret/keyboard behavior without
+changing OCR text. Arrow navigation and Shift + arrow selection remain native;
+typing, deletion, paste, cut, drop and undo/redo edits are blocked, with controlled
+source restoration for non-cancelable input. Explicit caret and selection colors
+improve visibility. The previous popup layout is retained.
+
+All 197 frontend tests, Prettier, TypeScript, the production frontend build and
+the macOS preview app build pass. Regression coverage checks navigation events,
+edit cancellation and source/range restoration. A native macOS preview smoke
+confirms caret movement, Shift+Right selecting 生徒会長, typing/deletion leaving
+the source intact, and successful local dictionary lookup. Windows and exact
+installer acceptance remain unverified; no release version or candidate changes.
+
+**Manual dictionary selection — 2026-10-19:** development source adds
+**Select text → Look up selection** to the compact learning popup. A read-only
+sentence supports mouse/keyboard selection across or within tokenizer boundaries,
+including when analysis is unavailable. Exact local JMdict lookup preserves the
+original sentence and Unicode code-point offsets, keeps unmatched selections
+available for adjustment, and reuses word saving and kanji/compound exploration.
+Manual matches save the chosen entry's dictionary expression, raw reading and
+meanings; readings/base forms are not inferred for custom spans. Word clicks,
+OCR correction and explicit translation retain their existing behavior. Escape
+leaves selection mode and returns focus before closing the popup on a later press.
+
+Source verification passes all 196 frontend tests, Prettier, TypeScript, the
+production frontend build and the macOS native debug build. Regression cases
+cover combined/partial selections, Unicode and normalized newlines, invalid/long
+spans, unavailable analysis/dictionaries, retries, chosen-entry saves, kanji
+compounds, stale responses, correction and keyboard focus. A browser smoke at
+420 px verifies mouse/keyboard selection, real local dictionary lookup and saving
+with isolated temporary storage. Native installed-app and Windows interaction
+acceptance remain unverified. This develop-only feature changes no version,
+release candidate, runtime input, installer acceptance or publication approval;
+the in-flight 0.3.0 main rebuild remains at its recorded source below.
+
+**0.3.0 rebuild started — 2026-10-19:** at the owner's explicit authorization,
+[PR #16](https://github.com/chonnakanch/yomimado/pull/16) merged the packaging
+repair into main at `e434b6cea96853079919e8acbbbd1468cc5c8bf4` after all 12
+push/PR checks passed. Fresh [Release `39225156409`](https://github.com/chonnakanch/yomimado/actions/runs/39225156409)
+and [exact-main Checks](https://github.com/chonnakanch/yomimado/actions/runs/39225156215)
+have started. Build/verification completion, exact new installer acceptance and
+publication remain pending. The owner authorized a new build, not publication;
+keep main at this exact source during the run.
+
 **0.3.0 verification packaging repair — 2026-10-19:** both installer builders
 pass in [Release `39193821074`](https://github.com/chonnakanch/yomimado/actions/runs/39193821074)
 at `b4c9511`, but `verify-transfer` rejects the combined source archive at the

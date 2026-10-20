@@ -1,0 +1,54 @@
+{
+  "source": "https://github.com/stephenmk/yomitan-jlpt-vocab",
+  "revision": "b062d4e38c4bdd0950ae1d4ec55f04b176182e03",
+  "datasetRevision": "2025.08.01.0",
+  "entryCount": 8113,
+  "files": [
+    {
+      "path": "LICENSE.txt",
+      "url": "https://raw.githubusercontent.com/stephenmk/yomitan-jlpt-vocab/b062d4e38c4bdd0950ae1d4ec55f04b176182e03/LICENSE.txt",
+      "sha256": "7abe19ec9bb73b36141b999b861d24ad855e808bafe0f81e84cce28556f6c297"
+    },
+    {
+      "path": "UPSTREAM_README.md",
+      "url": "https://raw.githubusercontent.com/stephenmk/yomitan-jlpt-vocab/b062d4e38c4bdd0950ae1d4ec55f04b176182e03/README.md",
+      "sha256": "4efd40eecf18c01a61ca54d4c1731daa0756a384b0f4ade551b43914a087869a"
+    },
+    {
+      "path": "source/index.json",
+      "url": "https://raw.githubusercontent.com/stephenmk/yomitan-jlpt-vocab/b062d4e38c4bdd0950ae1d4ec55f04b176182e03/yomitan-jlpt-vocab/index.json",
+      "sha256": "1eb3c86c7d19e6314a8061b2f6a7478e99d7e65cafcac16c071d2dcb71da3513"
+    },
+    {
+      "path": "source/term_meta_bank_1.json",
+      "url": "https://raw.githubusercontent.com/stephenmk/yomitan-jlpt-vocab/b062d4e38c4bdd0950ae1d4ec55f04b176182e03/yomitan-jlpt-vocab/term_meta_bank_1.json",
+      "sha256": "80698c74b0d4efe476db35626b60324007f66d5ca32c0178bf3f9456a0290abf",
+      "level": "N1"
+    },
+    {
+      "path": "source/term_meta_bank_2.json",
+      "url": "https://raw.githubusercontent.com/stephenmk/yomitan-jlpt-vocab/b062d4e38c4bdd0950ae1d4ec55f04b176182e03/yomitan-jlpt-vocab/term_meta_bank_2.json",
+      "sha256": "c58e20a6fc2dececf6a5e42bd1163212615ef79deec85e77c6f7c7deb4d4cc7e",
+      "level": "N2"
+    },
+    {
+      "path": "source/term_meta_bank_3.json",
+      "url": "https://raw.githubusercontent.com/stephenmk/yomitan-jlpt-vocab/b062d4e38c4bdd0950ae1d4ec55f04b176182e03/yomitan-jlpt-vocab/term_meta_bank_3.json",
+      "sha256": "baeee2da06c41ea973cb54a6118834682b33857128f7d97577f21cbaaae7c51b",
+      "level": "N3"
+    },
+    {
+      "path": "source/term_meta_bank_4.json",
+      "url": "https://raw.githubusercontent.com/stephenmk/yomitan-jlpt-vocab/b062d4e38c4bdd0950ae1d4ec55f04b176182e03/yomitan-jlpt-vocab/term_meta_bank_4.json",
+      "sha256": "844590546217e084f8244f3cf9e6eb6054f5f7a370857bf5917fe19d4d83d7a8",
+      "level": "N4"
+    },
+    {
+      "path": "source/term_meta_bank_5.json",
+      "url": "https://raw.githubusercontent.com/stephenmk/yomitan-jlpt-vocab/b062d4e38c4bdd0950ae1d4ec55f04b176182e03/yomitan-jlpt-vocab/term_meta_bank_5.json",
+      "sha256": "a169779f5b8e4dbf4aaa86c367e2b0e24721b5d247c8e0c5b37b18189bc1be83",
+      "level": "N5"
+    }
+  ],
+  "outputSha256": "2c280b1168ab93458c365f35c77c0def20345c2d4daa94a9d53310d4f94e50a7"
+}

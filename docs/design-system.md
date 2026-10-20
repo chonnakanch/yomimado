@@ -11,6 +11,12 @@ Settings and the independent Saved, Settings and Sources windows on 2026-10-15,
 including subsequent UI refinements. Remaining native-platform verification is
 tracked separately in the implementation plan.
 
+The owner approved the dictionary-style Saved update on **2026-10-20** after
+reviewing its working preview. Saved now uses prominent search, underlined tabs,
+larger Japanese headwords and numbered meanings, with expandable source/date/
+attribution details. See [Saved search and layout](saved-search.md) for current
+behavior and verification; other window designs remain unchanged.
+
 ## 1. Visual direction and boundaries
 
 Use the supplied local images in `docs/design-references/` for compact utility

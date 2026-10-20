@@ -8,14 +8,23 @@ import {
   useRemovalFocus,
 } from "./CollectionPanel";
 import { useSavedCollection } from "./useSavedCollection";
+import { JlptBadge } from "../jlpt/JlptBadge";
+import { useJlptVisible } from "../jlpt/preference";
+import { SavedSearch, NoSearchResults, useSavedQuery } from "./SavedSearch";
+import { matchesSavedWord } from "./saved-search";
 
 export function SavedWordsView({ active }: { active: boolean }) {
+  const showJlpt = useJlptVisible();
   const collection = useSavedCollection(
     active,
     listVocabularyWords,
     deleteVocabularyWord,
   );
   const removeWithFocus = useRemovalFocus();
+  const [query, setQuery] = useSavedQuery("words");
+  const filtered = collection.items.filter((word) =>
+    matchesSavedWord(word, query),
+  );
   return (
     <section
       className="library-panel"
@@ -25,23 +34,33 @@ export function SavedWordsView({ active }: { active: boolean }) {
       tabIndex={0}
       hidden={!active}
     >
+      <SavedSearch kind="words" query={query} onChange={setQuery} />
       <div className="library-heading">
         <div>
-          <h2>Saved words</h2>
-          <p className="library-count">
+          <h2 className="visually-hidden">Saved words</h2>
+          <p
+            className="library-count"
+            role="status"
+            aria-live={active ? "polite" : "off"}
+          >
             {collection.loading
               ? "Updating…"
-              : `${collection.items.length} ${collection.error ? "shown" : "saved"}`}
+              : query.trim()
+                ? `${filtered.length} of ${collection.items.length} words`
+                : `${collection.items.length} ${collection.error ? "shown" : "saved"} ${collection.items.length === 1 ? "word" : "words"}`}
           </p>
         </div>
-        <button
-          className="utility-button"
-          data-refresh
-          onClick={() => void collection.refresh()}
-          disabled={collection.loading || collection.removingId !== null}
-        >
-          Refresh
-        </button>
+        <div className="library-heading-actions">
+          <span className="library-order">Newest first</span>
+          <button
+            className="utility-button"
+            data-refresh
+            onClick={() => void collection.refresh()}
+            disabled={collection.loading || collection.removingId !== null}
+          >
+            Refresh
+          </button>
+        </div>
       </div>
       <CollectionFeedback
         kind="words"
@@ -51,21 +70,84 @@ export function SavedWordsView({ active }: { active: boolean }) {
         removed={collection.removed}
         onRetry={() => void collection.refresh()}
       />
-      <ul className="library-list">
-        {collection.items.map((word) => (
+      {!collection.loading &&
+        collection.items.length > 0 &&
+        filtered.length === 0 && (
+          <NoSearchResults kind="words" onClear={() => setQuery("")} />
+        )}
+      <ul
+        className="library-list"
+        id="saved-words-results"
+        aria-label="Saved word entries"
+      >
+        {filtered.map((word) => (
           <li className="library-row" key={word.id}>
-            <div className="library-row-heading">
+            <div className="library-entry-main">
               <div className="library-word">
-                <strong lang="ja">{word.surface}</strong>
+                <div className="library-word-title">
+                  <strong lang="ja">{word.surface}</strong>
+                  {showJlpt && (
+                    <JlptBadge
+                      expression={word.dictionaryForm || word.surface}
+                      reading={word.reading}
+                    />
+                  )}
+                </div>
                 <span
                   className="library-reading"
                   lang={word.reading ? "ja" : undefined}
                 >
                   {word.reading || "Reading unavailable"}
                 </span>
+                {word.dictionaryForm &&
+                  word.dictionaryForm !== word.surface && (
+                    <p className="library-metadata">
+                      Base form: <span lang="ja">{word.dictionaryForm}</span>
+                    </p>
+                  )}
               </div>
+              <div className="library-definition-block">
+                {word.meanings.length > 0 ? (
+                  <ol className="library-meanings">
+                    {word.meanings.map((meaning, index) => (
+                      <li key={index}>
+                        {meaning || "No dictionary meaning saved."}
+                      </li>
+                    ))}
+                  </ol>
+                ) : (
+                  <p className="library-metadata">
+                    No dictionary meaning saved.
+                  </p>
+                )}
+              </div>
+            </div>
+            <div className="library-row-footer">
+              <details className="library-context">
+                <summary>Source sentence</summary>
+                <p
+                  lang={word.sourceText ? "ja" : undefined}
+                  className="library-source"
+                >
+                  {word.sourceText || "No source sentence saved."}
+                </p>
+                <SavedDate value={word.createdAt} />
+                {word.meanings.length > 0 && (
+                  <p className="library-attribution">
+                    Possible dictionary senses · Source:{" "}
+                    <a
+                      href="https://www.edrdg.org/wiki/JMdict-EDICT_Dictionary_Project.html"
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      JMdict (EDRDG)
+                    </a>{" "}
+                    · CC BY-SA 4.0
+                  </p>
+                )}
+              </details>
               <button
-                className="utility-button"
+                className="utility-button library-remove"
                 data-remove
                 disabled={collection.removingId !== null}
                 onClick={(event) =>
@@ -81,45 +163,6 @@ export function SavedWordsView({ active }: { active: boolean }) {
                 {collection.removingId === word.id ? "Removing…" : "Remove"}
               </button>
             </div>
-            {word.dictionaryForm && word.dictionaryForm !== word.surface && (
-              <p className="library-metadata">
-                Base form: <span lang="ja">{word.dictionaryForm}</span>
-              </p>
-            )}
-            {word.meanings.length > 0 ? (
-              <ol className="library-meanings">
-                {word.meanings.map((meaning, index) => (
-                  <li key={index}>
-                    {meaning || "No dictionary meaning saved."}
-                  </li>
-                ))}
-              </ol>
-            ) : (
-              <p className="library-metadata">No dictionary meaning saved.</p>
-            )}
-            <details className="library-context">
-              <summary>Source and saved date</summary>
-              <p
-                lang={word.sourceText ? "ja" : undefined}
-                className="library-source"
-              >
-                {word.sourceText || "No source sentence saved."}
-              </p>
-              <SavedDate value={word.createdAt} />
-            </details>
-            {word.meanings.length > 0 && (
-              <p className="library-attribution">
-                Possible dictionary senses · Source:{" "}
-                <a
-                  href="https://www.edrdg.org/wiki/JMdict-EDICT_Dictionary_Project.html"
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  JMdict (EDRDG)
-                </a>{" "}
-                · CC BY-SA 4.0
-              </p>
-            )}
             {collection.removalError?.id === word.id && (
               <p className="library-error" role="alert">
                 Could not remove this word: {collection.removalError.message}{" "}

@@ -23,6 +23,13 @@ obtain them from the original publisher and import them into their own local
 app data. The detector source is GPL-3.0 and is included in the package with
 its own `LICENSE` file. See `MODEL_CREDITS.md` for creator attribution.
 
+The desktop frontend additionally bundles estimated JLPT vocabulary labels from
+Jonathan Waller's Tanos lists as adapted by Stephen Kraus, revision
+`b062d4e38c4bdd0950ae1d4ec55f04b176182e03`. This transformed spelling/reading
+table is CC BY-SA 4.0 and remains separate from the software licence. Full terms
+and attribution are embedded in Sources & licenses, independently of the OCR
+runtime's notice directory. See [the data review and retained inputs](jlpt/README.md).
+
 The EDRDG data is bundled without modification. We refresh the dictionary
-files as described in [the update procedure](dictionary-updates.md)
+files as described in [the update procedure](../docs/dictionary-updates.md)
 and do not claim copyright over the dictionary content.

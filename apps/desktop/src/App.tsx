@@ -19,23 +19,29 @@ export function App() {
     if (showSaved) document.getElementById(`saved-tab-${savedTab}`)?.focus();
   }, [showSaved]);
   return (
-    <main className="secondary-window">
-      <header className="secondary-header">
-        <span className="secondary-brand">
-          YomiMado <span lang="ja">読み窓</span>
-        </span>
-      </header>
+    <main className={`secondary-window${showSaved ? " saved-window" : ""}`}>
+      {!showSaved && (
+        <header className="secondary-header">
+          <span className="secondary-brand">
+            YomiMado <span lang="ja">読み窓</span>
+          </span>
+        </header>
+      )}
       {showSaved && (
         <section
           className="saved-library"
           aria-label="Saved"
           id="saved-library"
         >
-          <h1>Saved</h1>
-          <p className="secondary-description">
-            Words and sentences kept locally.
-          </p>
-          <SavedTabs active={savedTab} onChange={setSavedTab} />
+          <div className="library-intro">
+            <div>
+              <h1>Saved</h1>
+              <p className="secondary-description">
+                Words and sentences, saved locally.
+              </p>
+            </div>
+            <SavedTabs active={savedTab} onChange={setSavedTab} />
+          </div>
           <SavedWordsView active={savedTab === "words"} />
           <SavedSentencesView active={savedTab === "sentences"} />
         </section>

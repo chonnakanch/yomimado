@@ -1,9 +1,15 @@
 import type { TextToken } from "../../lib/ocr-types";
 import type { WordEntry } from "../../lib/word-client";
 import { hiraganaReading } from "./ClickableSentence";
+import { JlptBadge } from "../jlpt/JlptBadge";
+import { useJlptVisible } from "../jlpt/preference";
+import { ConjugationExplanation } from "./ConjugationExplanation";
+import type { ConjugationAnalysis } from "./conjugation";
 
 export function WordDefinition({
   token,
+  manualSelection = false,
+  conjugation = null,
   entries,
   loading,
   error,
@@ -14,6 +20,8 @@ export function WordDefinition({
   onRetry,
 }: {
   token: TextToken;
+  manualSelection?: boolean;
+  conjugation?: ConjugationAnalysis | null;
   entries: WordEntry[] | null;
   loading: boolean;
   error: string | null;
@@ -23,6 +31,7 @@ export function WordDefinition({
   onSave: (entry: WordEntry | null, index: number) => void;
   onRetry: () => void;
 }) {
+  const showJlpt = useJlptVisible();
   const entryView = (entry: WordEntry, index: number) => (
     <div
       className="word-entry"
@@ -31,11 +40,14 @@ export function WordDefinition({
       <div className="dictionary-match" lang="ja">
         <strong>{entry.expression}</strong>
         <span>{hiraganaReading(entry.reading)}</span>
+        {showJlpt && (
+          <JlptBadge expression={entry.expression} reading={entry.reading} />
+        )}
       </div>
       {entry.match === "dictionaryForm" && (
         <p className="popup-metadata">Matched base form</p>
       )}
-      {entry.match === "surface" && !entry.readingMatch && (
+      {entry.match === "surface" && token.reading && !entry.readingMatch && (
         <p className="popup-metadata">
           Reading differs from the selected token; check this sense.
         </p>
@@ -70,19 +82,26 @@ export function WordDefinition({
       <h2 className="selected-word" lang="ja">
         {token.surface}
       </h2>
-      <p className="selected-reading" lang="ja">
-        {hiraganaReading(token.reading) || "Reading unavailable"}
-      </p>
-      <dl className="word-metadata">
-        <div>
-          <dt>Base form</dt>
-          <dd lang="ja">{token.dictionaryForm}</dd>
-        </div>
-        <div>
-          <dt>Token POS</dt>
-          <dd lang="ja">{token.partOfSpeech || "Not listed"}</dd>
-        </div>
-      </dl>
+      {manualSelection ? (
+        <p className="popup-metadata">Manual selection</p>
+      ) : (
+        <>
+          <p className="selected-reading" lang="ja">
+            {hiraganaReading(token.reading) || "Reading unavailable"}
+          </p>
+          <dl className="word-metadata">
+            <div>
+              <dt>Base form</dt>
+              <dd lang="ja">{token.dictionaryForm}</dd>
+            </div>
+            <div>
+              <dt>Token POS</dt>
+              <dd lang="ja">{token.partOfSpeech || "Not listed"}</dd>
+            </div>
+          </dl>
+        </>
+      )}
+      <ConjugationExplanation analysis={conjugation} />
       {loading && <p role="status">Looking up word…</p>}
       {error && (
         <div role="alert">
@@ -93,7 +112,11 @@ export function WordDefinition({
         </div>
       )}
       {entries?.length === 0 && (
-        <p>No JMdict entry found for this word or base form.</p>
+        <p>
+          {manualSelection
+            ? "No JMdict entry found for this selection. Adjust the selection and try again."
+            : "No JMdict entry found for this word or base form."}
+        </p>
       )}
       {(entries?.length === 0 || error) && (
         <button

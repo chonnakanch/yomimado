@@ -396,6 +396,10 @@ Do not implement these in the first OCR prototype unless explicitly requested:
 
 ## Codex workflow
 
+For new-version releases and macOS runtime-seed work, follow
+[`docs/release-runbook.md`](docs/release-runbook.md). It separates local preparation,
+source approval, verified private input activation and exact-installer publication.
+
 Before coding:
 
 1. Read this file and the applicable document under `docs/`.

@@ -5,6 +5,28 @@ screen: capture a region, recognize Japanese locally, then click to view reading
 dictionary/kanji information and an on-demand local translation. Saved words,
 sentences and translation cache stay on the computer.
 
+## Changes in 0.4.0
+
+- Select Japanese text within or across automatic word boundaries and look up
+  the selection in local JMdict. A visible caret and keyboard selection help
+  refine the span; matches can be saved with their original sentence context.
+- Expand Conjugation in word details for common verb and i-adjective forms,
+  including ちゃう／じゃう contractions. Unsupported forms remain explicit;
+  explanations do not infer context-dependent meanings.
+- Estimated JLPT N5–N1 vocabulary badges use 8,113 locally bundled
+  spelling/reading pairs. Unlisted words stay unclassified, and Reading settings
+  can hide the badges. Jonathan Waller / Stephen Kraus attribution and the
+  dataset's separate CC BY-SA 4.0 licence appear in Sources & licenses.
+- Search Saved words by spelling, dictionary form, reading, meaning or source,
+  and sentences by Japanese or saved translation. Search ignores kana, width
+  and case differences, and remembers a separate query for each collection.
+  The library uses larger headwords, numbered meanings and expandable details.
+- The toolbar's More actions menu measures its complete content before opening,
+  keeping Quit reachable and avoiding repeated resizing on constrained screens.
+
+Check OCR remains an uncertainty indicator. Manual OCR correction and ordinary
+Rescan remain available; single-bubble retry/redraw is deferred.
+
 ## Changes in 0.3.0
 
 - Smaller local learning resources: Lindera/IPADIC replaces Sudachi, retaining
@@ -86,13 +108,15 @@ and checksums accompany both installers. Source-only rebuilding of the complete
 delivery remains unverified. Hardware coverage and fresh-machine limitations are
 disclosed below; a successful hosted build is separate from installed-app testing.
 
-Only the installer for your platform is needed to run YomiMado. The combined
-`YomiMado_VERSION_sources.tar.gz` contains the original macOS and Windows source
-archives, Windows project sources, build recipes and exact dictionary snapshots.
-Extract it, then extract the platform archives inside it; each retains its
-original paths. `YomiMado_VERSION_notices.tar.gz` contains the platform notices,
-native input inventory and original verification records. The single
-`desktop-SHA256SUMS.txt` checks both installers, both combined archives and
-`desktop-release-candidate.json`, which records provenance and original input
-hashes. GitHub's automatic repository source downloads do not contain all bundled
-dependency sources.
+Only the installer for your platform is needed to run YomiMado. Translation models
+are separate optional downloads. For the complete corresponding-source delivery,
+download both `YomiMado_VERSION_sources_macos.tar.gz` and
+`YomiMado_VERSION_sources_windows.tar.gz`. Together they retain the original
+platform source archives, project sources, build recipes and exact dictionary
+snapshots. Extract the outer archives, then the archives inside them; each retains
+its original paths. `YomiMado_VERSION_notices.tar.gz` contains the platform
+notices, native input inventory and original verification records. The single
+`desktop-SHA256SUMS.txt` checks both installers, both source archives, notices,
+optional translation ZIPs and `desktop-release-candidate.json`, which records
+provenance and original input hashes. GitHub's automatic repository source
+downloads do not contain all bundled dependency sources.

@@ -23,6 +23,7 @@ afterEach(async () => {
   await act(async () => root.unmount());
   container.remove();
   vi.restoreAllMocks();
+  vi.unstubAllGlobals();
   vi.mocked(invoke).mockReset();
   vi.mocked(emitTo).mockReset();
 });
@@ -196,6 +197,143 @@ it("positions only its own native popover using the current request generation",
     requestId: 8,
   });
   expect(invoke).not.toHaveBeenCalledWith("resize_toolbar", expect.anything());
+});
+
+function menuGeometry(
+  intrinsicHeight: () => number,
+  viewportHeight = () => 150,
+) {
+  const computedStyle = window.getComputedStyle;
+  vi.spyOn(window, "getComputedStyle").mockImplementation((element) => {
+    const style = computedStyle(element);
+    style.borderTopWidth = style.borderBottomWidth = "1px";
+    return style;
+  });
+  vi.spyOn(HTMLElement.prototype, "getBoundingClientRect").mockImplementation(
+    function (this: HTMLElement) {
+      const height = this.classList.contains("toolbar-menu-content")
+        ? intrinsicHeight()
+        : viewportHeight();
+      return {
+        x: 0,
+        y: 0,
+        top: 0,
+        left: 0,
+        right: 224,
+        bottom: height,
+        width: 224,
+        height,
+        toJSON() {},
+      };
+    },
+  );
+}
+
+it("waits for the complete tray-dependent item list before revealing the menu", async () => {
+  let resolveState!: (value: unknown) => void;
+  const snapshot = new Promise((resolve) => {
+    resolveState = resolve;
+  });
+  menuGeometry(() => container.querySelectorAll("button").length * 35 + 16);
+  vi.mocked(invoke).mockImplementation(async (command, args) => {
+    if (command === "get_toolbar_state") return snapshot;
+    if (command === "position_toolbar_menu")
+      return (args as { logicalHeight: number }).logicalHeight;
+  });
+  await mount();
+  expect(invoke).not.toHaveBeenCalledWith(
+    "position_toolbar_menu",
+    expect.anything(),
+  );
+  await act(async () => resolveState({ sessionId: null, trayAvailable: true }));
+  expect(button("Hide Toolbar")).toBeDefined();
+  expect(button("Quit YomiMado")).toBeDefined();
+  expect(invoke).toHaveBeenCalledWith("position_toolbar_menu", {
+    logicalWidth: 224,
+    logicalHeight: 228,
+    requestId: 8,
+  });
+  expect(
+    vi
+      .mocked(invoke)
+      .mock.calls.filter(([cmd]) => cmd === "position_toolbar_menu"),
+  ).toHaveLength(1);
+});
+
+it.each([1, 1.25, 1.5, 2])(
+  "keeps full content sizing stable through native height clamps at scale %s",
+  async (scale) => {
+    let naturalHeight = 221.2;
+    let nativeHeight = 150;
+    let notify = () => {};
+    vi.stubGlobal(
+      "ResizeObserver",
+      class {
+        constructor(callback: () => void) {
+          notify = callback;
+        }
+        observe() {}
+        disconnect() {}
+      },
+    );
+    menuGeometry(
+      () => naturalHeight,
+      () => nativeHeight,
+    );
+    const positions: number[] = [];
+    vi.mocked(invoke).mockImplementation(async (command, args) => {
+      if (command === "get_toolbar_state")
+        return { sessionId: null, trayAvailable: true };
+      if (command === "position_toolbar_menu") {
+        const height = (args as { logicalHeight: number }).logicalHeight;
+        positions.push(height);
+        nativeHeight = Math.floor(Math.min(height, 160.3) * scale) / scale;
+        return nativeHeight;
+      }
+    });
+    await mount();
+    expect(positions).toEqual([224]);
+    for (let i = 0; i < 5; i++) await act(async () => notify());
+    expect(positions).toEqual([224]);
+    expect(
+      (container.querySelector("[role=menu]") as HTMLElement).style.maxHeight,
+    ).toBe(`${nativeHeight}px`);
+
+    // Font metrics/wrapping can change after the first constrained frame.
+    naturalHeight = 275.3;
+    await act(async () => notify());
+    for (let i = 0; i < 5; i++) await act(async () => notify());
+    expect(positions).toEqual([224, 278]);
+    expect(button("Quit YomiMado").disabled).toBe(false);
+  },
+);
+
+it("caps oversized intrinsic error content at the native request limit", async () => {
+  menuGeometry(() => 900);
+  await mount();
+  expect(invoke).toHaveBeenCalledWith("position_toolbar_menu", {
+    logicalWidth: 224,
+    logicalHeight: 600,
+    requestId: 8,
+  });
+});
+
+it("still reveals Quit and an error if the toolbar snapshot fails", async () => {
+  menuGeometry(() => 250);
+  vi.mocked(invoke).mockImplementation(async (command) => {
+    if (command === "get_toolbar_state")
+      throw new Error("Toolbar state unavailable");
+  });
+  await mount();
+  expect(container.querySelector("[role=alert]")?.textContent).toContain(
+    "Toolbar state unavailable",
+  );
+  expect(button("Quit YomiMado").disabled).toBe(false);
+  expect(invoke).toHaveBeenCalledWith("position_toolbar_menu", {
+    logicalWidth: 224,
+    logicalHeight: 252,
+    requestId: 8,
+  });
 });
 
 it("explicitly enters region navigation only for a visible idle OCR result", async () => {

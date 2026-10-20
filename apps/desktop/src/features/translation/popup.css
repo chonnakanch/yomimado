@@ -99,12 +99,29 @@
   color: var(--color-on-accent);
 }
 .sentence-save-actions,
+.manual-selection-actions,
 .popup-actions,
 .popup-secondary-actions {
   align-items: center;
   display: flex;
   flex-wrap: wrap;
   gap: var(--space-2);
+}
+.manual-selection-actions > span {
+  overflow-wrap: anywhere;
+  min-width: 0;
+}
+.translation-popup .sentence-selection-text {
+  flex: none;
+  min-height: 0;
+  resize: none;
+  user-select: text;
+  caret-color: var(--color-text-primary);
+  cursor: text;
+}
+.sentence-selection-text::selection {
+  background: var(--color-selected);
+  color: var(--color-on-accent);
 }
 .sentence-feedback:empty {
   display: none;
@@ -198,6 +215,19 @@
   font-size: var(--font-size-label);
   font-weight: 500;
   padding: var(--space-2) 0;
+}
+.conjugation-content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  font-size: var(--font-size-label);
+}
+.conjugation-content ol {
+  margin: 0;
+  padding-left: var(--space-6);
+}
+.conjugation-content li + li {
+  margin-top: var(--space-3);
 }
 .alternative-matches .word-entry {
   background: var(--color-surface-elevated);

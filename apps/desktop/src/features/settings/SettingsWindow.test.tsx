@@ -63,7 +63,10 @@ it("replaces the reading-order toggle with current keyboard-reading instructions
   window.history.replaceState({}, "", "/?view=reading");
   window.localStorage.setItem("yomimado.reading-order.enabled.v1", "true");
   await mount();
-  expect(container.querySelector('input[type="checkbox"]')).toBeNull();
+  expect(
+    container.querySelector('input[type="checkbox"]')?.parentElement
+      ?.textContent,
+  ).toContain("Show estimated JLPT levels");
   expect(container.textContent).toContain("More actions → Read with keyboard");
   expect(container.textContent).toContain("Arrow keys move between regions");
   expect(container.textContent).not.toContain("Focus regions");

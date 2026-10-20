@@ -3,9 +3,14 @@
 ## Using and developing YomiMado
 
 - [Reading guide](usage.md): capture, page scan, learning popups and saved entries.
+- [Project structure](project-structure.md): implemented source tree, entry points, scan flow and local API usage.
 - [Development setup](development.md): local service, models, dictionaries and diagnostics.
 - [Script roles](../scripts/README.md): release entrypoints, runtime dependencies and manual rebuild tools.
 - [Implementation plan](implementation-plan.md): completed milestone and current maintenance scope.
+- [Feature roadmap](feature-roadmap.md): proposed features, completed work and completion criteria.
+- [Saved search and dictionary layout](saved-search.md): matching, remembered queries and the approved Saved UI.
+- [Conjugation explanations](conjugation-explanations.md): supported forms, lookup behavior and limits.
+- [Changelog](../CHANGELOG.md): dated development changes and verification limits.
 - [Code quality review](code-review-2026-10-13.md): fixed boundary/state issues, duplication and refactor follow-ups.
 - [Redesign quality review](ui-redesign-review.md) and [Windows UI checklist](ui-redesign-windows-checklist.md): current source checks and remaining interactive acceptance.
 - [Security review](security-review-2026-10-13.md): browser/input guards, dependency advisories and remaining runtime work.
@@ -23,6 +28,8 @@
 
 ## Releases
 
+- [Manual release and runtime-seed runbook](release-runbook.md): version updates,
+  source review, seed builds/uploads, pin activation and agent invocation examples.
 - [Shared release checklist](desktop-release.md): published v0.1.0 identities,
   Checks/Release workflows, future six-file delivery and protected publication.
 - [Release notes template](desktop-release-notes.md): generated notes for future versions.

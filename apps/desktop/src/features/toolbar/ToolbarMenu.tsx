@@ -18,7 +18,9 @@ export function ToolbarMenu() {
     Number(new URLSearchParams(window.location.search).get("request")),
   );
   const content = useRef<HTMLDivElement>(null);
+  const menuItems = useRef<HTMLDivElement>(null);
   const [state, setState] = useState<ToolbarState | null>(null);
+  const [loaded, setLoaded] = useState(false);
   const [error, setError] = useState<string | null>(null);
   // This webview cannot inherit the toolbar's input modality. Native window
   // focus otherwise makes WebKit draw a keyboard ring after a mouse opening.
@@ -36,6 +38,9 @@ export function ToolbarMenu() {
       })
       .catch((reason) => {
         if (mounted) setError(String(reason));
+      })
+      .finally(() => {
+        if (mounted) setLoaded(true);
       });
     window.addEventListener("focus", focusFirst);
     return () => {
@@ -45,14 +50,28 @@ export function ToolbarMenu() {
   }, []);
   useEffect(focusFirst, [state]);
   useEffect(() => {
+    // The native popover stays hidden until tray availability determines the
+    // complete item list. Otherwise its first frame can omit the final action.
+    if (!loaded) return;
     let disposed = false;
     let lastSize = "";
     let queue = Promise.resolve();
     const resize = () => {
-      const bounds = content.current?.getBoundingClientRect();
-      if (!bounds?.width || !bounds.height) return;
+      const menu = content.current;
+      const bounds = menu?.getBoundingClientRect();
+      const itemsBounds = menuItems.current?.getBoundingClientRect();
+      if (!menu || !bounds?.width || !itemsBounds?.height) return;
+      const style = getComputedStyle(menu);
+      const borderHeight =
+        (parseFloat(style.borderTopWidth) || 0) +
+        (parseFloat(style.borderBottomWidth) || 0);
+      // Measure intrinsic content, not the scroll viewport constrained by the
+      // previous native response. This also isolates fractional-DPI resizes.
       const logicalWidth = Math.ceil(bounds.width),
-        logicalHeight = Math.ceil(bounds.height);
+        logicalHeight = Math.min(
+          600,
+          Math.ceil(itemsBounds.height + borderHeight),
+        );
       const size = `${logicalWidth}:${logicalHeight}`;
       if (size === lastSize) return;
       lastSize = size;
@@ -73,12 +92,13 @@ export function ToolbarMenu() {
     const observer =
       typeof ResizeObserver === "undefined" ? null : new ResizeObserver(resize);
     if (content.current) observer?.observe(content.current);
+    if (menuItems.current) observer?.observe(menuItems.current);
     resize();
     return () => {
       disposed = true;
       observer?.disconnect();
     };
-  }, []);
+  }, [loaded, requestId]);
   const close = () =>
     void invoke("close_toolbar_menu", { restoreFocus: true }).catch((reason) =>
       setError(String(reason)),
@@ -142,29 +162,31 @@ export function ToolbarMenu() {
       onPointerMove={() => setKeyboardFocus(false)}
       style={{ maxHeight }}
     >
-      {items
-        .filter(({ view }) => view !== "hideToolbar" || state?.trayAvailable)
-        .map(({ label, view }) => (
-          <button
-            role="menuitem"
-            key={label}
-            disabled={
-              view !== null &&
-              (!state ||
-                state.sessionId !== null ||
-                (view === "regions" &&
-                  (!state.hasOverlay || !state.overlayVisible)))
-            }
-            onClick={() => void run(view)}
-          >
-            {label}
-          </button>
-        ))}
-      {error && (
-        <p className="toolbar-menu-error" role="alert">
-          {error}
-        </p>
-      )}
+      <div className="toolbar-menu-content" ref={menuItems} role="presentation">
+        {items
+          .filter(({ view }) => view !== "hideToolbar" || state?.trayAvailable)
+          .map(({ label, view }) => (
+            <button
+              role="menuitem"
+              key={label}
+              disabled={
+                view !== null &&
+                (!state ||
+                  state.sessionId !== null ||
+                  (view === "regions" &&
+                    (!state.hasOverlay || !state.overlayVisible)))
+              }
+              onClick={() => void run(view)}
+            >
+              {label}
+            </button>
+          ))}
+        {error && (
+          <p className="toolbar-menu-error" role="alert">
+            {error}
+          </p>
+        )}
+      </div>
     </div>
   );
 }

@@ -1,3 +1,7 @@
+import { jlptSource } from "../jlpt/jlpt";
+import jlptLicense from "../jlpt/LICENSE.txt?raw";
+import "../jlpt/jlpt.css";
+
 export function AboutSettings() {
   return (
     <div className="settings-card settings-sources">
@@ -52,7 +56,22 @@ export function AboutSettings() {
         ; detector weights are installed separately by you.
       </p>
       <p>
-        The packaged app also includes full model, dictionary, and software
+        Estimated JLPT vocabulary levels: Jonathan Waller's Tanos lists, adapted
+        by Stephen Kraus (2021–2025), with spellings/readings from JMdict. The
+        bundled adaptation is licensed under CC BY-SA 4.0. YomiMado converts it
+        to an offline spelling/reading lookup table. These are community
+        estimates; words absent from the dataset are left unclassified.{" "}
+        <a href={jlptSource} target="_blank" rel="noreferrer">
+          JLPT data source and attribution
+        </a>
+        .
+      </p>
+      <details className="jlpt-license">
+        <summary>JLPT data license — CC BY-SA 4.0</summary>
+        <pre>{jlptLicense}</pre>
+      </details>
+      <p>
+        The packaged app includes additional model, dictionary, and software
         notices in its <code>ocr/notices</code> folder (inside Resources on
         macOS).
       </p>
