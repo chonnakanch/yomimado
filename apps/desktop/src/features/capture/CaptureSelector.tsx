@@ -29,8 +29,6 @@ export function CaptureSelector() {
   const debugCaptureEnabled = captureDebugEnabled();
   const params = new URLSearchParams(window.location.search);
   const scanMode = params.get("scan");
-  const regionRetry =
-    scanMode === "retry-region" || scanMode === "redraw-region";
   const sessionId = params.has("session")
     ? Number(params.get("session"))
     : null;
@@ -79,7 +77,7 @@ export function CaptureSelector() {
 
   useEffect(() => {
     if (
-      !["auto", "whole", "repeat", "retry-region"].includes(scanMode ?? "") ||
+      !["auto", "whole", "repeat"].includes(scanMode ?? "") ||
       scanChecked.current
     )
       return;
@@ -87,8 +85,6 @@ export function CaptureSelector() {
     void (async () => {
       captureStarted.current = true;
       await captureAndRecognize(async () => {
-        if (scanMode === "retry-region")
-          return invokeCapture<CaptureResult>("capture_ocr_region");
         if (scanMode === "repeat")
           return invokeCapture<CaptureResult>("capture_repeat_scan");
         const automatic = await invokeCapture<CaptureResult | null>(
@@ -134,18 +130,12 @@ export function CaptureSelector() {
     captured: CaptureResult,
     response: OcrResponse,
   ) => {
-    if (regionRetry)
-      await invokeCapture("replace_ocr_region", {
-        regions: response.regions,
-        engine: response.engine,
-      });
-    else
-      await invokeCapture("show_ocr_overlay", {
-        metadata: captured.metadata,
-        regions: response.regions,
-        engine: response.engine,
-        estimatedReadingOrder: estimatedOrder && response.engine === "manga",
-      });
+    await invokeCapture("show_ocr_overlay", {
+      metadata: captured.metadata,
+      regions: response.regions,
+      engine: response.engine,
+      estimatedReadingOrder: estimatedOrder && response.engine === "manga",
+    });
     if (sessionId !== null) {
       await invoke("hide_finished_selector", { sessionId });
     } else {
@@ -198,20 +188,6 @@ export function CaptureSelector() {
       const rawResponse: OcrResponse = await requestOcr(captured.imageDataUrl, {
         debug: debugCaptureEnabled,
       });
-      if (regionRetry && rawResponse.engine !== "manga") {
-        throw new Error(
-          "Bubble retry needs the local OCR models; the previous result was kept.",
-        );
-      }
-      if (
-        regionRetry &&
-        (rawResponse.regions.length === 0 ||
-          rawResponse.regions.some((region) => !region.text.trim()))
-      ) {
-        throw new Error(
-          "No text was recognized in this bubble; the previous result was kept. Try redrawing its bounds.",
-        );
-      }
       reportOcrStage("recognized");
       const response =
         estimatedOrder && rawResponse.engine === "manga"
@@ -380,13 +356,7 @@ export function CaptureSelector() {
             </p>
           )}
           <div className="capture-edge-hint" role="status">
-            <span>
-              {regionRetry
-                ? "Redraw one bubble inside the original scan"
-                : scanArea
-                  ? "Drag around pages"
-                  : "Drag to capture"}
-            </span>
+            <span>{scanArea ? "Drag around pages" : "Drag to capture"}</span>
             <kbd>Esc cancel</kbd>
           </div>
         </div>

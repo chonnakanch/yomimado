@@ -15,7 +15,6 @@ See the [changelog](../CHANGELOG.md) for completed changes and the
 - [x] **JLPT vocabulary tags** — done on `develop`, unreleased.
 - [ ] **Saved search and organization** — proposed.
 - [x] **Conjugation explanations (initial forms and contractions)** — done on `develop`, unreleased.
-- [x] **Retry OCR for one speech bubble (existing regions)** — done on `develop`, unreleased.
 - [ ] **Known / learning word states** — proposed.
 - [ ] **Personal manga glossary** — proposed.
 - [ ] **Local pronunciation playback** — proposed.
@@ -69,19 +68,6 @@ See the [supported slice and checked examples](conjugation-explanations.md) and
 [changelog](../CHANGELOG.md#2026-10-19). Broader manga speech, passive/potential,
 causatives, progressive forms and other grammar remain future scope.
 
-### Retry OCR for one speech bubble
-
-Completed on 2026-10-19 for existing regions. The popup's **Check OCR** indicator
-opens **Retry bubble OCR** and **Redraw bubble bounds**. A successful local retry
-accepts one or several detected parts and reopens the first part's popup. Parts
-stay linked for subsequent retries without duplicating old fragments; unrelated
-regions and the original full-area Rescan target are preserved. Failures/cancellation retain the
-old result, and retries remain marked for review rather than claiming certainty.
-
-See the [retry workflow and limits](bubble-ocr-retry.md). Adding an entirely
-missed bubble without an existing region is future scope. Windows native and
-exact-installer verification remain separate from development completion.
-
 ## Proposed implementation slices
 
 ### Saved search and organization
@@ -119,6 +105,12 @@ or bundling resources. Keep spoken output clearly identified as synthesized.
 
 Completion: playback starts only on request, can be stopped, handles missing
 voices visibly, and sends no text to a network speech service.
+
+## Deferred
+
+**Single-bubble OCR retry/redraw** was removed on 2026-10-20 at the owner's
+request. It is not an active feature or scheduled implementation. Check OCR
+remains a review indicator; manual text correction and ordinary Rescan remain.
 
 ## Keeping this roadmap current
 

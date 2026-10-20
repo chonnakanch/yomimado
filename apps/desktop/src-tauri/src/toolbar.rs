@@ -73,7 +73,6 @@ pub struct ActiveScan {
     pub repeat: Option<ScanSpec>,
     pub restore: Vec<String>,
     pub captured: Option<CaptureMetadata>,
-    pub region_retry: Option<crate::region_retry::RegionRetry>,
 }
 
 #[derive(Clone, Default)]
@@ -107,7 +106,6 @@ impl Session {
             repeat,
             restore,
             captured: None,
-            region_retry: None,
         });
         self.phase = "selecting";
         self.message = "Drag to select Japanese text. Escape cancels.".into();
@@ -145,14 +143,12 @@ impl Session {
     ) -> Result<ActiveScan, String> {
         let scan = self.active(Some(id))?;
         let metadata = scan.captured.as_ref().ok_or("No capture is available")?;
-        if scan.region_retry.is_none() {
-            self.last_scan = Some(ScanSpec {
-                mode: scan.mode,
-                display: scan.display.clone(),
-                area: metadata.selection_physical_bounds,
-                estimated_reading_order,
-            });
-        }
+        self.last_scan = Some(ScanSpec {
+            mode: scan.mode,
+            display: scan.display.clone(),
+            area: metadata.selection_physical_bounds,
+            estimated_reading_order,
+        });
         self.revision += 1;
         self.phase = "ready";
         self.message = "Click a text region to learn.".into();
@@ -527,7 +523,7 @@ pub fn start_toolbar_scan(app: AppHandle, mode: ScanMode) -> Result<(), String> 
     } else {
         ""
     };
-    crate::show_capture_window_on(app, query, display, mode, None, None)
+    crate::show_capture_window_on(app, query, display, mode, None)
 }
 
 #[tauri::command(async)]
@@ -546,7 +542,7 @@ pub fn rescan(app: AppHandle) -> Result<(), String> {
     } else {
         "scan=repeat"
     };
-    crate::show_capture_window_on(app, query, display, spec.mode, Some(spec), None)
+    crate::show_capture_window_on(app, query, display, spec.mode, Some(spec))
 }
 
 #[tauri::command(async)]
@@ -1302,54 +1298,6 @@ mod tests {
         let second = store.open().unwrap();
         assert!(store.active(second).unwrap());
         assert!(!store.active(first).unwrap());
-    }
-
-    #[test]
-    fn bubble_retry_completion_keeps_the_full_page_rescan_spec_and_cancel_keeps_old_generation() {
-        let mut session = Session::default();
-        let first = session
-            .begin(ScanMode::WholeScreen, display(), None, vec![])
-            .unwrap();
-        session.captured(first, metadata()).unwrap();
-        session.complete(first, true).unwrap();
-        let area = session.last_scan.as_ref().unwrap().area;
-        let second = session
-            .begin(ScanMode::SelectedArea, display(), None, vec![])
-            .unwrap();
-        session.active.as_mut().unwrap().region_retry = Some(crate::region_retry::RegionRetry {
-            target: crate::region_retry::RegionTarget {
-                session_id: first,
-                region_id: "bubble".into(),
-            },
-            original: serde_json::Value::Null,
-            group_id: "bubble".into(),
-            metadata: metadata(),
-            area,
-        });
-        let mut crop = metadata();
-        crop.selection_physical_bounds.width = 10.0;
-        session.captured(second, crop).unwrap();
-        session.complete(second, false).unwrap();
-        assert!(matches!(
-            session.last_scan.as_ref().unwrap().mode,
-            ScanMode::WholeScreen
-        ));
-        assert!(session.last_scan.as_ref().unwrap().estimated_reading_order);
-        assert_eq!(session.last_scan.as_ref().unwrap().area.width, area.width);
-        assert_eq!(session.completed_id, Some(second));
-        let third = session
-            .begin(ScanMode::SelectedArea, display(), None, vec![])
-            .unwrap();
-        session
-            .stop(Some(third), "Retry failed; original kept", false)
-            .unwrap();
-        assert_eq!(session.completed_id, Some(second));
-        assert!(session.active(Some(third)).is_err());
-        let fourth = session
-            .begin(ScanMode::SelectedArea, display(), None, vec![])
-            .unwrap();
-        assert!(session.active(Some(third)).is_err());
-        assert!(session.active(Some(fourth)).is_ok());
     }
 
     #[test]

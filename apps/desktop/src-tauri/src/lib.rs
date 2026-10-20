@@ -1,7 +1,6 @@
 mod capture;
 mod detector_model;
 mod overlay;
-mod region_retry;
 mod toolbar;
 mod tray;
 #[cfg(all(target_os = "windows", any(not(debug_assertions), test)))]
@@ -141,7 +140,7 @@ fn dispatch_capture_shortcut(app: AppHandle, scan_query: &'static str) {
             } else {
                 toolbar::ScanMode::SelectedArea
             };
-            show_capture_window_on(app.clone(), scan_query, display, mode, None, None)
+            show_capture_window_on(app.clone(), scan_query, display, mode, None)
         });
         if let Err(error) = result {
             let state = app.state::<AppState>();
@@ -207,7 +206,6 @@ fn show_capture_window(app: AppHandle, scan_query: &str) -> Result<(), String> {
         display,
         toolbar::ScanMode::SelectedArea,
         None,
-        None,
     )
 }
 
@@ -217,7 +215,6 @@ fn show_capture_window_on(
     display: DisplayInfo,
     mode: toolbar::ScanMode,
     repeat: Option<toolbar::ScanSpec>,
-    region_retry: Option<region_retry::RegionRetry>,
 ) -> Result<(), String> {
     detector_model::ensure_available(&app)?;
     #[cfg(target_os = "macos")]
@@ -231,11 +228,6 @@ fn show_capture_window_on(
     let state = app.state::<AppState>();
     let mut session = state.scans.lock()?;
     toolbar::require_idle(&session)?;
-    if let Some(retry) = &region_retry {
-        if session.completed_id != Some(retry.target.session_id) || !session.overlay_visible {
-            return Err("The OCR result changed before this retry could start.".into());
-        }
-    }
     toolbar::close_toolbar_menu(app.clone(), None)?;
     let restore = toolbar::CAPTURE_WINDOW_LABELS
         .iter()
@@ -246,7 +238,6 @@ fn show_capture_window_on(
         .map(|label| (*label).to_string())
         .collect();
     let id = session.begin(mode, display.clone(), repeat, restore)?;
-    session.active.as_mut().unwrap().region_retry = region_retry;
     drop(session);
     tray::refresh(&app);
     app.state::<AppState>().scans.set_selector_id(id);
@@ -302,10 +293,7 @@ fn show_capture_window_on(
             .map_err(|e| e.to_string())?;
         // Automatic/repeat requests can run in a hidden webview. Only selecting
         // an area deliberately takes focus and blocks interaction with the reader.
-        if !scan_query.starts_with("scan=whole")
-            && !scan_query.starts_with("scan=repeat")
-            && !scan_query.starts_with("scan=retry-region")
-        {
+        if !scan_query.starts_with("scan=whole") && !scan_query.starts_with("scan=repeat") {
             window.show().map_err(|e| e.to_string())?;
             window.set_focus().map_err(|e| e.to_string())?;
         }
@@ -322,114 +310,6 @@ fn active_scan(app: &AppHandle, id: Option<u64>) -> Result<toolbar::ActiveScan, 
     let scan = app.state::<AppState>().scans.lock()?.active(id)?.clone();
     toolbar::live_display(app, &scan.display)?;
     Ok(scan)
-}
-
-#[tauri::command(async)]
-fn retry_ocr_region(
-    app: AppHandle,
-    window: tauri::WebviewWindow,
-    target: region_retry::RegionTarget,
-    redraw: bool,
-    view_query: String,
-) -> Result<(), String> {
-    if window.label() != "translation-popup"
-        || window.url().map_err(|e| e.to_string())?.query() != Some(view_query.as_str())
-    {
-        return Err("Open the current bubble's learning popup to retry OCR.".into());
-    }
-    let retry = region_retry::RegionRetry::new(app.state::<AppState>().overlay.get()?, target)?;
-    let display = current_display(&app, "ocr-overlay")?;
-    let expected = DisplayInfo {
-        id: retry.metadata.display_id.clone(),
-        name: retry.metadata.display_name.clone(),
-        physical_bounds: retry.metadata.screen_physical_bounds,
-        scale_factor: retry.metadata.scale_factor,
-        ..display.clone()
-    };
-    toolbar::validate_display(&expected, &display)?;
-    show_capture_window_on(
-        app,
-        if redraw {
-            "scan=redraw-region"
-        } else {
-            "scan=retry-region"
-        },
-        display,
-        toolbar::ScanMode::SelectedArea,
-        None,
-        Some(retry),
-    )
-}
-
-#[tauri::command]
-async fn capture_ocr_region(
-    app: AppHandle,
-    state: tauri::State<'_, AppState>,
-    session_id: u64,
-) -> Result<CapturedImage, String> {
-    let scan = active_scan(&app, Some(session_id))?;
-    let retry = scan.region_retry.ok_or("No bubble retry is active")?;
-    let mut display = scan.display;
-    let selection = full_display_selection(&mut display, retry.area)?;
-    perform_capture(
-        app,
-        Arc::clone(&state.capture),
-        display,
-        selection,
-        session_id,
-    )
-    .await
-}
-
-#[tauri::command(async)]
-fn replace_ocr_region(
-    app: AppHandle,
-    window: tauri::WebviewWindow,
-    session_id: u64,
-    regions: serde_json::Value,
-    engine: String,
-) -> Result<(), String> {
-    if window.label() != "capture-selector" || engine != "manga" {
-        return Err("Bubble retry requires local OCR recognition.".into());
-    }
-    let state = app.state::<AppState>();
-    let mut session = state.scans.lock()?;
-    let scan = session.active(Some(session_id))?;
-    toolbar::live_display(&app, &scan.display)?;
-    let retry = scan
-        .region_retry
-        .as_ref()
-        .ok_or("No bubble retry is active")?;
-    if state.overlay.get()?["sessionId"].as_u64() != Some(retry.target.session_id) {
-        return Err("The original OCR result was replaced; this retry was discarded.".into());
-    }
-    let merged = retry.merge(
-        scan.captured
-            .as_ref()
-            .ok_or("No retry capture is available")?,
-        regions,
-    )?;
-    overlay::show_overlay(
-        &app,
-        &state.overlay,
-        &retry.metadata,
-        merged,
-        "manga",
-        retry.original["estimatedReadingOrder"]
-            .as_bool()
-            .unwrap_or(false),
-        overlay::OverlayGeneration {
-            session_id,
-            retry_region_id: Some(&retry.target.region_id),
-        },
-    )?;
-    let scan = session.complete(session_id, false)?;
-    session.message =
-        "Bubble OCR updated. Other regions were kept; verify the retried text.".into();
-    toolbar::restore_windows(&app, &scan, false)?;
-    drop(session);
-    toolbar::emit_state(&app);
-    Ok(())
 }
 
 async fn perform_capture(
@@ -738,11 +618,6 @@ async fn capture_selection(
         "YomiMado: selector actual={:?} monitor={:?}",
         display.selector_physical_bounds, display.physical_bounds
     );
-    if let Some(retry) = &scan.region_retry {
-        let physical = XcapScreenCapture::physical_selection(&display, selection)
-            .map_err(|e| e.to_string())?;
-        retry.validate_area(physical)?;
-    }
     perform_capture(app, Arc::clone(&state.capture), display, selection, scan.id).await
 }
 
@@ -781,9 +656,6 @@ fn show_ocr_overlay(
 ) -> Result<(), String> {
     let mut session = state.scans.lock()?;
     let id = session.active(session_id)?.id;
-    if session.active(Some(id))?.region_retry.is_some() {
-        return Err("A bubble retry must replace only its original region.".into());
-    }
     toolbar::live_display(&app, &session.active(Some(id))?.display)?;
     if session.active(Some(id))?.captured.is_none() {
         return Err("No capture is available".into());
@@ -797,10 +669,7 @@ fn show_ocr_overlay(
         regions,
         &engine,
         estimated_reading_order,
-        overlay::OverlayGeneration {
-            session_id: id,
-            retry_region_id: None,
-        },
+        id,
     )?;
     let scan = session.complete(id, estimated_reading_order)?;
     toolbar::restore_windows(&app, &scan, false)?;
@@ -964,25 +833,14 @@ fn show_translation_popup(
                 .unwrap_or("Check the OCR text against the page.")
         });
     let approximate = region.is_some_and(|region| region["geometrySource"].as_str().is_some());
-    let retry_target = region
-        .and_then(|r| r["id"].as_str())
-        .zip(session.completed_id)
-        .filter(|_| !demo)
-        .map(|(region_id, session_id)| region_retry::RegionTarget {
-            session_id,
-            region_id: region_id.into(),
-        });
     let result = overlay::show_translation_popup(
         &app,
         &metadata,
         &text,
         &polygon,
-        overlay::PopupContext {
-            demo,
-            review_reason: review,
-            approximate,
-            retry_target: retry_target.as_ref(),
-        },
+        demo,
+        review,
+        approximate,
     );
     if result.is_ok() {
         state
@@ -1201,9 +1059,6 @@ pub fn run() {
             toolbar::resume_capture_selection,
             capture_whole_screen,
             capture_repeat_scan,
-            retry_ocr_region,
-            capture_ocr_region,
-            replace_ocr_region,
             detector_model::detector_model_status,
             detector_model::install_detector_model,
             choose_translation_model_folder,

@@ -10,16 +10,29 @@ The [feature roadmap](docs/feature-roadmap.md) tracks completed and proposed wor
 
 ## Unreleased
 
+### 2026-10-20
+
+#### Removed
+
+- **Single-bubble OCR retry/redraw**, at the owner's request. Removed its popup
+  actions, native commands and capture/session handling, including the multiple
+  text-part fix. Check OCR remains a review indicator. Manual OCR text editing
+  and ordinary Rescan remain available. The roadmap marks the feature deferred.
+
+Verified with 265 frontend tests, 70 native tests, formatting, TypeScript,
+strict Clippy and frontend/macOS native debug builds. Windows native interaction
+and exact-installer acceptance were not performed.
+
 ### 2026-10-19
 
 #### Added
 
-- **Single-bubble OCR retry — done in development source.** Check OCR now opens
+- **Single-bubble OCR retry — subsequently removed on 2026-10-20.** Check OCR opened
   retry and redraw actions for an existing uncertain/approximate region. Only
-  that bubble's text and geometry are replaced; unrelated regions and the full-page
-  Rescan target are retained. Errors, empty replies, cancellation and
-  stale requests cannot replace the old result. The updated popup reopens and
-  retains its review indicator. Uses the existing local capture/OCR pipeline.
+  that bubble's text and geometry were replaced; unrelated regions and the
+  full-page Rescan target were retained. Errors, empty replies, cancellation and
+  stale requests preserved the old result. The updated popup reopened and
+  retained its review indicator. Used the existing local capture/OCR pipeline.
   See [bubble retry](docs/bubble-ocr-retry.md).
 - **Conjugation explanations — done in development source.** Expand Conjugation
   in word details for step-by-step common verb past/negative/polite forms,
@@ -46,11 +59,11 @@ The [feature roadmap](docs/feature-roadmap.md) tracks completed and proposed wor
 
 #### Fixed
 
-- **Bubble redraw rejecting multiple text regions:** a single bubble can contain
-  several detected lines/blocks. Retry and redraw now accept all valid parts,
-  preserving their individual geometry and tokens. Parts stay linked so another
-  retry replaces the group without duplicates; unrelated bubbles remain intact.
-  Empty/invalid results still preserve the previous scan.
+- **Bubble redraw rejecting multiple text regions (removed with the feature on
+  2026-10-20):** retry and redraw accepted several detected lines/blocks,
+  preserving their individual geometry and tokens. Parts stayed linked so
+  another retry replaced the group without duplicates; unrelated bubbles stayed
+  intact. Empty/invalid results preserved the previous scan.
 - **Toolbar menu clipping and resize cycling:** More actions waits for the
   tray-dependent item list before its first native reveal, then measures the
   full content independently of the constrained scroll viewport. Quit stays
@@ -76,10 +89,12 @@ The [feature roadmap](docs/feature-roadmap.md) tracks completed and proposed wor
 
 #### Verification and availability
 
-- The multiple-part bubble retry fix passes 280 frontend tests, 78 native tests,
+- Historical, before removal: the multiple-part bubble retry fix passed 280
+  frontend tests, 78 native tests,
   formatting, TypeScript, strict Clippy and frontend/macOS native debug builds.
   Full native interaction remains unverified under the limitation below.
-- Bubble retry passes 278 frontend tests, 76 native tests, formatting, TypeScript,
+- Historical, before removal: bubble retry passed 278 frontend tests, 76 native
+  tests, formatting, TypeScript,
   strict Clippy and frontend/macOS preview builds. UI layout is checked in the
   browser; the full native retry flow remains unverified after the unsigned
   preview's Screen Recording preflight blocked capture. Windows native checks

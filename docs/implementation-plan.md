@@ -6,6 +6,19 @@ See the [feature roadmap](feature-roadmap.md) for proposed learning features and
 the [changelog](../CHANGELOG.md) for completed development changes. Source
 completion is tracked separately from publication and installer acceptance.
 
+**Bubble retry removed — 2026-10-20:** removed the Check OCR retry/redraw actions,
+native commands, capture/session branches, group metadata, popup reopening and
+feature-specific tests at the owner's request. Restored the pre-feature capture,
+overlay and popup behavior. Check OCR remains a static uncertainty indicator;
+manual OCR editing and ordinary Rescan remain. The feature is deferred in the
+roadmap. The two entries below record historical development evidence only;
+they no longer describe available functionality. No installer or version change.
+
+Removal verification: all 265 frontend tests and 70 native tests pass, along with
+Prettier, TypeScript/frontend build, Cargo formatting, strict all-target Clippy
+and the macOS native debug build. Windows native interaction and exact-installer
+acceptance were not performed.
+
 **Bubble retry with multiple detected parts — 2026-10-19:** fixed the owner's
 redraw error caused by requiring exactly one detected region. Both UI and native
 publication now accept multiple valid parts, preserve every polygon/token list,
@@ -46,8 +59,8 @@ preview stopped at macOS Screen Recording preflight, including after restart.
 No full native macOS retry acceptance is claimed. Windows native/mixed-DPI and
 exact-installer acceptance remain unverified. Test harness pages/configuration
 remain outside the repository; no new model, dataset, dependency, API endpoint,
-version, installer or publication approval is added. See the
-[retry workflow and limits](bubble-ocr-retry.md).
+version, installer or publication approval is added. The feature was later
+removed; see the [historical removal note](bubble-ocr-retry.md).
 
 **Conjugation explanations — 2026-10-19:** development source adds a collapsed
 Conjugation disclosure to selected verb/i-adjective details. It explains common
