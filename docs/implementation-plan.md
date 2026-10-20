@@ -6,6 +6,19 @@ See the [feature roadmap](feature-roadmap.md) for proposed learning features and
 the [changelog](../CHANGELOG.md) for completed development changes. Source
 completion is tracked separately from publication and installer acceptance.
 
+**Version 0.4.0 preparation — 2026-10-20:** bumped the five app version files
+from clean, current `develop` with the version updater and added release notes for
+manual selection, conjugation explanations, JLPT tags, Saved search and toolbar
+menu sizing. Local frontend (288), service/contracts (187, no skips), macOS native
+(70) and selected release-tool (128) tests pass, along with formatting/lint,
+TypeScript, frontend/native debug builds, pinned actionlint and JLPT provenance.
+The four retained macOS input files match their active hash pins. The committed
+source reuse guard rejects the changelog and new JLPT source/data/notice paths;
+main integration is blocked pending resolution of that review boundary. Seed
+pins and guard behavior remain unchanged. See the
+[preparation evidence and limits](release-preparation-0.4.0.md). The requested
+scope stops before merging or publishing; no new installer or approval is claimed.
+
 **Release runbook and agent skill — 2026-10-20:** added the manual new-version
 and macOS runtime-seed procedure, including the separate unsigned source worksheet,
 complete-delivery review, exact private-input hashes and all three pin consumers.

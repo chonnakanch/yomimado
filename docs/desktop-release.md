@@ -1,5 +1,13 @@
 # Shared desktop release checklist
 
+0.4.0 preparation — **2026-10-20**: version and release notes are prepared from
+`develop`; local application/release checks pass. The existing macOS seed input
+hashes verify, but committed-source reuse rejects the new JLPT source/data/notices
+and changelog. **Main integration is blocked** until that review boundary is
+resolved. See [the preparation record](release-preparation-0.4.0.md). No 0.4.0
+installer, main merge, release dispatch, tag or publication approval is claimed.
+Historical 0.3.0 evidence follows unchanged.
+
 0.3.0 rebuild started — **2026-10-19**: the owner authorized the packaging fix's
 main integration and a fresh release build. [PR #16](https://github.com/chonnakanch/yomimado/pull/16)
 merged after all 12 push/PR checks passed, at
