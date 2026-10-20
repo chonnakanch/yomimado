@@ -1,5 +1,9 @@
 # Verified macOS runtime seed
 
+For the step-by-step rebuild, source review, private staging and pin activation
+procedure, follow the [release runbook](release-runbook.md#build-a-replacement-macos-seed).
+The records below retain the exact identities and approval scope of existing seeds.
+
 ## Current 0.3.0 seed — 2026-10-19
 
 Exact reviewed source: `f1b4fbaa8980ff0df0a1abf6f5a93df058f4678e`.

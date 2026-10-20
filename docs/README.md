@@ -28,6 +28,8 @@
 
 ## Releases
 
+- [Manual release and runtime-seed runbook](release-runbook.md): version updates,
+  source review, seed builds/uploads, pin activation and agent invocation examples.
 - [Shared release checklist](desktop-release.md): published v0.1.0 identities,
   Checks/Release workflows, future six-file delivery and protected publication.
 - [Release notes template](desktop-release-notes.md): generated notes for future versions.

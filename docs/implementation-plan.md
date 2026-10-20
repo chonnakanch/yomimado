@@ -6,6 +6,14 @@ See the [feature roadmap](feature-roadmap.md) for proposed learning features and
 the [changelog](../CHANGELOG.md) for completed development changes. Source
 completion is tracked separately from publication and installer acceptance.
 
+**Release runbook and agent skill — 2026-10-20:** added the manual new-version
+and macOS runtime-seed procedure, including the separate unsigned source worksheet,
+complete-delivery review, exact private-input hashes and all three pin consumers.
+`AGENTS.md` routes release work to the runbook; the personal `yomimado-release`
+skill supplies scoped agent entry points. Documentation and skill validation are
+separate from executing the procedure. No version, seed pin, installer, main merge
+or publication approval changes.
+
 **Saved search and dictionary-style library — 2026-10-20:** the owner
 approved the working preview of search and the dictionary-like Saved UI.
 The implementation searches word surface/base/reading/meanings/context and
