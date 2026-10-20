@@ -1,0 +1,446 @@
+# UI verification and native acceptance
+
+Use this guide for current overlay checks, the Windows hardware matrix and tray
+acceptance. The dated redesign review below is historical evidence for its stated
+source revisions; it is not a claim that every current native case passed.
+Exact installer tests remain in [macOS](macos-clean-mac-test.md),
+[Windows](windows-installed-test.md) and [shared release records](desktop-release.md).
+
+- [Native overlay checks](#native-overlay-checks)
+- [Windows acceptance checklist](#windows-acceptance-checklist)
+- [Tray verification and acceptance](#tray-verification-and-acceptance)
+- [Dated redesign review](#dated-redesign-review)
+- [Retained window and debug evidence](#retained-window-and-debug-evidence)
+
+## Native overlay checks
+
+This development-only check uses synthetic Japanese text and ordinary browser
+controls. No manga image, model download or service/API change is needed.
+
+Run the existing local OCR service with its configured offline models, then run
+`rtk npm run tauri -- dev --no-watch` from `apps/desktop`. Open
+`http://localhost:1420/src/features/overlay/fixtures/reader.html` in Safari or a
+Windows browser. The fixture is not a production Vite entry or public asset.
+On macOS, grant capture access to the actual development launcher when required;
+this session used normal command-based development after temporary ad-hoc bundles
+proved inconvenient for repeated grants.
+
+### Check the native interaction
+
+1. Whole Screen detects/crops the manga page/spread before OCR; menu-bar, browser
+   tabs/address and surrounding app text must not become OCR regions. When the
+   boundary is uncertain, verify saved-area reuse, then missing/invalid saved-area
+   drawing and cancellation. Selected Area still scans exactly what is dragged.
+   Whole Screen and Selected Area produce aligned polygons for the horizontal and
+   vertical fixture text. Switch from Whole Screen to a smaller Selected Area, then
+   select a different-size area and use Rescan and Hide/Show. All polygon edges must
+   remain visible: establish the target monitor, resize, then reapply the position
+   of the reused overlay. Also verify the first Retina scan's physical window size.
+   Capture must exclude the toolbar, result and popup. Check the leading `一` and
+   ending `。` of the horizontal sentence and the outer strokes of both vertical
+   columns. Compare a tight reader-panel selection, a whole-display manual selection
+   and the Whole Screen button: downsampled detection must not lose a disconnected
+   leading thin stroke. Image-derived boundary corrections use dashed approximate/review
+   regions; their popup must retain the original Japanese and review guidance.
+   On Windows, start fresh and complete both capture modes: the first overlay
+   must render without toggling visibility or performing another scan. Verify
+   Read with keyboard immediately, then repeated scans and Hide/Show. The new
+   overlay must load the app page even when WebView2 initially reports
+   `about:blank`; OCR state must exist before React requests it.
+   With a visible Windows taskbar, verify automatic detection stops at the
+   monitor's reported work-area edge and never creates regions for its icons,
+   clock or weather. Repeat with a light/dark taskbar and any supported taskbar
+   edge, then on a secondary monitor at a different scale. Auto-hidden taskbars
+   use the work area reported by Windows. Manual Selected Area remains exact.
+   Start a fresh app process and choose Whole Screen **before** any Selected Area
+   scan. Repeat with cold local models: recognition must complete while the capture
+   selector stays hidden, without bringing it to the foreground. A stalled OCR
+   upload or response must end with an error after three minutes. Native logs show
+   session-bound OCR stages (`Requesting`, `Recognized`, `Publishing`) without
+   screenshot bytes or recognized text. Restart the app when testing a native
+   scheduling change; frontend hot reload alone does not apply it.
+2. With the overlay visibly present, click **Test reader click**, drag-select the
+   input text and scroll in the blank side margin. The browser must receive them.
+   Start a drag outside a polygon and cross it; verify mouse-up stays with the browser.
+3. Hover a polygon, then activate it explicitly. Hover must not perform dictionary,
+   tokenization or translation work. A click opens the existing learning popup.
+4. Choose **Read with keyboard** in toolbar overflow. Arrows/Home/End change focus;
+   Enter/Space open a popup, and Escape returns to its originating region. Escape
+   in region navigation hides results; Show restores them without another OCR call.
+   Clicking elsewhere dismisses the popup without moving focus back to the overlay.
+5. Read with keyboard is disabled without a visible completed result and during
+   scans. Settings → Reading explains the controls; no old toggle or Previous/Next
+   text panel remains. Keyboard entry must work without moving the pointer over
+   a polygon. Navigation must not perform OCR or translation.
+6. Rescan, cancel, hide/show and close/reopen must not retain stale hit polygons.
+   Disconnect/change a monitor or its DPI; stale geometry must hide with guidance.
+7. Try fast pointer entries and immediate clicks at multiple speeds. Record missed
+   clicks and response latency; the macOS 8 ms sampler is a fallback and its interval
+   is not a measured end-to-end latency guarantee. Measure active/idle app CPU.
+8. Repeat on Windows (100%, 125%, 150%, 200%), Retina and mixed-scale monitors,
+   including a negative monitor origin. Check window-region clipping/focus borders
+   and actual browser input rather than relying only on SVG pointer events.
+
+### Adapter and evidence limits
+
+Windows uses the union of the original polygons and any measured navigator control
+bounds through native `SetWindowRgn`; owned GDI handles are released on failure.
+macOS uses read-only Quartz cursor/button state and whole-window mouse ignore.
+It samples at 8 ms while active, 80 ms while disabled, and preserves the recipient
+of a held drag. No event tap, replay, Accessibility/Input Monitoring grant or new
+native dependency was added. The native physical transform matches the same OCR
+image/selection ratios used by the frontend, including an OS-adjusted client origin.
+
+Recorded evidence and open acceptance gates are in
+[dated redesign review](#dated-redesign-review).
+Source builds/tests are distinct from native manual checks and installer acceptance.
+The [Windows redesign checklist](ui-testing.md#windows-acceptance-checklist) records scale,
+multi-monitor, secondary-window and recovery cases for the current development UI.
+
+For frame diagnosis only, set `YOMIMADO_OVERLAY_GEOMETRY_DEBUG=1` when launching
+the debug app. Each reveal writes capture metadata, measured native frame and OCR
+polygons to stderr; navigator updates also report CSS viewport and physical window
+dimensions. It omits screenshot bytes and recognized text, is off by
+default and is excluded from release builds. Compare the measured window bounds
+with the selected physical rectangle when investigating clipped edges.
+
+## Windows acceptance checklist
+
+Status: prepared on 2026-10-15. The owner chose automated coverage and a checklist
+for later interactive verification. No interactive Windows result is inferred
+from the macOS workspace or GitHub's Windows Server build runner.
+
+Automated update — **2026-10-16**: final 0.2.0 source `c03ee1e` passes
+[Checks](https://github.com/chonnakanch/yomimado/actions/runs/38892964546) and the
+[installed Windows release checks](https://github.com/chonnakanch/yomimado/actions/runs/38892964547).
+Invoke/ExpandCollapse/Toggle regression coverage, exact-setup startup/Quit,
+Settings close retaining the toolbar, model setup, scan buttons/shortcuts, cancellation and frozen
+learning/persistence pass. These hosted results do not complete the physical
+scale/monitor matrix or the detailed manual cases below. Those remain **not run**.
+
+This checklist tests the redesigned development source. The published v0.1.0
+installer and its historical acceptance records describe an earlier UI. No new
+installer build, publication or approval is required by this checklist.
+
+### Record the test context
+
+- Source commit: __________
+- Windows version/build: __________
+- WebView2 version: __________
+- Monitor resolutions, scaling and arrangement (including left/above primary): __________
+- OCR service/model configuration: __________
+- Overall result and failed case IDs: __________
+
+Use the existing [development setup](development.md) with local OCR models and
+service available. Launch the current desktop source, and open the repository's
+synthetic reader in a browser:
+
+```text
+http://localhost:1420/src/features/overlay/fixtures/reader.html
+```
+
+Use synthetic or private local images for page/spread checks. Do not add manga
+screenshots to the repository. Record unsupported hardware cases as **not run**.
+
+### One-monitor checks
+
+Run cases W1–W7 at each available scale, restarting the desktop app after changing
+scale so a fresh-process result is recorded. Start W1 before any Selected Area scan.
+
+| Scale | W1      | W2      | W3      | W4      | W5      | W6      | W7      |
+| ----- | ------- | ------- | ------- | ------- | ------- | ------- | ------- |
+| 100%  | not run | not run | not run | not run | not run | not run | not run |
+| 125%  | not run | not run | not run | not run | not run | not run | not run |
+| 150%  | not run | not run | not run | not run | not run | not run | not run |
+| 200%  | not run | not run | not run | not run | not run | not run | not run |
+
+| ID  | Action and expected result                                                                                                                                                                                                                                                                                                                        |
+| --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| W1  | On a fresh launch, use Whole Screen first. Recognition completes, the active scan button shows progress, and OCR polygons appear. Confident detection crops the page/spread and excludes browser/menu text. Uncertain detection uses the saved-area/draw fallback rather than recognizing the entire monitor. Repeat once with cold local models. |
+| W2  | Compare a tight Selected Area, a whole-monitor manual selection, and Whole Screen on the same text. All detected outlines align with their characters, including leading `一`, ending `。` and both vertical columns. Review regions retain their dashed outlines. Rescan uses fresh pixels from the previous successful area.                    |
+| W3  | Click and scroll outside polygons, select browser text, and drag from a blank margin through a polygon. Input and mouse-up stay with the browser. Click a polygon explicitly to open the learning popup; hover alone does not run learning requests.                                                                                              |
+| W4  | Choose More actions → Read with keyboard. Arrows/Home/End select regions, Enter/Space opens a popup, Escape returns to its region, and another arrow still works. Escape in region navigation hides the overlay. Show restores it without another OCR request.                                                                                    |
+| W5  | Place the toolbar near the bottom edge. More actions opens above without moving the toolbar or flickering. Mouse opening has no blue focus ring; arrow navigation has an inset ring. Escape/outside click dismisses it. Collapse/expand keeps controls on one row at the same size.                                                               |
+| W6  | Open a popup near each screen edge. Long text, dictionary senses and Example compounds remain reachable by scrolling. Edit OCR text → Cancel restores focus. Clicking the browser dismisses the popup without returning focus to the overlay.                                                                                                     |
+| W7  | Open Saved, Settings and Sources together. Each has its own content. Close each using native X while the others remain open, then reopen it from the toolbar. The toolbar and OCR session stay running. Repeat the sequence to catch stale/duplicate window labels.                                                                               |
+
+### Transitions and recovery
+
+- [ ] **Saved search and dictionary layout:** search a saved word by Japanese,
+      reading (both hiragana and katakana), meaning and source text; search
+      sentences by Japanese and saved English. Check that each tab remembers its
+      query after reopening, Clear/Escape restores all entries, and IME Escape
+      does not interrupt composition. Refresh retains the query and failed
+      refresh retains the previous results. At narrow sizes and larger text,
+      headwords/meanings stack and source/date/attribution remain reachable.
+      Removing a filtered entry still requires confirmation and keeps other
+      entries. Record the tested source and scales; browser checks alone do not
+      establish native Windows acceptance.
+- [ ] **W5 menu sizing regression:** at each scale above, open/close More actions
+      repeatedly after a fresh launch. With tray recovery available, all six rows
+      include Hide Toolbar and Quit; without it, only Hide Toolbar is omitted.
+      Verify no row-count/height cycling. On a short work area the menu scrolls,
+      End reaches Quit, Home returns to the first enabled action, and Escape closes.
+- [ ] **W8 — Mixed DPI:** with two differently scaled monitors, move the toolbar
+      to each, scan there and repeat W3–W7. Toolbar buttons target its monitor;
+      shortcuts target the monitor under the pointer. Record both scales and origins.
+- [ ] **W9 — Negative origins:** place the secondary monitor left of, then above,
+      the primary. Scan and open edge popups on it. OCR outlines, hit targets, menus
+      and popup bounds remain aligned and on the intended monitor.
+- [ ] **W10 — Stale geometry:** while results are visible, change the target
+      monitor's scale/resolution or disconnect it. Stale OCR hit targets are disabled
+      and guidance appears. Choose a new valid capture target; a fresh scan restores
+      aligned regions. Old Rescan geometry must not silently apply to the new layout.
+- [ ] **W11 — Cancel/retry:** cancel a selection, then cancel while OCR is pending.
+      If the old worker is still finishing, an immediate retry reports busy rather
+      than overlapping model work. Retry after it finishes: the new scan works,
+      and a late old response cannot replace it. Temporarily stop
+      the development OCR service and scan: an error becomes available through the
+      toolbar status control; it must not spin indefinitely. Restore the service and
+      retry. A stalled upload/body has the existing three-minute deadline.
+- [ ] **W12 — Quit:** More actions → Quit closes the development desktop process
+      and unregisters its shortcuts. Reopen normally. The separately launched
+      development OCR service is intentionally left running; bundled-service cleanup
+      belongs to a future explicitly authorized installer/runtime check.
+
+For a failure, record its case ID, source commit, scale/monitor arrangement,
+expected versus actual behavior and metadata-only native log. Keep screenshots
+local. The related [overlay guide](ui-testing.md#native-overlay-checks) explains debug geometry
+and capture-preview options.
+
+### Automated coverage available now
+
+Checks builds and tests the native app on Windows and macOS and runs strict
+Clippy with warnings denied on both. Shared tests cover coordinate transforms and
+hit polygons at fractional scales/negative origins, menu placement, stale display
+rejection, and all 16 transitions among 100/125/150/200% for the overlay frame
+guard, including moved/clipped frames. Frontend tests cover keyboard entry/return,
+menu failure reporting, independent routes and stale responses.
+
+The shared Windows smoke driver also runs against synthetic WPF windows in CI.
+It exercises PID-scoped discovery (including a toolbar absent from the taskbar),
+button/menu invocation, Settings native close/reopen and explicit Quit. Service
+tests cover exclusive recognition admission and its lifetime across cancellation.
+
+These tests establish calculations and application state behavior. They do not
+establish actual WebView2 input routing, physical mixed-DPI transitions or installer
+acceptance. Record those results above when a Windows desktop is available.
+
+## Tray verification and acceptance
+
+Recorded source verification on 2026-10-17: 70 native and 177 frontend tests
+pass, along with strict Clippy, Cargo formatting, frontend Prettier/type/build
+checks, the icon generator's Ruff checks and the macOS debug app bundle build.
+The macOS debug smoke confirms normal startup, the overflow Hide Toolbar action
+and hint, successful hiding, and OS Quit. The UI automation surface could not
+expose the native status item for menu-click/restore verification. This debug
+bundle does not run the frozen OCR service; installed cleanup is unverified.
+The acceptance matrix below remains a checklist, not a report of passing cases.
+
+The [tray source/license review](../THIRD_PARTY_LICENSES/system-tray-review.md)
+records the unchanged package graph and complete local macOS Rust notices.
+
+The first hosted source run passed macOS and frontend/service/release-tool jobs,
+but Windows tests exited before execution with `STATUS_ENTRYPOINT_NOT_FOUND`.
+The native menu imports require Common Controls v6. `build.rs` now embeds the
+equivalent default Windows manifest through the MSVC linker for every artifact,
+including unit tests, and disables Tauri's binary-only manifest resource to
+avoid duplication. This follows the
+[upstream diagnosis](https://github.com/tauri-apps/tauri/issues/13419) and keeps
+the same app manifest dependency. The
+[repaired Checks run](https://github.com/chonnakanch/yomimado/actions/runs/38995496517)
+passes at source `74bb75e`, including both platforms' native lint/tests/debug
+builds and the Windows synthetic UI-driver check. Frontend, service, release
+tools and the final required gate also pass. The original failed run is retained
+as evidence; installed/native-interaction acceptance remains separate.
+
+Automated checks should cover menu ID routing, visibility labels, active-scan
+guards, idempotent show, tray-failure fallback and disconnected-display recovery.
+Extend meaningful existing geometry tests for mixed scales and negative monitor
+origins. Test the frontend Hide Toolbar action and error feedback. Avoid tests
+that only repeat the menu declarations.
+
+Run native tests, Cargo formatting and strict Clippy on the changed native code;
+run relevant frontend tests, typecheck, Prettier and production build after the
+overflow-menu change. Require macOS and Windows native CI builds. Native menu
+appearance, OS input and actual process cleanup also need installed-app checks:
+
+| Check      | macOS Apple Silicon                                                  | Windows 11 x64                                                      |
+| ---------- | -------------------------------------------------------------------- | ------------------------------------------------------------------- |
+| Launch     | One legible menu bar icon; toolbar visible                           | One legible notification-area icon; toolbar visible                 |
+| Input      | Native menu opens and keyboard navigation works                      | Left-click restores; right-click menu and keyboard navigation work  |
+| Recovery   | Hide/show preserves toolbar layout; recover after display disconnect | Same, including overflow area and scaled/secondary displays         |
+| Busy state | Tray cannot interrupt capture; actions recover after cancel/error    | Same; no toolbar/menu captured in scan output                       |
+| Windows    | Saved/settings/sources reopen correctly after close                  | Same                                                                |
+| Quit       | Tray/toolbar/OS Quit exit and stop bundled OCR                       | Tray/toolbar/OS quit routes exit and terminate the service job/tree |
+| Appearance | Light/dark menu bar and Retina                                       | Light/dark taskbar and 100%/125%/150%/200% scaling                  |
+
+Verify hotkeys with the toolbar hidden, overlays remaining interactive, repeated
+hide/show cycles, and quitting while OCR is active. Check for duplicate icons
+after those operations and after a clean relaunch. Exercise Windows Explorer
+restart recovery; if the pinned tray stack fails to restore its icon, resolve
+that before calling the Windows feature complete.
+
+Source checks establish implementation readiness only. Any future release needs
+fresh installer hashes and the applicable exact-installer checks in
+[desktop-release.md](desktop-release.md). Installer approval and publication
+remain separate owner actions; retain all existing candidate evidence.
+
+## Dated redesign review
+
+Status: **Implementation closed by the owner on 2026-10-16.** Final source
+`cd2d202` passes all jobs and the aggregate gate in
+[Checks run 38837880179](https://github.com/chonnakanch/yomimado/actions/runs/38837880179).
+The remaining acceptance boundaries below are retained for future release work.
+
+Reviewed on 2026-10-15, starting from `0d2c1d0` on `develop`, with the owner's
+subsequent request to remove lint exceptions and prepare Windows coverage. This is
+source verification after the owner's Phase 5 approval, without a version change or
+installer publication.
+
+### Review findings
+
+#### Fixed: More actions could hide a destination failure
+
+The popover dismisses itself before opening Saved, Settings, Sources or keyboard
+reading. If the subsequent native command failed, its catch handler rendered the
+error inside the hidden popover. The user received no visible failure indication.
+
+The menu now sends failures to the toolbar through a targeted Tauri event. The
+existing status icon and accessible alert retain the error, and the status details
+show its message on request. Menu placement, focus behavior and successful actions
+are unchanged. Two regression tests cover the failure handoff and its presentation
+after dismissal. The menu-side test failed against the previous implementation.
+Existing core event permissions already permit this handoff.
+
+#### Resolved: strict native lint findings
+
+Clippy found one unnecessary return in macOS pointer-display selection and two
+eight-argument IPC commands. The return was removed. The initial review used two
+narrow argument-count expectations; the owner then requested a refactor, and both
+expectations are now removed. Overlay controls obtain the app handle from their
+injected window. The translation popup obtains demo/manga mode from the stored
+native OCR result instead of a redundant frontend flag. Each command has seven
+parameters, and coordinate and focus behavior remain unchanged.
+
+The native CI matrix now installs Clippy and runs it for all targets with warnings
+denied on both macOS and Windows. A shared native regression test exercises all
+16 scale transitions among 100%, 125%, 150% and 200%, plus shifted/clipped frames
+at negative origins. The existing stale-frame guard is unchanged in behavior and
+is now directly tested; a DPI change invalidates old hits even with unchanged
+physical window dimensions.
+
+The first strict Windows run also exposed dead code: macOS pointer-sampling
+fields/helpers and bundled-service startup plumbing were compiled into Windows
+development targets that cannot use them. These now have explicit platform/build
+conditions, without warning suppression. Release service startup/cleanup retain
+their existing code and configuration. The Windows service module still compiles
+under tests, preserving its real SDK-layout, job-termination and readiness tests.
+
+At the initial review, no additional confirmed correctness defects were found in the reviewed capture
+session/cancellation, overlay publication/input routing, popup request invalidation,
+Saved list/delete lifecycle, model setup, or OCR geometry-extension paths. This is
+a focused review of the redesign and its integration boundaries, not a claim that
+all application or platform behavior has been proven.
+
+#### Fixed: concurrent OCR requests shared model state
+
+A follow-up review confirmed that overlapping requests could initialize two model
+pairs or enter the same detector concurrently. Canceling a desktop request does
+not guarantee its inference worker has stopped. The service now admits one
+recognition worker at a time, including model initialization, and rejects overlap
+with HTTP 503 and `Retry-After: 1`. The lock belongs to the worker and is released
+only after recognition finishes or fails; there is no waiting screenshot queue.
+Four regression cases cover overlap, cancellation, and recovery after both input
+and model errors. The overlap and cancellation cases failed before the fix.
+
+#### Fixed: Windows installed smokes targeted the previous UI
+
+The release UI smoke now discovers the toolbar, More actions and Settings windows
+by owned process and title. It uses Selected Area / Whole Screen and the selector's
+edge hint. Model import remains scoped to Settings, and native Settings close must
+leave the toolbar alive. Both installed smoke scripts now invoke More actions →
+Quit YomiMado before checking exit, instead of treating native close as Quit.
+Bundled-service identity, child cleanup, port release and model-hash checks remain.
+
+A shared Windows PowerShell 5.1 driver supports button and menu-item automation.
+Checks CI runs it against two synthetic WPF processes with identical window
+titles, verifying PID isolation, a taskbar-skipping toolbar, Settings close/reopen,
+and explicit Quit. This validates the driver without building an installer; it
+does not establish installed Tauri UI or physical mixed-DPI acceptance.
+
+### Completed local checks
+
+| Area          | Result                                                                                                                                           |
+| ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Frontend      | 172 tests in 20 files; TypeScript; normal and capture-debug production builds; full desktop Prettier check                                       |
+| Native macOS  | 60 tests with all targets; locked debug build; Cargo formatting; strict Clippy for all targets with warnings denied                              |
+| OCR service   | 97 tests, zero failures/errors/skips; Ruff lint and formatting for app, tests and all packaged entrypoints/backend; dependency consistency check |
+| Release tools | 229 unittest checks; Ruff lint and formatting across scripts                                                                                     |
+| Patch         | `git diff --check`                                                                                                                               |
+
+Native checks used Rust 1.98.1. The complete service and release-tool suites used
+the existing Python 3.11.17 environment, matching the project's CI interpreter.
+The first service attempt used the older local `.venv` (Python 3.9): 92 tests
+passed and the Windows graph verifier test failed because `hashlib.file_digest`
+is a Python 3.11 API. Rerunning the entire suite with 3.11.17 passed all 93 tests;
+no compatibility shim, skipped test, model download or dependency change was used.
+OCR tests ran with Hugging Face and Transformers offline flags enabled.
+The follow-up reran all 97 service tests and 229 release-tool tests, service/script
+lint and formatting, and workflow formatting. On 2026-10-16,
+[Checks run 38836706682](https://github.com/chonnakanch/yomimado/actions/runs/38836706682)
+passed for `e0ebe97`: frontend, service, release tools, strict Clippy, native tests
+and debug builds on macOS/Windows, and the synthetic Windows UI driver test.
+The aggregate gate also passed. No release workflow was dispatched.
+
+### Remaining acceptance boundaries
+
+- Local compilation/tests cover macOS. The initial review's
+  [Checks run 38744718738](https://github.com/chonnakanch/yomimado/actions/runs/38744718738)
+  passed frontend, service, release tools and macOS/Windows native tests/builds
+  for `0fbb89d`. The follow-up adds strict Clippy to both native CI jobs.
+  The owner chose automated coverage and a
+  [Windows checklist](ui-testing.md#windows-acceptance-checklist) for later interactive
+  Windows/mixed-DPI verification; those manual results remain unrecorded.
+- The new error handoff has automated component coverage and verified permissions,
+  but no deliberate native window-creation failure was injected into the owner's
+  running reading session.
+- Automated service tests exercise API, geometry, security, dictionaries and
+  persistence with test inputs. They do not repeat the owner's live manga-model
+  inference or certify recognition accuracy on arbitrary manga.
+- Native close/reopen, simultaneous secondary windows, multi-monitor/Spaces and
+  Quit/service-cleanup acceptance retain the separate checklist in
+  [retained window and debug evidence](#retained-window-and-debug-evidence). Vorssaint's external
+  quit-on-close behavior and the owner's exception choice are unchanged.
+- No installer, frozen OCR runtime or release artifact was rebuilt or approved.
+  The OCR service source changed in the follow-up. A future macOS frozen-runtime
+  seed must be refreshed and reviewed before packaging; the existing source/seed
+  mismatch rejection is preserved.
+
+The review left the running development app, OCR service and user-local design
+references in place. No new phase or unrelated refactor was started.
+
+## Retained window and debug evidence
+
+On 2026-10-15 the owner approved Phase 5 Settings at application source `9726dc1`
+with documentation at `96b9356`. Independent Saved, Settings and Sources windows
+retain native title bars and close-to-hide behavior. A quit-on-close utility
+(Vorssaint) caused the owner's process exit; native controls were restored at the
+owner's request. Programmatic close tests did not establish native-button behavior.
+Simultaneous windows, native-button close/reopen, Spaces/multi-monitor behavior
+and Windows/mixed-DPI input remain explicit interactive checks. Source approval
+alone does not record those cases as passed.
+
+The owner confirmed the Compact popup's layout, screen bounds and keyboard focus
+return on macOS on 2026-10-14. On 2026-10-15, native capture at source `9726dc1`
+with `VITE_CAPTURE_DEBUG=1` reached the held preview. The owner confirmed Geometry
+and Detector disclosures, Show overlay and debug hover tooltips; native logs also
+recorded the manga overlay reveal. Automatic page detection was uncertain and
+reused the saved-area fallback, so this did not prove automatic crop coverage.
+Normal-mode hover suppression has automated coverage; Windows/mixed-DPI debug
+interaction remains unrecorded.
+
+For the complete per-attempt history, retrieve
+`rtk git show a5f7ebc:docs/implementation-plan.md`. Retain failed attempts and
+platform limits when recording a later success; do not infer exact-installer
+acceptance from these development checks.

@@ -1,29 +1,22 @@
 # YomiMado design system
 
-Status: **Approved by the owner on 2026-10-13.** Prepared 2026-10-13.
-Companion architecture and rollout: [UI redesign plan](ui-redesign-plan.md).
-Phase 1 implements the tokens and floating-toolbar controls; the approved Phase 2
-implements OCR region states and keyboard entry, with native platform acceptance
-still required. The owner authorized Phase 3 on 2026-10-14; the Compact dictionary
-popup specifications below are implemented and accepted in the running macOS
-development app. The Phase 4 Saved library is accepted. The owner approved Phase 5
-Settings and the independent Saved, Settings and Sources windows on 2026-10-15,
-including subsequent UI refinements. Remaining native-platform verification is
-tracked separately in the implementation plan.
-
-The owner approved the dictionary-style Saved update on **2026-10-20** after
-reviewing its working preview. Saved now uses prominent search, underlined tabs,
-larger Japanese headwords and numbered meanings, with expandable source/date/
-attribution details. See [Saved search and layout](saved-search.md) for current
-behavior and verification; other window designs remain unchanged.
+The owner approved the design on 2026-10-13 and its implemented phases through
+2026-10-15. The dictionary-style Saved update was approved on 2026-10-20.
+This guide owns current visual specifications, tray behavior and icon provenance.
+Use [architecture](architecture.md) for runtime boundaries,
+[implementation status](implementation-plan.md) for priorities, and
+[UI testing](ui-testing.md) for dated checks and remaining native acceptance.
+Saved search behavior and supported conjugations live with the
+[feature plan](implementation-plan.md#completed-learning-features).
 
 ## 1. Visual direction and boundaries
 
 Use the supplied local images in `docs/design-references/` for compact utility
 window composition, Japanese sentence/word hierarchy and restrained dark
 surfaces. Use the written palette and feature list as the source of truth.
-The detailed popup image's disclosure rhythm is useful; its audio, conjugation
-tables, example sentences and related-word features are outside this scope.
+The detailed popup image's disclosure rhythm is useful; audio, full conjugation
+tables, example sentences and related-word features remain future scope. The
+implemented limited conjugation disclosure is documented in the feature plan.
 
 Keep the original manga visible. Opaque surfaces belong to the toolbar, popup
 and secondary window. The OCR layer remains transparent except for outlines and
@@ -363,10 +356,116 @@ During implementation, verify:
 4. Compact and expanded window bounds, narrow/small work areas, long sentences,
    all word/kanji states, missing data, and alternative-match saving.
 5. Native pass-through, display scaling, capture exclusion and work-area clamping
-   through the platform checks in [the architecture plan](ui-redesign-plan.md).
+   through the platform checks in [UI testing](ui-testing.md).
 
 Use synthetic Japanese text/regions for public screenshots and tests. Local
 reference manga images guide composition only; do not redistribute them as app
-assets or golden test snapshots. The owner approved the design and limited initial implementation to tokens
-and toolbar. Review of that result gates further work; exact-installer acceptance
-remains separate future work.
+assets or golden test snapshots. The rollout phases are complete in source; exact-installer acceptance remains
+separate from design approval.
+
+## 7. Tray and menu bar behavior
+
+Keep the toolbar visible on ordinary startup. Create one application-owned tray
+icon per running process, independent of React window mounts. Hiding the toolbar
+is an explicit action and lasts only for the current run.
+
+| Menu item                   | Behavior                                                                                                                                                                                                  |
+| --------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Show Toolbar / Hide Toolbar | Label reflects actual toolbar visibility. Show restores, clamps to a connected display's work area, unminimizes and focuses the existing toolbar. Hide dismisses its overflow menu and hides the toolbar. |
+| Saved                       | Opens the existing Saved window.                                                                                                                                                                          |
+| Settings                    | Opens the existing settings view.                                                                                                                                                                         |
+| Sources & licenses          | Opens the existing attribution window.                                                                                                                                                                    |
+| Quit YomiMado               | Uses the existing application exit and OCR cleanup path.                                                                                                                                                  |
+
+Use native separators between toolbar visibility, secondary windows and Quit.
+The tooltip is `YomiMado`. Keep this first menu small; scan modes, rescan and
+overlay controls remain in the toolbar.
+
+Platform interaction:
+
+- macOS: clicking the icon opens the native menu. Use a dedicated transparent
+  monochrome template icon derived from the app mark, checked in light and dark
+  menu bars and on Retina displays. Keep the current Dock behavior.
+- Windows: left-click release shows/focuses the toolbar; right-click opens the
+  native menu. Use a small transparent app icon that remains legible in light
+  and dark taskbars at 100%, 125%, 150% and 200% scaling. The notification-area
+  overflow may contain the icon; users can pin it through Windows.
+
+Hiding the toolbar leaves existing OCR overlays as they are. It does not clear
+results, trigger OCR, suspend the local service or unregister shortcuts. Document
+this beside the toolbar visibility control. Existing keyboard shortcuts remain
+available while the toolbar is hidden.
+
+During an active selection/capture/OCR session, disable toolbar visibility and
+secondary-window tray actions. Keep Quit available. Recheck the scan guard when
+an action executes, because state can change after a menu opens. A Windows
+left-click during capture must not reveal the toolbar into a screenshot or steal
+selector focus. Refresh menu state whenever scans or toolbar visibility change.
+
+Closing Settings, Saved or Sources keeps its existing hide-on-close behavior.
+Do not introduce automatic hiding on toolbar close or intercept every app exit.
+Quit from the tray, toolbar and normal OS app-quit routes must share cleanup.
+
+If tray creation fails, retain the visible toolbar and its Quit action. Offer
+Hide Toolbar only when tray recovery is available, and report native failures
+through the toolbar status control. Ownership stays in Rust for the app lifetime.
+See [tray verification](ui-testing.md#tray-verification-and-acceptance) and the
+[source/license review](../THIRD_PARTY_LICENSES/system-tray-review.md).
+
+Login autostart, tray-only startup, hiding the Dock icon, notifications, animated
+icons, direct tray capture, single-instance enforcement and persisted toolbar
+visibility remain separate enhancements.
+
+## Icon provenance and regeneration
+
+The initial icon uses a copper capture window around an ivory manga page. Two
+vertical marks suggest Japanese reading; an offset page edge suggests reading
+beyond the page. The charcoal tile follows the desktop UI palette and leaves
+transparent padding around its rounded corners.
+
+The master artwork is `apps/desktop/src-tauri/icons/source-v1.png`, generated
+with the built-in imagegen tool on 2026-10-04. No font, third-party logo, manga
+image, or model asset was used as an input. The obsolete bootstrap icon and
+generated Android icons have been removed.
+
+Tauri's existing CLI generated the PNG sizes, Windows ICO/Store assets, and
+macOS ICNS. The main Tauri configuration references the desktop icons; the
+macOS release configuration inherits them. Only desktop icon assets are kept
+in this repository.
+
+To regenerate the desktop exports from the master, run from `apps/desktop`:
+
+```sh
+npm run tauri -- icon src-tauri/icons/source-v1.png --output /tmp/yomimado-icons-v1
+```
+
+Copy only the top-level desktop files from that output into
+`src-tauri/icons/`; the CLI also produces mobile subdirectories, which are
+outside YomiMado's scope. Keep the master at its original resolution and
+preserve its alpha channel. Review the 32px export after any design change.
+
+### Tray marks
+
+The tray uses separate small geometric exports of the same capture-window/page
+idea, drawn by `scripts/generate_tray_icons.py`. This source defines the shapes
+and colors directly; it uses no fonts, third-party artwork or extra libraries.
+Run `python3 scripts/generate_tray_icons.py` from the repository root to regenerate:
+
+- `tray-template.png`: transparent 36 × 36 black mark, displayed by the native
+  macOS status item at 18 logical points with template adaptation.
+- `tray-windows.png`: transparent 32 × 32 copper/ivory mark for Windows.
+
+These assets are embedded in Rust and do not replace the desktop app icons.
+Inspect the actual icons in light/dark system UI at supported display scales.
+
+### Generation prompt
+
+```text
+Use case: logo-brand
+Asset type: production desktop app icon for YomiMado (読み窓), a Japanese manga reading assistant.
+Primary request: create one polished, distinctive app icon expressing a reading window onto a manga page. Keep the existing app palette: warm charcoal #25211e, copper #df8259, and warm ivory #f8f6f1.
+Subject: a bold copper rounded window frame surrounding a warm ivory manga page. Two distinct vertical charcoal pill-shaped marks on the page suggest vertical Japanese reading. A subtle offset page edge adds the idea of reading beyond the page. The frame should have an elegant small opening or layered corner that evokes the capture/overlay function. Simple cohesive symbol, not a collection of objects.
+Style: precise geometric vector-like shapes, crisp edges, flat colors, exceptionally restrained depth. Friendly, calm, professional macOS and Windows application icon.
+Composition: single centered icon on a warm charcoal rounded-square tile. Tile occupies about 84% of a square 1024x1024 transparent canvas with consistent transparent padding, generous inset around the central symbol. Strong silhouette, thick frame, legible at 32px. Straight-on view.
+Constraints: one icon only, no mockup, no lettering, no Japanese glyphs, no labels, no watermark, no external shadow, no photographs, no characters or faces, no extra decorative sparkles, no gradients. Outside the rounded-square tile must be truly transparent.
+```
