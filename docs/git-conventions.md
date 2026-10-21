@@ -34,10 +34,11 @@ build/release-notes
 release/0.5.0
 ```
 
-Start new substantial tasks on a topic branch. Continue an existing in-progress
-task on its selected tracked branch unless the user requests another branch; do
-not move dirty or unrelated changes just to apply the convention. An explicitly
-requested branch name takes precedence.
+Give each newly requested feature or bug fix a dedicated topic branch. Continue
+that branch for follow-ups to the same task. If work already started elsewhere,
+carry only that task's changes onto its own branch before opening the PR; preserve
+unrelated changes and published history. An explicitly requested branch name
+takes precedence.
 
 From a clean checkout, create a new task branch from fetched development source:
 
@@ -135,6 +136,10 @@ BREAKING CHANGE: explain the removed fields and how callers must migrate.
   files or hunks; keep unrelated user changes out of the commit. For material
   work, create a focused commit and push to the task's tracked branch unless the
   user asks otherwise, as required by `AGENTS.md`.
+- Open a PR to `main` automatically when a requested feature or fix is complete;
+  update an existing same-task PR rather than creating a duplicate. Follow
+  [the agent workflow](../AGENTS.md#workflow) for completion confidence and asking
+  the owner to approve opening a PR when uncertain. Opening does not authorize merging.
 - Preserve the five app version files as one consistent version update. Commit
   the intended version/code before generating notes from that commit. Follow the
   [release runbook](release-runbook.md) for source review and acceptance records.

@@ -76,6 +76,11 @@ The [feature roadmap](docs/implementation-plan.md#feature-checklist) tracks comp
 
 #### Changed
 
+- Give each requested feature or bug fix a dedicated topic branch and open a PR
+  to `main` automatically when the work is complete. Ask the owner to approve
+  opening the PR when completion or verification is uncertain; retain separate
+  merge and installer-publication authorization.
+
 - Resolve compatible owner-reviewed macOS seeds during Release instead of blocking
   ordinary PR/main Checks on a fixed seed. Bind the selected draft, source, asset
   IDs/hashes/sizes and approval manifest to each run and retain it in source/notices.
