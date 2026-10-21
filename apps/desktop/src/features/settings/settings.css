@@ -124,6 +124,10 @@
   margin-top: var(--space-2);
 }
 .settings-shortcuts dd {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-3);
   margin: 0;
   color: var(--color-text-secondary);
 }

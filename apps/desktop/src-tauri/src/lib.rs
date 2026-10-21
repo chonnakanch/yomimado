@@ -1,6 +1,7 @@
 mod capture;
 mod detector_model;
 mod overlay;
+mod shortcuts;
 mod toolbar;
 mod tray;
 #[cfg(all(target_os = "windows", any(not(debug_assertions), test)))]
@@ -17,12 +18,7 @@ use serde::{Deserialize, Serialize};
 use tauri::{
     AppHandle, Emitter, Manager, PhysicalPosition, PhysicalSize, WebviewUrl, WebviewWindowBuilder,
 };
-use tauri_plugin_global_shortcut::{
-    Builder as GlobalShortcutBuilder, GlobalShortcutExt, Shortcut, ShortcutState,
-};
-
-const MANUAL_CAPTURE_SHORTCUT: &str = "CMDORCONTROL+SHIFT+O";
-const WHOLE_SCREEN_SHORTCUT: &str = "CMDORCONTROL+SHIFT+S";
+use tauri_plugin_global_shortcut::Builder as GlobalShortcutBuilder;
 
 #[tauri::command]
 async fn choose_translation_model_folder(
@@ -888,6 +884,13 @@ fn close_ocr_overlay(app: AppHandle, state: tauri::State<'_, AppState>) -> Resul
 pub fn run() {
     tauri::Builder::default()
         .on_window_event(|window, event| {
+            if window.label() == "main"
+                && matches!(event, tauri::WindowEvent::Focused(false) | tauri::WindowEvent::CloseRequested { .. } | tauri::WindowEvent::Destroyed)
+            {
+                if let Some(shortcuts) = window.app_handle().try_state::<shortcuts::Store>() {
+                    shortcuts.stop_recording();
+                }
+            }
             if window.label() == "ocr-overlay"
                 && matches!(
                     event,
@@ -970,7 +973,7 @@ pub fn run() {
                 });
             }
         })
-        .plugin(GlobalShortcutBuilder::new().build())
+        .plugin(GlobalShortcutBuilder::new().with_handler(shortcuts::handle).build())
         .plugin(tauri_plugin_dialog::init())
         .setup(|app| {
             let capture_dir = app.path().app_cache_dir()?.join("captures");
@@ -1016,21 +1019,8 @@ pub fn run() {
                     .show(move |_| handle.exit(1));
                 return Ok(());
             }
-            let manual =
-                Shortcut::try_from(MANUAL_CAPTURE_SHORTCUT).map_err(|error| error.to_string())?;
-            app.global_shortcut().on_shortcut(manual, |app, _, event| {
-                if event.state() == ShortcutState::Pressed {
-                    dispatch_capture_shortcut(app.clone(), "");
-                }
-            })?;
-            let whole_screen =
-                Shortcut::try_from(WHOLE_SCREEN_SHORTCUT).map_err(|error| error.to_string())?;
-            app.global_shortcut()
-                .on_shortcut(whole_screen, |app, _, event| {
-                    if event.state() == ShortcutState::Pressed {
-                        dispatch_capture_shortcut(app.clone(), "scan=whole");
-                    }
-                })?;
+            app.manage(shortcuts::Store::new(app.handle()));
+            shortcuts::initialize(app.handle());
             toolbar::setup(app.handle())?;
             if let Err(error) = tray::setup(app.handle()) {
                 let handle = app.handle().clone();
@@ -1040,6 +1030,9 @@ pub fn run() {
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
+            shortcuts::capture_shortcuts,
+            shortcuts::record_capture_shortcut,
+            shortcuts::set_capture_shortcuts,
             toolbar::get_toolbar_state,
             toolbar::start_toolbar_scan,
             toolbar::rescan,
@@ -1104,13 +1097,6 @@ pub fn run() {
 #[cfg(test)]
 mod tests {
     use super::*;
-
-    #[test]
-    fn manual_and_whole_screen_shortcuts_are_distinct() {
-        let manual = Shortcut::try_from(MANUAL_CAPTURE_SHORTCUT).unwrap();
-        let whole_screen = Shortcut::try_from(WHOLE_SCREEN_SHORTCUT).unwrap();
-        assert_ne!(manual, whole_screen);
-    }
 
     #[test]
     fn whole_screen_keeps_every_pixel_despite_a_retina_selector_menu_bar_inset() {

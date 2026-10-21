@@ -55,6 +55,10 @@ recorded in the [release checklist](desktop-release.md).
 
 ### Implemented in source
 
+- [x] **Custom capture shortcuts** — Selected Area and Whole Screen can be recorded
+      in Settings, saved locally and applied immediately, with conflict handling
+      and Restore defaults; [controls](usage.md#customize-capture-shortcuts).
+
 - [x] **Manual word selection** — implemented.
 - [x] **JLPT vocabulary tags** — implemented.
 - [x] **Saved search and dictionary-style library** — implemented; UI approved.
