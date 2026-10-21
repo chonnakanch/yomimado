@@ -168,6 +168,15 @@ curl to supply the required header for API calls. API routes and Pydantic models
 are the source of truth for request fields. The header is a browser request
 guard, not a secret.
 
+### Request guards and limits
+
+The service rejects non-loopback Host headers and untrusted browser origins.
+`X-YomiMado-Client: desktop` forces browser preflight; it is a request guard, not
+secret authentication against native local processes. Requests are bounded before
+JSON/multipart parsing: 32 MiB for an OCR upload including multipart overhead,
+1 MiB for other requests, and PNG dimensions of at most 40 million pixels and
+16,384 pixels per side. Byte limits still apply to poorly compressing images.
+
 ## Where to make changes
 
 | Task                                     | Start here                                                                    |
@@ -208,7 +217,7 @@ verification. New installer publication still requires owner authorization.
 
 ## Resources and data flow
 
-## From capture to learning
+### From capture to learning
 
 ```mermaid
 flowchart TD
@@ -229,27 +238,11 @@ The arrows show the normal user flow. Kanji lookup does not require a successful
 JMdict match: the UI can select kanji from the analyzed word itself. Saving a
 sentence also works without translating it first.
 
-1. **Capture:** Rust captures the selected area or scan area using the platform
-   capture layer. It supplies a PNG plus physical/image/logical coordinate metadata.
-2. **Detect:** the local service uses comic-text-detector code and the separately
-   installed detector model to find text regions and orientation. OpenCV, NumPy
-   and geometry helpers support image preparation and postprocessing.
-3. **Recognize:** Manga OCR recognition reads the cropped regions. The service
-   combines the resulting strings with detector geometry. Bounded automatic detection retries and a
-   small-selection fallback can recover text; approximate geometry is marked for
-   review. Recognition confidence is currently unknown, represented by `0`.
-   Exactly uniform RGB captures/tiles skip inference; identical crop bounds can
-   reuse recognition within one scan. See [retry/crop measurements](detector-retry-optimization.md).
-4. **Overlay:** the frontend maps image polygons into logical overlay coordinates
-   using capture metadata, preserving the original manga underneath. The current
-   OCR response has empty `tokens` arrays; word analysis happens separately.
-5. **Analyze on opening a region:** the popup requests Lindera analysis of that
-   region's text. Tokens identify selectable word spans, readings, base forms and
-   parts of speech. Applying an OCR text edit requests fresh analysis.
-6. **Look up on selection:** selecting a word queries JMdict. Selecting one of its
-   kanji queries KANJIDIC2. Expanding example compounds queries JMdict again.
-7. **Translate or save on request:** translation uses the selected local Marian or Ollama provider
-   and its separate cache. Saving writes selected learning information to local storage.
+The [scan path](#how-a-scan-moves-through-the-code) describes the implementation.
+Recognition confidence is unknown (`0`); approximate recovery geometry is marked
+for review. OCR replies currently have empty `tokens` arrays: learning analysis
+runs when the region popup opens. Automatic retry/crop behavior is recorded in
+[the optimization report](detector-retry-optimization.md).
 
 ## Resource inventory
 
@@ -273,7 +266,7 @@ The detector's **code and model weights are separate inputs**. The app's
 copies it into the application's writable data directory under
 `models/comictextdetector.pt.onnx`. YomiMado does not automatically download it.
 The current release policy excludes these detector weights from installers and
-public source/artifact delivery. See the [reading guide](usage.md) for setup.
+public source/artifact delivery. See the [installation guide](installation-guide.md) for setup.
 
 ## OCR decoding and learning tokenization
 
@@ -349,52 +342,30 @@ reading and senses; saving without a match retains the analyzed token's reading
 and an empty meaning list. Saved sentences may include an explicitly requested
 translation.
 
-## Size baseline and possible consolidation
+Packaged user data lives under `~/Library/Application Support/com.yomimado.desktop`
+on macOS or `%APPDATA%\com.yomimado.desktop` on Windows. Packaged notices are at
+`Contents/Resources/ocr/notices/` on macOS and `<install directory>\ocr\notices` on
+Windows. Standalone service defaults and environment overrides are in
+[development setup](development.md).
 
-The pre-migration local macOS OCR staging directory measured on 2026-10-17 contains about
-**1,661 MiB (1.62 GiB)** of regular-file content, excluding symlink aliases:
+## Translation selection and cache
 
-| Resource group                                        | Approximate MiB |
-| ----------------------------------------------------- | --------------: |
-| Frozen runtime, including tokenizer dictionaries      |           920.5 |
-| Model assets, learning dictionaries and detector code |           727.6 |
-| Notices and records                                   |            12.9 |
+`YOMIMADO_TRANSLATION_RESOURCES` points to the model resource root; packaged apps
+use `models/translation` in app data. `preferences.json` records the explicit
+provider selection. Imported files live under `custom/<content-hash>/model`, with
+sibling ONNX files where applicable. Every request snapshots its provider;
+imported content hashes or Ollama model names/digests keep cache entries separate.
+An unconfigured selection returns setup guidance instead of using an environment
+path or default-model fallback. Historical component archives/APIs remain part of
+release verification, while the settings UI offers local import and Ollama.
 
-Within these groups, Manga OCR assets are 423.7 MiB, translation assets 292.2 MiB,
-UniDic Lite 248.4 MiB, Sudachi dictionary 207.1 MiB and Torch 271.2 MiB. The two
-compressed learning dictionaries together are only about 11.5 MiB. These figures
-describe local staging, not an exact published installer, download compression,
-generated user databases or Windows sizes. The desktop binary/UI are additional.
+## Resource decisions and measurements
 
-Combining JMdict and KANJIDIC2 into one prepared SQLite database is possible, but
-is not implemented. It would simplify loading and could avoid first-run indexing;
-an indexed database might occupy more installed space than the compressed XML.
-Such a database must preserve word restrictions, readings, attribution and source
-provenance. It would not replace IPADIC's morphological analysis dictionary.
-
-The owner selected [Lindera/IPADIC](lindera-migration.md) after the
-[candidate comparison](tokenizer-candidate-comparison.md). Its 45.33 MiB dictionary
-replaces the 207.06 MiB Sudachi Core resource, saving 161.73 MiB before native
-binding costs. Word boundaries differ; this does not improve image detection or
-recognition. A private frozen macOS service passes OCR and learning smoke checks;
-native Windows and exact installers still require release verification.
-
-The [implemented resource reduction](optional-translation-and-ocr-size.md) removes
-UniDic from frozen OCR and makes translation an optional download. The private
-macOS runtime is 249.11 MiB smaller; the optional Torch model is 292.20 MiB.
-An explicit Settings action downloads only pinned model files, while all reading
-and translation inference stays local. The later user-installed translation flow
-replaces the built-in download choice; see [model selection](translation-model-selection.md).
-The [macOS ONNX investigation](macos-onnx-investigation.md) demonstrates about
-231 MiB of net regular-file saving, but its current CPU decoder is slower and
-does not preserve Torch-format Marian imports. The production macOS backend is
-unchanged. The [cached decoder/CoreML follow-up](macos-onnx-cache-coreml.md)
-improves CPU ONNX recognition while preserving synthetic outputs; its CoreML
-encoder profile uses substantially more memory and generates a 1.545 GiB cache.
-Quantization remains separate work. Existing installer
-evidence remains historical;
-dependency/model changes require updated source/notices and new candidate
-verification under the [shared release checklist](desktop-release.md).
+The current source uses Lindera/IPADIC, decode-only OCR and user-installed local
+translation. Retained size and inference comparisons are in the
+[Lindera migration](lindera-migration.md), [resource-reduction report](optional-translation-and-ocr-size.md),
+[macOS ONNX investigation](macos-onnx-investigation.md) and
+[decoder cache/CoreML follow-up](macos-onnx-cache-coreml.md).
 
 ## Implementation references
 

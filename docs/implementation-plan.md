@@ -14,26 +14,15 @@ at the owner's request.
 - The current source uses Lindera 6.0.0/IPADIC, UniDic-free OCR decoding and
   user-selected local translation through Marian import or Ollama. See
   [architecture and resources](architecture.md) and [model setup](translation-model-selection.md).
-- The toolbar, learning popup, Saved, Settings and Sources redesign is implemented;
-  the owner approved its phases. Saved search/layout was approved on 2026-10-20.
-  [Design specifications](design-system.md) describe the current UI and
-  [UI testing](ui-testing.md) retains review evidence and unrecorded native cases.
+- Toolbar, learning popup, Saved, Settings and Sources UI are implemented. Current
+  contracts are in [design specifications](design-system.md); native checks and
+  dated review evidence are in [UI testing](ui-testing.md).
 - The repository's latest recorded public release is **v0.4.0**, source
   `bfdcbf2e313af824155cde6d3b08e27c0d5d2825`, with nine uploaded assets.
   Exact hashes and the retained maintainer acceptance statement are in the
   [release record](desktop-release.md). This status adds no new installer test.
-- `main` is the sole integration branch; `develop` is retired. Checks covers
-  frontend, service, release tools and both native platforms. A merged
-  same-repository `release/*` PR starts Release, which waits for successful
-  exact-commit Checks before accessing private inputs. Manual main dispatch is
-  available for recovery. Publication requires separate owner approval.
-  See [Git conventions](git-conventions.md) and the [release runbook](release-runbook.md).
-
-Release notes use GitHub PR titles/numbers and source/hash-bound previews. The
-optional git-cliff commit-audit tool was retired on 2026-10-20; the
-[release runbook](release-runbook.md#generate-and-review-release-notes) describes
-the current procedure. Its historical removal evidence remains at source
-`dcb3d7d`.
+- Integration and release procedures are maintained in
+  [Git conventions](git-conventions.md) and the [release runbook](release-runbook.md).
 
 The private macOS runtime seed now binds reviewed source `46a5649`, including
 initial small-selection OCR recovery. Source approval and all four uploaded hashes
@@ -57,14 +46,10 @@ change the published v0.4.0 installer or establish new exact-installer acceptanc
 - [ ] **Verify real Ollama inference and downloads.** Exercise model download,
       explicit selection, translation and failure recovery against a running local
       Ollama instance. Retain results with the
-      [model-selection evidence](translation-model-selection.md#verification-scope).
+      [translation verification record](ui-testing.md#translation-model-verification--2026-10-18).
 
-Fresh-Mac testing remains waived in the recorded release disclosure. Windows AMD,
-mixed-monitor/left-of-primary and missing-WebView2 hardware cases remain untested.
-Complete source-only rebuilding remains unverified in the
-[release record](desktop-release.md).
-Preserve historical candidate hashes and waivers. Do not request more v0.1.0
-acceptance or publish an installer without a new owner request/authorization.
+Exact-installer acceptance, source-only rebuild limits and hardware waivers are
+recorded in the [release checklist](desktop-release.md).
 
 ## Feature checklist
 
@@ -89,77 +74,8 @@ acceptance or publish an installer without a new owner request/authorization.
 Bubble OCR retry/redraw is removed and deferred, not a completed feature.
 Anki export remains excluded.
 
-## Completed learning features
-
-The checks below record each feature's implementation-time evidence. Later
-publication/acceptance is recorded separately in the [release checklist](desktop-release.md).
-
-### Manual word selection
-
-Completed on 2026-10-19. Choose **Select text**, select a continuous span across
-or within automatic word boundaries, and explicitly choose **Look up selection**.
-Unmatched selections remain available to adjust. Dictionary matches can be saved
-with their readings, meanings and original sentence; kanji exploration still works.
-
-Mouse dragging and native arrow/Shift + arrow selection are supported. The caret
-and selection are visible, source edits are blocked, and **Back to normal** or
-Escape leaves selection mode. The previous popup layout is retained.
-
-All 197 frontend tests, formatting, TypeScript, the frontend build and the macOS
-preview build pass. Native macOS caret/selection, source protection and local
-lookup were checked. Windows interaction and exact installer acceptance remain
-unverified. Implementation: [`5b94ee6`](https://github.com/chonnakanch/yomimado/commit/5b94ee6).
-See the [dated changelog entries](../CHANGELOG.md#2026-10-19).
-
-### JLPT vocabulary tags
-
-Completed on 2026-10-19. Estimated N5–N1 badges appear beside dictionary matches
-and saved words. Reading settings can hide them across open windows. The bundled
-Jonathan Waller / Stephen Kraus snapshot contains 8,113 spelling/reading pairs;
-unlisted words and missing readings stay unclassified. Full source credits and
-CC BY-SA 4.0 terms are available in Sources & licenses. No external API, model
-or Python dependency is needed.
-
-New saves retain the selected dictionary expression so the same word/reading
-can be labelled in Saved. Existing records and database formats are preserved;
-tags are derived from the bundled data rather than persisted in saved records.
-The 202 frontend tests and six data/provenance tests pass, including reading
-disambiguation, preference synchronization, source hashes and license retention.
-Windows interaction and exact-installer acceptance remain unverified. See the
-[changelog](../CHANGELOG.md#2026-10-19) and [data review](../THIRD_PARTY_LICENSES/jlpt/README.md).
-Kanji/grammar tags and JLPT filtering are separate future scope.
-Implementation: [`8ef36bf`](https://github.com/chonnakanch/yomimado/commit/8ef36bf).
-
-### Conjugation explanations
-
-Completed on 2026-10-19. Word details include an expandable **Conjugation**
-breakdown for common verb past/negative/polite forms, i-adjectives and
-ちゃう／じゃう contractions. Complete manual selections can use the analyzed
-base for local lookup and saving. Exact source spans and tokenizer classes are
-required; unknown forms stay explicitly unsupported, and contextual nuances
-remain uncertain. No external dataset, model, service or dependency is added.
-
-See the [supported slice and checked examples](implementation-plan.md#conjugation-behavior-and-supported-forms) and
-[changelog](../CHANGELOG.md#2026-10-19). Broader manga speech, passive/potential,
-causatives, progressive forms and other grammar remain future scope.
-Implementation: [`53195de`](https://github.com/chonnakanch/yomimado/commit/53195de).
-
-### Saved search and dictionary-style library
-
-Completed and UI-approved on 2026-10-20. Searches saved words by surface, dictionary
-form, reading, meaning and source sentence; sentences by Japanese and saved
-translation. Matching ignores case, kana script and character width. Separate
-queries are remembered locally. The approved dictionary-style Saved layout uses
-larger headwords, numbered senses and expandable source details. All 288 frontend
-tests, formatting, TypeScript and frontend build pass. Native Windows interaction
-and exact-installer acceptance remain unverified. See the
-[search behavior and verification](implementation-plan.md#saved-search-behavior-and-verification).
-
-Queries remain independent between Words and Sentences, persist across reopening,
-and can be cleared with the clear button or Escape. Source sentences, saved dates
-and attribution stay accessible. Existing data, newest-first order and confirmed
-removal are preserved. No new API, database, model or dependency is required.
-Implementation: [`afa6e48`](https://github.com/chonnakanch/yomimado/commit/afa6e48).
+Current reading behavior is documented in [usage](usage.md); dated implementation
+commits and checks are in [CHANGELOG.md](../CHANGELOG.md).
 
 ## Small-text and vertical OCR accuracy
 
@@ -265,59 +181,14 @@ voices visibly, and sends no text to a network speech service.
 request. It is not an active feature or scheduled implementation. Check OCR
 remains a review indicator; manual text correction and ordinary Rescan remain.
 
-## Saved search behavior and verification
+## Saved search limits
 
-Status: **approved by the owner and complete in development source — 2026-10-20**.
-The owner reviewed and approved the working dictionary-style Saved preview.
-Installer publication and exact-installer acceptance remain separate.
-
-### Search
-
-Words match their saved surface, dictionary form, reading, meanings and source
-sentence. Sentences match Japanese text and any already-saved translation.
-Every whitespace-separated term must occur in at least one of those fields.
-Matching ignores letter case, full/half width and hiragana/katakana differences.
-There is no romaji conversion or inferred translation.
-
-Search filters the complete existing local collection without changing stored
-text, dictionary identities, dates or ordering. It makes no lookup/translation
-request and does not create or update saved records. The list API already
-returns all records; there is no API or database migration.
-
-Each collection remembers its last query in local storage, up to 200 characters.
-Queries remain independent when switching tabs and persist across reopening.
-Storage failures leave search usable for the current session. Clear search or
-Escape clears a query; Escape does not consume an active IME composition.
-
-Result counts update as the query changes. A no-matches message is distinct from
-an empty library and offers Clear search. Refresh keeps the query; a failed
-refresh retains the existing rows and error feedback. Remove still requires
-confirmation and acts on the selected saved ID, even in a filtered list.
-
-### Approved design
-
-Only Saved changes. It uses the existing dark palette and installed font stacks:
-a prominent search field, underlined Words/Sentences tabs, larger Japanese
-headwords, readings, JLPT badges and numbered senses. Wider windows place
-headwords beside definitions; narrow windows stack them without shrinking text.
-Source sentences, saved dates and JMdict attribution remain in an accessible
-disclosure. Existing tab navigation, removal focus recovery and errors remain.
-No new font, library, model or dataset is added.
-
-The reviewed browser preview uses synthetic sample entries and blocks changes to them.
-It does not connect to the real saved database. Its temporary server/harness is
-outside the repository. It is a working rendering of the app components rather
-than a separate static mockup.
-
-### Verification
-
-All 288 frontend tests, TypeScript, Prettier and the frontend production build
-pass. Twenty-three new search cases cover field matching, Unicode normalization,
-query persistence, no results, clearing/focus, failed refresh, filtered removal,
-storage failures and IME Escape. Existing library lifecycle tests still pass.
-Browser checks cover actual search/clear, sentence translation search and source
-disclosure, plus a 320 px viewport without horizontal overflow. Native Windows
-interaction and exact-installer acceptance remain unverified.
+User controls and matching behavior are in [Saved words and sentences](usage.md#saved-words-and-sentences).
+The implementation keeps independent local queries for Words and Sentences,
+limited to 200 characters each. Storage failure must leave search usable for the
+current session. IME composition must not be interrupted by Escape. Filtering
+must preserve stored text, record IDs, newest-first ordering and confirmation of
+removal; failed refresh keeps the existing rows and query.
 
 ## Conjugation behavior and supported forms
 
@@ -368,10 +239,9 @@ dictionary forms and nouns have no extra conjugation disclosure.
 Token spans use the existing source code-point offsets. Automatic explanation
 does not cross whitespace, punctuation or another independent predicate. Rules
 account for the checked IPADIC split 読ん／じゃ／う as well as its ordinary
-auxiliary/non-independent verb splits. No tokenizer, OCR geometry, coordinate,
-service API, saved database or dependency changes are required.
+auxiliary/non-independent verb splits.
 
-### Grammar references and verification
+### Grammar references
 
 The rule code and short explanations are written for YomiMado; no third-party
 rule table, grammar dataset, model or source text is bundled. Grammar facts were
@@ -383,26 +253,7 @@ checked against the author's published explanations in Tae Kim's guide:
 - [Polite forms and stems](https://guidetojapanese.org/learn/grammar/polite)
 - [てしまう and casual contractions](https://guidetojapanese.org/learn/grammar/unintended)
 
-Unit cases assert literal expansion chains for each supported family, including
-godan endings and irregular forms. Other cases cover unsupported/ambiguous
-forms, class mismatches, non-contiguous text, Unicode offsets and complete manual
-selection. Popup integration checks cover local-only analysis, base-form lookup,
-saving, selection changes and unsupported lookups. A local matrix of 36 examples
-also passed against the existing pinned Lindera/IPADIC tokenizer.
-
-Browser checks use the real local dictionary/tokenizer service at native popup
-width and a narrow 280 px width. Windows native interaction and exact installer
-acceptance remain separate checks; this is not an installer release.
-
-## Updating this plan
-
-Update the current status and checklist when scope changes. Put dated development
-changes in CHANGELOG; put installer hashes, source approvals, CI release identities
-and waivers in the dedicated release records. Reverted experiments must not stay
-listed as completed features.
-
-The superseded 1,878-line implementation diary and original design/rollout plans
-remain available at [the pre-consolidation source](https://github.com/chonnakanch/yomimado/tree/a5f7ebc/docs).
-For example, `rtk git show a5f7ebc:docs/implementation-plan.md` retrieves the full
-history, including per-attempt UI evidence and removed bubble-retry work. Active
-source, licence, benchmark and exact-installer records remain tracked in docs.
+Earlier implementation diaries and rollout attempts remain in
+[Git history](https://github.com/chonnakanch/yomimado/tree/a5f7ebc/docs).
+Follow [documentation maintenance](../AGENTS.md#documentation-maintenance) when
+updating this plan.

@@ -143,3 +143,20 @@ separate encoder/decoder graphs. This is macOS export/source-test evidence, not
 a native Windows installer-size measurement. ONNX components and complete
 installer downloads may have different final sizes; no speed or memory saving
 is claimed here.
+
+## Historical staging baseline — 2026-10-17
+
+The pre-migration local macOS OCR staging directory measured on 2026-10-17 contains about
+**1,661 MiB (1.62 GiB)** of regular-file content, excluding symlink aliases:
+
+| Resource group                                        | Approximate MiB |
+| ----------------------------------------------------- | --------------: |
+| Frozen runtime, including tokenizer dictionaries      |           920.5 |
+| Model assets, learning dictionaries and detector code |           727.6 |
+| Notices and records                                   |            12.9 |
+
+Within these groups, Manga OCR assets are 423.7 MiB, translation assets 292.2 MiB,
+UniDic Lite 248.4 MiB, Sudachi dictionary 207.1 MiB and Torch 271.2 MiB. The two
+compressed learning dictionaries together are only about 11.5 MiB. These figures
+describe local staging, not an exact published installer, download compression,
+generated user databases or Windows sizes. The desktop binary/UI are additional.

@@ -5,8 +5,8 @@
 From the repository root, using Python 3.11 or later:
 
 ```sh
-python3 scripts/update_version.py 0.2.0 --dry-run
-python3 scripts/update_version.py 0.2.0
+python3 scripts/update_version.py 0.5.0 --dry-run
+python3 scripts/update_version.py 0.5.0
 ```
 
 On Windows, use `py -3.11` in place of `python3`. The script updates all five
@@ -36,26 +36,18 @@ and excluding private seeds/drafts. An existing target tag must match the source
 Use new output paths and committed app metadata; GitHub CLI needs the API's
 `contents: write` permission to generate content. CI saves the preview before
 publication approval and verifies its SHA-256/source/version before `compose`
-writes the PR list and Full Changelog as the complete public body. Installation,
-model setup and source/licence guidance are in README. Verification/limitations
+writes the PR list and Full Changelog as the complete public body. Installation and
+model setup are in the [installation guide](../docs/installation-guide.md);
+source/licence guidance is in README. Verification/limitations
 stay in the release checklist and downloadable metadata. There is no separate
 template to maintain; the public format is documented in the
 [release runbook](../docs/release-runbook.md#generate-and-review-release-notes).
 
 ## Current release and checks
 
-[Checks](../.github/workflows/checks.yml) runs on main pushes, PRs into main and
-manual dispatches. It runs frontend and service tests,
-format/type checks, release-rule/version tests, workflow lint and macOS/Windows
-native debug tests/builds in parallel. Its final `gates` job requires every job
-to succeed, including every native matrix entry. `requirements-ci.txt` is the
-test-only Python 3.11 environment with pinned wheel hashes; it is separate from
-the frozen release inputs. Checks accesses no private seed or model weights.
-[Release](../.github/workflows/release.yml) starts when a same-repository
-`release/*` PR merges into main, or through manual dispatch on main for recovery.
-It waits up to 15 minutes for Checks / gates on the exact merged commit before
-private-input access and installer builds. Other PR merges are skipped. Release
-builds both platforms and keeps one owner-approved publisher. Its script entrypoints are:
+See [development checks](../docs/development.md#required-ci-checks) for CI coverage
+and the [release runbook](../docs/release-runbook.md) for execution, approval and
+publication requirements. Release script entrypoints are:
 
 - `desktop_release.py`: pinned input transfer, source/data/notice consolidation,
   exact-commit Checks, main protection, hash/provenance and uploaded release checks.
@@ -67,10 +59,8 @@ builds both platforms and keeps one owner-approved publisher. Its script entrypo
   `verify-windows-ui.ps1` and `smoke-windows-install.py`: exact installed verification.
 
 `release_api.py` supplies shared GitHub API requests and candidate-file validation.
-Its retired private-draft staging CLI is
-removed. `release_dictionaries.py` supplies safe redirects and hash-checked
-dictionary restoration; the old develop-only downloader is removed. Current
-private seed identities and download checks live in `desktop_release.py`.
+`release_dictionaries.py` supplies safe redirects and hash-checked
+dictionary restoration. Current private seed identities and download checks live in `desktop_release.py`.
 
 ## Windows build, runtime and source dependencies
 
@@ -83,12 +73,8 @@ The C++ WebView adapter/probe and native probes are part of those build checks.
 `onnx_runtime.py` and `onnx_generation.py` are imported by the packaged
 Windows service. `prepare_windows_onnx.py`, `export_onnx_models.py` and
 `verify_onnx_models.py` perform its current preparation/export/parity checks.
-`onnx-probe-inputs.json` remains an exact input manifest. These are required code,
-not obsolete workflow tools. The two PNG fixtures are synthetic OCR tests.
-
-Preparation, export, parity and inference scripts now use names that describe
-their current functions. Backend imports, source recipes and exporter hash checks
-use those paths. The pinned input manifest retains its existing name.
+`onnx-probe-inputs.json` remains an exact input manifest. The two PNG fixtures
+are synthetic OCR tests.
 
 ## Manual rebuild and licence maintenance
 
@@ -97,9 +83,9 @@ generated installer resources. It creates versioned Torch/ONNX ZIPs outside the
 installer and a hash-pinned `notices/translation-component.json` descriptor,
 retains model terms, verifies deliberate asset omissions and rejects leftover
 OCR dictionary/binding files. Exact-candidate smoke can install the component
-offline with `YOMIMADO_SMOKE_TRANSLATION_ARCHIVE`. Future release delivery adds
-the two component ZIPs as separate hash-bound assets; historical layouts remain
-supported. See [the implementation](../docs/optional-translation-and-ocr-size.md).
+offline with `YOMIMADO_SMOKE_TRANSLATION_ARCHIVE`. The release verifier supports
+the component ZIPs as separate hash-bound assets
+and retains validation for older delivery layouts. See [the implementation](../docs/optional-translation-and-ocr-size.md).
 
 `benchmark_scan_pipeline.py` times detector passes, recognition and subsequent
 tokenization on generated local fixtures for both development tokenizer profiles.
@@ -136,7 +122,7 @@ see the [SudachiPy investigation](../docs/sudachipy-investigation.md). The stric
 `--require-learning-parity` mode currently fails the whole-word compatibility
 check documented in [the experiment](../docs/lindera-tokenizer-experiment.md).
 
-`compare_tokenizer_candidates.py` covers every previously suggested engine using
+`compare_tokenizer_candidates.py` compares
 seven pinned local profiles: Core, Small, Lindera/IPADIC, MeCab/IPADIC,
 MeCab/UniDic Lite and Vaporetto kana/pronunciation models. It preserves unknown
 fields as fallbacks, separates missing base forms from reading compatibility,
@@ -164,14 +150,3 @@ files. See [the investigation and reproduction command](../docs/tokenizer-resour
   upstream default-branch commits when explicitly run; newly collected texts
   require exact-version review before replacing reviewed notices. Normal builds
   use checked-in notice records and do not call this script.
-
-## Retired tools
-
-The completed v0.1.0 recovery, the fixed old private GEOS installer experiment
-and initial VC inventory audit are removed, along with tests solely for those
-retired paths. Current publisher, candidate, native ABI, source safety and
-dictionary hash/redirect tests remain. Legacy 17-file delivery verification is
-still exercised by `test_desktop_release.py`.
-
-Historical code is recoverable at Git commit `843869a`. Current installer/runtime
-code, source manifests, original licence notices and published assets are preserved.

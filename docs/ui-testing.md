@@ -444,3 +444,21 @@ For the complete per-attempt history, retrieve
 `rtk git show a5f7ebc:docs/implementation-plan.md`. Retain failed attempts and
 platform limits when recording a later success; do not infer exact-installer
 acceptance from these development checks.
+
+## Translation model verification — 2026-10-18
+
+Source checks cover import validation, persistence, failed-import recovery,
+provider snapshots/cache separation, explicit downloads, Ollama progress/retry,
+local-only requests and rejection of cloud aliases. The UI checks cover folder
+selection/cancellation, import failure, saved selections and explicit Ollama
+download/activation. A macOS source smoke imports the existing real Marian model,
+translates a synthetic sentence and verifies cache reuse after switching away and
+back. The ONNX CPU import/inference/cache path also passes on macOS; this is not
+native Windows acceptance. Evidence is kept privately in
+`services/ocr/build/resource-reduction-20261018/model-choice-smoke.json` and
+`model-choice-smoke-onnx.json`.
+
+Ollama is not running on the development machine: API behavior uses controlled
+test responses, and the UI's missing-service guidance is checked live. Actual
+Ollama model inference/download and native Windows installed acceptance remain
+unverified. These are source changes; no installer or model component is published.

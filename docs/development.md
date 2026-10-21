@@ -8,16 +8,20 @@ interpreters and dependencies.
 See [project structure](architecture.md#repository-map) for source responsibilities and local
 API examples, and [the reading guide](usage.md) for the app controls.
 
-Follow the [branch and commit rules](git-conventions.md) when starting a task,
-writing commits or merging changes. Main is the only integration branch; create
-new task branches from `origin/main` and open PRs into `main`. New task branches
-use `<type>/<topic>`; commit headers use `type(scope): imperative summary`, with an optional scope.
+Follow [Git conventions](git-conventions.md) for branches, commits, PRs and merges.
 
 ## Start the app
 
+This guide is for a source checkout. Start both the local service and desktop
+host; `tauri dev` does not start the service. The minimal configuration returns
+a labeled demo boundary until OCR models are configured. Settings may say
+**Managed by the development OCR service**; that status does not prove the
+service can recognize text. For an installed app, use the
+[installation guide](installation-guide.md) instead.
+
 The source and packaging recipes use Lindera/IPADIC for learning analysis.
-See the [migration report](lindera-migration.md) for measured differences from
-Sudachi and the remaining release checks. Published v0.1.0 evidence is historical.
+See [architecture](architecture.md#ocr-decoding-and-learning-tokenization) for
+the tokenizer and OCR boundaries.
 
 Start the OCR service in one terminal (Python 3.10+):
 
@@ -46,46 +50,23 @@ cd apps/desktop
 rtk proxy env VITE_CAPTURE_DEBUG=1 npm run tauri -- dev --no-watch
 ```
 
-After selecting a region or scanning a page, the debug view shows the captured
-image and recognized text using the shared design-system surfaces and controls.
-Orange marks final regions; dashed orange marks review/approximate geometry.
-Thin cyan dashes identify detector candidates; muted dots identify filtered boxes.
-Expand **Geometry** or **Detector stage** for coordinates, individual crops,
-recognitions and filter reasons. Medium and large captures receive a bounded retry on
-overlapping image tiles; duplicate boxes are merged, and the detector list
-labels tile results.
-Exactly uniform RGB captures and retry tiles skip model inference; any pixel
-variation retains the existing detection path. Debug retry counts reflect the
-nonuniform tiles attempted. Identical crop bounds can reuse recognition within
-one scan; results are never reused across captures. See the
-[retry/crop optimization measurements](detector-retry-optimization.md).
-Gray boxes were filtered; their reasons appear in the detector list. The first
-filter only removes nearly uniform crops and recognized text
-without Japanese characters. It does not reliably distinguish manga artwork
-from text when OCR hallucinates Japanese. Captures are held in memory, not saved
-as PNG files. On the first launch after this change, YomiMado removes its older
-`capture-<number>.png` files from its own captures cache. For a small selection
-with one incomplete or missing detector region, the service also tries Manga OCR
-on the whole selected crop. If it recovers plausible text, the overlay uses a
-dashed, approximate selection-area box rather than claiming precise text
-geometry. This also recovers a single omitted Japanese character when the
-detected substring has at least two Japanese script characters and the selection
-adds one more, rather than only punctuation or a changed reading. A short run
-can be relabeled vertical when both the selection and detected bounds are tall;
-all whole-selection recoveries carry explicit review metadata and unknown
-confidence. See the [OCR accuracy scope](implementation-plan.md#small-text-and-vertical-ocr-accuracy).
-Choose **Show overlay** to continue or **Close** to cancel. Hover tooltips
-on OCR boxes, toolbar buttons and the popup's Check OCR indicator also require this
-flag; accessible labels and review details remain available in normal mode.
-This flag is read when Vite
-starts; restart both the desktop app and OCR service after updating them, and
-restart the desktop app without the flag to return to the normal flow. On Windows
-PowerShell, set `$env:VITE_CAPTURE_DEBUG="1"` before running `npm run tauri dev`.
+After capture, the debug preview holds the in-memory image and OCR regions.
+Expand **Geometry** or **Detector stage** to inspect polygons, crops, recognition
+and filter/retry reasons. Choose **Show overlay** to continue or **Close** to cancel.
+Hover tooltips also require this flag; ordinary reading keeps accessible labels
+and review cues without them. Restart the desktop app after changing the flag.
+On Windows PowerShell, set `$env:VITE_CAPTURE_DEBUG="1"` before `npm run tauri dev`.
+
+For pipeline behavior and recovery rules, see [architecture](architecture.md) and
+[OCR accuracy scope](implementation-plan.md#small-text-and-vertical-ocr-accuracy).
+Use [UI testing](ui-testing.md#native-overlay-checks) for native geometry/input checks.
 
 macOS requires Screen Recording permission. If macOS prompts during the first
 capture, enable YomiMado in **System Settings → Privacy & Security → Screen &
 System Audio Recording**, then restart the app. When running `tauri dev`, macOS
-may list the terminal application instead. Without this permission, macOS can
+may list the terminal application instead. A bare command-launched executable
+may have no macOS bundle identifier, so an external utility's bundle-based
+exception may not cover it. Without this permission, macOS can
 return a screenshot containing only the desktop background instead of the
 visible windows. The placeholder OCR endpoint does not download models or send
 images over the network.
@@ -131,27 +112,15 @@ outside this repository until their distribution terms are reviewed.
 
 ## Local translation model (optional)
 
-If Settings → Reading cannot connect to the local service, ensure the separate
-development service is running on port 8765. `npm run tauri dev` does not start
-that service. With the existing local experiment environment and resources, run
-`services/ocr/build/release-venv/bin/python scripts/dev_lindera_service.py` from
-the repository root in another terminal, then choose **Try again** in Settings.
-The launcher validates local OCR paths; it does not download or automatically
-activate a translation model. Installed release apps start their bundled service
-automatically.
+Run the development service before opening **Settings → Reading**. Install the
+translation extra for local Marian inference, or run Ollama separately. Select
+and activate the provider through the settings UI; setting a model environment
+path alone does not activate API translation. Supported formats and user controls
+are in [translation model setup](translation-model-selection.md).
 
-Translation weights are omitted from the installer. **Settings → Reading →
-Local translation** offers **Import local model** and **Ollama**. A fresh setup
-has no active translator. Import a compatible Marian folder or install/select a
-local model through Ollama. The old built-in/default model option is removed;
-`YOMIMADO_TRANSLATION_MODEL` alone no longer activates translation through the API.
-See [model selection and platform formats](translation-model-selection.md).
-
-The on-demand popup can translate Japanese text to English with the free,
-user-installed [Helsinki-NLP/opus-mt-ja-en](https://huggingface.co/Helsinki-NLP/opus-mt-ja-en)
-model. This is a baseline model, not a manga-specific or contextual translator.
-Neither model weights nor Japanese text are sent to a cloud translation service
-at runtime. Ollama model downloads start only on an explicit user click.
+For an existing local resource tree, `scripts/dev_lindera_service.py --check`
+validates paths; running the launcher without `--check` starts the service with
+its configured OCR/dictionary resources. Use your prepared service environment.
 
 Install the optional Python dependencies in the OCR service environment and
 download the model to the git-ignored local model directory:
@@ -163,25 +132,12 @@ hf download Helsinki-NLP/opus-mt-ja-en --local-dir ./local-models/opus-mt-ja-en
 uvicorn app.main:app --reload --port 8765
 ```
 
-Choose **Import local model** in Settings and import that downloaded folder.
-Alternatively, run Ollama locally and use its model selection/download controls.
-The popup reports a setup error until a model is explicitly installed and
-selected. Successful translations are cached locally in
-`~/.cache/yomimado/translation.sqlite3` (override with
-`YOMIMADO_TRANSLATION_CACHE`). Only the selected Japanese text is sent from
-the desktop window to this loopback service; screenshots are not submitted for
-translation. The service rejects non-loopback Host headers and untrusted browser
-origins. All `/api/` requests require `X-YomiMado-Client: desktop`, which the
-frontend and packaged smoke clients send automatically. This forces browser
-preflight for uploads and saved-data access; it is not a secret or authentication
-against other local processes. Manual API clients must send this header too.
-
-Requests are capped before JSON/multipart parsing: 32 MiB for the complete OCR
-upload including multipart overhead, and 1 MiB for other requests. PNG captures
-are limited to 40 million pixels and 16,384 pixels per side before decoding or
-model loading. If a capture exceeds these limits, select a smaller area. Full
-Retina and 8K dimensions fit the pixel limits, although a poorly compressing PNG
-can still exceed the upload byte limit.
+Choose **Import local model** in Settings and import the downloaded folder. In a
+browser-only development preview, enter its full path instead of using the native
+folder picker. For the service URL, request guards, API examples and payload
+limits, see [local service usage](architecture.md#local-service-usage). Translation
+cache defaults to `~/.cache/yomimado/translation.sqlite3`; override it with
+`YOMIMADO_TRANSLATION_CACHE`.
 
 ## Japanese tokenization
 
@@ -191,21 +147,14 @@ dictionary under `services/ocr/local-dictionaries/lindera-ipadic`. Supply a loca
 archive with `--archive /absolute/path/lindera-ipadic-6.0.0.zip` for offline setup.
 The running app never downloads this resource. Override the directory with
 `YOMIMADO_LINDERA_DICTIONARY` if needed; arbitrary dictionary versions are rejected.
-Analysis works without a translation model or network service.
-The selected OCR string is sent to the local
-`POST /api/v1/tokenize` endpoint when its popup opens; edited text is analyzed
-again only when **Analyze words** is pressed. The endpoint preserves the exact
-input and returns Unicode code-point offsets for word tokens. It omits
-punctuation-only and symbol-only study tokens, while keeping punctuation in the
-source sentence for translation. Readings are returned in IPADIC's katakana
-form. The popup offers precise word selection in the OCR text, not directly on
-the manga image; the detector currently provides region polygons, not
-per-character positions. If the extra is not installed, OCR and translation
-continue to work and the popup shows a tokenization setup error.
+Token analysis is independent of translation. Source-offset and reading contracts
+are defined in [architecture](architecture.md#ocr-decoding-and-learning-tokenization).
+Without the extra, OCR remains available and learning analysis reports setup guidance.
 
 For historical comparisons only, install `.[tokenization-baseline]` and select
 `YOMIMADO_TOKENIZER=sudachi` in a source service. Packaged services require Lindera
-and exclude Sudachi. Manga OCR's UniDic setup is separate and remains unchanged.
+and exclude Sudachi. OCR uses decode-only tokenization; it does not require the
+learning dictionary or OCR word-segmentation dictionaries.
 
 ## Local word dictionary
 
@@ -214,10 +163,8 @@ The retained Waller/Kraus snapshot, terms and hashes are documented in the
 [data review](../THIRD_PARTY_LICENSES/jlpt/README.md). Run
 `rtk python3 scripts/prepare_jlpt.py --check` from the repository root to verify
 the bundled table and license offline. Omit `--check` to regenerate them from
-the retained inputs. No API, Python dependency or OCR runtime input is added.
-Levels are derived at display time from exact spelling/reading matches; no
-saved-database migration is required. The full license is embedded in the
-frontend independently of the OCR runtime's notice directory.
+the retained inputs. Levels use exact spelling/reading matches. The full license
+is embedded in the frontend independently of the OCR runtime's notice directory.
 
 For combined-word meanings (for example, 今日 → “today” rather than the
 separate meanings of 今 and 日), download the English-only
@@ -230,23 +177,10 @@ directory; set `YOMIMADO_JMDICT_INDEX` to an absolute writable path if needed.
 It rebuilds the index when the source file changes. Refresh your local copy
 regularly from EDRDG; YomiMado does not download or silently update it.
 
-Selecting a word in the popup requests its possible JMdict senses from the
-local OCR service. Inflected words also try their Lindera dictionary form.
-Multiple senses are shown because this lookup does not choose a meaning from
-sentence context. The separate **Translate locally** action remains optional.
-If JMdict is missing, the popup shows the expected setup path and other
-learning features continue to work.
-
 Saved words and sentences are stored separately from disposable captures/cache in
 `~/Library/Application Support/YomiMado/vocabulary.sqlite3` on macOS or
 `%APPDATA%\YomiMado\vocabulary.sqlite3` on Windows. Override this with
-`YOMIMADO_VOCAB_DB` before starting the OCR service. A saved word contains
-the chosen dictionary entry's possible meanings and its Japanese source text.
-A separately saved sentence contains Japanese text and, optionally, a
-translation the reader already requested. Neither record contains a screenshot
-or an automatically generated translation. Re-saving the same word/context or
-sentence updates its record without creating a duplicate. Restart the OCR
-service after updating to a version with this API.
+`YOMIMADO_VOCAB_DB` before starting the OCR service. Saved-data behavior is described in [usage](usage.md#saved-words-and-sentences).
 
 JMdict is copyright the Electronic Dictionary Research and Development Group,
 provided under [CC BY-SA 4.0 and the EDRDG dictionary licence](https://www.edrdg.org/edrdg/licence.html).
@@ -262,16 +196,9 @@ an uncompressed `.xml` or compressed `.xml.gz` copy before starting the OCR
 service. Restart the service after replacing the file. Refresh this local copy
 regularly from EDRDG; YomiMado does not download or silently update it.
 
-The popup requests a single kanji only when clicked. Lookup stays on the local
-OCR service; neither manga images nor selected text are sent to EDRDG. If the
-file is missing, the popup shows the setup path rather than inventing a meaning.
-This initial slice shows character meanings/readings and the word where the
-character appeared. When a kanji is clicked, YomiMado also shows up to three
-short JMdict compound words containing that character, preferring common
-entries. Each shows a reading and English meanings. These are dictionary
-examples, not usage sentences or
-claims about the character's reading in the selected manga word. If JMdict is
-missing, kanji meanings from KANJIDIC2 remain available.
+JMdict is required for example compounds; KANJIDIC2 character lookup can work
+independently. See [architecture](architecture.md#where-the-displayed-readings-and-meanings-come-from)
+for dictionary roles and [usage](usage.md#learning-popup) for the learning controls.
 
 KANJIDIC2 is copyright the Electronic Dictionary Research and Development
 Group, provided under [CC BY-SA 4.0 and the EDRDG dictionary licence](https://www.edrdg.org/edrdg/licence.html).
@@ -322,26 +249,12 @@ For release-tool changes, follow the matching suites in
 
 ## Required CI checks
 
-The complete active workflow inventory is:
-
-| Workflow | Trigger                                                    | Coverage and permissions                                                                                                                                                                                                                     |
-| -------- | ---------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Checks   | PRs into `main`, main pushes, manual dispatch              | Frontend, service, release tools, macOS/Windows native jobs and required `gates`; read-only token, no private seed or publication.                                                                                                           |
-| Release  | Merged `release/*` PR into `main`, or manual main recovery | Exact-commit green Checks, version/seed/protection checks, isolated private-input transfer and notes preview, both installer builders, combined verification and protected owner publication. Builders receive no private-input credentials. |
-
-Main can accumulate completed features without a version bump on each merge.
-When ready to release, merge a same-repository `release/<version>` PR into main.
-Release starts automatically and waits up to 15 minutes for exact main Checks
-before private inputs/builds. Closed unmerged PRs and ordinary feature/fix merges
-are skipped. Manual main dispatch remains available for recovery. The public
-version tag is created only after the existing installer/publication approval. Keep main at that candidate until
-publication; further features can continue on topic branches meanwhile.
-
-[Checks](../.github/workflows/checks.yml) runs on main pushes, PRs into main and
-manual dispatches. Frontend formatting, TypeScript, Vitest and the Vite production
-build run alongside the Python service and release-tool tests. Native formatting,
-tests, strict Clippy and debug compilation run on macOS and Windows with Rust
-1.98.1. These checks build no installer and require no detector/model downloads.
+[Checks](../.github/workflows/checks.yml) runs frontend formatting/type/tests/build,
+service and release-tool regressions, and native formatting/tests/Clippy/debug
+builds on macOS and Windows. Its required `gates` job accepts only successful
+results from every job/matrix entry. See [Git conventions](git-conventions.md)
+for triggers and merge requirements, and the [release runbook](release-runbook.md)
+for installer workflows.
 
 Service CI uses Python 3.11.17 and
 [requirements-ci.txt](../scripts/requirements-ci.txt), with exact wheel hashes
@@ -357,40 +270,16 @@ refresh and installed-runtime verification remain separate release work.
 
 Jobs run in parallel and cache npm/pip downloads and native compilation. New
 commits cancel outdated Checks runs for the same ref; release publisher
-concurrency is separate. Main's required status remains `gates`, which runs even
-after a job fails and rejects failure, cancellation, skipping or missing results.
+concurrency is separate.
 
 ## Packaged builds
 
-Development runs the local service on port 8765; packaged apps start their own
-service on `127.0.0.1:8766`. Only one packaged instance can use that port at a
-time. Packaged models and dictionaries follow the platform's reviewed release
-inputs rather than the optional development extras above. The Windows candidate
-uses a CPU ONNX runtime; the macOS bundle keeps its reviewed Manga OCR runtime.
+Use the [release runbook](release-runbook.md) and platform build/verification
+records linked from the [desktop checklist](desktop-release.md). Packaged runtime
+inputs are reviewed separately from development extras.
 
-Follow the build recipes and exact-candidate checks in the
-[shared release checklist](desktop-release.md),
-[macOS release guide](macos-release.md), and
-[Windows release guide](windows-release.md). Local macOS preparation starts
-from the repository root:
-
-```sh
-bash scripts/build-macos-prerelease.sh --prepare-runtime
-bash scripts/build-macos-prerelease.sh
-```
-
-The detector weight file is imported separately through **Select detector model
-file**. The app verifies its checksum and copies it into its local data directory.
-It does not download the file or include it in the bundle.
-
-Packaged data is stored under macOS Application Support for the app identifier
-or `%APPDATA%\com.yomimado.desktop` on Windows. This differs from the standalone
-development defaults above. Packaged notices are under
-`Contents/Resources/ocr/notices/` on macOS or `<install directory>\ocr\notices`
-on Windows. Dictionary refresh requirements are in the
+Runtime ports, resource paths, generated files and user data locations are
+explained in [architecture](architecture.md#generated-and-user-local-files).
+Detector import and first launch belong in the
+[installation guide](installation-guide.md); dictionary refresh belongs in the
 [dictionary update procedure](dictionary-updates.md).
-
-Python packaging metadata (`*.egg-info/`) and Tauri capability schemas
-(`apps/desktop/src-tauri/gen/schemas/`) are generated locally and ignored by Git.
-Keep models, dictionaries, fixtures, and release evidence in their existing
-local directories.

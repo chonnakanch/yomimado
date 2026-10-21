@@ -168,6 +168,6 @@ release, followed by a Full Changelog comparison. Use descriptive titles and mer
 features through PRs into `main` so they have individual entries; direct commits
 have no invented PR number. Review titles and reverts before publication approval.
 The Full Changelog comparison includes direct commits. Naming rules do not justify
-rewriting old commits or dropping history. Installation belongs in README; verification records and limitations stay in the release checklist and
-metadata. The [release-note procedure](release-runbook.md#generate-and-review-release-notes)
+rewriting old commits or dropping history. Installation belongs in the [installation guide](installation-guide.md); verification
+records and limitations stay in the release checklist and metadata. The [release-note procedure](release-runbook.md#generate-and-review-release-notes)
 preserves the existing publication gates.

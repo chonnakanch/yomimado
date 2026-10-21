@@ -2,24 +2,23 @@
 
 Start with the guide for your task. Current behavior and priorities live in the
 first table; dated investigations and exact-candidate records remain separate.
-Historical “blocked”, “planned” and “unreleased” statements describe their stated
-source/candidate, not necessarily the current release.
 
 ## Main guides
 
-| Guide                                                       | Use it for                                                                                    |
-| ----------------------------------------------------------- | --------------------------------------------------------------------------------------------- |
-| [Usage and installation](usage.md)                          | Capture, page scan, learning popups, shortcuts and saved entries                              |
-| [Development](development.md)                               | Local service, models, dictionaries, checks and diagnostics                                   |
-| [Implementation status and roadmap](implementation-plan.md) | Current scope, maintenance priorities, proposed features, Saved search and conjugation limits |
-| [Architecture and resources](architecture.md)               | Source tree, scan flow, API boundaries, coordinates, models, dictionaries and storage         |
-| [Design system](design-system.md)                           | Tokens, components, tray behavior and icon provenance/regeneration                            |
-| [UI testing](ui-testing.md)                                 | Native overlay checks, Windows scaling matrix, tray acceptance and dated redesign review      |
-| [Git conventions](git-conventions.md)                       | Branches, commits, PRs and preservation of reviewed history                                   |
-| [Translation model setup](translation-model-selection.md)   | Compatible local Marian imports, Ollama, selection and cache behavior                         |
-| [Dictionary updates](dictionary-updates.md)                 | Snapshot replacement and attribution                                                          |
-| [Script guide](../scripts/README.md)                        | Tool entrypoints, resource preparation, builds and verification                               |
-| [Changelog](../CHANGELOG.md)                                | Dated development changes and verification limits                                             |
+| Guide                                                       | Use it for                                                                                           |
+| ----------------------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
+| [Installation guide](installation-guide.md)                 | System requirements, macOS/Windows installation, detector setup, first scan and optional translation |
+| [Reading guide](usage.md)                                   | Toolbar, scan modes, keyboard reading, learning popups and Saved collections                         |
+| [Development](development.md)                               | Local service, models, dictionaries, checks and diagnostics                                          |
+| [Implementation status and roadmap](implementation-plan.md) | Current scope, maintenance priorities, proposed features and behavior limits                         |
+| [Architecture and resources](architecture.md)               | Source tree, scan flow, API boundaries, coordinates, models, dictionaries and storage                |
+| [Design system](design-system.md)                           | Tokens, components, tray behavior and icon provenance/regeneration                                   |
+| [UI testing](ui-testing.md)                                 | Native overlay checks, Windows scaling matrix, tray acceptance and dated redesign review             |
+| [Git conventions](git-conventions.md)                       | Branches, commits, PRs and preservation of reviewed history                                          |
+| [Translation model setup](translation-model-selection.md)   | Compatible local Marian imports, Ollama, selection and cache behavior                                |
+| [Dictionary updates](dictionary-updates.md)                 | Snapshot replacement and attribution                                                                 |
+| [Script guide](../scripts/README.md)                        | Tool entrypoints, resource preparation, builds and verification                                      |
+| [Changelog](../CHANGELOG.md)                                | Dated development changes and verification limits                                                    |
 
 For [small-text and vertical OCR accuracy](implementation-plan.md#small-text-and-vertical-ocr-accuracy),
 see the initial recovery scope, measurements and remaining work.
@@ -28,8 +27,8 @@ see the initial recovery scope, measurements and remaining work.
 
 The [shared checklist](desktop-release.md) is the authority for recorded release
 identities, candidate hashes, publication and retained acceptance disclosures.
-It currently records v0.4.0; older platform plans retain their historical context.
-A source check or an old installer test does not accept a new installer.
+Dated records apply to their stated source/candidate; source checks do not accept
+a different installer.
 
 - [Release and runtime-seed runbook](release-runbook.md): version preparation,
   [PR-based release notes](release-runbook.md#generate-and-review-release-notes),
@@ -79,20 +78,3 @@ and inputs; the implementation plan records the current choice.
 | OCR size and accuracy   | [Optional translation and OCR reduction](optional-translation-and-ocr-size.md), [private packaging/real-page acceptance](resource-reduction-acceptance.md), [scan performance comparison](scan-performance-comparison.md), [detector retry optimization](detector-retry-optimization.md)             |
 | macOS inference options | [ONNX investigation](macos-onnx-investigation.md), [decoder cache/CoreML follow-up](macos-onnx-cache-coreml.md)                                                                                                                                                                                      |
 | Code and security       | [Code review, 2026-10-13](code-review-2026-10-13.md), [security review, 2026-10-13](security-review-2026-10-13.md), [advisory snapshot](security-advisory-snapshot-2026-10-13.json)                                                                                                                  |
-
-## Consolidation record — 2026-10-20
-
-- Implementation plan + feature roadmap + Saved search + conjugation notes →
-  [implementation status and roadmap](implementation-plan.md).
-- Initial design + project structure + app resources → [architecture](architecture.md).
-- Completed UI rollout + tray plan + app icon → [design system](design-system.md)
-  for current contracts/provenance; dated acceptance → [UI testing](ui-testing.md).
-- Overlay checks + Windows UI checklist + redesign review → [UI testing](ui-testing.md).
-- Removed bubble-retry stub → [deferred scope](implementation-plan.md#deferred)
-  and the existing dated changelog entries.
-
-The redundant originals and superseded implementation diary remain in Git at
-[`a5f7ebc`](https://github.com/chonnakanch/yomimado/tree/a5f7ebc/docs), for example
-`rtk git show a5f7ebc:docs/implementation-plan.md`. Earlier removed recovery/draft
-docs remain at `2885586`. Release assets, original licence records, build manifests,
-benchmark data and exact-installer evidence are preserved.

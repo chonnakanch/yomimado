@@ -12,6 +12,24 @@ The [feature roadmap](docs/implementation-plan.md#feature-checklist) tracks comp
 
 ### 2026-10-21
 
+#### Changed
+
+- **Documentation maintenance:** remove repeated setup/CI/release descriptions,
+  completed UI rollout notes and retired-tool reminders from current guides.
+  Correct stale tokenizer/settings descriptions, keep measurement and verification
+  evidence in their existing reports, and link each topic to its canonical guide.
+
+- **Installation guide:** add an end-to-end packaged-app walkthrough covering
+  platform installers, first launch, macOS capture permission, the exact required
+  detector download/import, a first OCR/dictionary/save check and optional local
+  translation. Separate contributor setup and correct the implication that
+  installed-app users must download dictionaries or start Python manually. Keep
+  packaged setup in `docs/installation-guide.md`, reading controls in `usage.md`
+  and developer/debug notes in `development.md`; README links to the full setup
+  instead of repeating it.
+
+### 2026-10-21
+
 #### Build
 
 - Activate the source-approved macOS OCR runtime seed at `46a5649` for PR #24.
@@ -51,7 +69,7 @@ The [feature roadmap](docs/implementation-plan.md#feature-checklist) tracks comp
   Existing saved data/order and confirmed removal remain. All 288 frontend tests,
   formatting, TypeScript and frontend build pass. No API/database/dependency
   change; installer publication and acceptance remain separate. See the
-  [search behavior and verification](docs/implementation-plan.md#saved-search-behavior-and-verification).
+  [search behavior and verification](docs/implementation-plan.md#saved-search-limits).
 
 #### Removed
 
@@ -71,7 +89,7 @@ and exact-installer acceptance were not performed.
   Remove 13 superseded/duplicate documents, update README and contributor-agent
   instructions, and index every retained guide. Dedicated release, source/licence,
   build-input and measurement evidence remains unchanged. See the
-  [consolidation map](docs/README.md#consolidation-record--2026-10-20).
+  [documentation index](docs/README.md).
 - **README cleanup:** simplified the feature overview, installation, reading
   flow and documentation links. Removed the obsolete downloads-unavailable
   notice and release history; linked Releases and the detailed checklist instead.
