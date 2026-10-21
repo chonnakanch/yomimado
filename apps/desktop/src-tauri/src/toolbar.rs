@@ -381,6 +381,7 @@ pub fn get_toolbar_state(app: AppHandle) -> Result<ToolbarState, String> {
 }
 
 pub fn emit_state(app: &AppHandle) {
+    crate::overlay::dismiss::queue_sync(app);
     crate::tray::refresh(app);
     match get_toolbar_state(app.clone()).and_then(|snapshot| {
         app.emit_to("toolbar", TOOLBAR_EVENT, snapshot)
@@ -499,7 +500,10 @@ pub fn reveal_ocr_overlay(
             session.revision += 1;
             drop(session);
             emit_state(&app);
+            return result;
         }
+        drop(session);
+        crate::overlay::dismiss::queue_sync(&app);
         return result;
     }
     Ok(None)
@@ -547,8 +551,34 @@ pub fn rescan(app: AppHandle) -> Result<(), String> {
 
 #[tauri::command(async)]
 pub fn set_overlay_visibility(app: AppHandle, visible: bool) -> Result<(), String> {
+    change_overlay_visibility(&app, visible, None).map(|_| ())
+}
+
+pub fn hide_completed_overlay(app: &AppHandle, session_id: u64) -> Result<bool, String> {
+    change_overlay_visibility(app, false, Some(session_id))
+}
+
+fn can_hide_completed(active: bool, visible: bool, completed: Option<u64>, requested: u64) -> bool {
+    !active && visible && completed == Some(requested)
+}
+
+fn change_overlay_visibility(
+    app: &AppHandle,
+    visible: bool,
+    expected: Option<u64>,
+) -> Result<bool, String> {
     let state = app.state::<crate::AppState>();
     let mut session = state.scans.lock()?;
+    if expected.is_some_and(|id| {
+        !can_hide_completed(
+            session.active.is_some(),
+            session.overlay_visible,
+            session.completed_id,
+            id,
+        )
+    }) {
+        return Ok(false);
+    }
     if session.active.is_some() {
         return Err("Wait for the scan to finish.".into());
     }
@@ -558,7 +588,7 @@ pub fn set_overlay_visibility(app: AppHandle, visible: bool) -> Result<(), Strin
         .ok_or("No OCR overlay is available")?;
     if visible {
         if let Some(spec) = &session.last_scan {
-            live_display(&app, &spec.display)?;
+            live_display(app, &spec.display)?;
         }
         let generation = session
             .completed_id
@@ -570,7 +600,7 @@ pub fn set_overlay_visibility(app: AppHandle, visible: bool) -> Result<(), Strin
         )));
         window.navigate(url).map_err(|e| e.to_string())?;
     } else {
-        state.overlay_input.disable(&app)?;
+        state.overlay_input.disable(app)?;
         window.hide().map_err(|error| error.to_string())?;
         if let Some(popup) = app.get_webview_window("translation-popup") {
             popup.hide().map_err(|e| e.to_string())?;
@@ -585,8 +615,8 @@ pub fn set_overlay_visibility(app: AppHandle, visible: bool) -> Result<(), Strin
     }
     .into();
     drop(session);
-    emit_state(&app);
-    Ok(())
+    emit_state(app);
+    Ok(true)
 }
 
 #[derive(Deserialize)]
@@ -1188,6 +1218,15 @@ pub fn setup(app: &AppHandle) -> Result<(), String> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn hide_requests_only_apply_to_the_current_visible_completed_generation() {
+        assert!(can_hide_completed(false, true, Some(42), 42));
+        assert!(!can_hide_completed(true, true, Some(42), 42));
+        assert!(!can_hide_completed(false, false, Some(42), 42));
+        assert!(!can_hide_completed(false, true, Some(43), 42));
+        assert!(!can_hide_completed(false, true, None, 42));
+    }
 
     #[test]
     fn toolbar_recovery_requires_an_idle_scan_and_a_tray_before_hiding() {

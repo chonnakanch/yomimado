@@ -205,7 +205,19 @@ Use **More actions → Read with keyboard** as the explicit keyboard entry for v
 OCR results. Arrows select regions, Home/End jump to the first/last, and Enter/Space
 opens the selected popup. Escape returns from the popup to its region; Escape in
 the region navigator hides overlays and focuses the toolbar. Keep keyboard entry
-out of scan completion so focus stays in the reader.
+out of scan completion so focus stays in the reader. A temporary native Escape
+shortcut hides completed visible overlays from the reader without focusing the
+app. Release it during scans, while results are hidden and when another YomiMado
+window owns input; popup/menu/Settings Escape retains its local behavior.
+
+Add a 28 px close button at the right of the overlay's existing 32 px control
+strip, with a bold 20 px X, bright border and high-contrast foreground on a dark
+surface. Use the accessible label **Hide OCR overlays** and an Esc tooltip. Keep
+it inside the measured viewport, including full-screen captures with no outer
+gutter. Report only its measured hit rectangle through the existing native
+control route; the surrounding manga stays transparent and click-through.
+Hiding retains results and Rescan state; the toolbar visibility toggle restores
+the result. Late hide requests must not dismiss a newer result or active scan.
 
 Native hit routing is covered by the [overlay checks](ui-testing.md#native-overlay-checks).
 `pointer-events` only selects DOM targets; visual transparency alone is not proof

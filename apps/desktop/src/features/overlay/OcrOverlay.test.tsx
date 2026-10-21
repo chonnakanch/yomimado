@@ -28,7 +28,113 @@ afterEach(async () => {
   container.remove();
   window.history.replaceState({}, "", "/");
   vi.mocked(invoke).mockReset();
+  vi.restoreAllMocks();
+  vi.unstubAllGlobals();
   vi.unstubAllEnvs();
+});
+
+const completedOverlay = {
+  sessionId: 42,
+  metadata: {
+    displayId: "left",
+    displayName: "Left display",
+    screenPhysicalBounds: { x: -1920, y: 0, width: 1920, height: 1080 },
+    selectionPhysicalBounds: { x: -1800, y: 100, width: 640, height: 480 },
+    selectionLogicalBounds: { x: -900, y: 50, width: 320, height: 240 },
+    imageWidth: 640,
+    imageHeight: 480,
+    scaleFactor: 2,
+  },
+  regions: [],
+  engine: "manga",
+  layout: {
+    windowWidth: 640,
+    windowHeight: 544,
+    contentLeft: 0,
+    contentTop: 32,
+    contentWidth: 320,
+    contentHeight: 240,
+    toolbarTop: 0,
+    toolbarHeight: 32,
+  },
+};
+
+it("shows a small hide control only after reveal and reports measured native hit bounds", async () => {
+  vi.stubGlobal("innerWidth", 320);
+  vi.stubGlobal("innerHeight", 272);
+  window.history.replaceState({}, "", "/index.html?mode=overlay&session=42");
+  vi.spyOn(HTMLElement.prototype, "getBoundingClientRect").mockReturnValue({
+    x: 290,
+    y: 2,
+    left: 290,
+    top: 2,
+    right: 318,
+    bottom: 30,
+    width: 28,
+    height: 28,
+    toJSON: () => ({}),
+  });
+  let reveal!: (value: typeof completedOverlay.layout) => void;
+  vi.mocked(invoke).mockImplementation(async (command) => {
+    if (command === "get_overlay_state") return completedOverlay;
+    if (command === "reveal_ocr_overlay")
+      return new Promise((resolve) => {
+        reveal = resolve;
+      });
+    return undefined;
+  });
+  await act(async () => root.render(<OcrOverlay />));
+  expect(
+    container.querySelector('[aria-label="Hide OCR overlays"]'),
+  ).toBeNull();
+  await act(async () => reveal(completedOverlay.layout));
+  const hide = container.querySelector<HTMLButtonElement>(
+    '[aria-label="Hide OCR overlays"]',
+  )!;
+  expect(hide.title).toBe("Hide OCR overlays (Esc)");
+  expect(hide.getAttribute("aria-keyshortcuts")).toBe("Escape");
+  expect(invoke).toHaveBeenCalledWith("update_overlay_controls", {
+    sessionId: 42,
+    revision: 1,
+    rectangles: [{ x: 290, y: 2, width: 28, height: 28 }],
+    viewportWidth: 320,
+    viewportHeight: 272,
+    viewQuery: "mode=overlay&session=42",
+  });
+  await act(async () => hide.click());
+  expect(invoke).toHaveBeenCalledWith("hide_completed_ocr_overlay", {
+    sessionId: 42,
+  });
+});
+
+it("keeps the hide control usable after failure and blocks duplicate pending requests", async () => {
+  let fail!: (reason: Error) => void;
+  vi.mocked(invoke).mockImplementation(async (command) => {
+    if (command === "get_overlay_state") return completedOverlay;
+    if (command === "reveal_ocr_overlay") return completedOverlay.layout;
+    if (command === "hide_completed_ocr_overlay")
+      return new Promise((_resolve, reject) => {
+        fail = reject;
+      });
+    return undefined;
+  });
+  await act(async () => root.render(<OcrOverlay />));
+  const hide = container.querySelector<HTMLButtonElement>(
+    '[aria-label="Hide OCR overlays"]',
+  )!;
+  await act(async () => {
+    hide.click();
+    hide.click();
+  });
+  expect(
+    vi
+      .mocked(invoke)
+      .mock.calls.filter(([c]) => c === "hide_completed_ocr_overlay"),
+  ).toHaveLength(1);
+  expect(hide.disabled).toBe(true);
+  await act(async () => fail(new Error("Window unavailable")));
+  expect(container.textContent).toContain("Could not hide OCR overlays");
+  expect(hide.disabled).toBe(false);
 });
 
 it.each([false, true])(

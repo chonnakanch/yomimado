@@ -46,6 +46,14 @@ The [feature roadmap](docs/implementation-plan.md#feature-checklist) tracks comp
 
 #### Added
 
+- Hide completed OCR results with Escape from the reader or a high-contrast X icon
+  on the overlay. Keep the result and Rescan state for the toolbar Show toggle.
+  Scope Escape to visible completed results, preserving popup/menu/Settings input;
+  reject delayed hides during scans or for newer result generations. Reuse native
+  hit routing for the measured icon bounds. Native capture smoke was blocked by
+  macOS Screen Recording access; [interaction limits](docs/ui-testing.md#completed-overlay-hide-controls)
+  remain explicit.
+
 - Custom capture shortcuts in Settings → Scan & OCR. Record Selected Area and
   Whole Screen combinations, apply/save locally on key release and restore both
   defaults. Duplicate, unavailable and unsavable bindings retain the previous

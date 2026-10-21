@@ -78,6 +78,37 @@ const update = (changes: Partial<ToolbarState>) =>
     }),
   );
 
+it("hides a completed result with Escape from the toolbar without interrupting a scan", async () => {
+  snapshot = {
+    ...initial,
+    hasOverlay: true,
+    overlayVisible: true,
+    phase: "ready",
+    canRescan: true,
+  };
+  await mount();
+  const toolbar = container.querySelector<HTMLElement>(".floating-toolbar")!;
+  await act(async () =>
+    toolbar.dispatchEvent(
+      new KeyboardEvent("keydown", { key: "Escape", bubbles: true }),
+    ),
+  );
+  expect(invoke).toHaveBeenCalledWith("set_overlay_visibility", {
+    visible: false,
+  });
+  vi.mocked(invoke).mockClear();
+  await update({ sessionId: 10, phase: "recognizing" });
+  await act(async () =>
+    toolbar.dispatchEvent(
+      new KeyboardEvent("keydown", { key: "Escape", bubbles: true }),
+    ),
+  );
+  expect(invoke).not.toHaveBeenCalledWith(
+    "set_overlay_visibility",
+    expect.anything(),
+  );
+});
+
 it("keeps tray startup failures visible through the toolbar status control", async () => {
   snapshot = {
     ...initial,

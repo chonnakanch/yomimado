@@ -7,9 +7,43 @@
 .ocr-overlay:focus {
   outline: none;
 }
-.ocr-overlay svg {
+.ocr-overlay > svg {
   overflow: visible;
   position: absolute;
+}
+.overlay-hide {
+  align-items: center;
+  background: var(--color-surface);
+  border: 1px solid var(--color-text-primary);
+  border-radius: var(--radius-control);
+  box-shadow: 0 1px 4px rgb(0 0 0 / 0.5);
+  color: var(--color-text-primary);
+  cursor: pointer;
+  display: flex;
+  height: 28px;
+  justify-content: center;
+  padding: 0;
+  pointer-events: auto;
+  position: absolute;
+  right: 2px;
+  width: 28px;
+}
+.overlay-hide svg {
+  width: 20px;
+  height: 20px;
+  stroke-width: 2.4;
+}
+.overlay-hide:hover {
+  color: var(--color-text-primary);
+  background: var(--color-surface-elevated);
+}
+.overlay-hide:focus-visible {
+  outline: 2px solid var(--color-region-selected);
+  outline-offset: -2px;
+}
+.overlay-hide:disabled {
+  cursor: wait;
+  opacity: 0.6;
 }
 .ocr-region {
   cursor: pointer;

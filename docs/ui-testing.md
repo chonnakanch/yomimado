@@ -8,6 +8,7 @@ Exact installer tests remain in [macOS](macos-clean-mac-test.md),
 
 - [Capture shortcut verification](#capture-shortcut-verification)
 - [Detector release link verification](#detector-release-link-verification)
+- [Completed-overlay hide controls](#completed-overlay-hide-controls)
 - [Native overlay checks](#native-overlay-checks)
 - [Windows acceptance checklist](#windows-acceptance-checklist)
 - [Tray verification and acceptance](#tray-verification-and-acceptance)
@@ -69,6 +70,27 @@ browser-launch failure and retry, without triggering model import. All 303
 frontend and 75 native tests, frontend formatting/build, Rust formatting, Clippy
 and the current-target native debug build pass. Windows browser interaction and
 exact-installer acceptance remain unverified; this source fix is unreleased.
+
+## Completed-overlay hide controls
+
+Development source — 2026-10-21: automated checks cover temporary Escape
+eligibility/release, protected YomiMado window focus, active scans, stale result
+generations, the icon's measured native hit rectangle, duplicate requests and
+hide failures. Existing overlay coordinate and click-through regressions pass.
+All 306 frontend tests and 79 native tests pass, together with TypeScript/Vite,
+Clippy with warnings denied, formatting and the macOS debug build.
+The native Apple Silicon debug app starts, but its capture smoke test stops at
+the macOS Screen Recording permission gate before creating a demo result.
+This does not establish a native Escape/icon interaction pass.
+
+For native acceptance, complete a scan, leave focus in the reader, press Escape,
+and restore the retained result with the toolbar toggle. Repeat using the small
+X button, including an overlay above/below its selection, a full-screen
+capture and Retina/Windows fractional scales. Verify transparent space still
+passes reader input. Reopen a popup/menu/Settings and check its ordinary Escape
+behavior. Start/cancel/rescan, then ensure a delayed hide request cannot hide the
+new result. Windows interaction, registration-conflict behavior and exact
+installers remain unverified.
 
 ## Native overlay checks
 

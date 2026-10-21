@@ -257,6 +257,9 @@ pub fn initialize(app: &AppHandle) {
 }
 
 pub fn handle(app: &AppHandle, key: &Shortcut, event: tauri_plugin_global_shortcut::ShortcutEvent) {
+    if crate::overlay::dismiss::handle(app, key, event.state()) {
+        return;
+    }
     let Some(state) = app.try_state::<Store>() else {
         return;
     };

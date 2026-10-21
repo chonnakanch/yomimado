@@ -4,6 +4,7 @@ export type ToolbarIconName =
   | "rescan"
   | "visible"
   | "hidden"
+  | "close"
   | "menu"
   | "expand"
   | "collapse"
@@ -64,6 +65,7 @@ export function ToolbarIcon({ name }: { name: ToolbarIconName }) {
       )}
       {name === "expand" && <path d="m8 6 6 6-6 6m6-12 6 6-6 6" />}
       {name === "collapse" && <path d="m10 6-6 6 6 6m6-12-6 6 6 6" />}
+      {name === "close" && <path d="m6 6 12 12M18 6 6 18" />}
       {name === "book" && (
         <path d="M12 6C8 3 5 3 2 4v15c3-1 6-1 10 2m0-15c4-3 7-3 10-2v15c-3-1-6-1-10 2V6Z" />
       )}

@@ -749,6 +749,18 @@ fn focus_ocr_regions(app: AppHandle) -> Result<(), String> {
 }
 
 #[tauri::command(async)]
+fn hide_completed_ocr_overlay(
+    app: AppHandle,
+    window: tauri::WebviewWindow,
+    session_id: u64,
+) -> Result<(), String> {
+    if window.label() != "ocr-overlay" {
+        return Err("Hide OCR results from the overlay.".into());
+    }
+    toolbar::hide_completed_overlay(&app, session_id).map(|_| ())
+}
+
+#[tauri::command(async)]
 fn hide_focused_overlay(app: AppHandle) -> Result<(), String> {
     toolbar::set_overlay_visibility(app.clone(), false)?;
     if let Some(window) = app.get_webview_window("toolbar") {
@@ -884,6 +896,9 @@ fn close_ocr_overlay(app: AppHandle, state: tauri::State<'_, AppState>) -> Resul
 pub fn run() {
     tauri::Builder::default()
         .on_window_event(|window, event| {
+            if matches!(event, tauri::WindowEvent::Focused(_) | tauri::WindowEvent::CloseRequested { .. } | tauri::WindowEvent::Destroyed) {
+                overlay::dismiss::queue_sync(window.app_handle());
+            }
             if window.label() == "main"
                 && matches!(event, tauri::WindowEvent::Focused(false) | tauri::WindowEvent::CloseRequested { .. } | tauri::WindowEvent::Destroyed)
             {
@@ -1019,6 +1034,7 @@ pub fn run() {
                     .show(move |_| handle.exit(1));
                 return Ok(());
             }
+            app.manage(overlay::dismiss::DismissShortcut::default());
             app.manage(shortcuts::Store::new(app.handle()));
             shortcuts::initialize(app.handle());
             toolbar::setup(app.handle())?;
@@ -1069,6 +1085,7 @@ pub fn run() {
             get_overlay_state,
             update_overlay_controls,
             focus_ocr_regions,
+            hide_completed_ocr_overlay,
             hide_focused_overlay,
             close_translation_popup,
             show_translation_popup,
