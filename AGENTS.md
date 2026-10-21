@@ -9,11 +9,9 @@ and Windows. **Capture → recognize → click → learn** preserves the origina
 manga and adds interactive learning information. The name has not been
 trademark/domain/package cleared.
 
-The first desktop milestone is complete. The current source includes the UI
-redesign, Lindera/IPADIC analysis, user-installed local translation, manual word
-selection, JLPT vocabulary badges, conjugation explanations and Saved search.
-The latest repository release record is v0.4.0; use the exact-source and installer
-records rather than treating old preparation statements as current status.
+Use the [implementation plan](docs/implementation-plan.md) for current feature
+status and maintenance priorities, and the [release checklist](docs/desktop-release.md)
+for recorded releases, source identities and exact-installer evidence.
 
 Start with [docs/README.md](docs/README.md). Read the relevant canonical guide:
 

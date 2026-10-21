@@ -1,13 +1,9 @@
 # YomiMado design system
 
-The owner approved the design on 2026-10-13 and its implemented phases through
-2026-10-15. The dictionary-style Saved update was approved on 2026-10-20.
-This guide owns current visual specifications, tray behavior and icon provenance.
-Use [architecture](architecture.md) for runtime boundaries,
+This guide defines visual tokens, component behavior, tray contracts and icon
+provenance. Use [architecture](architecture.md) for runtime boundaries,
 [implementation status](implementation-plan.md) for priorities, and
-[UI testing](ui-testing.md) for dated checks and remaining native acceptance.
-Saved search behavior and supported conjugations live with the
-[feature plan](implementation-plan.md#completed-learning-features).
+[UI testing](ui-testing.md) for review evidence and native acceptance.
 
 ## 1. Visual direction and boundaries
 
@@ -30,7 +26,7 @@ service exposes every Jisho field.
 ## 2. Semantic color tokens
 
 Declare tokens centrally in `apps/desktop/src/styles/tokens.css`; component
-styles consume roles, never repeat hex values. The palette below is implemented in Phase 1.
+styles consume roles, never repeat hex values. The table matches the shared token definitions.
 
 | CSS token                      | Value                       | Role                                                    |
 | ------------------------------ | --------------------------- | ------------------------------------------------------- |
@@ -81,7 +77,7 @@ Errors use inline messages and retry; success uses a short “Saved locally” o
 | Labels, POS and metadata        | 12–13 px / 1.5               | 400–500; secondary text, not tiny badges.        |
 | Section heading                 | 14 px / 1.4                  | 600; short names, restrained contrast.           |
 
-Proposed font stacks:
+Font stacks:
 
 ```css
 --font-ui:
@@ -96,8 +92,7 @@ UI/English text uses the UI stack. Use tabular numerals for counts if available.
 Do not letter-space Japanese, shrink it to fit a row, or make romanization a
 second reading line. Reading presentation must not mutate lookup/save payloads.
 
-No new font is bundled or downloaded in the initial slice. The named fonts are
-preferred when installed; native fallbacks must work fully offline on both
+The named fonts are preferred when installed; native fallbacks must work fully offline on both
 targets. If consistent Noto Sans JP/Inter bundling is later selected, pin the
 exact assets and verify their individual license/notice and package-size impact
 before adding them. Do not silently depend on a Google Fonts request.
@@ -126,8 +121,7 @@ dimensions using the actual display scale; do not multiply CSS values by DPI.
 | `--focus-width`       | 2 px             | Visible focus outline, 2 px offset.            |
 | `--motion-fast`       | 120 ms           | Color/fill feedback only.                      |
 
-Toolbar starts around 536 × 56 logical px, compact around 244 × 56 after the
-owner's 2026-10-14 refinement. Compact mode retains both scan icons, Rescan,
+Toolbar starts around 536 × 56 logical px, compact around 244 × 56. Compact mode retains both scan icons, Rescan,
 overlay visibility/status and expand on one row. These are
 layout targets, not fixed minimums that can clip labels. Popups grow naturally
 until their work-area cap (roughly 70% height), then scroll the details. At narrow
@@ -172,7 +166,7 @@ page/spread before OCR. An uncertain boundary uses a saved/drawn manga area;
 Selected Area scans the exact manual rectangle. Explain this in the debug scan tooltip
 and Scan & OCR help. Rescan reuses the last successful crop/area.
 
-An uncertain manga boundary uses the approved **Edge hint**: a compact bottom-centred
+An uncertain manga boundary uses the **Edge hint**: a compact bottom-centred
 pill reading “Drag around pages · Esc cancel,” approximately 30 logical px high.
 Selected Area uses the same hint with “Drag to capture · Esc cancel.”
 It and any error detail ignore pointer events, so a drag can begin through the hint.
@@ -211,10 +205,9 @@ Use **More actions → Read with keyboard** as the explicit keyboard entry for v
 OCR results. Arrows select regions, Home/End jump to the first/last, and Enter/Space
 opens the selected popup. Escape returns from the popup to its region; Escape in
 the region navigator hides overlays and focuses the toolbar. Keep keyboard entry
-out of scan completion so focus stays in the reader. This replaces the former
-Reading-order toggle and Previous/Next text panel.
+out of scan completion so focus stays in the reader.
 
-Native hit routing is an independent requirement in the architecture plan.
+Native hit routing is covered by the [overlay checks](ui-testing.md#native-overlay-checks).
 `pointer-events` only selects DOM targets; visual transparency alone is not proof
 that underlying applications receive input.
 
@@ -242,14 +235,14 @@ lookup/translation/save states on commit. Review/approximate regions show a smal
 outlined status icon and **Check OCR** beside the Japanese heading, without a
 warning block or repeated edit action. Keep the full review reason and correction
 guidance in its debug-only hover tooltip and screen-reader text; **Edit OCR text** remains in
-the secondary actions. The owner's size refinement uses an 11 px caption token,
+the secondary actions. Use an 11 px caption token,
 12 px icon and 2 px icon/text gap for this brief status, preserving its contrast.
 Demo text is identified and never treated as recognized Japanese.
 
 ### CaptureDebugPreview
 
 Use the same surface, border, spacing, Japanese typography and 36 px utility
-buttons as the redesigned app. Keep the exact in-memory capture fitted without
+buttons as the app. Keep the exact in-memory capture fitted without
 stretching; show readable recognized text alongside it, stacking the panes at
 narrow widths. Each pane scrolls independently and has visible keyboard focus.
 Keep Show overlay disabled while recognition is pending and Close available.
@@ -271,7 +264,7 @@ No debug setting is added to production Settings.
 Order: selected surface, hiragana reading, base form, morphological POS,
 numbered English senses, entry-specific Save word, attribution. Base form can be
 an inline labeled field, even when equal to surface; no fabricated inflection
-table. POS is supplied by Sudachi, not the dictionary senses. Do not generate
+table. Token POS is supplied by Lindera/IPADIC, separately from dictionary-sense POS. Do not generate
 English glosses when the API has none.
 
 Use the existing ranked first entry as the initial possible match after selection;
@@ -312,20 +305,20 @@ and English remain accessible; changing source clears stale output.
 Toolbar navigation has separate **Saved**, **Settings**, and **Sources & licenses**
 windows. There is no Saved/Settings navigation inside those windows. Saved keeps
 **Words** and **Sentences** tabs inside its library. Use
-compact readable rows with expandable context rather than wide fixed tables
-that require horizontal scrolling. Keep local dates, existing stored order,
+dictionary-style rows with prominent Japanese headwords, readings, numbered
+senses and expandable context. Use underlined Words/Sentences tabs and a search
+field; stack headwords and meanings at narrow widths. Keep local dates, existing stored order,
 refresh/error/empty states and confirmed Remove actions. Lists remain readable
 with larger text and narrow windows.
 
 Settings uses ordinary labeled controls for actual capabilities. Scan & OCR holds
 verified detector status/import/replacement and capture/shortcut guidance;
-Reading holds the existing estimated-order switch. Sources & licenses has its own
+Reading holds keyboard-reading help, estimated JLPT badge visibility and local
+translation selection. Sources & licenses has its own
 window with linked attribution and packaged notice guidance. No nonfunctional settings drawn merely
 to match the reference sidebar. Use native secondary-window decorations for
 move/resize/minimize/close accessibility; toolbar and popup use their compact chrome.
-Close hides the secondary window; explicit Quit stays on the toolbar. The owner
-requested restoration of native buttons on 2026-10-14 after confirming an external
-quit-on-close utility caused the unexpected application exit.
+Close hides the secondary window; explicit Quit stays on the toolbar.
 
 Keep concise JMdict/KANJIDIC2 source and CC BY-SA attribution with dictionary
 content, and preserve the full sources/licenses entry point. Disclosure must not
@@ -333,12 +326,12 @@ make required notices inaccessible.
 
 ## 6. Implementation and accessibility acceptance
 
-Retain plain React/CSS. Extract styles gradually from `styles.css`, using
-semantic variables and shared primitives with feature-owned selectors. Keep
+Use plain React/CSS with semantic variables and shared primitives under
+feature-owned selectors. Keep
 transparent backgrounds explicitly scoped to capture, overlay, toolbar and
 popup roots; opaque surface components set their own backgrounds. A global
 background rule must not paint over manga. Do not add Tailwind, a component kit,
-a state library or a remote font dependency for this change.
+a state library or a remote font dependency without a specific need.
 
 Keep native window sizing parameters named and tested in Rust. Frontend tokens
 govern visual layout, but native physical dimensions and actual viewport remain
@@ -360,8 +353,7 @@ During implementation, verify:
 
 Use synthetic Japanese text/regions for public screenshots and tests. Local
 reference manga images guide composition only; do not redistribute them as app
-assets or golden test snapshots. The rollout phases are complete in source; exact-installer acceptance remains
-separate from design approval.
+assets or golden test snapshots.
 
 ## 7. Tray and menu bar behavior
 
@@ -425,8 +417,7 @@ transparent padding around its rounded corners.
 
 The master artwork is `apps/desktop/src-tauri/icons/source-v1.png`, generated
 with the built-in imagegen tool on 2026-10-04. No font, third-party logo, manga
-image, or model asset was used as an input. The obsolete bootstrap icon and
-generated Android icons have been removed.
+image, or model asset was used as an input.
 
 Tauri's existing CLI generated the PNG sizes, Windows ICO/Store assets, and
 macOS ICNS. The main Tauri configuration references the desktop icons; the

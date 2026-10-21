@@ -26,8 +26,7 @@ computer:
 
 The source archives, notices and translation ZIPs are separate release files;
 only the installer is needed for this step. The detector download in step 3 is
-also required before scanning. This guide uses the toolbar interface available
-in v0.4.0; older releases may have different controls.
+also required before scanning.
 
 ### 2. Install and launch
 
@@ -68,8 +67,7 @@ step 3. There is no macOS-style Screen Recording permission step on Windows.
 
 ### 3. Install the required detector model
 
-The app includes text recognition and learning dictionaries, but excludes detector
-weights. The detector finds the text regions that recognition will read.
+The detector finds the text regions that recognition will read.
 
 1. Open the [original detector release](https://github.com/zyddnys/manga-image-translator/releases/tag/beta-0.2.1).
 2. Expand **Assets** and download **`comictextdetector.pt.onnx`**. Choose that exact
@@ -83,7 +81,6 @@ weights. The detector finds the text regions that recognition will read.
 
 YomiMado does not download this model automatically. Its import is shared by both
 platforms. Restart YomiMado if you replaced a detector that was already in use.
-Word and kanji dictionaries require no separate download in the packaged app.
 
 ## Make your first scan
 
@@ -114,25 +111,10 @@ place. Run a new scan if you move the page or change display scaling/layout.
 ## Optional translation setup
 
 After OCR and dictionary lookup work, open **More actions → Settings → Reading**.
-Choose one local translation source:
-
-- **Ollama:** [install and run Ollama](https://ollama.com/download) on the same
-  computer, return to YomiMado and select **Ollama → Refresh Ollama models**.
-  Choose an installed local text model and press **Use this model**. If you use
-  **Download in Ollama** first, wait for it to finish, then explicitly select the
-  downloaded model and press **Use this model**.
-- **Import local model:** choose a compatible Japanese-to-English Marian folder,
-  then **Import and use model**. macOS accepts the supported Torch/Safetensors
-  folder; Windows needs YomiMado's Marian ONNX export layout. See
-  [supported files and model setup](translation-model-selection.md#import-a-local-model)
-  before downloading a model. GGUF files use Ollama rather than this importer.
-
-The **Using** line confirms the active model. Return to a recognized region and
-choose **Translate locally**. There is no built-in model selection or automatic
-translation. Downloads can require several GB; model availability does not guarantee
-translation quality or suitability for your hardware. The
-[translation guide](translation-model-selection.md) covers the supported formats,
-provider switching and troubleshooting in more detail.
+Follow [translation model setup](translation-model-selection.md) to import a
+compatible Marian model or install/select one through Ollama. Confirm the **Using**
+line names your model, then choose **Translate locally** in a learning popup.
+Translation setup is optional; OCR and dictionary lookup work without it.
 
 ## Setup troubleshooting
 

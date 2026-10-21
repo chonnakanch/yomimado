@@ -16,8 +16,8 @@ interactive learning overlays while preserving the original manga image.
 - Request local translation using an imported model or Ollama.
 - Save, search, and review words and sentences locally.
 
-These features describe the current development source. Published installers may
-have different features; see the [changelog](CHANGELOG.md).
+See [release notes](https://github.com/chonnakanch/yomimado/releases) for each
+installer's features and [CHANGELOG.md](CHANGELOG.md) for development changes.
 
 Screenshots, OCR, and dictionary lookup stay local. Translation runs only when
 you request it, and saving is explicit.
@@ -31,19 +31,10 @@ installation, detector setup, permissions, your first scan and optional translat
 
 ## Read a page
 
-1. Open your manga in its usual reader.
-2. Press `Cmd+Shift+O` on macOS or `Ctrl+Shift+O` on Windows, then drag around text.
-3. Click a recognized region and select a word or kanji in the learning popup.
-4. Look up a selection, request translation, or save a word or sentence.
-
-For page scanning, use **Whole Screen** or `Cmd/Ctrl+Shift+S`. After changing
-pages, **Rescan** captures the last successful area again; start a new scan if the
-page moved. Open **More actions → Saved** to review saved entries.
-
-OCR can make mistakes, especially with stylized text. **Check OCR** marks text
-that needs review; use **Edit OCR text** to correct it. Reading order is estimated
-from text positions, and page detection may need a saved or drawn area. See the
-[reading guide](docs/usage.md) for keyboard navigation and detailed controls.
+Select a visible Japanese text area, click a recognized region and explore words,
+kanji or an explicitly requested translation. Use Rescan after turning a page and
+save entries when you want to keep them. See the [reading guide](docs/usage.md)
+for controls, keyboard navigation and OCR correction.
 
 ## Development
 

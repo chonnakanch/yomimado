@@ -99,7 +99,7 @@ versions. Preserve exact reviewed seed/source commits when merging.
    and reverts against the final diff and `CHANGELOG.md`. CI generates the list
    automatically, using the [format below](#generate-and-review-release-notes).
    Public notes contain the PR list and Full Changelog only. Keep
-   installation/model setup in [README.md](../README.md#installation), and
+   installation/model setup in the [installation guide](installation-guide.md), and
    source/installer evidence and limitations in the release checklist and metadata.
    Run relevant checks, commit and push focused changes. Run the seed guard against
    the committed source; resolve rejected frozen inputs before main integration.
@@ -144,7 +144,8 @@ source delivery.
 Public notes use GitHub's generated merged-PR titles and numbers for the range
 between app releases. The **Full Changelog** link is the final line. There are no
 installation instructions or verification sections in the public body. Installation,
-translation setup and source/licence guidance live in [README.md](../README.md#installation).
+translation setup live in the [installation guide](installation-guide.md);
+source/licence guidance is in [README.md](../README.md#sources-and-licenses).
 Exact-installer evidence and limitations stay in [the release checklist](desktop-release.md);
 hashes and provenance remain downloadable release assets.
 
