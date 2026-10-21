@@ -4,7 +4,32 @@ For the step-by-step rebuild, source review, private staging and pin activation
 procedure, follow the [release runbook](release-runbook.md#build-a-replacement-macos-seed).
 The records below retain the exact identities and approval scope of existing seeds.
 
-## Current 0.3.0 seed — 2026-10-19
+## Current OCR / 0.4.0 seed — 2026-10-21
+
+Exact reviewed source: `46a5649007caf09538adb7d7d0bc4bda763c095e`.
+The owner approved the complete source/licence delivery on 2026-10-20 for PR #24.
+See [the source review and uploaded-input record](macos-runtime-review-ocr-20261021.md)
+for approval scope, four exact filenames/hashes/sizes and retained limitations.
+
+Private label: `macos-reviewed-seed-46a5649`. The
+[saved draft](https://github.com/chonnakanch/yomimado/releases/tag/untagged-aebab25d653586c1ff95)
+remains unpublished at the exact source target. Independent browser inspection
+on 2026-10-21 confirms all four completed uploads and GitHub SHA-256 digests match
+local bytes. All three macOS pin consumers select these inputs together;
+Windows dictionary pins and runtime-reuse guard rules are unchanged.
+
+The seed includes small-selection kana recovery and short vertical orientation
+correction. All 29 frozen modules and the entrypoint match the approved source;
+mounted source/platform/signature checks and offline learning/persistence smoke
+pass. Sources/notices cover 476 entries, 76 archives and 112 unique native inputs.
+The optional Torch ZIP remains separately bound by its embedded manifest.
+Local evidence is in ignored `services/ocr/build/runtime-seed-46a5649/`.
+
+This is private CI input. Complete source-only rebuilding and new exact-installer
+acceptance remain unverified. Published v0.4.0 retains its original source and
+installer hashes. Historical seed approvals and hashes follow.
+
+## Historical 0.3.0 seed — 2026-10-19
 
 Exact reviewed source: `f1b4fbaa8980ff0df0a1abf6f5a93df058f4678e`.
 The owner explicitly approved the prepared source/license delivery as

@@ -17,7 +17,7 @@ import tarfile
 import tomllib
 from pathlib import Path
 
-SEED_REVISION = "f1b4fbaa8980ff0df0a1abf6f5a93df058f4678e"
+SEED_REVISION = "46a5649007caf09538adb7d7d0bc4bda763c095e"
 ROOT = Path(__file__).resolve().parent.parent
 
 # Technical review: docs/macos-runtime-reuse-0.4.0.md. These exact frontend

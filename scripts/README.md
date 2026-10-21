@@ -108,6 +108,13 @@ including full-pipeline losses rather than only clean-crop recognition. It does
 not capture user screenshots or change production behavior. See the
 [speed/accuracy report](../docs/scan-performance-comparison.md).
 
+`benchmark_detector_retries.py` compares the current OCR pipeline with a
+`--baseline-ref` from Git on the retained synthetic fixtures and sparse pages.
+Use `--skip-no-tiles` for a baseline/current accuracy comparison; omitting it
+also measures the historical no-tiles ablation without changing app settings.
+It retains complete outputs, image/source hashes, inference counts and timings.
+See the [small-text OCR scope and evidence](../docs/implementation-plan.md#small-text-and-vertical-ocr-accuracy).
+
 `prepare_lindera.py --download` explicitly downloads and stages the pinned IPADIC
 dictionary for development. Use `--archive` for an existing archive or `--check`
 to verify staged files. Packaging also supplies `--target` and `--notices`.
