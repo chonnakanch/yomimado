@@ -16,11 +16,13 @@ import json
 import os
 import re
 import shutil
+import subprocess
 import tarfile
 import time
 from pathlib import Path
 from urllib.request import Request, build_opener
 
+import macos_seed
 from release_api import API, REPOSITORY, candidate_files, request
 from release_dictionaries import NAMES, SafeRedirect, restore
 from windows_release import BUILD, RESOURCES, SERVICE, digest, read_json, write_json
@@ -33,13 +35,12 @@ spec.loader.exec_module(macos)
 
 WINDOWS_SEED = "f8396ccd5e7352a62e526c68438cc7f3c9cedc60"
 INPUTS = {
+    # Legacy local verification and migration fallback only. Release resolves
+    # a reviewed manifest dynamically and never replaces these globals.
     "macos": {
-        "tag": "macos-reviewed-seed-46a5649",
+        "tag": "macos-reviewed-seed-" + macos_seed.LEGACY_REVISION[:7],
         "assets": {
-            "YomiMado_0.4.0_aarch64.dmg": "19ff1c941f866df73653769f7e6b4b1c7e310509ed7e13757fd0c80e5945bf1e",
-            "YomiMado_0.4.0_notices_46a5649.tar.gz": "0a9fcdd3e5a1c1b284e7a70f321475afc932edd905ace2fdea27fe9a92d67c6d",
-            "YomiMado_0.4.0_sources_46a5649.tar.gz": "ae6322ed25f79226057dade2787a5acf1a61786de0714caa36008a62da5c7b71",
-            "YomiMado_0.4.0_translation_torch.zip": "e1c6a0ae58777d1eb4e8085eddff7a908fe0035e95c82178707178b7690434ef",
+            e["name"]: e["sha256"] for e in macos_seed.LEGACY["assets"].values()
         },
     },
     "windows": {
@@ -197,6 +198,52 @@ def seed_release(releases: list[dict], platform: str) -> dict:
     return release
 
 
+def read_seed_manifest(asset: dict) -> dict:
+    expected = {
+        "name": macos_seed.MANIFEST,
+        "size": asset.get("size"),
+        "sha256": str(asset.get("digest", "")).removeprefix("sha256:"),
+    }
+    if (
+        type(expected["size"]) is not int
+        or not 0 < expected["size"] < 1024**2
+        or not macos_seed.checksum(expected["sha256"])
+    ):
+        raise ValueError("Invalid seed manifest upload metadata")
+    macos_seed.asset_identity(asset, expected)
+    query = Request(
+        API + "/releases/assets/" + str(asset["id"]),
+        headers={
+            "Authorization": "Bearer " + os.environ["GH_TOKEN"],
+            "Accept": "application/octet-stream",
+            "X-GitHub-Api-Version": "2022-11-28",
+        },
+        method="GET",
+    )
+    with build_opener(SafeRedirect()).open(query, timeout=600) as response:
+        data = response.read(1024**2)
+    if (
+        len(data) != expected["size"]
+        or hashlib.sha256(data).hexdigest() != expected["sha256"]
+    ):
+        raise ValueError("Seed activation manifest byte hash differs")
+    return json.loads(data)
+
+
+def compatible_seed(revision: str) -> bool:
+    try:
+        # Full local history is required; never fetch/run a manifest's code.
+        macos.git("merge-base", "--is-ancestor", revision, "HEAD")
+        macos.verify_reuse(seed_revision=revision)
+        return True
+    except (ValueError, subprocess.CalledProcessError):
+        return False
+
+
+def seed_rank(revision: str) -> int:
+    return -int(macos.git("rev-list", "--count", revision + "..HEAD"))
+
+
 def download_inputs(directory: Path) -> None:
     main_scope()
     if (
@@ -220,8 +267,25 @@ def download_inputs(directory: Path) -> None:
             break
     else:
         raise ValueError("Private release enumeration exceeded its bound")
+    selected = None
+    if "macos" in INPUTS:
+        selected = macos_seed.resolve(
+            releases,
+            os.environ["GITHUB_SHA"],
+            read_seed_manifest,
+            compatible_seed,
+            seed_rank,
+        )
+        directory.mkdir(parents=True, exist_ok=True)
+        write_json(directory / "selected-macos-seed.json", selected)
     for platform, pinned in INPUTS.items():
-        release = seed_release(releases, platform)
+        if platform == "macos":
+            release = next(r for r in releases if r["id"] == selected["releaseId"])
+            pinned = {
+                "assets": {e["name"]: e["sha256"] for e in selected["assets"].values()}
+            }
+        else:
+            release = seed_release(releases, platform)
         output = directory / platform
         output.mkdir(parents=True, exist_ok=False)
         for name, sha in pinned["assets"].items():
@@ -245,23 +309,50 @@ def download_inputs(directory: Path) -> None:
                     size += len(data)
                     if size >= 2 * 1024**3:
                         raise ValueError("Reviewed input exceeds release asset limit")
+                    if platform == "macos" and size > asset["size"]:
+                        raise ValueError("Private input exceeds its selected byte size")
                     stream.write(data)
             if digest(path) != sha:
                 raise ValueError("Private input byte hash differs: " + name)
-        verify_inputs(output, platform)
+            if platform == "macos" and size != asset["size"]:
+                raise ValueError("Private input byte size differs: " + name)
+        verify_inputs(output, platform, selected if platform == "macos" else None)
     print(
         "Private input hashes verified; no publication or installer approval performed"
     )
 
 
-def verify_inputs(directory: Path, platform: str) -> None:
-    expected = INPUTS[platform]["assets"]
+def verify_inputs(
+    directory: Path, platform: str, selection: dict | None = None
+) -> None:
+    expected = (
+        {e["name"]: e["sha256"] for e in selection["assets"].values()}
+        if selection and platform == "macos"
+        else INPUTS[platform]["assets"]
+    )
     if {p.name for p in directory.iterdir()} != set(expected):
         raise ValueError("Unexpected or missing reviewed input files")
     for name, sha in expected.items():
         path = directory / name
         if path.is_symlink() or not path.is_file() or digest(path) != sha:
             raise ValueError("Transferred reviewed input changed: " + name)
+
+
+def prepare_macos_inputs(directory: Path, selection: dict) -> None:
+    verify_inputs(directory, "macos", selection)
+    macos.verify_reuse(seed_revision=selection["seed"]["sourceRevision"])
+    source = macos_seed.extract_sources(directory, selection["seed"])
+    values = {
+        "YOMIMADO_SOURCE_DIR": source,
+        "YOMIMADO_SEED_ORIGINAL_SOURCE_DIR": source,
+        "YOMIMADO_SEED_DMG": directory / selection["assets"]["dmg"]["name"],
+        "YOMIMADO_SEED_SOURCE_ARCHIVE": directory
+        / selection["assets"]["sources"]["name"],
+        "YOMIMADO_SEED_NOTICE_ARCHIVE": directory
+        / selection["assets"]["notices"]["name"],
+    }
+    with Path(os.environ["GITHUB_ENV"]).open("a") as stream:
+        stream.writelines(f"{name}={value}\n" for name, value in values.items())
 
 
 def restore_dictionaries(directory: Path) -> None:
@@ -782,6 +873,7 @@ def main() -> None:
         "action",
         choices=(
             "download-inputs",
+            "prepare-macos-inputs",
             "verify-main-rules",
             "verify-main-checks",
             "wait-main-checks",
@@ -804,9 +896,20 @@ def main() -> None:
     parser.add_argument("--macos-record")
     parser.add_argument("--windows-record")
     parser.add_argument("--report", type=Path)
+    parser.add_argument("--selection", type=Path)
+    parser.add_argument("--selection-sha256")
     args = parser.parse_args()
+    selected = None
+    if args.selection:
+        selected = macos_seed.load_selection(
+            args.selection, args.selection_sha256, os.environ["GITHUB_SHA"]
+        )
     if args.action == "download-inputs":
         download_inputs(args.directory)
+    elif args.action == "prepare-macos-inputs":
+        if selected is None:
+            raise ValueError("A run-bound seed selection is required")
+        prepare_macos_inputs(args.directory, selected)
     elif args.action == "verify-main-rules":
         verify_main_rules(read_json(args.directory))
     elif args.action == "verify-main-checks":
@@ -814,7 +917,7 @@ def main() -> None:
     elif args.action == "wait-main-checks":
         wait_main_checks(args.directory)
     elif args.action == "verify-inputs":
-        verify_inputs(args.directory, args.platform)
+        verify_inputs(args.directory, args.platform, selected)
     elif args.action == "restore-dictionaries":
         restore_dictionaries(args.directory)
     elif args.action == "windows-record":

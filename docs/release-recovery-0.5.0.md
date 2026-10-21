@@ -50,7 +50,10 @@ combined notices, two optional translation ZIPs, provenance and checksums. The
 notes ZIP contains the original JSON/Markdown preview with PRs #20–#27 and the
 v0.4.0 → v0.5.0 Full Changelog. Recovery preserves those bytes and their source.
 
-## Bounded procedure
+## Historical bounded procedure
+
+The following procedure describes the retired workflow in repair commit
+`0d1249273c97daf8e358bc986acb9af8632ab71d`; it is no longer an active entrypoint.
 
 1. Merge the focused repair PR through protected main after required Checks pass.
    Wait for successful exact-commit main Checks. The repair may change only the
@@ -80,7 +83,7 @@ v0.4.0 → v0.5.0 Full Changelog. Recovery preserves those bytes and their sourc
 The normal Release publisher still requires candidate source to equal current main.
 This one-candidate recovery permits the separately reviewed repair-only main diff
 and tags the original installer source. It is not a generic stale-source bypass.
-Retire this bounded workflow after recovery; later versions use normal Release.
+The bounded workflow was retired after recovery; later versions use normal Release.
 
 ## Verification and retained limits
 
@@ -96,5 +99,22 @@ creation or publication is performed during preparation.
 The original builders and combined verification passed, but new owner-installed
 acceptance is not recorded here. Fresh-Mac waivers and Windows hardware gaps keep
 their prior scope; full filtered-source-only rebuilding remains unverified.
-Hosted recovery, downloaded ZIP byte verification and new protected review remain
-pending until the owner authorizes and runs the concrete recovery.
+At preparation time, hosted recovery, downloaded ZIP byte verification and new
+protected review remained pending. The outcome below supersedes that status.
+
+## Completed recovery and retirement
+
+[Recovery run `39587407949`](https://github.com/chonnakanch/yomimado/actions/runs/39587407949)
+completed successfully on 2026-10-21 after PR #28 merged at
+`6fa6a4d497d0deb92b7255907e41826bef0f60b4` and main Checks passed.
+The [public v0.5.0 pre-release](https://github.com/chonnakanch/yomimado/releases/tag/v0.5.0)
+identifies original source `8ff3be2621096a9804cc23ba33902f5aab34da55`.
+All nine uploaded assets are present; both published installer SHA-256 values
+match the original hashes above. The notes retain PRs #20–#27 and Full Changelog.
+These are observed hosted results, without a new local installer/hardware test.
+
+The cleanup removes the temporary recovery workflow, its helper, regression
+suite and CI references at the owner's request after successful publication.
+The permanent trusted-main trigger fix and normal **Checks** and **Release**
+workflows remain. Original candidate/source hashes and historical review
+limits remain recorded here; retired code remains available in Git history.

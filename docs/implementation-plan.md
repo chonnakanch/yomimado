@@ -17,18 +17,17 @@ at the owner's request.
 - Toolbar, learning popup, Saved, Settings and Sources UI are implemented. Current
   contracts are in [design specifications](design-system.md); native checks and
   dated review evidence are in [UI testing](ui-testing.md).
-- The repository's latest recorded public release is **v0.4.0**, source
-  `bfdcbf2e313af824155cde6d3b08e27c0d5d2825`, with nine uploaded assets.
-  Exact hashes and the retained maintainer acceptance statement are in the
-  [release record](desktop-release.md). This status adds no new installer test.
-- **v0.5.0 installers are built and jointly verified** at `8ff3be2`, including
-  custom capture shortcuts and initial OCR recovery with the reviewed `46a5649`
-  seed. Publication was blocked by the PR deployment ref; the
-  [bounded recovery record](release-recovery-0.5.0.md) preserves the original
-  artifact/installer hashes and fresh owner publication review. No publication
-  or new exact-installer acceptance is recorded here.
+- The latest public release is **v0.5.0**, source
+  `8ff3be2621096a9804cc23ba33902f5aab34da55`, with nine uploaded assets.
+  It includes custom capture shortcuts and initial OCR recovery using reviewed
+  seed `46a5649`. [Publication recovery](release-recovery-0.5.0.md) succeeded;
+  its temporary workflow is retired. Exact hashes and verification limits remain
+  in the [release checklist](desktop-release.md). This records hosted publication,
+  not a new local installer or hardware test.
 - Integration and release procedures are maintained in
   [Git conventions](git-conventions.md) and the [release runbook](release-runbook.md).
+  Release dynamically selects an owner-reviewed compatible macOS seed; ordinary
+  PR Checks do not block on seed availability.
 
 The private macOS runtime seed now binds reviewed source `46a5649`, including
 initial small-selection OCR recovery. Source approval and all four uploaded hashes

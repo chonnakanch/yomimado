@@ -12,6 +12,14 @@ The [feature roadmap](docs/implementation-plan.md#feature-checklist) tracks comp
 
 ### 2026-10-21
 
+#### Removed
+
+- Retire the temporary v0.5.0 publication recovery workflow, helper and tests
+  after successful recovery run `39587407949`. Keep Checks and Release, including
+  the trusted-main merge trigger. Preserve original artifact/source/installer
+  evidence and record the public pre-release outcome. Disable the already
+  source-removed historical Actions cleanup workflow in GitHub.
+
 #### Fixed
 
 - Run merged release topics in trusted default-branch context so the main-only
@@ -42,6 +50,15 @@ The [feature roadmap](docs/implementation-plan.md#feature-checklist) tracks comp
   acceptance remain unrecorded.
 
 #### Changed
+
+- Resolve compatible owner-reviewed macOS seeds during Release instead of blocking
+  ordinary PR/main Checks on a fixed seed. Bind the selected draft, source, asset
+  IDs/hashes/sizes and approval manifest to each run and retain it in source/notices.
+  Future owner-activated seeds need no app pin-update PR; the existing reviewed
+  seed remains an exact migration fallback. Windows pins and protected installer
+  publication are unchanged. Release/source/manifest regression tests and the
+  existing seed's real input/archive/mounted-approval verification pass; no new
+  installer, source approval or remote seed activation is performed.
 
 - **Documentation maintenance:** remove repeated setup/CI/release descriptions,
   completed UI rollout notes and retired-tool reminders from current guides.
