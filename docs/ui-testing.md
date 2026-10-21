@@ -111,6 +111,13 @@ proved inconvenient for repeated grants.
    tabs/address and surrounding app text must not become OCR regions. When the
    boundary is uncertain, verify saved-area reuse, then missing/invalid saved-area
    drawing and cancellation. Selected Area still scans exactly what is dragged.
+   In Selected Area and the Whole Screen manual fallback, right-click before and
+   during a primary-button drag, including releasing either button first. No
+   context menu or OCR should open; the interrupted rectangle clears and a new
+   primary-button drag must work. Check macOS Control-click too, then Escape and
+   a fresh capture. Repeat after pointer cancellation or loss of pointer capture.
+   Right-click Settings, Saved, the toolbar, learning popups and OCR overlays;
+   none should open the browser context menu.
    Whole Screen and Selected Area produce aligned polygons for the horizontal and
    vertical fixture text. Switch from Whole Screen to a smaller Selected Area, then
    select a different-size area and use Rescan and Hide/Show. All polygon edges must
