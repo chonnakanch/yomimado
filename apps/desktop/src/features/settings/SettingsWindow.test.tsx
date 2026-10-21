@@ -143,7 +143,7 @@ it("keeps the current detector when the file picker is canceled", async () => {
 it("opens the detector release through the native browser launcher", async () => {
   await mount();
   const link = container.querySelector<HTMLAnchorElement>(
-    'a[href="https://github.com/zyddnys/manga-image-translator/releases/tag/beta-0.2.1"]',
+    'a[href="https://github.com/zyddnys/manga-image-translator/releases/latest"]',
   )!;
   const event = new MouseEvent("click", { bubbles: true, cancelable: true });
   await act(async () => link.dispatchEvent(event));

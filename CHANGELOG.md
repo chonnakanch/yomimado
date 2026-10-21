@@ -14,10 +14,12 @@ The [feature roadmap](docs/implementation-plan.md#feature-checklist) tracks comp
 
 #### Fixed
 
-- Open the detector setup's **original release page** link in the system browser
+- Open the detector setup's **latest release page** link in the system browser
   through a Settings-only native command, with visible errors and retry if the
-  browser cannot open. Verify the native macOS link and upstream model download;
-  the downloaded SHA-256 matches the supported detector. See the
+  browser cannot open. Follow the upstream `/releases/latest` page instead of a
+  fixed release tag. Verify the native macOS launcher and upstream model downloads;
+  both the original and current latest downloads match the supported detector's
+  SHA-256. See the
   [verification limits](docs/ui-testing.md#detector-release-link-verification).
 
 - Run merged release topics in trusted default-branch context so the main-only

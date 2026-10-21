@@ -56,6 +56,14 @@ download. Because a copy already existed, the browser named the new file
 `1a86ace74961413cbd650002e7bb4dcec4980ffa21b2f19b86933372071d718f`.
 No model was imported or replaced during this check.
 
+Follow-up — 2026-10-21: changed the destination and link label to **latest release
+page**, using `/releases/latest` in both the UI and native launcher. That URL
+currently resolves to `beta-0.3`. A separate download through
+`/releases/latest/download/comictextdetector.pt.onnx` has the same 94,669,756-byte
+size and supported SHA-256 recorded above. The native interaction above used the
+earlier fixed tag; this follow-up verifies the latest redirect/download and source
+checks. Model import continues to require the supported checksum.
+
 Frontend regressions cover native dispatch, prevention of webview navigation,
 browser-launch failure and retry, without triggering model import. All 303
 frontend and 75 native tests, frontend formatting/build, Rust formatting, Clippy

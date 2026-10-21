@@ -10,8 +10,7 @@ use tauri_plugin_dialog::DialogExt;
 const MODEL_NAME: &str = "comictextdetector.pt.onnx";
 const MODEL_SHA256: &str = "1a86ace74961413cbd650002e7bb4dcec4980ffa21b2f19b86933372071d718f";
 const MAX_MODEL_BYTES: u64 = 256 * 1024 * 1024;
-const RELEASE_URL: &str =
-    "https://github.com/zyddnys/manga-image-translator/releases/tag/beta-0.2.1";
+const RELEASE_URL: &str = "https://github.com/zyddnys/manga-image-translator/releases/latest";
 
 // Keep the destination native-owned: this command cannot launch arbitrary URLs
 // or shell input supplied by a webview.

@@ -122,7 +122,7 @@ export function ScanSettings({ active }: { active: boolean }) {
             <p>
               Download <code>comictextdetector.pt.onnx</code> from the{" "}
               <a
-                href="https://github.com/zyddnys/manga-image-translator/releases/tag/beta-0.2.1"
+                href="https://github.com/zyddnys/manga-image-translator/releases/latest"
                 target="_blank"
                 rel="noreferrer"
                 onClick={(event) => {
@@ -130,7 +130,7 @@ export function ScanSettings({ active }: { active: boolean }) {
                   void openRelease();
                 }}
               >
-                original release page
+                latest release page
               </a>
               , then select the file. YomiMado verifies its checksum and stores
               a private copy on this computer. Nothing is downloaded by the app.

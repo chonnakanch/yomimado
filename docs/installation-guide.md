@@ -69,7 +69,7 @@ step 3. There is no macOS-style Screen Recording permission step on Windows.
 
 The detector finds the text regions that recognition will read.
 
-1. Open the [original detector release](https://github.com/zyddnys/manga-image-translator/releases/tag/beta-0.2.1).
+1. Open the [latest detector release](https://github.com/zyddnys/manga-image-translator/releases/latest).
 2. Expand **Assets** and download **`comictextdetector.pt.onnx`**. Choose that exact
    file, rather than `comictextdetector.pt`, a source archive or another ONNX model.
    The other models listed on that upstream page are not needed for YomiMado.
@@ -81,7 +81,7 @@ The detector finds the text regions that recognition will read.
 
 YomiMado does not download this model automatically. Its import is shared by both
 platforms. Restart YomiMado if you replaced a detector that was already in use.
-The **original release page** link in Scan & OCR opens the download page in your
+The **latest release page** link in Scan & OCR opens the download page in your
 default browser.
 
 ## Make your first scan
