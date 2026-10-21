@@ -632,8 +632,10 @@ Complete this checklist before the protected main PR is merged:
       retain verification evidence and limitations here and in release metadata.
       See [generation details](release-runbook.md#generate-and-review-release-notes).
 
-- [ ] Run version/runtime-reuse preflight and resolve any required
-      [macOS seed rebuild/review/activation](release-runbook.md#build-a-replacement-macos-seed).
+- [ ] Run version preflight and review whether the intended runtime changes need a
+      [replacement seed](release-runbook.md#build-a-replacement-macos-seed).
+      Seed availability does not block ordinary PR Checks; Release strictly
+      resolves a compatible reviewed seed before input downloads or builds.
       If the intended source changes during preparation, generate a fresh draft
       and reconcile any changed behavior before merging.
 - [ ] Push the focused changes and require passing Checks for the main PR before
@@ -657,8 +659,9 @@ from the public note body.
    then checks matching Tauri/npm/Cargo versions, default branch and the
    `desktop-release` protection. A released
    version with its tag is skipped; an existing incomplete tag fails closed.
-   For an absent tag, frozen-runtime reuse is checked before downloads/builds;
-   changed shared runtime/dependency inputs require a newly reviewed seed.
+   For an absent tag, the subsequent input job resolves a compatible reviewed
+   seed before large downloads/builds; changed shared runtime/dependency inputs
+   require a newly reviewed seed.
    `0.x.x` and
    `alpha.N`/`beta.N`/`rc.N` versions are pre-releases; `1.0.0` and later without
    suffixes are stable.
@@ -672,8 +675,10 @@ from the public note body.
    `release-notes-preview` and passes its SHA-256 to the protected publisher.
    It checks current main,
    effective main rules, publisher environment protection, unique private seed identity and declared/actual byte
-   hashes. It exports four pinned macOS seed files and the pinned Windows
-   dictionary snapshot into separate one-day artifacts. It creates no release or
+   hashes. [Dynamic seed selection](release-runbook.md#dynamic-reviewed-seed-selection)
+   binds one owner-approved compatible macOS seed to this run. It exports its four
+   files and the pinned Windows dictionary snapshot into separate one-day artifacts,
+   plus the SHA-bound selection record for 14 days. It creates no release or
    tag and approves no installer. No personal token or new secret is needed.
 3. **Build macOS Apple Silicon** retains the reviewed frozen runtime, 74 dependency
    archives, source comparison, ad-hoc sealing, mounted verification and offline

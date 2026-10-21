@@ -26,6 +26,8 @@ at the owner's request.
   not a new local installer or hardware test.
 - Integration and release procedures are maintained in
   [Git conventions](git-conventions.md) and the [release runbook](release-runbook.md).
+  Release dynamically selects an owner-reviewed compatible macOS seed; ordinary
+  PR Checks do not block on seed availability.
 
 The private macOS runtime seed now binds reviewed source `46a5649`, including
 initial small-selection OCR recovery. Source approval and all four uploaded hashes

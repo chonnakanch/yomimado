@@ -105,7 +105,7 @@ fix(overlay): preserve coordinates at 150 percent scaling
 perf(ocr): reuse identical recognition crops within a scan
 docs(release): explain source review and seed activation
 build(release): bind PR notes to the verified candidate
-ci(release): verify runtime compatibility before merge
+ci(release): resolve compatible reviewed seeds before builds
 chore(release): prepare v0.4.0
 revert(ocr): remove bubble retry actions
 ```
@@ -158,7 +158,9 @@ required `gates` covers frontend, service, release-tool and both native-platform
 jobs. Release starts for a merged same-repository `release/*` PR into `main`, or
 a manual main dispatch, and waits up to 15 minutes for successful GitHub Actions
 `gates` for its exact source before private input access. Closed unmerged PRs,
-feature/fix merges and fork release branches cannot start builds. Keep main at the
+feature/fix merges and fork release branches cannot start builds. Ordinary Checks
+validate app source and release-tool regressions without requiring a matching
+frozen seed. Release resolves that separately before downloads/builds. Keep main at the
 selected candidate until publication; an advanced main is still rejected.
 
 ## Release-note compatibility

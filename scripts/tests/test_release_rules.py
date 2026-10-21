@@ -15,6 +15,8 @@ import zipfile
 from pathlib import Path
 from unittest.mock import patch
 
+sys.path.insert(0, str(Path(__file__).parents[1]))
+
 spec = importlib.util.spec_from_file_location(
     "ci", Path(__file__).parents[1] / "macos-ci-release.py"
 )
@@ -351,16 +353,15 @@ class FrontendDataReuseTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "new seed"):
             ci.verify_reuse(self.root)
 
-    def test_pr_checks_run_real_preflight_with_seed_history(self):
+    def test_pr_checks_keep_version_validation_without_blocking_on_old_seed(self):
         text = (ci.ROOT / ".github/workflows/checks.yml").read_text()
         job = text.split("  release-tools:\n", 1)[1].split("  native:\n", 1)[0]
         self.assertIn("          fetch-depth: 0\n", job)
         self.assertIn("          python scripts/macos-ci-release.py plan\n", job)
-        self.assertIn(
-            "          python scripts/macos-ci-release.py verify-reuse\n", job
-        )
+        self.assertNotIn("python scripts/macos-ci-release.py verify-reuse", job)
+        self.assertIn("test_macos_seed.py", job)
         step = job.split(
-            "      - name: Check release version and reviewed runtime compatibility\n",
+            "      - name: Check release version consistency\n",
             1,
         )[1].split("      - name:", 1)[0]
         self.assertNotIn("if:", step)
@@ -717,6 +718,41 @@ class SourceFollowupTests(unittest.TestCase):
                         archive.extractfile("yomimado/" + path).read(),
                         ci.committed_bytes(path),
                     )
+
+            # A dynamically selected seed follows its own source, not the
+            # migration fallback; retain that selection inside shipped sources.
+            original.update(
+                projectRevision=revision,
+                reviewer="chonnakanch",
+                reviewedAt="2020-01-01",
+            )
+            ci.write_json(seed / "source-delivery.json", original)
+            ci.write_json(notices / "source-delivery.json", original)
+            chosen = {
+                "sourceRevision": revision,
+                "seed": {
+                    "sourceRevision": revision,
+                    "approvedBy": "chonnakanch",
+                    "reviewedAt": "2020-01-01",
+                    "sourceDeliverySha256": ci.digest(seed / "source-delivery.json"),
+                },
+            }
+            dynamic = root / "dynamic"
+            ci.prepare_sources(seed, notices, dynamic, root=checkout, selection=chosen)
+            self.assertEqual(
+                ci.read_json(dynamic / "ci-followup.json")["seedRevision"], revision
+            )
+            self.assertEqual(
+                ci.read_json(dynamic / "runtime-seed-selection.json"), chosen
+            )
+            self.assertEqual(
+                ci.read_json(notices / "runtime-seed-selection.json"), chosen
+            )
+            (notices / "source-delivery.json").write_text("{}")
+            with self.assertRaisesRegex(ValueError, "approval/delivery differs"):
+                ci.prepare_sources(
+                    seed, notices, root / "bad", root=checkout, selection=chosen
+                )
 
 
 if __name__ == "__main__":

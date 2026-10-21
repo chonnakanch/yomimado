@@ -17,7 +17,9 @@ import tarfile
 import tomllib
 from pathlib import Path
 
-SEED_REVISION = "46a5649007caf09538adb7d7d0bc4bda763c095e"
+from macos_seed import LEGACY_REVISION
+
+SEED_REVISION = LEGACY_REVISION
 ROOT = Path(__file__).resolve().parent.parent
 
 # Technical review: docs/macos-runtime-reuse-0.4.0.md. These exact frontend
@@ -144,7 +146,10 @@ def runtime_compatible_config(path: str, before: str, after: str) -> bool:
     return old == new
 
 
-def verify_reuse(root: Path = ROOT) -> None:
+def verify_reuse(root: Path = ROOT, seed_revision: str | None = None) -> None:
+    seed_revision = seed_revision or SEED_REVISION
+    if not re.fullmatch(r"[0-9a-f]{40}", seed_revision):
+        raise ValueError("Expected a full reviewed source SHA")
     configs = {
         "apps/desktop/package.json",
         "apps/desktop/package-lock.json",
@@ -171,6 +176,8 @@ def verify_reuse(root: Path = ROOT) -> None:
         "scripts/update_version.py",
         # Standalone PR-note tooling; never frozen or bundled.
         "scripts/release_notes.py",
+        # Reviewed-seed discovery/transfer metadata; never frozen or bundled.
+        "scripts/macos_seed.py",
         # Reviewed 0.2.2 native tray inputs; none enter the frozen OCR runtime.
         # Keep this exact file list rather than allowing arbitrary icon/build
         # changes or relaxing the dependency/lock comparison below.
@@ -259,14 +266,14 @@ def verify_reuse(root: Path = ROOT) -> None:
         "apps/desktop/src-tauri/icons/android/",
     )
     deleted = None
-    changed = git("diff", "--name-only", SEED_REVISION, "HEAD", root=root).splitlines()
+    changed = git("diff", "--name-only", seed_revision, "HEAD", root=root).splitlines()
     if set(changed) & FRONTEND_DATA_HASHES.keys():
         verify_frontend_data(root)
     for path in changed:
         if Path(path).suffix.lower() in {".onnx", ".pt", ".pth", ".safetensors"}:
             raise ValueError("Model weights must not enter the release source: " + path)
         if path in configs:
-            before = git("show", f"{SEED_REVISION}:{path}", root=root)
+            before = git("show", f"{seed_revision}:{path}", root=root)
             after = git("show", f"HEAD:{path}", root=root)
             if runtime_compatible_config(path, before, after):
                 continue
@@ -285,7 +292,7 @@ def verify_reuse(root: Path = ROOT) -> None:
                         "diff",
                         "--diff-filter=D",
                         "--name-only",
-                        SEED_REVISION,
+                        seed_revision,
                         "HEAD",
                         root=root,
                     ).splitlines()
@@ -297,16 +304,31 @@ def verify_reuse(root: Path = ROOT) -> None:
         )
 
 
-def prepare_sources(seed: Path, notices: Path, output: Path, root: Path = ROOT) -> None:
-    verify_reuse(root)
+def prepare_sources(
+    seed: Path,
+    notices: Path,
+    output: Path,
+    root: Path = ROOT,
+    selection: dict | None = None,
+) -> None:
+    seed_revision = selection["seed"]["sourceRevision"] if selection else SEED_REVISION
+    verify_reuse(root, seed_revision)
     if git("status", "--porcelain", root=root):
         raise ValueError("CI source export requires a clean merged commit")
     revision = git("rev-parse", "HEAD", root=root)
     manifest = read_json(seed / "source-delivery.json")
-    if manifest["projectRevision"] != SEED_REVISION:
+    if manifest["projectRevision"] != seed_revision:
         raise ValueError("Incorrect reviewed seed revision")
+    if selection:
+        from macos_seed import verify_delivery
+
+        verify_delivery(seed, selection["seed"])
+        verify_delivery(notices, selection["seed"])
     frontend_data = verify_frontend_data(root)
     shutil.copytree(seed, output)
+    if selection:
+        write_json(output / "runtime-seed-selection.json", selection)
+        write_json(notices / "runtime-seed-selection.json", selection)
     project = next(e for e in manifest["components"] if e["id"] == "project:yomimado")
     old_archive = project["archive"]
     archive = output / f"yomimado-{revision}.tar.gz"
@@ -329,11 +351,11 @@ def prepare_sources(seed: Path, notices: Path, output: Path, root: Path = ROOT) 
         archive=archive.name,
         sha256=checksum,
         originalArchiveSha256=checksum,
-        licenseEvidence=f"GPL-3.0-only application software; separate CC-BY-SA-4.0 JLPT data (see ci-followup.json). Complete Git source at {revision}. Frozen dependency/runtime inputs match reviewed seed {SEED_REVISION}.",
+        licenseEvidence=f"GPL-3.0-only application software; separate CC-BY-SA-4.0 JLPT data (see ci-followup.json). Complete Git source at {revision}. Frozen dependency/runtime inputs match reviewed seed {seed_revision}.",
     )
     manifest["projectRevision"] = revision
     followup = {
-        "seedRevision": SEED_REVISION,
+        "seedRevision": seed_revision,
         "projectRevision": revision,
         "scope": "Rebuilt desktop source/version and separate frontend JLPT data; frozen OCR code, dependency sources and their licence choices unchanged. Original seed approval is not extended to the frontend dataset.",
         "frontendData": frontend_data,
@@ -419,6 +441,9 @@ def package(directory: Path, sources: Path, notices: Path) -> dict:
         "installedAppVerified": False,
         "assets": assets,
     }
+    selection = notices / "runtime-seed-selection.json"
+    if selection.is_file():
+        record["runtimeSeedSelectionSha256"] = digest(selection)
     if component.is_file():
         record["optionalTranslation"] = True
     for name, checksum in assets.items():
@@ -497,6 +522,9 @@ def main() -> None:
     parser.add_argument("--notices", type=Path)
     parser.add_argument("--expected")
     parser.add_argument("--policies", type=Path)
+    parser.add_argument("--seed-revision")
+    parser.add_argument("--selection", type=Path)
+    parser.add_argument("--selection-sha256")
     args = parser.parse_args()
     if args.action == "plan":
         app_version = version()
@@ -510,9 +538,16 @@ def main() -> None:
             )
         )
     elif args.action == "verify-reuse":
-        verify_reuse()
+        verify_reuse(seed_revision=args.seed_revision)
     elif args.action == "prepare-sources":
-        prepare_sources(args.sources, args.notices, args.directory)
+        selection = None
+        if args.selection:
+            from macos_seed import load_selection
+
+            selection = load_selection(
+                args.selection, args.selection_sha256, git("rev-parse", "HEAD")
+            )
+        prepare_sources(args.sources, args.notices, args.directory, selection=selection)
     elif args.action == "package":
         print(
             json.dumps(

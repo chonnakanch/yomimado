@@ -261,7 +261,10 @@ and main-targeted PRs; [Release](../.github/workflows/release.yml) builds a merg
 release topic in trusted main context. The
 [runbook](release-runbook.md#trusted-merge-context-and-publication-recovery) owns
 execution and publication details. Both workflow files are included in
-release-tool CI. The temporary v0.5.0 recovery workflow was retired after
+release-tool CI. Version consistency and release-tool regression tests stay in
+required PR/main Checks; actual frozen-seed compatibility is enforced only by
+[Release](release-runbook.md#dynamic-reviewed-seed-selection), before installers
+build. An unfinished replacement seed does not block feature integration. The temporary v0.5.0 recovery workflow was retired after
 [successful publication](release-recovery-0.5.0.md#completed-recovery-and-retirement).
 
 Service CI uses Python 3.11.17 and

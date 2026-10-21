@@ -51,6 +51,15 @@ The [feature roadmap](docs/implementation-plan.md#feature-checklist) tracks comp
 
 #### Changed
 
+- Resolve compatible owner-reviewed macOS seeds during Release instead of blocking
+  ordinary PR/main Checks on a fixed seed. Bind the selected draft, source, asset
+  IDs/hashes/sizes and approval manifest to each run and retain it in source/notices.
+  Future owner-activated seeds need no app pin-update PR; the existing reviewed
+  seed remains an exact migration fallback. Windows pins and protected installer
+  publication are unchanged. Release/source/manifest regression tests and the
+  existing seed's real input/archive/mounted-approval verification pass; no new
+  installer, source approval or remote seed activation is performed.
+
 - **Documentation maintenance:** remove repeated setup/CI/release descriptions,
   completed UI rollout notes and retired-tool reminders from current guides.
   Correct stale tokenizer/settings descriptions, keep measurement and verification

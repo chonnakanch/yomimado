@@ -51,6 +51,9 @@ publication requirements. Release script entrypoints are:
 
 - `desktop_release.py`: pinned input transfer, source/data/notice consolidation,
   exact-commit Checks, main protection, hash/provenance and uploaded release checks.
+- `macos_seed.py`: package actual owner approval as a seed activation manifest,
+  validate compatible draft selections, bind run metadata and verify source delivery.
+  See [dynamic selection](../docs/release-runbook.md#dynamic-reviewed-seed-selection).
 - `macos-ci-release.py`: version/classification, reviewed seed scope, current
   project sources, macOS packaging and release-environment checks.
 - `build-windows-prerelease.ps1`: prepare, freeze, inventory and build Windows NSIS.
@@ -60,7 +63,9 @@ publication requirements. Release script entrypoints are:
 
 `release_api.py` supplies shared GitHub API requests and candidate-file validation.
 `release_dictionaries.py` supplies safe redirects and hash-checked
-dictionary restoration. Current private seed identities and download checks live in `desktop_release.py`.
+dictionary restoration. `desktop_release.py` resolves macOS seed manifests and verifies downloads;
+`macos_seed.py` owns their schema and the exact legacy migration fallback.
+Windows dictionary pins remain in `desktop_release.py`.
 
 ## Windows build, runtime and source dependencies
 
