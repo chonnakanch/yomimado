@@ -12,6 +12,14 @@ The [feature roadmap](docs/implementation-plan.md#feature-checklist) tracks comp
 
 ### 2026-10-21
 
+#### Fixed
+
+- Run merged release topics in trusted default-branch context so the main-only
+  publication environment accepts them. Retain merged/same-repository/exact-source
+  guards and owner review. Add a manual, artifact-pinned recovery for the already
+  verified v0.5.0 installers after the original PR deployment was rejected.
+  Source/installer hashes and original note content remain unchanged.
+
 #### Build
 
 - Prepare v0.5.0 as a pre-release after PR #26 merged into main. Update all

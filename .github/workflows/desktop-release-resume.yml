@@ -1,0 +1,57 @@
+name: Recover v0.5.0 publication
+
+# One pinned retained candidate only. No builds, private seeds or arbitrary refs.
+"on":
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    if: github.repository == 'chonnakanch/yomimado' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      actions: read
+      checks: read
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
+        with:
+          python-version: "3.11.17"
+      - name: Verify pinned original artifacts and repair-only main scope
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python scripts/desktop_release_recovery.py review --directory "$RUNNER_TEMP/recovery"
+
+  publish:
+    needs: verify
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    environment: desktop-release
+    concurrency:
+      group: desktop-main-publish
+      cancel-in-progress: false
+    permissions:
+      contents: write
+      actions: read
+      checks: read
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
+        with:
+          python-version: "3.11.17"
+      - name: Reverify and publish the unchanged original v0.5.0 candidate
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python scripts/desktop_release_recovery.py publish --directory "$RUNNER_TEMP/recovery"

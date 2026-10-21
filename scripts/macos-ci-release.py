@@ -187,6 +187,8 @@ def verify_reuse(root: Path = ROOT) -> None:
         ".github/workflows/desktop-release-resume.yml",
         "scripts/macos-ci-release.py",
         "scripts/desktop_release.py",
+        # One-candidate publication recovery; never frozen or bundled.
+        "scripts/desktop_release_recovery.py",
         # These inputs are used only by the independent Windows candidate path.
         # Shared OCR code, existing locks and macOS recipes still fail closed.
         ".github/workflows/windows-candidate.yml",

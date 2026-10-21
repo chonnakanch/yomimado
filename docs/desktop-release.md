@@ -1,5 +1,16 @@
 # Shared desktop release checklist
 
+v0.5.0 publication blocked — **2026-10-21**: after PR #27 merged at
+`8ff3be2621096a9804cc23ba33902f5aab34da55`,
+[Release `39571798373`](https://github.com/chonnakanch/yomimado/actions/runs/39571798373)
+passes plan, private inputs, both installer builds and combined verification.
+The publisher is rejected before running any step because deployment ref
+`refs/pull/27/merge` does not match the protected environment's main-only rule.
+An owner rerun has the same rejection. No tag or asset upload is performed by
+these blocked publisher jobs. The [v0.5.0 recovery record](release-recovery-0.5.0.md)
+binds the retained nine files, notes, original source and artifact digests.
+Exact-installer acceptance and a fresh protected publication review remain separate.
+
 0.4.0 public release metadata and retained disclosure — **2026-10-20**:
 [v0.4.0](https://github.com/chonnakanch/yomimado/releases/tag/v0.4.0) identifies
 source `bfdcbf2e313af824155cde6d3b08e27c0d5d2825` and nine uploaded files, plus

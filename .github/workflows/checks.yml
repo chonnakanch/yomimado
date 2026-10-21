@@ -117,10 +117,11 @@ jobs:
           curl --fail --location --retry 3 --output "$archive" https://github.com/rhysd/actionlint/releases/download/v1.7.7/actionlint_1.7.7_linux_amd64.tar.gz
           echo "023070a287cd8cccd71515fedc843f1985bf96c436b7effaecce67290e7e0757  $archive" | sha256sum --check
           tar -xzf "$archive" -C "$RUNNER_TEMP" actionlint
-          "$RUNNER_TEMP/actionlint" .github/workflows/checks.yml .github/workflows/release.yml
+          "$RUNNER_TEMP/actionlint" .github/workflows/checks.yml .github/workflows/release.yml .github/workflows/desktop-release-resume.yml
       - name: Rehearse strict release gates with local fake APIs
         run: |
           python -m unittest discover -s scripts/tests -p test_desktop_release.py
+          python -m unittest discover -s scripts/tests -p test_desktop_release_recovery.py
           python -m unittest discover -s scripts/tests -p test_release_rules.py
           python -m unittest discover -s scripts/tests -p test_update_version.py
       - name: Verify PR release-note previews and publication binding

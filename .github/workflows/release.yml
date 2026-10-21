@@ -1,9 +1,10 @@
 name: Release
 
-# Release topics merge into main; wait for that commit's Checks before building.
+# Only merged same-repository release topics execute trusted main source.
+# pull_request_target keeps the protected deployment on main, not refs/pull/*/merge.
 # Manual dispatch remains available for recovery. Publication needs owner review.
 "on":
-  pull_request:
+  pull_request_target:
     types: [closed]
     branches: [main]
   workflow_dispatch:
@@ -19,7 +20,7 @@ jobs:
     if: >-
       github.repository == 'chonnakanch/yomimado' && github.ref == 'refs/heads/main' &&
       (github.event_name == 'workflow_dispatch' ||
-       (github.event_name == 'pull_request' && github.event.action == 'closed' &&
+       (github.event_name == 'pull_request_target' && github.event.action == 'closed' &&
         github.event.pull_request.merged == true && github.event.pull_request.base.ref == 'main' &&
         github.event.pull_request.head.repo.full_name == github.repository &&
         startsWith(github.event.pull_request.head.ref, 'release/') &&

@@ -35,6 +35,8 @@ a different installer.
   source review, seed build/upload, pin activation and owner publication approval.
 - [Shared release checklist](desktop-release.md): exact releases, workflow gates,
   complete delivery, source/notices and protected publication.
+- [v0.5.0 publication recovery](release-recovery-0.5.0.md): original verified
+  installers, pinned artifacts, environment-ref repair and fresh owner review.
 - [macOS release guide](macos-release.md) and [Windows release guide](windows-release.md):
   platform packaging and dated preparation evidence.
 - [macOS installed-app record](macos-clean-mac-test.md) and
