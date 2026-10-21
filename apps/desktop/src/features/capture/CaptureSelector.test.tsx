@@ -35,6 +35,70 @@ const surface: CaptureSurface = {
   scaleFactor: 1,
 };
 
+function mockPointerCapture(selector: HTMLDivElement) {
+  const pointers = new Set<number>();
+  selector.setPointerCapture = vi.fn((id: number) => pointers.add(id));
+  selector.hasPointerCapture = vi.fn((id: number) => pointers.has(id));
+  selector.releasePointerCapture = vi.fn((id: number) => pointers.delete(id));
+}
+
+async function pointer(
+  selector: HTMLDivElement,
+  type: string,
+  options: MouseEventInit & { pointerId?: number } = {},
+) {
+  const event = new MouseEvent(type, {
+    bubbles: true,
+    cancelable: true,
+    button: 0,
+    buttons: type === "pointerup" ? 0 : 1,
+    clientX: 20,
+    clientY: 10,
+    ...options,
+  });
+  Object.defineProperty(event, "pointerId", { value: options.pointerId ?? 1 });
+  await act(async () => {
+    selector.dispatchEvent(event);
+  });
+}
+
+async function manualSelector(mode = "selected") {
+  window.history.replaceState(
+    {},
+    "",
+    `/?mode=capture&session=50${mode === "selected" ? "" : `&scan=${mode}`}`,
+  );
+  vi.mocked(invoke).mockImplementation(async (command) =>
+    command === "capture_whole_screen"
+      ? null
+      : command === "get_capture_surface"
+        ? surface
+        : command === "capture_selection"
+          ? captured
+          : undefined,
+  );
+  vi.mocked(requestOcr).mockResolvedValue({ engine: "manga", regions: [] });
+  await act(async () => root.render(<CaptureSelector />));
+  const selector =
+    container.querySelector<HTMLDivElement>(".capture-selector")!;
+  Object.defineProperty(selector, "clientWidth", { value: 200 });
+  Object.defineProperty(selector, "clientHeight", { value: 100 });
+  mockPointerCapture(selector);
+  return selector;
+}
+
+async function expectFreshDrag(selector: HTMLDivElement) {
+  await pointer(selector, "pointerdown");
+  await pointer(selector, "pointermove", { clientX: 100, clientY: 60 });
+  await pointer(selector, "pointerup", { clientX: 140, clientY: 80 });
+  expect(invoke).toHaveBeenCalledWith("capture_selection", {
+    sessionId: 50,
+    selection: { x: 20, y: 10, width: 120, height: 70 },
+    viewport: { width: 200, height: 100 },
+  });
+  expect(requestOcr).toHaveBeenCalledOnce();
+}
+
 beforeEach(() => {
   Object.assign(globalThis, { IS_REACT_ACT_ENVIRONMENT: true });
   window.history.replaceState({}, "", "/?mode=capture&scan=auto");
@@ -295,7 +359,7 @@ it.each(["configure", "whole"])(
       container.querySelector<HTMLDivElement>(".capture-selector")!;
     Object.defineProperty(selector, "clientWidth", { value: 200 });
     Object.defineProperty(selector, "clientHeight", { value: 100 });
-    selector.setPointerCapture = vi.fn();
+    mockPointerCapture(selector);
     await act(async () => {
       selector.dispatchEvent(
         new MouseEvent("pointerdown", {
@@ -651,7 +715,7 @@ it.each(["whole", "selected"])(
     await act(async () => root.render(<CaptureSelector />));
     const selector =
       container.querySelector<HTMLDivElement>(".capture-selector")!;
-    selector.setPointerCapture = vi.fn();
+    mockPointerCapture(selector);
     const hint = container.querySelector<HTMLElement>(".capture-edge-hint")!;
     const guidance = container.querySelector<HTMLElement>(
       ".capture-edge-guidance",
@@ -688,3 +752,118 @@ it.each(["whole", "selected"])(
     expect(container.querySelector(".selection")).toBeNull();
   },
 );
+
+it.each([
+  { mode: "selected", button: 2, buttons: 2, ctrlKey: false },
+  { mode: "selected", button: 1, buttons: 4, ctrlKey: false },
+  { mode: "selected", button: 0, buttons: 1, ctrlKey: true },
+  { mode: "whole", button: 2, buttons: 2, ctrlKey: false },
+  { mode: "configure", button: 2, buttons: 2, ctrlKey: false },
+])(
+  "ignores secondary/context clicks in $mode (button $button, control $ctrlKey) and allows a fresh drag",
+  async ({ mode, button, buttons, ctrlKey }) => {
+    const selector = await manualSelector(mode);
+    await pointer(selector, "pointerdown", { button, buttons, ctrlKey });
+    const contextMenu = new MouseEvent("contextmenu", {
+      bubbles: true,
+      cancelable: true,
+      button: 2,
+    });
+    await act(async () => {
+      selector.dispatchEvent(contextMenu);
+    });
+    await pointer(selector, "pointerup", {
+      button,
+      clientX: 140,
+      clientY: 80,
+    });
+    expect(contextMenu.defaultPrevented).toBe(true);
+    expect(selector.setPointerCapture).not.toHaveBeenCalled();
+    expect(container.querySelector(".selection")).toBeNull();
+    expect(requestOcr).not.toHaveBeenCalled();
+    await expectFreshDrag(selector);
+  },
+);
+
+it.each(["selected", "whole", "configure"])(
+  "recovers from a right click while dragging in %s without capturing on secondary release",
+  async (mode) => {
+    const selector = await manualSelector(mode);
+    await pointer(selector, "pointerdown");
+    await pointer(selector, "pointermove", { clientX: 100, clientY: 60 });
+    expect(container.querySelector(".selection")).not.toBeNull();
+    // Browsers emit pointermove for additional button presses/releases.
+    await pointer(selector, "pointermove", { button: 2, buttons: 3 });
+    expect(selector.releasePointerCapture).toHaveBeenCalledWith(1);
+    expect(container.querySelector(".selection")).toBeNull();
+    expect(
+      container.querySelector<HTMLElement>(".capture-edge-guidance")!.style
+        .visibility,
+    ).toBe("");
+    await pointer(selector, "pointermove", { button: 0, buttons: 2 });
+    await pointer(selector, "pointerup", {
+      button: 2,
+      clientX: 140,
+      clientY: 80,
+    });
+    expect(requestOcr).not.toHaveBeenCalled();
+    await expectFreshDrag(selector);
+  },
+);
+
+it("suppresses a context menu during a drag and permits the next selection", async () => {
+  const selector = await manualSelector();
+  await pointer(selector, "pointerdown");
+  await pointer(selector, "pointermove", { clientX: 100, clientY: 60 });
+  const contextMenu = new MouseEvent("contextmenu", {
+    bubbles: true,
+    cancelable: true,
+  });
+  await act(async () => {
+    selector.dispatchEvent(contextMenu);
+  });
+  expect(contextMenu.defaultPrevented).toBe(true);
+  expect(container.querySelector(".selection")).toBeNull();
+  expect(selector.releasePointerCapture).toHaveBeenCalledWith(1);
+  await pointer(selector, "pointerup", { clientX: 140, clientY: 80 });
+  expect(requestOcr).not.toHaveBeenCalled();
+  await expectFreshDrag(selector);
+});
+
+it.each(["pointercancel", "lostpointercapture"])(
+  "clears an interrupted drag on %s and ignores late releases",
+  async (type) => {
+    const selector = await manualSelector();
+    await pointer(selector, "pointerdown");
+    await pointer(selector, "pointermove", { clientX: 100, clientY: 60 });
+    await pointer(selector, type, { pointerId: 2 });
+    expect(container.querySelector(".selection")).not.toBeNull();
+    await pointer(selector, type);
+    expect(container.querySelector(".selection")).toBeNull();
+    await pointer(selector, "pointerup", { clientX: 140, clientY: 80 });
+    expect(requestOcr).not.toHaveBeenCalled();
+    await expectFreshDrag(selector);
+  },
+);
+
+it("ignores other pointers and clears a too-small drag before retrying", async () => {
+  const selector = await manualSelector();
+  await pointer(selector, "pointerdown");
+  await pointer(selector, "pointerdown", { pointerId: 2 });
+  await pointer(selector, "pointermove", {
+    pointerId: 2,
+    clientX: 100,
+    clientY: 60,
+  });
+  await pointer(selector, "pointerup", {
+    pointerId: 2,
+    clientX: 140,
+    clientY: 80,
+  });
+  expect(requestOcr).not.toHaveBeenCalled();
+  await pointer(selector, "pointerup");
+  expect(container.querySelector(".selection")).toBeNull();
+  await pointer(selector, "pointerup", { clientX: 140, clientY: 80 });
+  expect(requestOcr).not.toHaveBeenCalled();
+  await expectFreshDrag(selector);
+});

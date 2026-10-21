@@ -60,6 +60,7 @@ export function CaptureSelector() {
   } | null>(null);
   const captureStarted = useRef(false);
   const scanChecked = useRef(false);
+  const activePointer = useRef<number | null>(null);
   const selection = useMemo(
     () => (start && end ? normalizeRectangle(start, end) : null),
     [start, end],
@@ -124,6 +125,17 @@ export function CaptureSelector() {
       x: event.clientX - rect.left,
       y: event.clientY - rect.top,
     };
+  };
+
+  const clearDrag = (element: HTMLDivElement) => {
+    const pointerId = activePointer.current;
+    activePointer.current = null;
+    setDragging(false);
+    setStart(null);
+    setEnd(null);
+    if (pointerId !== null && element.hasPointerCapture(pointerId)) {
+      element.releasePointerCapture(pointerId);
+    }
   };
 
   const showOverlay = async (
@@ -315,11 +327,24 @@ export function CaptureSelector() {
   return (
     <div
       className="capture-selector"
+      onContextMenu={(event) => {
+        event.preventDefault();
+        clearDrag(event.currentTarget);
+      }}
       onPointerDown={
         automaticScan && !needsArea
           ? undefined
           : (event) => {
+              if (
+                event.button !== 0 ||
+                event.ctrlKey ||
+                activePointer.current !== null ||
+                captureStarted.current
+              )
+                return;
+              event.preventDefault();
               event.currentTarget.setPointerCapture(event.pointerId);
+              activePointer.current = event.pointerId;
               setDragging(true);
               const next = point(event);
               setStart(next);
@@ -329,20 +354,34 @@ export function CaptureSelector() {
       onPointerMove={
         automaticScan && !needsArea
           ? undefined
-          : (event) => start && setEnd(point(event))
+          : (event) => {
+              if (event.pointerId !== activePointer.current) return;
+              // Chorded mouse buttons report their changes as pointermove,
+              // not another pointerdown/up. Abort before a secondary release
+              // can finish the selection or leave its primary drag stuck.
+              if (event.buttons !== 1) {
+                clearDrag(event.currentTarget);
+                return;
+              }
+              setEnd(point(event));
+            }
       }
       onPointerUp={
         automaticScan && !needsArea
           ? undefined
           : (event) => {
-              setDragging(false);
-              void finish(event);
+              if (event.pointerId !== activePointer.current) return;
+              clearDrag(event.currentTarget);
+              if (event.button === 0 && event.buttons === 0) void finish(event);
             }
       }
-      onPointerCancel={() => {
-        setDragging(false);
-        setStart(null);
-        setEnd(null);
+      onPointerCancel={(event) => {
+        if (event.pointerId === activePointer.current)
+          clearDrag(event.currentTarget);
+      }}
+      onLostPointerCapture={(event) => {
+        if (event.pointerId === activePointer.current)
+          clearDrag(event.currentTarget);
       }}
     >
       {scanMode !== "repeat" && (!automaticScan || needsArea) ? (

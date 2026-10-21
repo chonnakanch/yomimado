@@ -173,6 +173,11 @@ It and any error detail ignore pointer events, so a drag can begin through the h
 Hide the hint immediately while dragging; Escape cancels. Keep longer explanations
 in help rather than over the reading area. Expected uncertainty is not an error;
 actual capture/save failures retain an accessible alert above the hint.
+Only a primary-button drag starts a selection. Suppress the selector's context
+menu; secondary-button chords, context clicks and lost pointer capture reset the
+current drag so another selection can start without closing the selector.
+Disable the browser right-click context menu in every app window, including
+Settings, Saved, the toolbar, learning popups and OCR overlays.
 
 Mark overlay visibility with an accessible pressed state and current label.
 The current scan or retained result determines which scan button is pressed and

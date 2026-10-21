@@ -109,8 +109,11 @@ docs and confirm the requested milestone. Preserve unrelated user changes.
 Follow [Git conventions](docs/git-conventions.md): new topic branches use
 `<type>/<topic>` with no tool-specific prefix; commits use
 `type(scope): imperative summary` (scope optional). Continue the current task's
-selected branch unless a new branch is requested or needed. Start new topics from
-fetched `main` and target PRs to `main`, the only integration branch. `develop` is
+selected branch for follow-ups to that same task. Give each newly requested feature
+or bug fix a dedicated branch; create it from fetched `main` before editing, or
+move only the completed task's changes onto it before opening the PR if work has
+already started elsewhere. Preserve unrelated changes and published history.
+Target PRs to `main`, the only integration branch. `develop` is
 retired; preserve its unmerged history during migration. Preserve reviewed seed
 and source commit identities when merging; do not rewrite published history.
 
@@ -128,9 +131,18 @@ After editing:
 3. Update implementation status for a completed milestone; put dated changes in
    CHANGELOG and exact release/build evidence in the dedicated records.
 4. For material features, fixes or workflow changes, create a focused verified
-   commit and push it to the current tracked branch unless the user says otherwise.
+   commit and push it to the task's branch unless the user says otherwise.
    Stage explicit files, exclude unrelated changes and never force-push. If pushing
    fails, report the local commit and blocker.
+5. When a requested feature or bug fix is complete and relevant checks support
+   that conclusion, open a PR to `main` automatically from its dedicated branch.
+   The user's feature/fix request authorizes opening the PR; do not ask for
+   separate approval when confident the work is done. Update an existing PR for
+   the same task rather than opening a duplicate. If completion, intended behavior
+   or verification is uncertain, first make the implementation and evidence
+   reviewable, explain the uncertainty, and ask the user to approve opening the PR.
+   Record checks and platform limits in the PR and return its link. Opening a PR
+   does not authorize merging it or publishing an installer.
 
 ## Documentation maintenance
 

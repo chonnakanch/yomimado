@@ -22,6 +22,15 @@ The [feature roadmap](docs/implementation-plan.md#feature-checklist) tracks comp
 
 #### Fixed
 
+- Prevent area-selection right-clicks from opening a browser context menu or
+  leaving a stale drag. Accept primary-button starts only; secondary-button
+  chords, context clicks, cancellation and lost pointer capture clear the drag
+  and allow a fresh selection. Disable the browser right-click context menu in all
+  app windows. Cover Selected Area, Whole Screen's manual fallback
+  and configured reading areas with 12 regression cases. All 315 frontend tests,
+  formatting, TypeScript and frontend/current-target native builds pass. Native macOS/Windows
+  interaction and exact-installer verification remain unrecorded.
+
 - Open the detector setup's **latest release page** link in the system browser
   through a Settings-only native command, with visible errors and retry if the
   browser cannot open. Follow the upstream `/releases/latest` page instead of a
@@ -66,6 +75,11 @@ The [feature roadmap](docs/implementation-plan.md#feature-checklist) tracks comp
   acceptance remain unrecorded.
 
 #### Changed
+
+- Give each requested feature or bug fix a dedicated topic branch and open a PR
+  to `main` automatically when the work is complete. Ask the owner to approve
+  opening the PR when completion or verification is uncertain; retain separate
+  merge and installer-publication authorization.
 
 - Resolve compatible owner-reviewed macOS seeds during Release instead of blocking
   ordinary PR/main Checks on a fixed seed. Bind the selected draft, source, asset
