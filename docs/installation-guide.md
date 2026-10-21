@@ -81,6 +81,8 @@ The detector finds the text regions that recognition will read.
 
 YomiMado does not download this model automatically. Its import is shared by both
 platforms. Restart YomiMado if you replaced a detector that was already in use.
+The **original release page** link in Scan & OCR opens the download page in your
+default browser.
 
 ## Make your first scan
 

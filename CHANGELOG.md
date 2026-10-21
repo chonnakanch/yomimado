@@ -14,6 +14,12 @@ The [feature roadmap](docs/implementation-plan.md#feature-checklist) tracks comp
 
 #### Fixed
 
+- Open the detector setup's **original release page** link in the system browser
+  through a Settings-only native command, with visible errors and retry if the
+  browser cannot open. Verify the native macOS link and upstream model download;
+  the downloaded SHA-256 matches the supported detector. See the
+  [verification limits](docs/ui-testing.md#detector-release-link-verification).
+
 - Run merged release topics in trusted default-branch context so the main-only
   publication environment accepts them. Retain merged/same-repository/exact-source
   guards and owner review. Add a manual, artifact-pinned recovery for the already

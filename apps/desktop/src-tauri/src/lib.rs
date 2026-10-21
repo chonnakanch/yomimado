@@ -1054,6 +1054,7 @@ pub fn run() {
             capture_repeat_scan,
             detector_model::detector_model_status,
             detector_model::install_detector_model,
+            detector_model::open_detector_release,
             choose_translation_model_folder,
             show_capture_selector,
             show_auto_scanner,

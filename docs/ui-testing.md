@@ -7,6 +7,7 @@ Exact installer tests remain in [macOS](macos-clean-mac-test.md),
 [Windows](windows-installed-test.md) and [shared release records](desktop-release.md).
 
 - [Capture shortcut verification](#capture-shortcut-verification)
+- [Detector release link verification](#detector-release-link-verification)
 - [Native overlay checks](#native-overlay-checks)
 - [Windows acceptance checklist](#windows-acceptance-checklist)
 - [Tray verification and acceptance](#tray-verification-and-acceptance)
@@ -39,6 +40,27 @@ and it pass” for the capture-shortcut feature at source
 `f65576cbe95609b893061f5fc0144fba6a045156` and requested its PR. This records the reported manual feature pass;
 individual cases and hardware/platform coverage were not enumerated. It does not
 establish Windows-specific coverage or exact-installer acceptance.
+
+## Detector release link verification
+
+Development check — 2026-10-21: reproduced the unresponsive **original release
+page** link in the existing local app bundle. In the fixed Apple Silicon debug
+app, **Settings → Scan & OCR → original release page** opened the exact upstream
+`beta-0.2.1` release in the default browser (Helium). The debug UI used a temporary
+`required: true` detector-status fixture to expose the packaged setup controls;
+the actual native browser command was used. The fixture was removed afterward.
+
+Clicking the release's `comictextdetector.pt.onnx` asset completed a 94,669,756-byte
+download. Because a copy already existed, the browser named the new file
+`comictextdetector.pt (1).onnx`. Both files matched the app's supported SHA-256:
+`1a86ace74961413cbd650002e7bb4dcec4980ffa21b2f19b86933372071d718f`.
+No model was imported or replaced during this check.
+
+Frontend regressions cover native dispatch, prevention of webview navigation,
+browser-launch failure and retry, without triggering model import. All 303
+frontend and 75 native tests, frontend formatting/build, Rust formatting, Clippy
+and the current-target native debug build pass. Windows browser interaction and
+exact-installer acceptance remain unverified; this source fix is unreleased.
 
 ## Native overlay checks
 

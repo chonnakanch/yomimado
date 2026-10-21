@@ -10,6 +10,47 @@ use tauri_plugin_dialog::DialogExt;
 const MODEL_NAME: &str = "comictextdetector.pt.onnx";
 const MODEL_SHA256: &str = "1a86ace74961413cbd650002e7bb4dcec4980ffa21b2f19b86933372071d718f";
 const MAX_MODEL_BYTES: u64 = 256 * 1024 * 1024;
+const RELEASE_URL: &str =
+    "https://github.com/zyddnys/manga-image-translator/releases/tag/beta-0.2.1";
+
+// Keep the destination native-owned: this command cannot launch arbitrary URLs
+// or shell input supplied by a webview.
+fn open_release_page() -> Result<(), String> {
+    #[cfg(target_os = "macos")]
+    let result = std::process::Command::new("/usr/bin/open")
+        .arg(RELEASE_URL)
+        .status();
+    #[cfg(target_os = "windows")]
+    let result = {
+        use std::os::windows::process::CommandExt;
+        std::process::Command::new("rundll32.exe")
+            .args(["url.dll,FileProtocolHandler", RELEASE_URL])
+            .creation_flags(0x08000000) // CREATE_NO_WINDOW
+            .status()
+    };
+    #[cfg(not(any(target_os = "macos", target_os = "windows")))]
+    return Err(format!("Open {RELEASE_URL} in your browser."));
+
+    #[cfg(any(target_os = "macos", target_os = "windows"))]
+    {
+        let status = result.map_err(|error| error.to_string())?;
+        if status.success() {
+            Ok(())
+        } else {
+            Err(format!("The browser launcher exited with {status}"))
+        }
+    }
+}
+
+#[tauri::command]
+pub async fn open_detector_release(window: tauri::WebviewWindow) -> Result<(), String> {
+    if window.label() != "main" {
+        return Err("Open the detector release from Settings.".into());
+    }
+    tauri::async_runtime::spawn_blocking(open_release_page)
+        .await
+        .map_err(|error| error.to_string())?
+}
 
 #[derive(Clone, Serialize)]
 #[serde(rename_all = "camelCase")]

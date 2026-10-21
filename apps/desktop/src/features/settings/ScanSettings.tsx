@@ -81,6 +81,18 @@ export function ScanSettings({ active }: { active: boolean }) {
     }
   };
 
+  const openRelease = async () => {
+    setError(null);
+    try {
+      await invoke("open_detector_release");
+    } catch (reason) {
+      if (mounted.current)
+        setError(
+          `Unable to open the detector release page: ${String(reason).replace(/^Error: /, "")}. Copy the link address and open it in your browser.`,
+        );
+    }
+  };
+
   return (
     <>
       <div className="settings-card">
@@ -113,6 +125,10 @@ export function ScanSettings({ active }: { active: boolean }) {
                 href="https://github.com/zyddnys/manga-image-translator/releases/tag/beta-0.2.1"
                 target="_blank"
                 rel="noreferrer"
+                onClick={(event) => {
+                  event.preventDefault();
+                  void openRelease();
+                }}
               >
                 original release page
               </a>

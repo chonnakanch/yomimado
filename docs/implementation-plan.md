@@ -17,6 +17,9 @@ at the owner's request.
 - Toolbar, learning popup, Saved, Settings and Sources UI are implemented. Current
   contracts are in [design specifications](design-system.md); native checks and
   dated review evidence are in [UI testing](ui-testing.md).
+- Detector setup's release link opens the supported upstream page in the system
+  browser, with launch errors shown in Settings. The native macOS link and exact
+  download hash are [verified in development](ui-testing.md#detector-release-link-verification).
 - The repository's latest recorded public release is **v0.4.0**, source
   `bfdcbf2e313af824155cde6d3b08e27c0d5d2825`, with nine uploaded assets.
   Exact hashes and the retained maintainer acceptance statement are in the
