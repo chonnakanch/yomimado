@@ -5,13 +5,36 @@ import { afterEach, beforeEach, expect, it, vi } from "vitest";
 import { invoke } from "@tauri-apps/api/core";
 import { App } from "../../App";
 
+const detectorInvoke = vi.hoisted(() => vi.fn());
 vi.mock("@tauri-apps/api/core", () => ({ invoke: vi.fn() }));
+vi.mock("@tauri-apps/api/event", () => ({
+  listen: vi.fn().mockResolvedValue(() => {}),
+}));
+const shortcuts = {
+  bindings: {
+    selectedArea: "control+shift+KeyO",
+    wholeScreen: "control+shift+KeyS",
+  },
+  defaults: {
+    selectedArea: "control+shift+KeyO",
+    wholeScreen: "control+shift+KeyS",
+  },
+  available: [true, true],
+  warnings: [],
+};
 let container: HTMLDivElement;
 let root: Root;
 const status = { required: true, installed: false };
 beforeEach(() => {
   Object.assign(globalThis, { IS_REACT_ACT_ENVIRONMENT: true });
-  vi.mocked(invoke).mockResolvedValue(status);
+  detectorInvoke.mockResolvedValue(status);
+  vi.mocked(invoke).mockImplementation((command, args) =>
+    command === "capture_shortcuts"
+      ? Promise.resolve(shortcuts)
+      : command === "record_capture_shortcut"
+        ? Promise.resolve(undefined)
+        : detectorInvoke(command, args),
+  );
   window.localStorage.clear();
   window.history.replaceState({}, "", "/?view=settings");
   container = document.createElement("div");
@@ -24,6 +47,7 @@ afterEach(async () => {
   vi.restoreAllMocks();
   vi.unstubAllGlobals();
   vi.mocked(invoke).mockReset();
+  detectorInvoke.mockReset();
 });
 const button = (label: string) =>
   Array.from(container.querySelectorAll<HTMLButtonElement>("button")).find(
@@ -74,7 +98,7 @@ it("replaces the reading-order toggle with current keyboard-reading instructions
 });
 
 it("retries a status failure without claiming that the model is installed", async () => {
-  vi.mocked(invoke).mockRejectedValueOnce(new Error("Status unavailable"));
+  detectorInvoke.mockRejectedValueOnce(new Error("Status unavailable"));
   await mount();
   expect(container.querySelector('[role="alert"]')?.textContent).toContain(
     "Status unavailable",
@@ -87,7 +111,7 @@ it("retries a status failure without claiming that the model is installed", asyn
 
 it("ignores an old status response after leaving and returning to Scan & OCR", async () => {
   let finish!: (value: typeof status) => void;
-  vi.mocked(invoke).mockImplementationOnce(
+  detectorInvoke.mockImplementationOnce(
     () =>
       new Promise((resolve) => {
         finish = resolve;
@@ -103,7 +127,7 @@ it("ignores an old status response after leaving and returning to Scan & OCR", a
 });
 
 it("keeps the current detector when the file picker is canceled", async () => {
-  vi.mocked(invoke)
+  detectorInvoke
     .mockResolvedValueOnce({ required: true, installed: true })
     .mockResolvedValueOnce(null);
   await mount();
@@ -117,7 +141,7 @@ it("keeps the current detector when the file picker is canceled", async () => {
 });
 
 it("preserves an installed detector after failed replacement and allows retry", async () => {
-  vi.mocked(invoke)
+  detectorInvoke
     .mockResolvedValueOnce({ required: true, installed: true })
     .mockRejectedValueOnce(
       new Error(
@@ -142,14 +166,12 @@ it("preserves an installed detector after failed replacement and allows retry", 
 
 it("blocks duplicate imports and retains pending state across category changes", async () => {
   let finish!: (value: typeof status) => void;
-  vi.mocked(invoke)
-    .mockResolvedValueOnce(status)
-    .mockImplementationOnce(
-      () =>
-        new Promise((resolve) => {
-          finish = resolve;
-        }),
-    );
+  detectorInvoke.mockResolvedValueOnce(status).mockImplementationOnce(
+    () =>
+      new Promise((resolve) => {
+        finish = resolve;
+      }),
+  );
   await mount();
   await act(async () => {
     button("Select detector model file").click();
@@ -169,7 +191,7 @@ it("blocks duplicate imports and retains pending state across category changes",
 });
 
 it("keeps development model setup distinct from packaged installation", async () => {
-  vi.mocked(invoke).mockResolvedValue({ required: false, installed: false });
+  detectorInvoke.mockResolvedValue({ required: false, installed: false });
   await mount();
   expect(
     container.querySelector(".settings-model-status")?.textContent,

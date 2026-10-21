@@ -6,11 +6,32 @@ source revisions; it is not a claim that every current native case passed.
 Exact installer tests remain in [macOS](macos-clean-mac-test.md),
 [Windows](windows-installed-test.md) and [shared release records](desktop-release.md).
 
+- [Capture shortcut verification](#capture-shortcut-verification)
 - [Native overlay checks](#native-overlay-checks)
 - [Windows acceptance checklist](#windows-acceptance-checklist)
 - [Tray verification and acceptance](#tray-verification-and-acceptance)
 - [Dated redesign review](#dated-redesign-review)
 - [Retained window and debug evidence](#retained-window-and-debug-evidence)
+
+## Capture shortcut verification
+
+For configurable bindings, test **Settings → Scan & OCR → Scan shortcuts**:
+record both actions, cancel with Escape/Tab/focus/category changes, reject duplicate
+or OS-conflicting combinations, restore defaults, restart and verify the saved
+pair. Trigger captures from another app and verify the pointer's monitor is used;
+old bindings should stop working after replacement. Check a write failure without
+losing the old pair and a startup conflict without losing toolbar access.
+
+Development check — 2026-10-21: the native Apple Silicon debug app saved
+Option+Cmd+K immediately and rejected assigning the existing Whole Screen chord
+to Selected Area, without opening a capture selector. The saved JSON matched the
+active pair. The automation service failed during the restart inspection, so
+native restart, restore-default interaction and external-app trigger checks remain
+unverified. The temporary process/preferences were removed from active use.
+All 301 frontend and 75 native tests pass, including persistence, defaults,
+rollback, cancellation and listener lifecycle. Formatting, Clippy and current-target
+frontend/native builds pass. Windows interaction and exact-installer acceptance
+remain separate.
 
 ## Native overlay checks
 

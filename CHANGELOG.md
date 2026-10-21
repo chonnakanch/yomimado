@@ -12,6 +12,18 @@ The [feature roadmap](docs/implementation-plan.md#feature-checklist) tracks comp
 
 ### 2026-10-21
 
+#### Added
+
+- Custom capture shortcuts in Settings → Scan & OCR. Record Selected Area and
+  Whole Screen combinations, apply/save locally on key release and restore both
+  defaults. Duplicate, unavailable and unsavable bindings retain the previous
+  settings; startup conflicts keep the toolbar usable. Recording an existing
+  capture shortcut does not start a scan. Uses the existing native plugin without
+  new dependencies or OCR changes. Native macOS editing/duplicate checks pass;
+  All 301 frontend tests and 75 native tests, formatting, Clippy and current-target
+  frontend/native builds pass. Windows interaction and exact installers remain
+  unverified.
+
 #### Changed
 
 - **Documentation maintenance:** remove repeated setup/CI/release descriptions,

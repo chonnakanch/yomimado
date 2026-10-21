@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { invoke } from "@tauri-apps/api/core";
+import { CaptureShortcuts } from "./CaptureShortcuts";
 
 interface DetectorModelStatus {
   required: boolean;
@@ -165,34 +166,7 @@ export function ScanSettings({ active }: { active: boolean }) {
           Capture access is checked when you scan. Screenshots stay local.
         </p>
       </div>
-      <div className="settings-card">
-        <h2>Scan shortcuts</h2>
-        <dl className="settings-shortcuts">
-          <div>
-            <dt>Selected Area</dt>
-            <dd>
-              <kbd>Cmd/Ctrl + Shift + O</kbd>
-            </dd>
-          </div>
-          <div>
-            <dt>Whole Screen</dt>
-            <dd>
-              <kbd>Cmd/Ctrl + Shift + S</kbd>
-            </dd>
-          </div>
-        </dl>
-        <p>
-          Shortcuts use the monitor under the pointer. Toolbar buttons use the
-          toolbar's monitor. Rescan takes a fresh capture of your last
-          successful area or screen.
-        </p>
-        <p className="settings-note">
-          Whole Screen finds manga pages on the target monitor before OCR. If
-          detection is uncertain, it uses a saved manga area or asks you to draw
-          one. Selected Area scans exactly what you drag. Rescan repeats the
-          last successful area; use Whole Screen again if the page has moved.
-        </p>
-      </div>
+      <CaptureShortcuts active={active} />
     </>
   );
 }

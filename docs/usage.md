@@ -28,6 +28,23 @@ finishes or is canceled; Quit stays available. If the tray cannot start, the
 toolbar stays available, its status control reports the error, and Hide Toolbar
 is omitted. **Quit YomiMado** exits the app and stops its bundled OCR service.
 
+### Customize capture shortcuts
+
+Open **Settings → Scan & OCR → Scan shortcuts**, choose **Change** beside
+Selected Area or Whole Screen, then press and release your preferred combination.
+Changes save locally and apply immediately, including after restarting YomiMado.
+Use Ctrl, Command/Windows or Alt/Option with a letter, number or F1–F24;
+Shift is optional. Keys follow their physical keyboard position. Escape, Tab,
+changing categories or leaving Settings cancels recording without saving.
+
+The two actions must use different shortcuts. If a binding is unavailable or
+cannot be saved, the previous binding remains active. Startup conflicts appear
+as **Unavailable** in Settings; toolbar capture buttons remain usable.
+**Restore defaults** restores both shortcuts together: `Cmd/Ctrl+Shift+O`
+(Selected Area) and `Cmd/Ctrl+Shift+S` (Whole Screen). Some operating-system
+shortcuts are reserved or consumed before the recorder can see them; choose a
+different combination in that case.
+
 ### Scanning
 
 **Selected Area** scans exactly the region you drag. **Whole Screen** finds manga

@@ -31,6 +31,22 @@ in [implementation status and roadmap](implementation-plan.md).
   Linux/mobile, continuous OCR, image replacement, accounts/cloud sync and full
   panel reading-order reconstruction remain outside the current scope.
 
+Capture shortcuts use the existing Tauri global-shortcut plugin. Native commands
+`capture_shortcuts`, `record_capture_shortcut` and `set_capture_shortcuts` are
+limited to the Settings window (`main`). `capture-shortcuts.json` lives in the
+app config directory, separate from OCR and saved learning data. Updates register
+new chords before atomically replacing the preference file; registration/storage
+failures roll back new registrations. The handler dispatches only the active pair,
+so an old chord whose unregister failed cannot launch captures. Startup failures
+leave the app and toolbar usable and expose shortcut availability in Settings.
+
+Recording uses webview physical key codes and forwards already registered chords
+through `capture-shortcut-recorded` on key release. While recording in focused
+Settings, those chords do not capture. Focus loss/close ends native recording;
+Escape, Tab and category changes also cancel the frontend recorder. Shortcut
+registration commands run off the UI thread; the global handler reads atomics
+without taking the settings lock while the plugin holds its registry lock.
+
 ## Repository map
 
 ```text
@@ -56,6 +72,7 @@ yomimado/
 │   │   │   ├── overlay/        Native overlay/popup placement and input routing
 │   │   │   ├── toolbar.rs      Scan sessions, toolbar state, secondary windows
 │   │   │   ├── tray.rs         macOS menu bar / Windows notification-area menu
+│   │   │   ├── shortcuts.rs    Local capture bindings, registration and recording
 │   │   │   ├── detector_model.rs   Checksum-verified detector import
 │   │   │   └── windows_service.rs Windows packaged-service lifecycle
 │   │   ├── capabilities/      Tauri command permissions

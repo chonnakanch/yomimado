@@ -312,7 +312,11 @@ refresh/error/empty states and confirmed Remove actions. Lists remain readable
 with larger text and narrow windows.
 
 Settings uses ordinary labeled controls for actual capabilities. Scan & OCR holds
-verified detector status/import/replacement and capture/shortcut guidance;
+verified detector status/import/replacement and editable capture shortcuts;
+show a readable chord and labeled Change button for each capture action. Recording
+has a visible instruction, Escape/Tab cancellation and focus recovery. Save only
+after key release; show failures without replacing the displayed binding. Include
+Restore defaults, unavailable-binding warnings and local persistence guidance.
 Reading holds keyboard-reading help, estimated JLPT badge visibility and local
 translation selection. Sources & licenses has its own
 window with linked attribution and packaged notice guidance. No nonfunctional settings drawn merely
