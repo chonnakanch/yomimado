@@ -1,6 +1,6 @@
 # Implementation status and feature roadmap
 
-Last reviewed: **2026-10-20**. This is the current plan, not a chronological work
+Last reviewed: **2026-10-21**. This is the current plan, not a chronological work
 log. [CHANGELOG.md](../CHANGELOG.md) records dated changes; the
 [release checklist](desktop-release.md) records publication and exact installers.
 Source completion, UI approval and installer acceptance are separate states.
@@ -34,6 +34,12 @@ optional git-cliff commit-audit tool was retired on 2026-10-20; the
 [release runbook](release-runbook.md#generate-and-review-release-notes) describes
 the current procedure. Its historical removal evidence remains at source
 `dcb3d7d`.
+
+The private macOS runtime seed now binds reviewed source `46a5649`, including
+initial small-selection OCR recovery. Source approval and all four uploaded hashes
+are recorded in the [OCR seed review](macos-runtime-review-ocr-20261021.md).
+Mounted source/signature and frozen offline smoke checks pass; this does not
+change the published v0.4.0 installer or establish new exact-installer acceptance.
 
 ## Maintenance priorities
 

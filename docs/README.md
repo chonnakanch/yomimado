@@ -43,7 +43,8 @@ A source check or an old installer test does not accept a new installer.
   owner reports, waivers and untested hardware.
 - [Verified macOS runtime seed](macos-runtime-seed.md),
   [0.2.0 source review](macos-runtime-review-0.2.0.md) and
-  [0.3.0 source review](macos-runtime-review-0.3.0.md): private input/source identities.
+  [0.3.0 source review](macos-runtime-review-0.3.0.md) and
+  [OCR source review](macos-runtime-review-ocr-20261021.md): private input/source identities.
 - [0.4.0 preparation](release-preparation-0.4.0.md) and
   [runtime reuse repair](macos-runtime-reuse-0.4.0.md): retained preparation,
   technical review and failed-run context, superseded by later release records.

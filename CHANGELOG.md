@@ -10,6 +10,18 @@ The [feature roadmap](docs/implementation-plan.md#feature-checklist) tracks comp
 
 ## Unreleased
 
+### 2026-10-21
+
+#### Build
+
+- Activate the source-approved macOS OCR runtime seed at `46a5649` for PR #24.
+  All four unpublished GitHub inputs match local SHA-256 hashes; revision,
+  input hashes and workflow paths change together. Mounted source/signature
+  verification, frozen offline learning/persistence smoke and all 29 module
+  comparisons pass. Windows inputs and reuse guard rules are unchanged.
+  See the [exact source/approval/input record](docs/macos-runtime-review-ocr-20261021.md).
+  This adds no new installer acceptance or publication approval.
+
 ### 2026-10-20
 
 #### Fixed
