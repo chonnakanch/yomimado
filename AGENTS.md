@@ -145,6 +145,10 @@ Keep developer commands and debug notes in development, and release procedures i
 the release runbook. Keep README installation text brief and link to the full
 installation guide rather than repeating its steps.
 
+Keep installation and usage guides focused on current end-user tasks. Put old
+version notes, acceptance history and development/debug instructions in their
+respective release records, Git history or development guide.
+
 Merge completed short feature notes into the relevant guide. Remove superseded
 plans once current behavior and useful evidence have a home. Put chronological
 work in CHANGELOG or Git history rather than growing a second implementation

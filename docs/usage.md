@@ -2,16 +2,15 @@
 
 Start with the [installation guide](installation-guide.md) to install the app,
 configure the detector and make your first scan. This guide explains the reading
-controls after setup. It describes the toolbar interface in v0.4.0 and current
-source; exact features depend on your installed version.
+controls after setup.
 
 ## Reading controls
 
 YomiMado starts with a compact always-on-top toolbar. Drag its handle, or
 focus the handle and use arrow keys, to move it. Collapse retains both scan icons,
-Rescan, overlay visibility/status and Expand; the native window shrinks too. The
-overflow menu opens Saved, Settings (including detector import), Sources and Quit.
-Closing the secondary main window keeps the app running.
+Rescan, overlay visibility/status and Expand. The overflow menu opens Saved,
+Settings, Sources & licenses and Quit. Closing Saved or Settings keeps the app
+running.
 
 ### Tray / menu bar
 
@@ -46,15 +45,31 @@ while you drag; Escape cancels selection.
 Changed monitor layout/scaling requires a new scan selection. Hide/Show preserves
 results without OCR; rescan if the underlying page changes. The toolbar shows
 the active mode through its highlighted scan button. Scanning shows a spinner
-and phase label inside that button; click it to cancel. The eye icon indicates
-shown/hidden overlays, with no automatic status text row. A warning icon opens
+and phase label inside that button; click it to cancel. The eye icon shows whether
+overlays are visible. A warning icon opens
 error/model-setup details when needed; Escape dismisses those details. Compact
 mode keeps both scan-mode icons, Rescan, visibility/status and expand on one row.
 Both toolbar forms keep the same control height. Near the bottom of the work area,
 More actions opens above the toolbar without moving its row. On short screens the
-menu scrolls; Escape closes it and returns focus to More actions. More actions uses
-a separate popover so showing or dismissing it does not resize the toolbar.
+menu scrolls; Escape closes it and returns focus to More actions.
 Screenshots still stay local.
+
+`Cmd/Ctrl+Shift+O` selects an area on the monitor under the pointer.
+`Cmd/Ctrl+Shift+S` starts Whole Screen on that monitor, including automatic page
+detection and saved/drawn-area fallback. Toolbar buttons use the toolbar's
+monitor; Rescan uses its recorded original monitor.
+
+Whole Screen can be the first scan after launch; Selected Area is not needed to
+initialize it. Recognition allows up to three minutes for a cold local model or
+large page. A stalled OCR request then ends with an error instead of leaving the
+scan button busy indefinitely. If an error persists, quit and reopen YomiMado
+before retrying.
+
+Saved, Settings and Sources & licenses each open their own native window from
+More actions. They can remain open together; opening another menu entry does
+not replace an existing window's content.
+
+### Saved words and sentences
 
 Choose **More actions → Saved** to open the shared library. Use **Words** and
 **Sentences** tabs to switch collections; Left/Right or Home/End moves between
@@ -82,21 +97,6 @@ Retry loading; a failed removal stays beside its row so you can try Remove again
 Removal still requires confirmation. During removal, other Remove/Refresh actions
 are disabled. Keyboard focus returns to the next/previous row or Refresh when a
 row is removed, and stays in the selected tab if you switched collections.
-
-`Cmd/Ctrl+Shift+O` selects an area on the monitor under the pointer.
-`Cmd/Ctrl+Shift+S` starts Whole Screen on that monitor, including automatic page
-detection and saved/drawn-area fallback. Toolbar buttons use the toolbar's
-monitor; Rescan uses its recorded original monitor.
-
-Whole Screen can be the first scan after launch; Selected Area is not needed to
-initialize it. Recognition allows up to three minutes for a cold local model or
-large page. A stalled OCR request then ends with an error instead of leaving the
-scan button busy indefinitely. If an error persists, quit and reopen YomiMado
-before retrying.
-
-Saved, Settings and Sources & licenses each open their own native window from
-More actions. They can remain open together; opening another menu entry does
-not replace an existing window's content.
 
 ### Keyboard reading
 
@@ -182,22 +182,16 @@ The app includes adjacent analyzed endings and shows steps such as
 analyzed base for local dictionary lookup. Common past/negative/polite forms and
 ちゃう／じゃう contractions are supported; **Not covered** marks unsupported
 forms. Explanations do not start translation or infer a context-specific meaning.
-See the [supported forms and limits](implementation-plan.md#conjugation-behavior-and-supported-forms).
+Passive/potential forms, causatives, progressive forms and other unsupported
+expressions remain **Not covered**.
 
 The sentence and its actions stay above scrollable details as the popup grows
-to its work-area limit. Long sentences have their own scroll area.
+to fit the available screen space. Long sentences have their own scroll area.
 
-Edit OCR text opens a correction draft. Apply and analyze commits it, resets
-dependent learning results and retokenizes. Cancel or Escape in the editor keeps
+Edit OCR text opens a correction draft. **Apply and analyze** applies it and
+refreshes word analysis and learning details. Cancel or Escape in the editor keeps
 the applied sentence; Escape elsewhere closes the popup and returns keyboard
 focus to the region when it was opened through region navigation. Translate
 locally retains the existing explicit translation/cache behavior. Save sentence
 includes a matching translation only when one has been requested. Copy/save
 failures are shown inline and can be retried.
-
-## Older releases
-
-The [historical v0.1.0 reading guide](https://github.com/chonnakanch/yomimado/blob/91c65d1/docs/usage.md#published-v010-reading-flow)
-retains the original interface instructions. Exact platform test results remain
-in the [Windows](windows-installed-test.md) and [macOS](macos-clean-mac-test.md)
-installed-app records.
