@@ -573,6 +573,7 @@ class PrivateInputTests(unittest.TestCase):
             ("GITHUB_REF", "refs/pull/20/merge"),
             ("GITHUB_EVENT_NAME", "push"),
             ("GITHUB_EVENT_NAME", "pull_request"),
+            ("GITHUB_EVENT_NAME", "pull_request_target"),
             ("GITHUB_EVENT_NAME", ""),
             ("GITHUB_REPOSITORY", "other/repo"),
             ("GITHUB_SHA", "main"),
@@ -602,7 +603,7 @@ class PrivateInputTests(unittest.TestCase):
                 "GITHUB_ACTIONS": "true",
                 "GITHUB_REPOSITORY": release.REPOSITORY,
                 "GITHUB_REF": "refs/heads/main",
-                "GITHUB_EVENT_NAME": "pull_request",
+                "GITHUB_EVENT_NAME": "pull_request_target",
                 "GITHUB_EVENT_PATH": str(event_path),
                 "GITHUB_SHA": REVISION,
             }
@@ -1248,7 +1249,8 @@ class PublisherRehearsalTests(unittest.TestCase):
         self.assertIn("  workflow_dispatch:\n", triggers)
         self.assertNotIn("  push:", triggers)
         self.assertIn(
-            "  pull_request:\n    types: [closed]\n    branches: [main]", triggers
+            "  pull_request_target:\n    types: [closed]\n    branches: [main]",
+            triggers,
         )
         self.assertIn("github.event_name == 'workflow_dispatch'", workflow)
         self.assertIn("github.event.pull_request.merged == true", workflow)

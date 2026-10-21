@@ -256,6 +256,14 @@ results from every job/matrix entry. See [Git conventions](git-conventions.md)
 for triggers and merge requirements, and the [release runbook](release-runbook.md)
 for installer workflows.
 
+Active workflows: [Checks](../.github/workflows/checks.yml) verifies main pushes
+and main-targeted PRs; [Release](../.github/workflows/release.yml) builds a merged
+release topic in trusted main context; [Recover v0.5.0 publication](../.github/workflows/desktop-release-resume.yml)
+is a manual main-only recovery for one pinned original candidate. The
+[runbook](release-runbook.md#trusted-merge-context-and-publication-recovery) owns
+execution and publication details. Recovery tests and all three workflow files
+are included in release-tool CI.
+
 Service CI uses Python 3.11.17 and
 [requirements-ci.txt](../scripts/requirements-ci.txt), with exact wheel hashes
 and all image/tokenizer dependencies installed. It runs service tests alongside

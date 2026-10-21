@@ -64,7 +64,7 @@ COMBINED_LAYOUTS = {
 def main_scope() -> None:
     event_name = os.environ.get("GITHUB_EVENT_NAME")
     allowed_event = event_name == "workflow_dispatch"
-    if event_name == "pull_request" and os.environ.get("GITHUB_EVENT_PATH"):
+    if event_name == "pull_request_target" and os.environ.get("GITHUB_EVENT_PATH"):
         event = read_json(Path(os.environ["GITHUB_EVENT_PATH"]))
         pr = event.get("pull_request", {})
         head = pr.get("head", {})

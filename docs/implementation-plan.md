@@ -21,10 +21,12 @@ at the owner's request.
   `bfdcbf2e313af824155cde6d3b08e27c0d5d2825`, with nine uploaded assets.
   Exact hashes and the retained maintainer acceptance statement are in the
   [release record](desktop-release.md). This status adds no new installer test.
-- **v0.5.0 is prepared for release review**, including merged PR #26's custom
-  capture shortcuts and PR #24's initial OCR recovery. It reuses the reviewed
-  `46a5649` runtime seed; [preparation checks and limits](release-preparation-0.5.0.md)
-  remain separate from installer acceptance and publication.
+- **v0.5.0 installers are built and jointly verified** at `8ff3be2`, including
+  custom capture shortcuts and initial OCR recovery with the reviewed `46a5649`
+  seed. Publication was blocked by the PR deployment ref; the
+  [bounded recovery record](release-recovery-0.5.0.md) preserves the original
+  artifact/installer hashes and fresh owner publication review. No publication
+  or new exact-installer acceptance is recorded here.
 - Integration and release procedures are maintained in
   [Git conventions](git-conventions.md) and the [release runbook](release-runbook.md).
 

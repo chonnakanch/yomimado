@@ -106,7 +106,7 @@ versions. Preserve exact reviewed seed/source commits when merging.
 
 4. Prepare the same-repository `release/<version>` topic's protected PR into
    `main`. Merge when authorized and required checks pass. Release starts on the
-   merged PR's `closed` event and waits up to 15 minutes for **Checks / gates**
+   merged PR's `pull_request_target: closed` event and waits up to 15 minutes for **Checks / gates**
    on the resulting exact main commit. PR checks alone do not satisfy this gate.
    Closed unmerged PRs, fork release branches and other head branches are skipped.
 5. Follow the automatic Release run. There is no version input: the workflow
@@ -138,6 +138,29 @@ two platform source archives, combined notices, checksums, provenance and two
 translation ZIPs. Follow the candidate's validated layout; older layouts remain
 historical. GitHub's automatic repository source links do not replace dependency
 source delivery.
+
+## Trusted merge context and publication recovery
+
+The merge trigger uses `pull_request_target: closed`, with guards requiring a
+merged same-repository `release/*` PR targeting main and an exact match between
+its merge commit and `github.sha`. Every checkout selects that trusted default-
+branch SHA; no unmerged head code is checked out. Manual dispatch still selects main.
+The protected publisher retains its main-only branch rule and owner review.
+
+GitHub evaluates ordinary `pull_request` environment deployments against
+`refs/pull/<number>/merge`, even for this closed-PR release path. That caused the
+first v0.5.0 publisher to be rejected before any step ran. The default-branch
+context matches the existing main-only policy; do not add PR refs to that policy.
+See [GitHub's ref-policy change](https://github.blog/changelog/2025-11-07-actions-pull_request_target-and-environment-branch-protections-changes/).
+
+For the existing v0.5.0 files, use only the bounded
+[original-candidate recovery](release-recovery-0.5.0.md) after its repair PR merges
+and main Checks pass. It downloads the pinned original candidate and note ZIPs,
+rechecks them and requires a fresh protected publication review. It does not
+rebuild installers. Rerunning the old PR-triggered publisher retains its old event
+and cannot repair this environment rejection. Other versions and partial uploads
+require separate investigation; this recovery accepts neither arbitrary artifacts
+nor an existing v0.5.0 tag/release.
 
 ## Generate and review release notes
 
