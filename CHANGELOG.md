@@ -12,6 +12,16 @@ The [feature roadmap](docs/implementation-plan.md#feature-checklist) tracks comp
 
 ### 2026-10-21
 
+#### Changed
+
+- **Installation guide:** add an end-to-end packaged-app walkthrough covering
+  platform installers, first launch, macOS capture permission, the exact required
+  detector download/import, a first OCR/dictionary/save check and optional local
+  translation. Separate contributor setup and correct the implication that
+  installed-app users must download dictionaries or start Python manually.
+
+### 2026-10-21
+
 #### Build
 
 - Activate the source-approved macOS OCR runtime seed at `46a5649` for PR #24.

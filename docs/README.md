@@ -9,7 +9,7 @@ source/candidate, not necessarily the current release.
 
 | Guide                                                       | Use it for                                                                                    |
 | ----------------------------------------------------------- | --------------------------------------------------------------------------------------------- |
-| [Usage and installation](usage.md)                          | Capture, page scan, learning popups, shortcuts and saved entries                              |
+| [Installation and reading](usage.md#install-and-set-up)     | Download, macOS/Windows installation, detector setup, first scan and reading controls         |
 | [Development](development.md)                               | Local service, models, dictionaries, checks and diagnostics                                   |
 | [Implementation status and roadmap](implementation-plan.md) | Current scope, maintenance priorities, proposed features, Saved search and conjugation limits |
 | [Architecture and resources](architecture.md)               | Source tree, scan flow, API boundaries, coordinates, models, dictionaries and storage         |

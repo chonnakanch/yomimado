@@ -31,8 +31,11 @@ For installers and release notes, see [GitHub Releases](https://github.com/chonn
 | macOS    | macOS 14 or later, Apple Silicon; unnotarized DMG with per-app Gatekeeper approval |
 | Windows  | Windows 11 x64; unsigned per-user installer with WebView2                          |
 
-Follow the [installation and reading guide](docs/usage.md) for setup and platform
-permissions. macOS capture requires Screen Recording permission.
+Follow [Install and set up](docs/usage.md#install-and-set-up) for the download,
+macOS/Windows installer steps and required detector import, then
+[make your first scan](docs/usage.md#make-your-first-scan). Packaged apps start their
+local service automatically; no developer tools are needed. macOS capture requires
+Screen Recording permission.
 
 Download the Apple Silicon `.dmg` for macOS or the per-user Windows 11 x64
 `_x64-setup.exe`. Only your platform's installer is needed to run YomiMado.
@@ -106,7 +109,7 @@ models, word/kanji dictionaries, optional translation, and diagnostics.
 
 ## Documentation
 
-- [Reading and installation](docs/usage.md) and [translation model setup](docs/translation-model-selection.md)
+- [Installation and first scan](docs/usage.md#install-and-set-up) and [translation model setup](docs/translation-model-selection.md)
 - [Development setup](docs/development.md) and [architecture/resources](docs/architecture.md)
 - [Implementation status and feature roadmap](docs/implementation-plan.md)
 - [Design system](docs/design-system.md) and [native UI testing](docs/ui-testing.md)
