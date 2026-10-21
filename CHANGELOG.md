@@ -19,10 +19,11 @@ The [feature roadmap](docs/implementation-plan.md#feature-checklist) tracks comp
   defaults. Duplicate, unavailable and unsavable bindings retain the previous
   settings; startup conflicts keep the toolbar usable. Recording an existing
   capture shortcut does not start a scan. Uses the existing native plugin without
-  new dependencies or OCR changes. Native macOS editing/duplicate checks pass;
+  new dependencies or OCR changes. Native macOS editing/duplicate checks pass.
+  The owner reported a manual feature pass at `f65576c`.
   All 301 frontend tests and 75 native tests, formatting, Clippy and current-target
-  frontend/native builds pass. Windows interaction and exact installers remain
-  unverified.
+  frontend/native builds pass. Windows-specific coverage and exact-installer
+  acceptance remain unrecorded.
 
 #### Changed
 

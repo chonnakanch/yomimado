@@ -26,12 +26,19 @@ Development check — 2026-10-21: the native Apple Silicon debug app saved
 Option+Cmd+K immediately and rejected assigning the existing Whole Screen chord
 to Selected Area, without opening a capture selector. The saved JSON matched the
 active pair. The automation service failed during the restart inspection, so
-native restart, restore-default interaction and external-app trigger checks remain
-unverified. The temporary process/preferences were removed from active use.
+native restart, restore-default interaction and external-app trigger checks were
+not verified by that automation attempt. The temporary process/preferences were
+removed from active use.
 All 301 frontend and 75 native tests pass, including persistence, defaults,
 rollback, cancellation and listener lifecycle. Formatting, Clippy and current-target
 frontend/native builds pass. Windows interaction and exact-installer acceptance
 remain separate.
+
+Owner acceptance — 2026-10-21: the owner subsequently reported “i test manually
+and it pass” for the capture-shortcut feature at source
+`f65576cbe95609b893061f5fc0144fba6a045156` and requested its PR. This records the reported manual feature pass;
+individual cases and hardware/platform coverage were not enumerated. It does not
+establish Windows-specific coverage or exact-installer acceptance.
 
 ## Native overlay checks
 
