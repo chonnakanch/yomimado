@@ -12,6 +12,14 @@ The [feature roadmap](docs/implementation-plan.md#feature-checklist) tracks comp
 
 ### 2026-10-21
 
+#### Build
+
+- Prepare v0.5.0 as a pre-release after PR #26 merged into main. Update all
+  five app version files together. Reuse the reviewed OCR runtime seed at
+  `46a5649`; source checks, input hashes and preparation limits are recorded in
+  [the v0.5.0 preparation record](docs/release-preparation-0.5.0.md). Publication
+  and acceptance of the new CI installers remain separate.
+
 #### Added
 
 - Custom capture shortcuts in Settings → Scan & OCR. Record Selected Area and
