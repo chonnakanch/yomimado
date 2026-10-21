@@ -67,8 +67,6 @@ jobs:
             echo "Version $version is already released; bump the app version for another release."
             exit 0
           fi
-          # Reject stale frozen runtime inputs before private downloads or builds.
-          python scripts/macos-ci-release.py verify-reuse
           python scripts/desktop_release.py wait-main-checks --directory "$RUNNER_TEMP/main-checks.json"
           test "$(gh api "repos/$GITHUB_REPOSITORY" --jq .default_branch)" = main
           gh api "repos/$GITHUB_REPOSITORY/rules/branches/main?per_page=100" > "$RUNNER_TEMP/main-rules.json"
@@ -89,6 +87,7 @@ jobs:
       contents: write
     outputs:
       notes-sha256: ${{ steps.notes.outputs.sha256 }}
+      seed-sha256: ${{ steps.seeds.outputs.sha256 }}
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
         with:
@@ -115,10 +114,25 @@ jobs:
           path: ${{ runner.temp }}/release-notes-preview/
           if-no-files-found: error
           retention-days: 14
-      - name: Read and hash private seeds without publishing or approving installers
+      - name: Select a compatible reviewed seed and hash private inputs
+        id: seeds
         env:
           GH_TOKEN: ${{ github.token }}
-        run: python scripts/desktop_release.py download-inputs --directory inputs
+        shell: bash
+        run: |
+          set -euo pipefail
+          python scripts/desktop_release.py download-inputs --directory inputs
+          echo "sha256=$(sha256sum inputs/selected-macos-seed.json | cut -d ' ' -f 1)" >> "$GITHUB_OUTPUT"
+          {
+            echo "### Exact reviewed macOS seed selected for this run"
+            cat inputs/selected-macos-seed.json
+          } >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: selected-macos-seed
+          path: inputs/selected-macos-seed.json
+          if-no-files-found: error
+          retention-days: 14
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: reviewed-macos-inputs
@@ -136,6 +150,9 @@ jobs:
 
   build:
     name: Build macOS Apple Silicon
+    env:
+      YOMIMADO_SEED_SELECTION: ${{ github.workspace }}/services/ocr/build/selected-macos-seed.json
+      YOMIMADO_SEED_SELECTION_SHA256: ${{ needs.seed-inputs.outputs.seed-sha256 }}
     needs: [plan, seed-inputs]
     if: needs.plan.outputs.release == 'true'
     runs-on: macos-14
@@ -185,13 +202,18 @@ jobs:
         with:
           name: reviewed-macos-inputs
           path: ${{ runner.temp }}/yomimado-input
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: selected-macos-seed
+          path: ${{ github.workspace }}/services/ocr/build
       - name: Verify transferred reviewed macOS inputs
         shell: bash
         run: |
           set -euo pipefail
-          python scripts/desktop_release.py verify-inputs --platform macos --directory "$RUNNER_TEMP/yomimado-input"
+          python scripts/desktop_release.py prepare-macos-inputs --directory "$RUNNER_TEMP/yomimado-input" \
+            --selection "$YOMIMADO_SEED_SELECTION" --selection-sha256 "$YOMIMADO_SEED_SELECTION_SHA256"
           # A reduced seed keeps optional translation weights outside its DMG.
-          # verify-inputs pins exact membership and hashes; the frozen smoke and
+          # Run-bound selection pins membership and hashes; the frozen smoke and
           # package step also bind this archive to the embedded component manifest.
           shopt -s nullglob
           components=("$RUNNER_TEMP/yomimado-input/"*_translation_torch.zip)
@@ -199,8 +221,6 @@ jobs:
             mkdir -p services/ocr/build/translation-components
             cp "${components[@]}" services/ocr/build/translation-components/
           fi
-          tar -xzf "$RUNNER_TEMP/yomimado-input/YomiMado_0.4.0_sources_46a5649.tar.gz" -C "$RUNNER_TEMP/yomimado-input"
-          echo "YOMIMADO_SOURCE_DIR=$RUNNER_TEMP/yomimado-input/source-delivery-46a5649" >> "$GITHUB_ENV"
       - name: Install smoke-only detector from the original publisher
         shell: bash
         run: |
@@ -214,7 +234,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          seed="$RUNNER_TEMP/yomimado-input/YomiMado_0.4.0_aarch64.dmg"
+          seed="$YOMIMADO_SEED_DMG"
           bash scripts/verify-macos-dmg.sh "$seed" "$(command -v python)" --hobby-release
           mount_dir="$(mktemp -d /private/tmp/yomimado-seed.XXXXXX)"
           trap 'hdiutil detach "$mount_dir"; rmdir "$mount_dir"' EXIT
@@ -232,13 +252,13 @@ jobs:
           source_dir="$RUNNER_TEMP/yomimado-input/source-delivery-main"
           notices=apps/desktop/src-tauri/resources/ocr/notices
           python scripts/macos-ci-release.py prepare-sources \
-            --sources "$YOMIMADO_SOURCE_DIR" --notices "$notices" --directory "$source_dir"
+            --sources "$YOMIMADO_SOURCE_DIR" --notices "$notices" --directory "$source_dir" \
+            --selection "$YOMIMADO_SEED_SELECTION" --selection-sha256 "$YOMIMADO_SEED_SELECTION_SHA256"
           python scripts/macos-release.py verify-sources "$notices" \
             --source-dir "$source_dir" --revision "$SOURCE_REVISION"
           echo "YOMIMADO_SOURCE_DIR=$source_dir" >> "$GITHUB_ENV"
-          rm -rf "$RUNNER_TEMP/yomimado-input/source-delivery-46a5649"
-          rm "$RUNNER_TEMP/yomimado-input/YomiMado_0.4.0_sources_46a5649.tar.gz"
-          rm "$RUNNER_TEMP/yomimado-input/YomiMado_0.4.0_notices_46a5649.tar.gz"
+          rm -rf "$YOMIMADO_SEED_ORIGINAL_SOURCE_DIR"
+          rm "$YOMIMADO_SEED_SOURCE_ARCHIVE" "$YOMIMADO_SEED_NOTICE_ARCHIVE"
       - name: Build and verify the new hobby DMG
         env:
           APP_VERSION: ${{ needs.plan.outputs.version }}

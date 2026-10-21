@@ -862,6 +862,7 @@ class PlanRehearsalTests(unittest.TestCase):
                 for name in (
                     "desktop_release.py",
                     "macos-ci-release.py",
+                    "macos_seed.py",
                     "release_dictionaries.py",
                     "release_api.py",
                     "windows_release.py",
@@ -950,7 +951,7 @@ class PlanRehearsalTests(unittest.TestCase):
                 if scenario != "success":
                     self.assertIn("successful Checks", result.stderr)
 
-    def test_published_version_skips_but_missing_tag_checks_runtime_before_builds(self):
+    def test_published_version_skips_but_missing_tag_waits_for_main_checks(self):
         workflow = (ROOT / ".github/workflows/release.yml").read_text()
         plan_step = workflow.split("id: plan\n", 1)[1].split("  seed-inputs:", 1)[0]
         shell = textwrap.dedent(plan_step.split("run: |\n", 1)[1].split("\n  #", 1)[0])
@@ -969,7 +970,7 @@ class PlanRehearsalTests(unittest.TestCase):
                         "if sys.argv[-1]=='plan':\n"
                         '    print(\'{"version":"0.1.0","tag":"v0.1.0","prerelease":true}\')\n'
                         "else:\n"
-                        "    print('Changed runtime requires a new seed', file=sys.stderr)\n"
+                        "    print('successful Checks required', file=sys.stderr)\n"
                         "    sys.exit(1)"
                     ),
                 }.items():
@@ -1006,8 +1007,9 @@ class PlanRehearsalTests(unittest.TestCase):
                     self.assertNotIn("verify-reuse", calls)
                 else:
                     self.assertNotEqual(result.returncode, 0)
-                    self.assertIn("requires a new seed", result.stderr)
-                    self.assertIn("verify-reuse", calls)
+                    self.assertIn("successful Checks required", result.stderr)
+                    self.assertIn("wait-main-checks", calls)
+                    self.assertNotIn("verify-reuse", calls)
                     self.assertNotIn("gh ", calls)
                     self.assertNotIn("release=true", outputs.splitlines())
 
@@ -1021,6 +1023,7 @@ class PublisherRehearsalTests(unittest.TestCase):
             for name in (
                 "desktop_release.py",
                 "macos-ci-release.py",
+                "macos_seed.py",
                 "release_dictionaries.py",
                 "release_api.py",
                 "windows_release.py",

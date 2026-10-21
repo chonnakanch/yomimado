@@ -47,27 +47,70 @@ frozen service rather than freezing the current Python sources again.
 | Runtime build/freeze recipes or relevant notices                        | Review the changed inputs; normally a new seed is required.   |
 | Dependency locks or app build configuration                             | The guard compares more than versions; inspect any rejection. |
 
-From the repository root, after committing the intended changes:
+Ordinary PR/main Checks validate version consistency and the release-tool tests;
+they do not require the currently available frozen seed to match development
+source. Seed compatibility is a hard **Release** gate before large input downloads
+or installer builds. Development can merge runtime changes while a replacement
+seed is being prepared.
+
+For an optional local comparison against a specific reviewed source:
 
 ```sh
 rtk git status --short --branch
-rtk python3 scripts/macos-ci-release.py verify-reuse
+rtk python3 scripts/macos-ci-release.py verify-reuse --seed-revision FULL_REVIEWED_SOURCE_SHA
 ```
 
-The guard compares committed `HEAD` with `SEED_REVISION`; it does not inspect
-uncommitted edits or prove that an uploaded seed is valid. Read the named rejected
-path. Do not change the revision pin or widen allowlists merely to make the guard
-pass. A documented, narrowly reviewed runtime-independent exception is different
-from approving new frozen inputs. The seed version need not match every later
-app version when its runtime remains compatible.
+The guard compares committed `HEAD` with that source, not dirty edits. Omitting
+`--seed-revision` checks only the legacy `46a5649` migration fallback; it does not
+perform online discovery. Do not widen runtime allowlists to accept a stale seed.
+The [0.4.0 frontend-data review](macos-runtime-reuse-0.4.0.md) remains an exact,
+hash-bound exception rather than permission for arbitrary data or licence edits.
 
-Checks also runs `plan` and `verify-reuse` with full Git history in its
-`release-tools` job. The required `gates` depends on that job: runtime/source
-incompatibility must be resolved before a main PR can pass Checks. This step is
-read-only and does not download private inputs. The
-[0.4.0 frontend-data review](macos-runtime-reuse-0.4.0.md) documents one exact,
-hash-pinned runtime-independent exception; it does not permit arbitrary data,
-notice or frozen-service changes.
+### Dynamic reviewed-seed selection
+
+Release enumerates private draft seeds with complete bounded pagination. A new
+eligible draft has the label `macos-reviewed-seed-<shortSHA>`, targets the full
+reviewed source SHA, and contains four inputs plus **macos-seed.json**. The draft
+and all five uploads must belong to the repository owner's GitHub account,
+`chonnakanch`. A label, upload date or unsigned candidate alone is not approval.
+
+The owner uploads the activation manifest last, after actual source/licence
+approval and verification of the staged input bytes. It records the reviewed
+source/date/owner, approved `source-delivery.json` hash, source directory and each
+input's filename, byte count and SHA-256. Activation trust is the owner's explicit
+manifest upload; CI does not infer human approval from successful builds or create
+an approval record. Owner-uploaded manifests are therefore required; bot-authored
+activation is not supported. Private input access remains isolated from builders.
+
+The selector verifies draft/owner/asset identities, manifest bytes and approval
+fields. It considers only reviewed source commits already in the release's local
+history and applies the existing strict runtime/source comparison to each. Among
+compatible seeds it chooses the source with the fewest commits between it and the
+release; an equal rank or duplicate identity fails closed. It never chooses merely
+the newest upload or GitHub's latest public release. Incompatible candidates and
+unactivated uploads cannot supply runtime code. Invalid activated metadata stops
+selection rather than silently trusting it.
+
+The selected release ID, asset IDs, hashes, sizes, reviewed source and manifest are
+saved in `selected-macos-seed.json`. Its SHA-256 travels through job outputs to the
+builder; the `selected-macos-seed` artifact is retained for 14 days. The builder
+verifies this exact selection and all transferred bytes, extracts only regular
+files/directories under the declared source root, checks source approval
+in the source archive and copied DMG runtime, and retains the selection in shipped
+sources/notices. It never queries for a different seed halfway through a build.
+Windows dictionary input pins and protected installer publication remain unchanged.
+
+The existing source-approved `46a5649` seed has a narrowly pinned migration
+fallback using its recorded four assets and approval hash. Its current private
+draft needs no modification. Future seeds use owner-uploaded activation manifests
+without editing app-repository seed constants, extraction paths or workflow names.
+
+If no compatible reviewed seed exists, Release stops before input downloads/builds.
+Prepare, review and stage a replacement using the procedure below, then start a
+**new Release run on main**. No app pin-update PR is needed for that seed. An
+already selected run retains its original seed; starting a new run allows lookup
+to discover newly activated inputs. No public tag or draft should have been
+created at this early failure stage; investigate any existing publication first.
 
 ## Release a new app version
 
@@ -101,8 +144,9 @@ versions. Preserve exact reviewed seed/source commits when merging.
    Public notes contain the PR list and Full Changelog only. Keep
    installation/model setup in the [installation guide](installation-guide.md), and
    source/installer evidence and limitations in the release checklist and metadata.
-   Run relevant checks, commit and push focused changes. Run the seed guard against
-   the committed source; resolve rejected frozen inputs before main integration.
+   Run relevant checks, commit and push focused changes. Review whether a new seed
+   will be needed; Release enforces actual availability and compatibility before
+   building. A seed mismatch does not block ordinary main PR Checks.
 
 4. Prepare the same-repository `release/<version>` topic's protected PR into
    `main`. Merge when authorized and required checks pass. Release starts on the
@@ -153,14 +197,14 @@ first v0.5.0 publisher to be rejected before any step ran. The default-branch
 context matches the existing main-only policy; do not add PR refs to that policy.
 See [GitHub's ref-policy change](https://github.blog/changelog/2025-11-07-actions-pull_request_target-and-environment-branch-protections-changes/).
 
-For the existing v0.5.0 files, use only the bounded
-[original-candidate recovery](release-recovery-0.5.0.md) after its repair PR merges
-and main Checks pass. It downloads the pinned original candidate and note ZIPs,
-rechecks them and requires a fresh protected publication review. It does not
-rebuild installers. Rerunning the old PR-triggered publisher retains its old event
-and cannot repair this environment rejection. Other versions and partial uploads
-require separate investigation; this recovery accepts neither arbitrary artifacts
-nor an existing v0.5.0 tag/release.
+The one-candidate v0.5.0 recovery completed and its temporary workflow was
+retired; the [recovery record](release-recovery-0.5.0.md) retains original source,
+artifact identities and the successful run. Future releases use **Release**.
+For a failed run, investigate its stage before manually dispatching Release on
+main. A new normal run rebuilds from current main; it does not reuse an earlier
+run's installers. Rerunning an old PR-triggered publisher retains its old event
+and cannot repair an environment rejection. Existing tags/drafts or partial
+uploads require investigation before retrying.
 
 ## Generate and review release notes
 
@@ -392,45 +436,53 @@ size, revision and approval-scope report outside the exact input directory.
 
 When staging is authorized, save an **unpublished GitHub draft** using the label
 `macos-reviewed-seed-<shortSHA>` and the exact seed commit as its target. Upload
-only the four inputs above. Verify Draft status, target/label, exact membership,
-uploaded state, sizes and GitHub SHA-256 values against local bytes. Do not create
-the public app version tag or publish the seed. Retain old drafts and evidence.
+only the four inputs above first. Verify draft status, target/label, exact
+membership, uploaded state, sizes and GitHub SHA-256 values against local bytes.
+Do not create a public app tag or publish the seed. Retain old drafts and evidence.
 
-### 7. Activate the verified inputs together
+### 7. Activate with the existing owner approval
 
-Update all three consumers on the release preparation branch:
+After actual source/licence approval, retain `source-approval.json` with the exact
+`projectRevision`, owner `reviewer`, `reviewedAt`, `scope`, original approval
+`statement` and `approvedManifestSha256` for the approved `source-delivery.json`.
+This is evidence of the actual owner decision, not a new approval created by CI.
+The delivery JSON must contain the same reviewer/date/source. Keep its unsigned
+worksheet and all original technical records.
 
-| File                            | Change                                                                                                  |
-| ------------------------------- | ------------------------------------------------------------------------------------------------------- |
-| `scripts/macos-ci-release.py`   | Set `SEED_REVISION` to the full approved source commit.                                                 |
-| `scripts/desktop_release.py`    | Set macOS `INPUTS` to the private draft label and exact four filenames/hashes.                          |
-| `.github/workflows/release.yml` | Update seed DMG/source/notice filenames, extraction directory, `YOMIMADO_SOURCE_DIR` and cleanup paths. |
-
-Use the source archive's actual top-level `source-delivery-<shortSHA>` directory.
-Do not change Windows dictionary pins unless that separate input changes.
-Do not set the seed revision to the later activation commit: it identifies the
-actual approved runtime source. Commit the activation changes and run the guard
-against that committed state.
-
-Verify the staged inputs with the updated pins:
+Generate the activation manifest **outside** the four-file input directory:
 
 ```sh
-rtk python3 scripts/desktop_release.py verify-inputs \
-  --platform macos --directory "$yomi_seed_work/seed-inputs"
-rtk python3 scripts/macos-ci-release.py verify-reuse
+rtk "$yomi_python" scripts/macos_seed.py \
+  --inputs "$yomi_seed_work/seed-inputs" \
+  --sources "$yomi_source_dir" \
+  --approval "$yomi_seed_work/source-approval.json" \
+  --output "$yomi_seed_work/macos-seed.json"
 ```
 
-Run applicable existing release-tool suites (`test_macos_release.py`,
+The command hashes all four local inputs, verifies the existing approval/delivery
+binding and checks that the uploaded source archive contains that same approved
+JSON. It refuses missing/mismatched approval and existing output paths. It does
+not upload, grant source approval or approve an installer.
+
+With staging authorized and the owner account signed in, upload `macos-seed.json`
+to the **same** private draft last. Verify exactly five completed uploads, the
+owner's draft/asset identities, and all declared/actual hashes and sizes. This
+explicit owner activation makes the seed eligible for dynamic lookup. Do not edit
+`SEED_REVISION`, macOS `INPUTS` or workflow filenames for future seeds, and do not
+change the separate Windows dictionary pins.
+
+Run applicable release-tool suites (`test_macos_seed.py`, `test_macos_release.py`,
 `test_macos_sources.py`, `test_macos_notices.py`, `test_desktop_release.py`,
 `test_release_rules.py`, `test_update_version.py`), script Ruff checks and pinned
-actionlint for workflow changes. Use the existing CI/release verification
-environment; do not mutate the reviewed runtime to install test tools. Run
-service/frontend/native checks when those inputs changed.
+actionlint for workflow changes. Use the existing verification environment rather
+than installing test tools into the reviewed runtime. Run service/frontend/native
+checks when their source changed.
 
-Add the new review, exact hashes, uploaded verification and remaining limits to
-[the seed record](macos-runtime-seed.md) and implementation status. Preserve
-previous records. With authorized main integration, return to the normal release
-procedure. A new release build creates new installer hashes even with this seed.
+Record the new source approval, exact uploaded hashes and verification limits in
+[the seed record](macos-runtime-seed.md), preserving previous records. Start a new
+normal Release run on current main after exact-commit Checks pass. It resolves the
+newly eligible seed automatically. Every new installer still requires its own
+hash-bound acceptance and protected publication approval.
 
 ## Evidence to hand back
 
