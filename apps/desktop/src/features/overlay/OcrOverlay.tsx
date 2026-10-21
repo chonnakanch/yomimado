@@ -356,7 +356,7 @@ export function OcrOverlay() {
               });
           }}
         >
-          <ToolbarIcon name="hidden" />
+          <ToolbarIcon name="close" />
         </button>
       )}
     </div>

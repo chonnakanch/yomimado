@@ -85,7 +85,7 @@ This does not establish a native Escape/icon interaction pass.
 
 For native acceptance, complete a scan, leave focus in the reader, press Escape,
 and restore the retained result with the toolbar toggle. Repeat using the small
-eye-off icon, including an overlay above/below its selection, a full-screen
+X button, including an overlay above/below its selection, a full-screen
 capture and Retina/Windows fractional scales. Verify transparent space still
 passes reader input. Reopen a popup/menu/Settings and check its ordinary Escape
 behavior. Start/cancel/rescan, then ensure a delayed hide request cannot hide the

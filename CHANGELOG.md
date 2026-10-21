@@ -46,7 +46,7 @@ The [feature roadmap](docs/implementation-plan.md#feature-checklist) tracks comp
 
 #### Added
 
-- Hide completed OCR results with Escape from the reader or a small eye-off icon
+- Hide completed OCR results with Escape from the reader or a high-contrast X icon
   on the overlay. Keep the result and Rescan state for the toolbar Show toggle.
   Scope Escape to visible completed results, preserving popup/menu/Settings input;
   reject delayed hides during scans or for newer result generations. Reuse native

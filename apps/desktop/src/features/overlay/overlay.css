@@ -14,9 +14,10 @@
 .overlay-hide {
   align-items: center;
   background: var(--color-surface);
-  border: 1px solid var(--color-border);
+  border: 1px solid var(--color-text-primary);
   border-radius: var(--radius-control);
-  color: var(--color-text-secondary);
+  box-shadow: 0 1px 4px rgb(0 0 0 / 0.5);
+  color: var(--color-text-primary);
   cursor: pointer;
   display: flex;
   height: 28px;
@@ -28,8 +29,9 @@
   width: 28px;
 }
 .overlay-hide svg {
-  width: 16px;
-  height: 16px;
+  width: 20px;
+  height: 20px;
+  stroke-width: 2.4;
 }
 .overlay-hide:hover {
   color: var(--color-text-primary);

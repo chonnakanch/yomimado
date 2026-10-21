@@ -60,7 +60,7 @@ If selection is needed, a small bottom-edge hint says **Drag around pages · Esc
 Drag around a page or spread, including through the hint itself. It disappears
 while you drag; Escape cancels selection.
 After a scan completes, press **Escape** while reading to hide the OCR outlines,
-or click the small **Hide OCR overlays** eye-off icon at the right of the overlay's
+or click the small **Hide OCR overlays** X button at the right of the overlay's
 control strip. Results stay available through the toolbar's Show OCR overlays
 toggle; showing them again does not rerun OCR. Escape in an open learning popup,
 menu or Settings keeps its local behavior. If another app reserves Escape, use

@@ -210,8 +210,9 @@ shortcut hides completed visible overlays from the reader without focusing the
 app. Release it during scans, while results are hidden and when another YomiMado
 window owns input; popup/menu/Settings Escape retains its local behavior.
 
-Add a 28 px eye-off button at the right of the overlay's existing 32 px control
-strip, with the accessible label **Hide OCR overlays** and an Esc tooltip. Keep
+Add a 28 px close button at the right of the overlay's existing 32 px control
+strip, with a bold 20 px X, bright border and high-contrast foreground on a dark
+surface. Use the accessible label **Hide OCR overlays** and an Esc tooltip. Keep
 it inside the measured viewport, including full-screen captures with no outer
 gutter. Report only its measured hit rectangle through the existing native
 control route; the surrounding manga stays transparent and click-through.
