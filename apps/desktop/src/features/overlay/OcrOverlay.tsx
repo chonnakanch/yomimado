@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import { listen, type UnlistenFn } from "@tauri-apps/api/event";
 import { OCRBoundingBox, regionLabel } from "./OCRBoundingBox";
+import { ToolbarIcon } from "../toolbar/ToolbarIcon";
 import "./overlay.css";
 import type { CaptureMetadata } from "../../lib/coordinates";
 import { ocrPolygonToOverlay } from "../../lib/coordinates";
@@ -41,6 +42,10 @@ export function OcrOverlay() {
   const [activeRegionId, setActiveRegionId] = useState<string | null>(null);
   const [popupError, setPopupError] = useState<string | null>(null);
   const [revealed, setRevealed] = useState(false);
+  const [hiding, setHiding] = useState(false);
+  const hideButton = useRef<HTMLButtonElement>(null);
+  const controlRevision = useRef(0);
+  const hidePending = useRef(false);
   const navigatorRef = useRef<HTMLDivElement>(null);
   const regionElements = useRef(new Map<string, SVGPolygonElement>());
   const [focusRequest, setFocusRequest] = useState<{
@@ -104,6 +109,44 @@ export function OcrOverlay() {
       mounted = false;
     };
   }, [state?.sessionId]);
+
+  useEffect(() => {
+    if (state?.sessionId === undefined || !revealed) return;
+    const button = hideButton.current;
+    if (!button) return;
+    let mounted = true;
+    const report = () => {
+      const rect = button.getBoundingClientRect();
+      if (!rect.width || !rect.height) return;
+      void invoke("update_overlay_controls", {
+        sessionId: state.sessionId,
+        revision: ++controlRevision.current,
+        rectangles: [
+          { x: rect.x, y: rect.y, width: rect.width, height: rect.height },
+        ],
+        viewportWidth: window.innerWidth,
+        viewportHeight: window.innerHeight,
+        viewQuery: window.location.search.slice(1),
+      }).catch((error) => {
+        if (mounted)
+          setPopupError(`Could not enable the hide control: ${String(error)}`);
+      });
+    };
+    const observer =
+      typeof ResizeObserver === "undefined" ? null : new ResizeObserver(report);
+    observer?.observe(button);
+    report();
+    return () => {
+      mounted = false;
+      observer?.disconnect();
+    };
+  }, [
+    state?.sessionId,
+    state?.layout,
+    revealed,
+    viewport.width,
+    viewport.height,
+  ]);
 
   useEffect(() => {
     let mounted = true;
@@ -279,6 +322,43 @@ export function OcrOverlay() {
           />
         ))}
       </svg>
+      {state.sessionId !== undefined && revealed && (
+        <button
+          ref={hideButton}
+          className="overlay-hide"
+          aria-label="Hide OCR overlays"
+          aria-keyshortcuts="Escape"
+          title="Hide OCR overlays (Esc)"
+          disabled={hiding}
+          style={{
+            top: Math.max(
+              0,
+              Math.min(
+                viewport.height - 28,
+                state.layout.toolbarTop * scaleY + 2,
+              ),
+            ),
+          }}
+          onClick={() => {
+            if (hidePending.current) return;
+            hidePending.current = true;
+            setHiding(true);
+            setPopupError(null);
+            void invoke("hide_completed_ocr_overlay", {
+              sessionId: state.sessionId,
+            })
+              .catch((error) =>
+                setPopupError(`Could not hide OCR overlays: ${String(error)}`),
+              )
+              .finally(() => {
+                hidePending.current = false;
+                setHiding(false);
+              });
+          }}
+        >
+          <ToolbarIcon name="hidden" />
+        </button>
+      )}
     </div>
   );
 }

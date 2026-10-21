@@ -63,6 +63,10 @@ recorded in the [release checklist](desktop-release.md).
 
 ### Implemented in source
 
+- [x] **Hide completed OCR results with Escape or an overlay icon** — implemented;
+      results can be restored through the toolbar. [Controls](usage.md#scanning)
+      and [verification limits](ui-testing.md#completed-overlay-hide-controls).
+
 - [x] **Custom capture shortcuts** — Selected Area and Whole Screen can be recorded
       in Settings, saved locally and applied immediately, with conflict handling
       and Restore defaults; [controls](usage.md#customize-capture-shortcuts).

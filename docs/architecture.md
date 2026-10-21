@@ -118,6 +118,18 @@ Rust unit tests live inside the native modules. There is currently no
 [`ocr-response.ts`](../apps/desktop/src/lib/ocr-response.ts) validates OCR responses
 at the frontend boundary.
 
+Completed overlays own a temporary bare Escape shortcut in native
+`overlay/dismiss.rs`. Visibility/reveal and window-focus transitions synchronize
+registration through the existing global-shortcut plugin. The handler reads only
+an atomic result generation before dispatching work; it never takes scan or
+registration locks under the plugin's handler lock. Native hide requests verify
+that the same completed result is visible and no scan is active. Hiding disables
+both polygon and control hit routing while retaining the stored result.
+`OcrOverlay` reports the hide button's measured CSS rectangle through
+`update_overlay_controls`; the existing viewport-to-physical conversion serves
+macOS mouse routing and Windows window regions. No new coordinate transform,
+input-monitoring grant or dependency is added.
+
 ## How a scan moves through the code
 
 1. The floating toolbar or global shortcut starts a native scan session in

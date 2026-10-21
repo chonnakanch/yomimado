@@ -327,6 +327,19 @@ export function FloatingToolbar() {
     <div
       className={`floating-toolbar${collapsed ? " collapsed" : ""}${compact ? " compact" : ""}${layout.panelAbove ? " panel-above" : ""}`}
       ref={content}
+      onKeyDown={(event) => {
+        if (
+          event.key === "Escape" &&
+          !event.defaultPrevented &&
+          !feedbackOpen &&
+          !menuOpen &&
+          !busy &&
+          state?.overlayVisible
+        ) {
+          event.preventDefault();
+          void run("set_overlay_visibility", { visible: false });
+        }
+      }}
       style={{
         width: Math.min(compact ? 244 : 536, state?.availableWidth ?? 536),
         minHeight: layout.totalHeight,
