@@ -140,6 +140,37 @@ it("keeps the current detector when the file picker is canceled", async () => {
   expect(container.querySelector(".settings-success")?.textContent).toBe("");
 });
 
+it("opens the detector release through the native browser launcher", async () => {
+  await mount();
+  const link = container.querySelector<HTMLAnchorElement>(
+    'a[href="https://github.com/zyddnys/manga-image-translator/releases/latest"]',
+  )!;
+  const event = new MouseEvent("click", { bubbles: true, cancelable: true });
+  await act(async () => link.dispatchEvent(event));
+  expect(event.defaultPrevented).toBe(true);
+  expect(invoke).toHaveBeenCalledWith("open_detector_release");
+  expect(invoke).not.toHaveBeenCalledWith("install_detector_model");
+});
+
+it("reports browser launch failures and lets the detector release link retry", async () => {
+  detectorInvoke
+    .mockResolvedValueOnce(status)
+    .mockRejectedValueOnce(new Error("No default browser"))
+    .mockResolvedValueOnce(undefined);
+  await mount();
+  const link = container.querySelector<HTMLAnchorElement>("a")!;
+  await act(async () => link.click());
+  expect(container.querySelector('[role="alert"]')?.textContent).toContain(
+    "No default browser",
+  );
+  expect(container.querySelector('[role="alert"]')?.textContent).toContain(
+    "Copy the link address",
+  );
+  expect(button("Select detector model file").disabled).toBe(false);
+  await act(async () => link.click());
+  expect(container.querySelector('[role="alert"]')).toBeNull();
+});
+
 it("preserves an installed detector after failed replacement and allows retry", async () => {
   detectorInvoke
     .mockResolvedValueOnce({ required: true, installed: true })
