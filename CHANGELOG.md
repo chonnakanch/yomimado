@@ -18,7 +18,10 @@ The [feature roadmap](docs/implementation-plan.md#feature-checklist) tracks comp
   platform installers, first launch, macOS capture permission, the exact required
   detector download/import, a first OCR/dictionary/save check and optional local
   translation. Separate contributor setup and correct the implication that
-  installed-app users must download dictionaries or start Python manually.
+  installed-app users must download dictionaries or start Python manually. Keep
+  packaged setup in `docs/installation-guide.md`, reading controls in `usage.md`
+  and developer/debug notes in `development.md`; README links to the full setup
+  instead of repeating it.
 
 ### 2026-10-21
 

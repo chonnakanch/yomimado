@@ -1,168 +1,13 @@
-# Install and read with YomiMado
+# Reading with YomiMado
 
-This guide takes you from a downloaded installer to your first working scan.
-Use the packaged app for normal reading: its local OCR service starts automatically,
-and its recognition model and word/kanji dictionaries are included. You do not
-need to install Python, Node.js, Rust or CUDA, or start a service in a terminal.
-The detector model is a separate required download; translation is optional.
-
-- [Install and set up](#install-and-set-up)
-- [Make your first scan](#make-your-first-scan)
-- [Optional translation setup](#optional-translation-setup)
-- [Setup troubleshooting](#setup-troubleshooting)
-- [Reading controls](#reading-controls)
-- [Running from source](#running-from-source)
-
-## Install and set up
-
-### 1. Download the app
-
-Open [YomiMado Releases](https://github.com/chonnakanch/yomimado/releases), choose
-the version you want, and expand **Assets**. Download the installer for your
-computer:
-
-| Computer   | Requirement                                 | Installer                          |
-| ---------- | ------------------------------------------- | ---------------------------------- |
-| Mac        | macOS 14 or later, Apple Silicon (M-series) | `YomiMado_<version>_aarch64.dmg`   |
-| Windows PC | Windows 11, x64                             | `YomiMado_<version>_x64-setup.exe` |
-
-The source archives, notices and translation ZIPs are separate release files;
-only the installer is needed for this step. The detector download in step 3 is
-also required before scanning. This guide uses the toolbar interface available
-in v0.4.0; older releases may have different controls.
-
-### 2. Install and launch
-
-#### macOS
-
-1. Open the downloaded `.dmg` in Finder.
-2. Drag **YomiMado.app** into **Applications**. Wait for the copy to finish.
-3. Eject the disk image and open **Applications → YomiMado**.
-4. This hobby release is ad-hoc signed and unnotarized. If macOS says the developer
-   cannot be verified or Apple cannot check the app, first confirm it came from
-   the project's release page. To approve that app, open **System Settings →
-   Privacy & Security**, find YomiMado's blocked-app notice and choose **Open
-   Anyway**, then confirm **Open**. See [Apple's opening guidance](https://support.apple.com/en-us/102445).
-
-A damaged-file or malware alert needs investigation. Keep macOS security
-protections enabled; this setup uses the per-app approval flow.
-
-**Expected result:** a small floating YomiMado toolbar appears. Continue with
-step 3. Screen Recording permission is handled when you make your first scan.
-
-#### Windows
-
-1. Open the downloaded `_x64-setup.exe` in File Explorer.
-2. The installer is unsigned. If SmartScreen shows **Windows protected your PC**,
-   check that the file came from the project's release page. For a file you trust,
-   use **More info → Run anyway** if offered. Managed PCs can prevent continuation;
-   see [Microsoft's SmartScreen guidance](https://learn.microsoft.com/windows/apps/package-and-deploy/smartscreen-reputation).
-   Keep Defender and SmartScreen enabled.
-3. Follow setup for your current Windows user. Read and accept the Microsoft
-   runtime-component terms if you agree; these apply to those components, while
-   YomiMado and its other open-source components keep their own licences.
-4. Let setup install WebView2 if it is missing. That step needs internet access;
-   the bundled OCR runtime does not require a developer Python or CUDA installation.
-5. Finish setup and open **YomiMado** from the Start menu.
-
-**Expected result:** a small floating YomiMado toolbar appears. Continue with
-step 3. There is no macOS-style Screen Recording permission step on Windows.
-
-### 3. Install the required detector model
-
-The app includes text recognition and learning dictionaries, but excludes detector
-weights. The detector finds the text regions that recognition will read.
-
-1. Open the [original detector release](https://github.com/zyddnys/manga-image-translator/releases/tag/beta-0.2.1).
-2. Expand **Assets** and download **`comictextdetector.pt.onnx`**. Choose that exact
-   file, rather than `comictextdetector.pt`, a source archive or another ONNX model.
-   The other models listed on that upstream page are not needed for YomiMado.
-3. In the YomiMado toolbar, open **More actions → Settings → Scan & OCR**.
-4. Choose **Select detector model file**, then select the downloaded `.onnx` file.
-5. Wait for **Installed on this computer.** The app checks the file's checksum and
-   copies it into its own data directory. A rejected file leaves setup unchanged;
-   download the exact supported file from the link above and try again.
-
-YomiMado does not download this model automatically. Its import is shared by both
-platforms. Restart YomiMado if you replaced a detector that was already in use.
-Word and kanji dictionaries require no separate download in the packaged app.
-
-## Make your first scan
-
-1. Open a page with clear Japanese text in your usual manga reader or browser.
-   Keep the text visible on screen.
-2. Click **Selected Area** on the YomiMado toolbar and drag around one text bubble.
-   The shortcut is `Cmd+Shift+O` on macOS or `Ctrl+Shift+O` on Windows.
-3. **On macOS, grant capture permission if requested.** Open **System Settings →
-   Privacy & Security → Screen Recording** (called **Screen & System Audio
-   Recording** on newer macOS versions), enable **YomiMado**, then fully quit and
-   reopen the app and repeat step 2. If the app is not listed, try the capture
-   once to request access. See [Apple's screen-access instructions](https://support.apple.com/guide/mac-help/control-access-screen-system-audio-recording-mchld6aa7d23/mac).
-4. Wait for recognition. The first scan can take longer while local models load;
-   an OCR request has a three-minute deadline. Orange text-region outlines should
-   appear over the page.
-5. Click an outline, then select a Japanese word in the learning popup. Confirm
-   that its reading and possible dictionary meanings appear. Dashed outlines or
-   **Check OCR** indicate text to review; use **Edit OCR text** to correct it.
-6. Choose **Save this word**, then open **More actions → Saved → Words** and check
-   that the entry appears. Saving and translation happen only when requested.
-
-You are ready to read when capture produces aligned text regions and selecting a
-word opens its local learning information. A translation model is not required.
-For a full page, choose **Whole Screen** or `Cmd/Ctrl+Shift+S`; draw a fallback
-area if asked. Use **Rescan** after turning a page when the reading area stays in
-place. Run a new scan if you move the page or change display scaling/layout.
-
-## Optional translation setup
-
-After OCR and dictionary lookup work, open **More actions → Settings → Reading**.
-Choose one local translation source:
-
-- **Ollama:** [install and run Ollama](https://ollama.com/download) on the same
-  computer, return to YomiMado and select **Ollama → Refresh Ollama models**.
-  Choose an installed local text model and press **Use this model**. If you use
-  **Download in Ollama** first, wait for it to finish, then explicitly select the
-  downloaded model and press **Use this model**.
-- **Import local model:** choose a compatible Japanese-to-English Marian folder,
-  then **Import and use model**. macOS accepts the supported Torch/Safetensors
-  folder; Windows needs YomiMado's Marian ONNX export layout. See
-  [supported files and model setup](translation-model-selection.md#import-a-local-model)
-  before downloading a model. GGUF files use Ollama rather than this importer.
-
-The **Using** line confirms the active model. Return to a recognized region and
-choose **Translate locally**. There is no built-in model selection or automatic
-translation. Downloads can require several GB; model availability does not guarantee
-translation quality or suitability for your hardware. The
-[translation guide](translation-model-selection.md) covers the supported formats,
-provider switching and troubleshooting in more detail.
-
-## Setup troubleshooting
-
-| What you see                                                     | What to do                                                                                                                                                                                          |
-| ---------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Detector required before scanning                                | Finish step 3 and confirm **Installed on this computer.**                                                                                                                                           |
-| Selected file does not match the supported detector              | Download `comictextdetector.pt.onnx` from the exact release linked in step 3; renaming a different model will not work.                                                                             |
-| macOS capture permission error                                   | Enable YomiMado's screen-recording access, fully quit/reopen it and scan again.                                                                                                                     |
-| Toolbar disappeared                                              | Restore it from YomiMado's macOS menu bar icon or Windows notification-area icon; check Windows' icon overflow.                                                                                     |
-| No translation model installed                                   | OCR and dictionary lookup still work. Complete the optional translation setup to translate sentences.                                                                                               |
-| Ollama unavailable                                               | Open Ollama on this computer, then choose **Refresh Ollama models** in Reading settings.                                                                                                            |
-| OCR service/startup error                                        | Quit YomiMado through **More actions → Quit YomiMado**, reopen it and retry. For a packaged app, the service should start automatically. Report the app version, OS and exact error if it persists. |
-| Dashed demo boundary or “Managed by the development OCR service” | You are using a development build. Follow [development setup](development.md) to configure its models/service, or install the release app.                                                          |
-| OCR text is wrong or no region appears                           | Try a tight selection around larger, clearly visible text; check detector setup. Correct detected text with **Edit OCR text**. OCR accuracy varies with the page.                                   |
-
-## Running from source
-
-Contributors should follow [development setup](development.md) to configure OCR
-models/dictionaries and start both the service and desktop host. `tauri dev` does
-not start the separate development service; its minimal configuration returns a
-labeled demo boundary. These are source-checkout steps, separate from installing
-the packaged app. For a code map, see [architecture](architecture.md#repository-map).
-The controls below describe current source; historical v0.1.0 controls are kept
-in their own section.
+Start with the [installation guide](installation-guide.md) to install the app,
+configure the detector and make your first scan. This guide explains the reading
+controls after setup. It describes the toolbar interface in v0.4.0 and current
+source; exact features depend on your installed version.
 
 ## Reading controls
 
-YomiMado now starts with a compact always-on-top toolbar. Drag its handle, or
+YomiMado starts with a compact always-on-top toolbar. Drag its handle, or
 focus the handle and use arrow keys, to move it. Collapse retains both scan icons,
 Rescan, overlay visibility/status and Expand; the native window shrinks too. The
 overflow menu opens Saved, Settings (including detector import), Sources and Quit.
@@ -246,53 +91,46 @@ monitor; Rescan uses its recorded original monitor.
 Whole Screen can be the first scan after launch; Selected Area is not needed to
 initialize it. Recognition allows up to three minutes for a cold local model or
 large page. A stalled OCR request then ends with an error instead of leaving the
-scan button busy indefinitely. Check the local OCR service before retrying.
+scan button busy indefinitely. If an error persists, quit and reopen YomiMado
+before retrying.
 
-The owner accepted the compact learning popup and Phase 4 Saved library, then
-authorized Phase 5 Settings. Saved-data formats and native capture helpers are
-retained. Saved, Settings, and Sources & licenses each open their own native
-window from More actions. They can remain open together; opening another menu
-entry does not replace an existing window's content. Published v0.1.0 installers
-retain the older interaction below.
+Saved, Settings and Sources & licenses each open their own native window from
+More actions. They can remain open together; opening another menu entry does
+not replace an existing window's content.
+
+### Keyboard reading
+
+After a scan finishes, choose **More actions → Read with keyboard** while the
+OCR overlays are visible. Arrows select the next/previous region; Home/End select
+the first/last. Enter or Space opens its learning popup. Escape closes the popup
+and returns focus to its region. Escape from region navigation hides overlays
+and returns to the toolbar; Show restores them without another scan.
+
+Selection never starts translation. Navigation follows the detected sequence;
+estimated order uses text positions rather than panel detection. Click any region
+directly when that order is wrong.
 
 ### Settings
 
-Choose **More actions → Settings** for **Scan & OCR**. It contains detector status
-and Refresh status, checksum-verified Select/Replace detector model, capture
-permission guidance and scan shortcuts. Canceling the file picker keeps the model;
-a failed import shows an error and leaves the installed model intact. Restart
-YomiMado after replacing a model already in use. In development, model setup is
-managed by the existing local OCR service; the app does not claim that service is
-ready based on the packaged model status.
+Choose **More actions → Settings** to open **Scan & OCR** or **Reading**.
+Scan & OCR shows detector status, capture permission guidance and shortcuts.
+Reading contains keyboard-reading help, estimated JLPT badge visibility and local
+translation choices. Use Left/Right or Home/End on category tabs to navigate.
 
-**Reading** explains **More actions → Read with keyboard**, which replaces the
-old Reading-order controls preference and Previous/Next text panel. No preference
-needs to be enabled before using keyboard reading.
-Under **Local translation → Model source**, choose **Import local model** for
-compatible Marian folders or **Ollama** for installed local text models or
-explicit downloads by model name. A fresh setup shows **No translation model
-installed**. Choose **Import and use model** or **Use this model** to activate your
-choice; the **Using** line confirms it. There is no built-in model option or
-automatic fallback. OCR and word/kanji lookup work without a translation model.
-After installation, choose **Translate locally** in a learning popup; no restart
-is needed. Opening settings or scanning never starts a model download.
-Ollama must be installed and running separately. See
-[model selection and supported formats](translation-model-selection.md).
-**More actions → Sources & licenses** opens a separate attribution window with
-dictionary/model links and packaged notice guidance.
-Use Left/Right or Home/End on category tabs to navigate by keyboard.
+For detector installation and translation setup, follow the
+[installation guide](installation-guide.md). For compatible model files and provider
+switching, see [translation model setup](translation-model-selection.md).
+**More actions → Sources & licenses** opens attribution in a separate window.
 
 Use the native window close button to hide this window. The native title bar
 also provides window movement, minimizing and resizing.
 Closing a window leaves the other windows, toolbar and reading session running. Reopen it
 through the toolbar; **More actions → Quit YomiMado** exits the app. Scan actions
-remain on the toolbar. Whole Screen includes automatic manga-page cropping;
-the historical installer instructions below still apply to v0.1.0.
+remain on the toolbar. Whole Screen includes automatic manga-page cropping.
 
 If a macOS utility such as Vorssaint quits apps when their last window closes,
 add YomiMado to that utility's exceptions. Its bundle identifier is
-`com.yomimado.desktop`. A bare command-launched development executable may have
-no macOS bundle identifier, so a bundle-based exception may not cover it.
+`com.yomimado.desktop`.
 
 ### Learning popup
 
@@ -357,86 +195,9 @@ locally retains the existing explicit translation/cache behavior. Save sentence
 includes a matching translation only when one has been requested. Copy/save
 failures are shown inline and can be retried.
 
-## Published v0.1.0 reading flow
+## Older releases
 
-Use the capture and learning flow below:
-
-1. Press `Cmd+Shift+O` on macOS or `Ctrl+Shift+O` on Windows (or use **Select
-   screen region** in the main window). For repeated manga scans, click
-   **Scan manga page**. It tries a conservative automatic crop; if the page
-   is uncertain, draw a reusable reading area once as the fallback.
-2. For a selected-region capture, drag a rectangle on the current display.
-3. The Rust capture layer returns an in-memory PNG crop and scaling metadata.
-4. The app calls the local OCR service and shows its geometry in a transparent
-   overlay. Without local models, the service shows a dashed **demo boundary**
-   around the selected area. This is a coordinate check, not recognized text.
-5. Click a recognized region to open a Japanese learning popup. Select a word
-   in the popup's OCR text to see its reading, dictionary form, part of speech,
-   and possible combined-word meanings from a local JMdict file. Click a kanji
-   in that word for local KANJIDIC2 meanings and
-   on/kun readings. The popup shows the selected word as its immediate usage
-   context; it does not guess which character reading forms that word. After
-   editing the text, press **Analyze words** to refresh
-   word boundaries. Press **Translate locally** only if a sentence translation is
-   wanted; translation never starts merely because OCR detected a region. In
-   demo mode, enter Japanese text manually; the demo boundary contains no
-   recognized text.
-6. To keep a word, choose **Save this word** under its JMdict entry (or **Save
-   without meaning** if no entry was found). Open **Saved words** in the main
-   YomiMado window to review or remove it. Saving is explicit; OCR does not
-   automatically add words to your history.
-7. To keep the whole Japanese sentence, choose **Save sentence** in the popup.
-   If you have already requested a local translation, saving also keeps that
-   English result. Open **Saved sentences** in the main window to review or
-   remove it. Saving a sentence does not start translation.
-
-**Scan manga page** captures the current display, looks for a large
-black-and-white manga page below darker browser controls, and sends only that
-crop to OCR. If the page boundary is uncertain, it uses the saved manga area;
-if there is none, it asks you to draw one. Use **Set/adjust scan area** if the
-fallback area no longer matches the browser position. It is saved locally for
-that display layout. Press `Cmd+Shift+S` on macOS or `Ctrl+Shift+S` on Windows
-to start the same one-shot scan without opening the main window. Detection is
-conservative: light-themed readers, dark or colored pages, and unusual layouts
-may need the saved area. On dark sites, sparse white sidebar text and thumbnails
-are excluded from the page crop when a distinct manga image is found; if two
-page-like areas are similarly sized, the app uses the saved area instead. The
-crop also excludes a short dark site toolbar beneath a clear light page edge.
-Ambiguous dark page content is kept rather than cut off. The
-app does not watch for screen changes or translate text automatically. Close
-the overlay before changing pages, then scan again.
-After scanning, choose **More actions → Read with keyboard**. The OCR overlays
-must be visible and the scan finished. Arrow keys select the next/previous region;
-Home/End select the first/last region. Enter or Space opens its learning popup.
-Escape closes the popup and returns focus to that region. Escape from region
-navigation hides the overlays and returns to the toolbar. Show the overlays again
-to resume. No translation runs merely because selection changes.
-Navigation follows the detected sequence; estimated order on whole-screen scans
-uses text positions, not panel detection. Click any region directly if it is wrong.
-Platform-specific coverage and remaining checks are recorded in the
-[Windows installed-app record](windows-installed-test.md) and
-[macOS installed-app record](macos-clean-mac-test.md).
-
-See [development setup](development.md) for local models and dictionaries, or
-the [release checklist](desktop-release.md) for packaged candidates.
-
-### Development OCR overlays
-
-Click a detected region to open its learning popup. **Show OCR overlays** restores
-a hidden result without OCR. Use **More actions → Read with keyboard** to focus
-regions without opening a popup. Ordinary scan completion keeps focus in your reader.
-
-Normal outlines are orange; the selected region is blue. Dashed regions indicate
-review, approximate geometry or an explicitly labeled demo boundary. Review guidance
-also appears in the learning popup; use its existing OCR editor to correct text.
-No word meaning or translation request runs merely because a region is hovered.
-
-Detailed hover tooltips are reserved for capture debug mode (`VITE_CAPTURE_DEBUG=1`).
-Normal reading retains screen-reader labels, dashed review cues and the compact
-Check OCR status. Debug mode pauses before the interactive overlay so you can
-review the exact capture and recognized text; expand Geometry or Detector stage
-for diagnostic details. See [development setup](development.md) to enable it.
-
-The native adapter is implemented for source review. Windows, mixed-DPI and rapid
-pointer-entry acceptance remain tracked in [native UI checks](ui-testing.md#native-overlay-checks).
-These changes do not change the published v0.1.0 installers.
+The [historical v0.1.0 reading guide](https://github.com/chonnakanch/yomimado/blob/91c65d1/docs/usage.md#published-v010-reading-flow)
+retains the original interface instructions. Exact platform test results remain
+in the [Windows](windows-installed-test.md) and [macOS](macos-clean-mac-test.md)
+installed-app records.

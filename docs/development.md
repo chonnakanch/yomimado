@@ -15,6 +15,13 @@ use `<type>/<topic>`; commit headers use `type(scope): imperative summary`, with
 
 ## Start the app
 
+This guide is for a source checkout. Start both the local service and desktop
+host; `tauri dev` does not start the service. The minimal configuration returns
+a labeled demo boundary until OCR models are configured. Settings may say
+**Managed by the development OCR service**; that status does not prove the
+service can recognize text. For an installed app, use the
+[installation guide](installation-guide.md) instead.
+
 The source and packaging recipes use Lindera/IPADIC for learning analysis.
 See the [migration report](lindera-migration.md) for measured differences from
 Sudachi and the remaining release checks. Published v0.1.0 evidence is historical.
@@ -82,10 +89,17 @@ starts; restart both the desktop app and OCR service after updating them, and
 restart the desktop app without the flag to return to the normal flow. On Windows
 PowerShell, set `$env:VITE_CAPTURE_DEBUG="1"` before running `npm run tauri dev`.
 
+Detailed hover tooltips require capture debug mode. Normal reading preserves
+accessible labels, dashed review outlines and Check OCR without hover tooltips.
+Native adapter acceptance, including mixed-DPI and rapid pointer entry, is tracked
+in [UI testing](ui-testing.md#native-overlay-checks).
+
 macOS requires Screen Recording permission. If macOS prompts during the first
 capture, enable YomiMado in **System Settings → Privacy & Security → Screen &
 System Audio Recording**, then restart the app. When running `tauri dev`, macOS
-may list the terminal application instead. Without this permission, macOS can
+may list the terminal application instead. A bare command-launched executable
+may have no macOS bundle identifier, so an external utility's bundle-based
+exception may not cover it. Without this permission, macOS can
 return a screenshot containing only the desktop background instead of the
 visible windows. The placeholder OCR endpoint does not download models or send
 images over the network.

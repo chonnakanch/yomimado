@@ -22,7 +22,8 @@ Start with [docs/README.md](docs/README.md). Read the relevant canonical guide:
 | Current status, proposed features and completion criteria  | [Implementation status and roadmap](docs/implementation-plan.md)                         |
 | Source tree, API contracts, coordinates and resource roles | [Architecture and resources](docs/architecture.md)                                       |
 | Local setup, models, checks and diagnostics                | [Development](docs/development.md)                                                       |
-| User controls and installation                             | [Usage](docs/usage.md)                                                                   |
+| Packaged-app installation and first-run setup              | [Installation guide](docs/installation-guide.md)                                         |
+| Reading controls and saved collections                     | [Usage](docs/usage.md)                                                                   |
 | UI tokens, component behavior, tray and icons              | [Design system](docs/design-system.md)                                                   |
 | Native overlay, Windows/DPI and UI review evidence         | [UI testing](docs/ui-testing.md)                                                         |
 | Branches, commits, PRs and merges                          | [Git conventions](docs/git-conventions.md)                                               |
@@ -135,11 +136,14 @@ After editing:
 
 ## Documentation maintenance
 
-Keep one canonical home per subject. README introduces the app and installation;
-docs/README is the navigation index; implementation-plan owns current status,
+Keep one canonical home per subject. README introduces the app and links to setup;
+installation-guide owns packaged-app installation and first-run setup; usage owns
+reading controls; docs/README is the navigation index; implementation-plan owns current status,
 roadmap and feature limits; architecture owns runtime structure/resources;
 design-system owns visual/native UI contracts; ui-testing owns UI acceptance.
-Keep setup commands in development and release procedures in the release runbook.
+Keep developer commands and debug notes in development, and release procedures in
+the release runbook. Keep README installation text brief and link to the full
+installation guide rather than repeating its steps.
 
 Merge completed short feature notes into the relevant guide. Remove superseded
 plans once current behavior and useful evidence have a home. Put chronological

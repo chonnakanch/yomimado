@@ -273,7 +273,7 @@ The detector's **code and model weights are separate inputs**. The app's
 copies it into the application's writable data directory under
 `models/comictextdetector.pt.onnx`. YomiMado does not automatically download it.
 The current release policy excludes these detector weights from installers and
-public source/artifact delivery. See the [reading guide](usage.md) for setup.
+public source/artifact delivery. See the [installation guide](installation-guide.md) for setup.
 
 ## OCR decoding and learning tokenization
 

@@ -7,19 +7,20 @@ source/candidate, not necessarily the current release.
 
 ## Main guides
 
-| Guide                                                       | Use it for                                                                                    |
-| ----------------------------------------------------------- | --------------------------------------------------------------------------------------------- |
-| [Installation and reading](usage.md#install-and-set-up)     | Download, macOS/Windows installation, detector setup, first scan and reading controls         |
-| [Development](development.md)                               | Local service, models, dictionaries, checks and diagnostics                                   |
-| [Implementation status and roadmap](implementation-plan.md) | Current scope, maintenance priorities, proposed features, Saved search and conjugation limits |
-| [Architecture and resources](architecture.md)               | Source tree, scan flow, API boundaries, coordinates, models, dictionaries and storage         |
-| [Design system](design-system.md)                           | Tokens, components, tray behavior and icon provenance/regeneration                            |
-| [UI testing](ui-testing.md)                                 | Native overlay checks, Windows scaling matrix, tray acceptance and dated redesign review      |
-| [Git conventions](git-conventions.md)                       | Branches, commits, PRs and preservation of reviewed history                                   |
-| [Translation model setup](translation-model-selection.md)   | Compatible local Marian imports, Ollama, selection and cache behavior                         |
-| [Dictionary updates](dictionary-updates.md)                 | Snapshot replacement and attribution                                                          |
-| [Script guide](../scripts/README.md)                        | Tool entrypoints, resource preparation, builds and verification                               |
-| [Changelog](../CHANGELOG.md)                                | Dated development changes and verification limits                                             |
+| Guide                                                       | Use it for                                                                                           |
+| ----------------------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
+| [Installation guide](installation-guide.md)                 | System requirements, macOS/Windows installation, detector setup, first scan and optional translation |
+| [Reading guide](usage.md)                                   | Toolbar, scan modes, keyboard reading, learning popups and Saved collections                         |
+| [Development](development.md)                               | Local service, models, dictionaries, checks and diagnostics                                          |
+| [Implementation status and roadmap](implementation-plan.md) | Current scope, maintenance priorities, proposed features, Saved search and conjugation limits        |
+| [Architecture and resources](architecture.md)               | Source tree, scan flow, API boundaries, coordinates, models, dictionaries and storage                |
+| [Design system](design-system.md)                           | Tokens, components, tray behavior and icon provenance/regeneration                                   |
+| [UI testing](ui-testing.md)                                 | Native overlay checks, Windows scaling matrix, tray acceptance and dated redesign review             |
+| [Git conventions](git-conventions.md)                       | Branches, commits, PRs and preservation of reviewed history                                          |
+| [Translation model setup](translation-model-selection.md)   | Compatible local Marian imports, Ollama, selection and cache behavior                                |
+| [Dictionary updates](dictionary-updates.md)                 | Snapshot replacement and attribution                                                                 |
+| [Script guide](../scripts/README.md)                        | Tool entrypoints, resource preparation, builds and verification                                      |
+| [Changelog](../CHANGELOG.md)                                | Dated development changes and verification limits                                                    |
 
 For [small-text and vertical OCR accuracy](implementation-plan.md#small-text-and-vertical-ocr-accuracy),
 see the initial recovery scope, measurements and remaining work.
