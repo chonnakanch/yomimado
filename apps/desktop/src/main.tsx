@@ -8,6 +8,8 @@ import { FloatingToolbar } from "./features/toolbar/FloatingToolbar";
 import { ToolbarMenu } from "./features/toolbar/ToolbarMenu";
 import "./styles.css";
 
+document.addEventListener("contextmenu", (event) => event.preventDefault());
+
 const mode = new URLSearchParams(window.location.search).get("mode");
 document.documentElement.dataset.mode = mode ?? "main";
 const root = ReactDOM.createRoot(document.getElementById("root")!);

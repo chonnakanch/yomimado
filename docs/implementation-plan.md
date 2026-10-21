@@ -20,6 +20,10 @@ at the owner's request.
 - Detector setup's release link opens the latest upstream page in the system
   browser, with launch errors shown in Settings. The native macOS link and exact
   download hash are [verified in development](ui-testing.md#detector-release-link-verification).
+- Area selection accepts primary-button drags and resets interrupted/context-click
+  drags. All app windows suppress the browser right-click context menu. Drag
+  regression coverage passes; native macOS/Windows interaction checks remain unrecorded in
+  [UI testing](ui-testing.md#check-the-native-interaction).
 - The latest public release is **v0.5.0**, source
   `8ff3be2621096a9804cc23ba33902f5aab34da55`, with nine uploaded assets.
   It includes custom capture shortcuts and initial OCR recovery using reviewed
