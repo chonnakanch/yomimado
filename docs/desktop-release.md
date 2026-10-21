@@ -1,5 +1,21 @@
 # Shared desktop release checklist
 
+v0.5.0 public pre-release — **2026-10-21**:
+[Recovery run `39587407949`](https://github.com/chonnakanch/yomimado/actions/runs/39587407949)
+completed successfully after the workflow repair merged at
+`6fa6a4d497d0deb92b7255907e41826bef0f60b4`.
+[The public release](https://github.com/chonnakanch/yomimado/releases/tag/v0.5.0)
+retains original installer source `8ff3be2621096a9804cc23ba33902f5aab34da55`,
+nine uploaded files and the original PR-based notes. Published installer SHA-256:
+
+- macOS: `778c865a7b95cc05becdfc6526aa492f0cf6bf41fb72841bc9bc7218e51df1f7`
+- Windows: `aa69306dfab65cadf21702e2e6ad537faf725c03af36693a7e58f4be05e6e8c6`
+
+The [recovery record](release-recovery-0.5.0.md#completed-recovery-and-retirement)
+retains pinned artifacts and the successful outcome. The temporary workflow is
+retired at the owner's request. These are observed hosted publication metadata;
+this record adds no new local installer acceptance, hardware test or waiver.
+
 v0.5.0 publication blocked — **2026-10-21**: after PR #27 merged at
 `8ff3be2621096a9804cc23ba33902f5aab34da55`,
 [Release `39571798373`](https://github.com/chonnakanch/yomimado/actions/runs/39571798373)

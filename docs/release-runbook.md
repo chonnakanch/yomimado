@@ -153,14 +153,14 @@ first v0.5.0 publisher to be rejected before any step ran. The default-branch
 context matches the existing main-only policy; do not add PR refs to that policy.
 See [GitHub's ref-policy change](https://github.blog/changelog/2025-11-07-actions-pull_request_target-and-environment-branch-protections-changes/).
 
-For the existing v0.5.0 files, use only the bounded
-[original-candidate recovery](release-recovery-0.5.0.md) after its repair PR merges
-and main Checks pass. It downloads the pinned original candidate and note ZIPs,
-rechecks them and requires a fresh protected publication review. It does not
-rebuild installers. Rerunning the old PR-triggered publisher retains its old event
-and cannot repair this environment rejection. Other versions and partial uploads
-require separate investigation; this recovery accepts neither arbitrary artifacts
-nor an existing v0.5.0 tag/release.
+The one-candidate v0.5.0 recovery completed and its temporary workflow was
+retired; the [recovery record](release-recovery-0.5.0.md) retains original source,
+artifact identities and the successful run. Future releases use **Release**.
+For a failed run, investigate its stage before manually dispatching Release on
+main. A new normal run rebuilds from current main; it does not reuse an earlier
+run's installers. Rerunning an old PR-triggered publisher retains its old event
+and cannot repair an environment rejection. Existing tags/drafts or partial
+uploads require investigation before retrying.
 
 ## Generate and review release notes
 

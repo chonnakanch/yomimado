@@ -12,6 +12,14 @@ The [feature roadmap](docs/implementation-plan.md#feature-checklist) tracks comp
 
 ### 2026-10-21
 
+#### Removed
+
+- Retire the temporary v0.5.0 publication recovery workflow, helper and tests
+  after successful recovery run `39587407949`. Keep Checks and Release, including
+  the trusted-main merge trigger. Preserve original artifact/source/installer
+  evidence and record the public pre-release outcome. Disable the already
+  source-removed historical Actions cleanup workflow in GitHub.
+
 #### Fixed
 
 - Run merged release topics in trusted default-branch context so the main-only

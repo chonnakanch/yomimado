@@ -258,11 +258,11 @@ for installer workflows.
 
 Active workflows: [Checks](../.github/workflows/checks.yml) verifies main pushes
 and main-targeted PRs; [Release](../.github/workflows/release.yml) builds a merged
-release topic in trusted main context; [Recover v0.5.0 publication](../.github/workflows/desktop-release-resume.yml)
-is a manual main-only recovery for one pinned original candidate. The
+release topic in trusted main context. The
 [runbook](release-runbook.md#trusted-merge-context-and-publication-recovery) owns
-execution and publication details. Recovery tests and all three workflow files
-are included in release-tool CI.
+execution and publication details. Both workflow files are included in
+release-tool CI. The temporary v0.5.0 recovery workflow was retired after
+[successful publication](release-recovery-0.5.0.md#completed-recovery-and-retirement).
 
 Service CI uses Python 3.11.17 and
 [requirements-ci.txt](../scripts/requirements-ci.txt), with exact wheel hashes

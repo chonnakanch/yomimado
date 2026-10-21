@@ -51,9 +51,6 @@ publication requirements. Release script entrypoints are:
 
 - `desktop_release.py`: pinned input transfer, source/data/notice consolidation,
   exact-commit Checks, main protection, hash/provenance and uploaded release checks.
-- `desktop_release_recovery.py`: one pinned v0.5.0 candidate and note-artifact
-  recovery, strict repair-only source scope, original installer verification and
-  protected publication; see the [recovery record](../docs/release-recovery-0.5.0.md).
 - `macos-ci-release.py`: version/classification, reviewed seed scope, current
   project sources, macOS packaging and release-environment checks.
 - `build-windows-prerelease.ps1`: prepare, freeze, inventory and build Windows NSIS.
