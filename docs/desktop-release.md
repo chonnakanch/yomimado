@@ -1,5 +1,14 @@
 # Shared desktop release checklist
 
+v0.6.0 preparation — **2026-10-22**: branch `release/0.6.0` binds version source
+`194dd5704b2a07c5f57c380f60adac35c748e46d`. Application and release-tool checks
+pass; the changed frozen Python service requires a replacement reviewed seed.
+A private macOS candidate passes mounted bundle/platform and offline service
+smoke checks. Source approval, seed activation, main integration and exact CI
+installer acceptance/publication are pending. See the
+[preparation record](release-preparation-0.6.0.md); prior approvals and installer
+hashes retain their original scope.
+
 v0.5.0 public pre-release — **2026-10-21**:
 [Recovery run `39587407949`](https://github.com/chonnakanch/yomimado/actions/runs/39587407949)
 completed successfully after the workflow repair merged at
