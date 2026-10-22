@@ -6,6 +6,7 @@ source revisions; it is not a claim that every current native case passed.
 Exact installer tests remain in [macOS](macos-clean-mac-test.md),
 [Windows](windows-installed-test.md) and [shared release records](desktop-release.md).
 
+- [Charcoal and blue theme](#charcoal-and-blue-theme)
 - [Capture shortcut verification](#capture-shortcut-verification)
 - [Detector release link verification](#detector-release-link-verification)
 - [Completed-overlay hide controls](#completed-overlay-hide-controls)
@@ -15,6 +16,41 @@ Exact installer tests remain in [macOS](macos-clean-mac-test.md),
 - [Tray verification and acceptance](#tray-verification-and-acceptance)
 - [Dated redesign review](#dated-redesign-review)
 - [Retained window and debug evidence](#retained-window-and-debug-evidence)
+
+## Charcoal and blue theme
+
+Development check — 2026-10-22: browser review with synthetic light and dark
+panels covers default, hovered, selected and dashed review OCR outlines, the
+bold X control, toolbar actions and the capture drag rectangle. OCR halos use a
+separate stroke-only polygon, leaving ordinary interiors transparent and limiting
+hover/selection fill to 6%/10% blue. The selector has no full-screen tint; its
+rectangle uses a 2 px blue border, thin dark edges and a 6% blue interior.
+
+Computed shared-token contrast across the background, surface and elevated
+surface is at least 6.48:1 for normal/muted text and 6.60:1 for links. White labels
+on `#0866FF` actions measure 4.82:1, and on the darker hover 6.05:1. Focus indicators
+measure at least 6.60:1 against these surfaces. Error and success text retain
+separate colors and explicit labels. These measurements cover the declared opaque
+UI tokens, not arbitrary manga pixels.
+
+All 318 frontend tests, TypeScript/Vite build and frontend formatting pass.
+Follow-up visual review confirms the lighter blue book mark styling, 3 px
+selected Settings outline and Sources view without the slogan or Japanese
+app-name subtitle. Its source descriptions and licence links remain present.
+The 49 app, Settings, toolbar and overlay tests, frontend build and formatting
+pass after this refinement. Keyboard-focused OCR strokes use 4 px with a 6 px
+dark halo; other control focus rings use 3 px.
+Icon follow-up — 2026-10-22: reviewed the blue desktop exports at 32/128 px and
+Windows tray mark at 32 px. All PNGs retain RGBA transparency; ICO and ICNS decode
+successfully. Tray exports reproduce from their generator and the macOS template
+hash is unchanged. Generator lint and the macOS debug build pass. This does not
+establish installed Dock/taskbar/menu-bar acceptance for the new exports.
+
+Native macOS/WebView and Windows/WebView2 visual acceptance, fractional scaling,
+pass-through and exact-installer checks remain unverified for this theme. Follow
+the [native overlay checks](#native-overlay-checks), including light/dark pages,
+vertical polygons, capture cancellation, hidden capture chrome and Hide/Show.
+The theme changes no native window sizes, coordinate transforms or hit geometry.
 
 ## Capture shortcut verification
 

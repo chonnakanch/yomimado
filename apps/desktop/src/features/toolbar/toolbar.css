@@ -31,7 +31,7 @@
 }
 .toolbar-brand {
   align-items: center;
-  color: var(--color-accent);
+  color: var(--color-link);
   display: flex;
   flex: none;
   padding: 0 var(--space-1);
@@ -125,7 +125,7 @@
 }
 .toolbar-menu-popover.keyboard-navigation button:focus {
   outline: var(--focus-width) solid var(--color-focus);
-  outline-offset: -2px;
+  outline-offset: calc(-1 * var(--focus-width));
 }
 .toolbar-menu-error {
   color: var(--color-status-error);

@@ -12,6 +12,31 @@ The [feature roadmap](docs/implementation-plan.md#feature-checklist) tracks comp
 
 ### 2026-10-22
 
+#### Changed
+
+- Restore the original `#0866FF` button backgrounds and `#0058E0` hover at the
+  owner's request, reverting the muted button palette from `6351025`. Drawing
+  outlines and the capture drag box continue to use the same vivid blue.
+
+- Recolor the desktop app icon and Windows tray mark to the charcoal/blue theme.
+  Keep the original master as provenance, add a transparent blue master and
+  regenerate the desktop PNG, ICO and ICNS exports. Preserve the monochrome
+  macOS tray template for system adaptation; record the prompt and regeneration
+  recipe in the [design guide](docs/design-system.md#icon-provenance-and-regeneration).
+
+- Give the toolbar book mark a lighter blue than scan actions. Increase keyboard
+  focus rings to 3 px, selected Settings category outlines to 3 px and focused
+  OCR strokes to 4 px. Remove the slogan and Japanese app-name subtitle from the
+  Sources window while preserving its source and licence information.
+
+- Apply charcoal surfaces and `#0866FF` blue actions across the app, with white
+  action labels, readable blue links and distinct error feedback. Use blue OCR
+  outlines with a thin dark halo and faint hover/selection fill. Match the
+  capture drag box to the blue theme and remove the full-screen capture tint,
+  preserving a clear view of the manga. Keep the bold X and existing geometry,
+  native hit routing and capture lifecycle. See the
+  [theme verification](docs/ui-testing.md#charcoal-and-blue-theme).
+
 #### Fixed
 
 - Localize loose horizontal OCR title/paragraph detections from visible glyph rows

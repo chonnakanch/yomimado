@@ -7,9 +7,6 @@ export function AboutSettings() {
     <div className="settings-card settings-sources">
       <h2>About / Sources</h2>
       <p>
-        YomiMado <span lang="ja">読み窓</span> · Read beyond the page.
-      </p>
-      <p>
         OCR and dictionary lookup stay local. Translation runs only when you
         request it.
       </p>

@@ -231,9 +231,11 @@ it.each([false, true])(
 it("mounts the current polygons before revealing a reused native overlay", async () => {
   vi.mocked(invoke).mockImplementation(async (command) => {
     if (command === "reveal_ocr_overlay") {
-      expect(container.querySelectorAll("polygon")).toHaveLength(1);
+      expect(container.querySelectorAll("polygon.ocr-region")).toHaveLength(1);
       expect(
-        container.querySelector("polygon")?.getAttribute("aria-label"),
+        container
+          .querySelector("polygon.ocr-region")
+          ?.getAttribute("aria-label"),
       ).toContain("今日");
       return {
         windowWidth: 1000,
@@ -390,7 +392,7 @@ it("opens only on explicit activation and provides keyboard navigation and hide"
   });
   await act(async () => root.render(<OcrOverlay />));
   const polygons = Array.from(
-    container.querySelectorAll<SVGPolygonElement>("polygon"),
+    container.querySelectorAll<SVGPolygonElement>("polygon.ocr-region"),
   );
   const focusFirst = vi.fn();
   const focusLast = vi.fn();
@@ -500,7 +502,7 @@ it("uses explicit demo labels and Space activation without inventing recognized 
     },
   });
   await act(async () => root.render(<OcrOverlay />));
-  const polygon = container.querySelector("polygon")!;
+  const polygon = container.querySelector("polygon.ocr-region")!;
   expect(polygon.getAttribute("aria-label")).toContain(
     "Demo boundary — no recognized text",
   );

@@ -38,12 +38,31 @@
   background: var(--color-surface-elevated);
 }
 .overlay-hide:focus-visible {
-  outline: 2px solid var(--color-region-selected);
-  outline-offset: -2px;
+  outline: var(--focus-width) solid var(--color-region-selected);
+  outline-offset: calc(-1 * var(--focus-width));
 }
 .overlay-hide:disabled {
   cursor: wait;
   opacity: 0.6;
+}
+.ocr-region-halo {
+  fill: none;
+  pointer-events: none;
+  stroke: var(--color-region-halo);
+  stroke-width: 4px;
+  vector-effect: non-scaling-stroke;
+}
+.ocr-region-group:hover .ocr-region-halo,
+.ocr-region-group.active .ocr-region-halo,
+.ocr-region-group:focus-within .ocr-region-halo {
+  stroke-width: 5px;
+}
+.ocr-region-group:has(> .ocr-region:focus-visible) .ocr-region-halo {
+  stroke-width: 6px;
+  stroke-dasharray: 3 2;
+}
+.ocr-region-group:is(.demo, .approximate, .needs-review) .ocr-region-halo {
+  stroke-dasharray: 6 5;
 }
 .ocr-region {
   cursor: pointer;
@@ -69,6 +88,7 @@
 }
 .ocr-region:focus-visible {
   outline: none;
+  stroke-width: 4px;
   stroke-dasharray: 3 2;
 }
 .ocr-region.demo,
