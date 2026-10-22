@@ -273,6 +273,18 @@ for review. OCR replies currently have empty `tokens` arrays: learning analysis
 runs when the region popup opens. Automatic retry/crop behavior is recorded in
 [the optimization report](detector-retry-optimization.md).
 
+Before recognition, ambiguous horizontal detector blocks on a plain light/dark
+background can be localized using connected glyph components. Whitespace separates
+rows/columns, neighboring detector blocks bound end recovery, and rotated/vertical,
+low-contrast or artwork-like cases retain their detector path. Refinement accepts
+at most 16 rows per block and 32 row crops per scan. Recognized rows supersede
+covered fragments; other unresolved overlaps retain their text and a review flag.
+Refined crops use the existing `expandedCrop` source with an explicit reason and
+unknown confidence. Original detector boxes remain in debug output, output ordering
+follows the original detector sequence, and polygons are clipped to image bounds
+before publication. The stroke fallback uses an enclosing oriented rectangle.
+No detector passes, model weights or display-coordinate transforms are added.
+
 ## Resource inventory
 
 | Resource                                               | What it contributes                                                                         | Delivery in packaged apps                                                             |

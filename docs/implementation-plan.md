@@ -1,6 +1,6 @@
 # Implementation status and feature roadmap
 
-Last reviewed: **2026-10-21**. This is the current plan, not a chronological work
+Last reviewed: **2026-10-22**. This is the current plan, not a chronological work
 log. [CHANGELOG.md](../CHANGELOG.md) records dated changes; the
 [release checklist](desktop-release.md) records publication and exact installers.
 Source completion, UI approval and installer acceptance are separate states.
@@ -17,6 +17,10 @@ at the owner's request.
 - Toolbar, learning popup, Saved, Settings and Sources UI are implemented. Current
   contracts are in [design specifications](design-system.md); native checks and
   dated review evidence are in [UI testing](ui-testing.md).
+- Horizontal OCR geometry recovery localizes loose titles and plain light/dark
+  paragraphs into bounded text rows, retaining review metadata. Source checks and
+  [synthetic measurements](ocr-geometry-results.json) pass; native Windows
+  extended-monitor acceptance remains unrecorded.
 - Detector setup's release link opens the latest upstream page in the system
   browser, with launch errors shown in Settings. The native macOS link and exact
   download hash are [verified in development](ui-testing.md#detector-release-link-verification).
@@ -156,6 +160,16 @@ rtk services/ocr/build/release-venv/bin/python scripts/benchmark_detector_retrie
   --baseline-ref 04c9617 --repeats 2 --skip-no-tiles \
   --output services/ocr/build/small-text-accuracy-20261020/sequential
 ```
+
+### Horizontal geometry recovery
+
+The horizontal title/paragraph geometry follow-up is implemented in source.
+It recovers the reproduced large title's missing ending and separates plain
+light/dark paragraph rows while retaining review metadata. The older low-contrast
+limitation remains. [Runtime behavior](architecture.md#resources-and-data-flow),
+[measurements](ocr-geometry-results.json) and
+[native acceptance cases](ui-testing.md#horizontal-ocr-geometry-recovery) describe
+the supported scope; native Windows extended-monitor verification is still pending.
 
 ## Proposed implementation slices
 

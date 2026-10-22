@@ -199,7 +199,7 @@ export function CaptureDebugView({
                         {region.geometrySource === "selection" &&
                           " · approximate selected-area box"}
                         {region.geometrySource === "expandedCrop" &&
-                          " · approximate expanded-crop box"}
+                          " · approximate crop boundary"}
                         {region.needsReview && " · review suggested"}
                       </span>
                       {region.reviewReason && (
