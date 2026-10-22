@@ -60,12 +60,15 @@ The mounted DMG's 29 frozen modules and packaged entrypoint independently match
 the exact source. `REVIEW.md`, structural/content reports, source-preparation and
 mounted module comparison are retained beside/inside that delivery.
 
-**Owner source/licence approval is pending.** Reviewer/date remain blank; there
-is no `source-delivery.json` or activation manifest for this source. The old
-seed's approval applies only to its recorded source and is not copied to this
-candidate. No new private input upload or activation is performed during version
-preparation. Source-only rebuilding and the dated dependency advisory review
-remain unverified; unchanged inventories do not resolve those earlier limits.
+The owner subsequently approved this exact source/licence delivery and private
+seed activation on **2026-10-22**. The original unsigned worksheet remains intact;
+the actual decision and approved manifest are recorded separately. The
+source-approved DMG has its own hash, distinct from the earlier private test
+DMG above. The [seed record](macos-runtime-seed.md#v060-replacement-seed--2026-10-22)
+retains its exact four input hashes/sizes, approval hash, private draft and
+owner-uploaded activation manifest. Source-only rebuilding and the dated
+dependency advisory review remain unverified; unchanged inventories do not
+resolve those earlier limits.
 
 ## Local verification
 
@@ -78,6 +81,12 @@ remain unverified; unchanged inventories do not resolve those earlier limits.
 - Script Ruff lint/format and both workflows' pinned actionlint pass.
 - Version plan: `0.6.0`, tag `v0.6.0`, `prerelease=true`.
 
+[PR #38](https://github.com/chonnakanch/yomimado/pull/38) at `9f3d290` passes all
+six hosted Checks in [run 39786713459](https://github.com/chonnakanch/yomimado/actions/runs/39786713459),
+including macOS and Windows native jobs. Documentation follow-ups require their
+own current-head Checks; these source checks do not establish Windows hardware
+or exact-installer acceptance.
+
 Initial local test attempts used obsolete Python 3.9 and installed Node 26;
 their environment failures were resolved by using the pinned supported tools.
 The frontend retains the existing large-chunk build advisory. Private DMG creation
@@ -86,8 +95,7 @@ uses the unchanged build recipe and ad-hoc signing.
 
 ## Remaining release gates
 
-Do not merge this release PR until the replacement runtime seed is reviewed and
-activated if the automatic Release is expected to build immediately. Merge with
+The replacement runtime seed is owner-approved and activated privately. Merge with
 commit history preserved so reviewed source `194dd57` remains an ancestor.
 Release then requires successful Checks on the exact main merge and dynamically
 selects the compatible owner-approved seed. A fresh Release run can discover a
