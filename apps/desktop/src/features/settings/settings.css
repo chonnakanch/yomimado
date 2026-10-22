@@ -43,6 +43,8 @@
 .settings-tabs [aria-selected="true"] {
   background: var(--color-surface-elevated);
   border-color: var(--color-focus);
+  outline: var(--focus-width) solid var(--color-focus);
+  outline-offset: calc(-1 * var(--focus-width));
 }
 .settings-window[hidden],
 .settings-window [role="tabpanel"][hidden] {

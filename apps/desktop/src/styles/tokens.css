@@ -51,6 +51,6 @@
   --popup-width: 420px;
   --popup-padding: var(--space-4);
   --popup-section-gap: var(--space-6);
-  --focus-width: 2px;
+  --focus-width: 3px;
   --motion-fast: 120ms;
 }

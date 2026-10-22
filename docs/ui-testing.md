@@ -33,6 +33,12 @@ separate colors and explicit labels. These measurements cover the declared opaqu
 UI tokens, not arbitrary manga pixels.
 
 All 318 frontend tests, TypeScript/Vite build and frontend formatting pass.
+Follow-up visual review confirms the lighter blue book mark styling, 3 px
+selected Settings outline and Sources view without the slogan or Japanese
+app-name subtitle. Its source descriptions and licence links remain present.
+The 49 app, Settings, toolbar and overlay tests, frontend build and formatting
+pass after this refinement. Keyboard-focused OCR strokes use 4 px with a 6 px
+dark halo; other control focus rings use 3 px.
 Native macOS/WebView and Windows/WebView2 visual acceptance, fractional scaling,
 pass-through and exact-installer checks remain unverified for this theme. Follow
 the [native overlay checks](#native-overlay-checks), including light/dark pages,

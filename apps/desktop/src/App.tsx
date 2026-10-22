@@ -23,7 +23,7 @@ export function App() {
       {!showSaved && (
         <header className="secondary-header">
           <span className="secondary-brand">
-            YomiMado <span lang="ja">読み窓</span>
+            YomiMado {!showSources && <span lang="ja">読み窓</span>}
           </span>
         </header>
       )}

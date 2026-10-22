@@ -38,8 +38,8 @@
   background: var(--color-surface-elevated);
 }
 .overlay-hide:focus-visible {
-  outline: 2px solid var(--color-region-selected);
-  outline-offset: -2px;
+  outline: var(--focus-width) solid var(--color-region-selected);
+  outline-offset: calc(-1 * var(--focus-width));
 }
 .overlay-hide:disabled {
   cursor: wait;
@@ -58,6 +58,7 @@
   stroke-width: 5px;
 }
 .ocr-region-group:has(> .ocr-region:focus-visible) .ocr-region-halo {
+  stroke-width: 6px;
   stroke-dasharray: 3 2;
 }
 .ocr-region-group:is(.demo, .approximate, .needs-review) .ocr-region-halo {
@@ -87,6 +88,7 @@
 }
 .ocr-region:focus-visible {
   outline: none;
+  stroke-width: 4px;
   stroke-dasharray: 3 2;
 }
 .ocr-region.demo,

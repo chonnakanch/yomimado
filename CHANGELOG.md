@@ -14,6 +14,11 @@ The [feature roadmap](docs/implementation-plan.md#feature-checklist) tracks comp
 
 #### Changed
 
+- Give the toolbar book mark a lighter blue than scan actions. Increase keyboard
+  focus rings to 3 px, selected Settings category outlines to 3 px and focused
+  OCR strokes to 4 px. Remove the slogan and Japanese app-name subtitle from the
+  Sources window while preserving its source and licence information.
+
 - Apply charcoal surfaces and `#0866FF` blue actions across the app, with white
   action labels, readable blue links and distinct error feedback. Use blue OCR
   outlines with a thin dark halo and faint hover/selection fill. Match the

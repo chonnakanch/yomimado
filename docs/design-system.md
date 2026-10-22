@@ -124,7 +124,7 @@ dimensions using the actual display scale; do not multiply CSS values by DPI.
 | `--popup-width`       | 420 px           | Preferred logical width; work-area clamp wins. |
 | `--popup-padding`     | `var(--space-4)` | Single outer padding.                          |
 | `--popup-section-gap` | `var(--space-6)` | Distinct content sections.                     |
-| `--focus-width`       | 2 px             | Visible focus outline, 2 px offset.            |
+| `--focus-width`       | 3 px             | Visible focus outline, 2 px offset.            |
 | `--motion-fast`       | 120 ms           | Color/fill feedback only.                      |
 
 Toolbar starts around 536 × 56 logical px, compact around 244 × 56. Compact mode retains both scan icons, Rescan,
@@ -161,6 +161,9 @@ scale animation or repeated pulsing while OCR is running.
 
 One restrained surface; separate drag handle from buttons. Use short text for
 Selected Area and Whole Screen, with a simple 16–20 px icon where useful.
+Use the lighter blue link token for the book mark so it is distinct from the
+filled primary scan action. Controls use 3 px keyboard focus rings; selected
+Settings categories retain a 3 px inset outline without changing layout.
 Rescan and Hide/Show may use icons with accessible names. Hover tooltips appear
 only with capture debug mode enabled (`VITE_CAPTURE_DEBUG=1`).
 Do not infer meaning from an icon alone. The model-install action belongs in
@@ -211,7 +214,8 @@ region. Quit remains discoverable after expanding the toolbar.
 | Demo               | Dashed outline         | Transparent     | “Demo boundary — no recognized text.”                       |
 
 Use a separate, noninteractive stroke-only halo beneath each OCR polygon:
-4 CSS px below the default 2 px stroke, 5 CSS px below the active 3 px stroke.
+4 CSS px below the default 2 px stroke, 5 CSS px below the active 3 px stroke,
+and 6 CSS px below the keyboard-focused 4 px stroke.
 Match review/focus dash patterns and mark the halo `aria-hidden`. It must not add
 a hit target or darken the polygon interior. Keep fills limited to hover/selection.
 Use `vector-effect: non-scaling-stroke` on both strokes. Keep original polygons; the component
@@ -354,6 +358,8 @@ window with linked attribution and packaged notice guidance. No nonfunctional se
 to match the reference sidebar. Use native secondary-window decorations for
 move/resize/minimize/close accessibility; toolbar and popup use their compact chrome.
 Close hides the secondary window; explicit Quit stays on the toolbar.
+The Sources window uses the English app name without a slogan or Japanese app-name
+subtitle. Preserve the source descriptions, attribution and full licence text.
 
 Keep concise JMdict/KANJIDIC2 source and CC BY-SA attribution with dictionary
 content, and preserve the full sources/licenses entry point. Disclosure must not
