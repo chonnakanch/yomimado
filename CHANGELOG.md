@@ -12,6 +12,15 @@ The [feature roadmap](docs/implementation-plan.md#feature-checklist) tracks comp
 
 ### 2026-10-22
 
+#### Added
+
+- Add **Show OCR results** to the tray/menu bar menu. Restore the retained hidden
+  result through the existing display-validated reveal path, without rescanning
+  or focusing the toolbar. Disable it during scans, without retained completed
+  results and while results are visible; repeated queued Show requests are no-ops.
+  Native tests cover the result/scan lifecycle and menu routing. See the
+  [verification limits](docs/ui-testing.md#tray-ocr-result-restoration).
+
 #### Changed
 
 - Restore the original `#0866FF` button backgrounds and `#0058E0` hover at the

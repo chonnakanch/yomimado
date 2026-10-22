@@ -74,6 +74,11 @@ recorded in the [release checklist](desktop-release.md).
 
 ### Implemented in source
 
+- [x] **Show OCR results from the tray** — restore the latest hidden completed
+      outlines without rescanning or focusing the toolbar; scan/no-result/visible
+      guards remain active. [Controls](usage.md#tray--menu-bar) and
+      [verification limits](ui-testing.md#tray-ocr-result-restoration).
+
 - [x] **Charcoal and blue theme** — shared `#0866FF` actions, blue OCR outlines
       with dark halos, a matching capture drag box on a transparent selector,
       and matching desktop/Windows tray icons;

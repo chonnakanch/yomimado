@@ -87,6 +87,10 @@ pub struct Session {
 }
 
 impl Session {
+    pub fn can_show_ocr_results(&self, has_overlay: bool) -> bool {
+        self.active.is_none() && !self.overlay_visible && self.completed_id.is_some() && has_overlay
+    }
+
     pub fn begin(
         &mut self,
         mode: ScanMode,
@@ -581,6 +585,11 @@ fn change_overlay_visibility(
     }
     if session.active.is_some() {
         return Err("Wait for the scan to finish.".into());
+    }
+    // A queued tray click may arrive after another restore has succeeded.
+    // Keep the current webview and focus untouched when results are visible.
+    if visible && session.overlay_visible {
+        return Ok(false);
     }
     state.overlay.get()?;
     let window = app
@@ -1218,6 +1227,42 @@ pub fn setup(app: &AppHandle) -> Result<(), String> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn tray_restore_tracks_completed_hidden_results_across_scan_lifecycle() {
+        let mut state = Session::default();
+        assert!(!state.can_show_ocr_results(false));
+        assert!(!state.can_show_ocr_results(true));
+        let id = state
+            .begin(ScanMode::SelectedArea, display(), None, vec![])
+            .unwrap();
+        state.captured(id, metadata()).unwrap();
+        assert!(!state.can_show_ocr_results(true));
+        state.complete(id, false).unwrap();
+        assert!(!state.can_show_ocr_results(true));
+        state.overlay_visible = false;
+        assert!(state.can_show_ocr_results(true));
+        assert!(!state.can_show_ocr_results(false));
+
+        let next = state
+            .begin(ScanMode::WholeScreen, display(), None, vec![])
+            .unwrap();
+        assert!(!state.can_show_ocr_results(true));
+        state.stop(Some(next), "", false).unwrap();
+        assert!(state.can_show_ocr_results(true));
+        state.captured(next, metadata()).unwrap_err();
+        assert!(state.can_show_ocr_results(true));
+
+        let next = state
+            .begin(ScanMode::WholeScreen, display(), None, vec![])
+            .unwrap();
+        state.captured(next, metadata()).unwrap();
+        state.complete(next, false).unwrap();
+        assert!(!state.can_show_ocr_results(true));
+        state.overlay_visible = false;
+        assert!(state.can_show_ocr_results(true));
+        assert!(!state.can_show_ocr_results(false));
+    }
 
     #[test]
     fn hide_requests_only_apply_to_the_current_visible_completed_generation() {

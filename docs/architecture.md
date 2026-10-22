@@ -130,6 +130,12 @@ both polygon and control hit routing while retaining the stored result.
 macOS mouse routing and Windows window regions. No new coordinate transform,
 input-monitoring grant or dependency is added.
 
+The tray's **Show OCR results** action calls the existing overlay visibility path
+on a worker thread. Tray refresh reads scan/result availability under the scan
+lock; restore checks active scans again and validates the retained display before
+navigating the overlay. Showing an already-visible result is a no-op, preserving
+its webview and focus. The action does not invoke capture or OCR.
+
 ## How a scan moves through the code
 
 1. The floating toolbar or global shortcut starts a native scan session in
