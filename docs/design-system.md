@@ -33,9 +33,10 @@ styles consume roles, never repeat hex values. The table matches the shared toke
 | `--color-background`             | `#10141B`                   | Secondary-window canvas.                                 |
 | `--color-surface`                | `#171B22`                   | Toolbar, popup, collection rows and settings surfaces.   |
 | `--color-surface-elevated`       | `#232B38`                   | Overflow menu, disclosure panels and hovered controls.   |
-| `--color-accent`                 | `#0866FF`                   | Filled primary action and active controls.               |
-| `--color-accent-hover`           | `#0058E0`                   | Filled primary action hover.                             |
-| `--color-selected`               | `var(--color-accent)`       | Filled chosen token or character.                        |
+| `--color-accent`                 | `#0866FF`                   | Vivid drawing strokes and non-filled accent cues.        |
+| `--color-action`                 | `#2D4F7F`                   | Muted filled primary action.                             |
+| `--color-action-hover`           | `#355F96`                   | Muted filled primary action hover.                       |
+| `--color-selected`               | `var(--color-action)`       | Muted filled chosen token or character.                  |
 | `--color-link`                   | `#80B2FF`                   | Readable links and inline text actions on dark surfaces. |
 | `--color-text-primary`           | `#F4F7FF`                   | Japanese and primary UI text.                            |
 | `--color-text-secondary`         | `#BDC9DA`                   | Readings, metadata and supporting text.                  |
@@ -55,8 +56,10 @@ styles consume roles, never repeat hex values. The table matches the shared toke
 | `--color-capture-selection-fill` | `rgb(8 102 255 / 0.06)`     | Faint fill inside the dragged area only.                 |
 | `--color-debug-candidate`        | `#58D5E8`                   | Detector candidates in the debug preview only.           |
 
-Use white labels on filled blue actions; the darker hover preserves their
-contrast. Use the brighter link token for text actions on dark surfaces.
+Use white labels on muted blue actions and their lighter hover. Keep button
+backgrounds separate from the vivid `#0866FF` OCR and drag strokes; changing an
+action color must not recolor the drawing layer. Use the brighter link token for
+text actions on dark surfaces.
 Secondary controls use primary text on elevated/surface backgrounds. Verify
 normal text contrast ≥4.5:1 and large text ≥3:1. The quiet border is not sufficient
 as the sole affordance or focus indicator: use readable labels/icons and the

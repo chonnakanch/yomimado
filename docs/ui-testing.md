@@ -27,7 +27,7 @@ rectangle uses a 2 px blue border, thin dark edges and a 6% blue interior.
 
 Computed shared-token contrast across the background, surface and elevated
 surface is at least 6.48:1 for normal/muted text and 6.60:1 for links. White labels
-on `#0866FF` actions measure 4.82:1, and on the darker hover 6.05:1. Focus indicators
+on muted `#2D4F7F` actions measure 8.28:1, and on `#355F96` hover 6.50:1. Focus indicators
 measure at least 6.60:1 against these surfaces. Error and success text retain
 separate colors and explicit labels. These measurements cover the declared opaque
 UI tokens, not arbitrary manga pixels.
@@ -44,6 +44,11 @@ Windows tray mark at 32 px. All PNGs retain RGBA transparency; ICO and ICNS deco
 successfully. Tray exports reproduce from their generator and the macOS template
 hash is unchanged. Generator lint and the macOS debug build pass. This does not
 establish installed Dock/taskbar/menu-bar acceptance for the new exports.
+
+Muted-button follow-up — 2026-10-22: action/selection backgrounds use separate
+muted blue tokens. Token resolution confirms both OCR default strokes and capture
+drag borders still resolve to `#0866FF`. The 25 toolbar/overlay tests, frontend
+build and formatting pass after the palette refinement.
 
 Native macOS/WebView and Windows/WebView2 visual acceptance, fractional scaling,
 pass-through and exact-installer checks remain unverified for this theme. Follow

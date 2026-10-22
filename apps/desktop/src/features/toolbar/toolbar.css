@@ -151,8 +151,8 @@
   padding: 0;
 }
 .floating-toolbar .toolbar-scan-button[aria-busy="true"] {
-  background: var(--color-accent);
-  border-color: var(--color-accent);
+  background: var(--color-action);
+  border-color: var(--color-action);
   color: var(--color-on-accent);
 }
 .toolbar-overlay-status.is-visible {

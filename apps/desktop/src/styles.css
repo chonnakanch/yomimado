@@ -24,7 +24,7 @@ body {
 button {
   border: 0;
   border-radius: var(--radius-control);
-  background: var(--color-accent);
+  background: var(--color-action);
   color: var(--color-on-accent);
   cursor: pointer;
   font: inherit;

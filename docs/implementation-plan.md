@@ -67,7 +67,7 @@ recorded in the [release checklist](desktop-release.md).
 
 ### Implemented in source
 
-- [x] **Charcoal and blue theme** — shared `#0866FF` actions, blue OCR outlines
+- [x] **Charcoal and blue theme** — muted blue actions, vivid `#0866FF` OCR outlines
       with dark halos, a matching capture drag box on a transparent selector,
       and matching desktop/Windows tray icons;
       [design contract](design-system.md#2-semantic-color-tokens) and
