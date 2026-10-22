@@ -4,7 +4,58 @@ For the step-by-step rebuild, source review, private staging and pin activation
 procedure, follow the [release runbook](release-runbook.md#build-a-replacement-macos-seed).
 The records below retain the exact identities and approval scope of existing seeds.
 
-## Current OCR / 0.4.0 seed — 2026-10-21
+## v0.6.0 replacement seed — 2026-10-22
+
+Exact reviewed source: `194dd5704b2a07c5f57c380f60adac35c748e46d`.
+The owner explicitly approved the prepared source/licence delivery and private
+seed activation: **“Approve source delivery and private seed activation”**.
+This covers the exact unsigned worksheet SHA-256
+`5b7b908d14295f357396564dedfd8b39553baaf69c93c356faaecfe73fa06235`.
+The separate approved `source-delivery.json` SHA-256 is
+`d5898bed89eb50d7c010e8527b20af88f39271306c5dc540c862ede27c5ee10e`.
+The original unsigned worksheet and actual decision remain retained locally.
+
+Private label: `macos-reviewed-seed-194dd57`, targeting that full source SHA.
+The [private draft](https://github.com/chonnakanch/yomimado/releases/tag/untagged-79caed449c4c4d7bce7c)
+is unpublished and privately activated. Browser inspection confirms the owner
+draft, exact source/label, four matching GitHub input digests and the activation
+manifest uploaded last through the owner account. The draft has exactly five
+completed assets. Exact byte counts below are bound by matching local/GitHub
+SHA-256 digests; GitHub's UI displays rounded sizes. Release still revalidates
+API owner/asset IDs, exact sizes, uploaded states and compatibility when selecting.
+No app seed constants or Windows dictionary pins are changed. The new
+`macos-seed.json` records the actual approval and four input hashes; it is uploaded
+last after input verification, following the [dynamic procedure](release-runbook.md#dynamic-reviewed-seed-selection).
+
+| Input                                   |     Bytes | SHA-256                                                            |
+| --------------------------------------- | --------: | ------------------------------------------------------------------ |
+| `YomiMado_0.6.0_aarch64.dmg`            | 656388242 | `de057b86627120b1a3414e015c670f66aec0f0461f8ab9b4a39a4cbc9a049c2d` |
+| `YomiMado_0.6.0_notices_194dd57.tar.gz` |   1104409 | `985a0f42ba122af978798880046a3d4ace5694cca9b741887586aa0bd90d8952` |
+| `YomiMado_0.6.0_sources_194dd57.tar.gz` | 937357721 | `4dde3b4d0e20a1677f745d2cc4e1096ec7a5f3a297abf3b4ea2ff8cfe49af763` |
+| `YomiMado_0.6.0_translation_torch.zip`  | 306394404 | `e1c6a0ae58777d1eb4e8085eddff7a908fe0035e95c82178707178b7690434ef` |
+
+Activation manifest: **1,075 bytes**, SHA-256
+`83f1b801feb168c54ddf3ae600ffedfa2498e0c619aac51d3cfe2e6266cbd8b2`.
+
+This seed includes the horizontal/mixed-content geometry fixes. The source-approved
+build passes mounted bundle/platform/source and ad-hoc signature verification,
+offline OCR/learning/translation/persistence smoke, and exact equality of all 29
+frozen app modules plus the entrypoint with reviewed source. The source/notices
+archives contain the same approved manifest, have safe bounded membership and
+retain all 476 source records across 76 archives and 112 unique native inputs.
+All 75 reused original dependency archives and unchanged dependency/native
+inventories verify. Independent content comparison checks 163,811 retained files
+without filtering changes to code/notices. The translation ZIP remains byte-identical
+to the prior optional component and matches its embedded descriptor.
+
+Local evidence is ignored under `services/ocr/build/runtime-seed-194dd57/`.
+The [release preparation](release-preparation-0.6.0.md) records application checks,
+notes and the earlier private test DMG's separate hash. Main must preserve reviewed
+source `194dd57` as an ancestor. Source-only rebuilding, dated advisory triage and
+unrecorded hardware/installed-app cases retain their scope. This owner decision
+does not accept future CI installers or authorize merging/public publication.
+
+## Historical OCR / 0.4.0 seed — 2026-10-21
 
 Exact reviewed source: `46a5649007caf09538adb7d7d0bc4bda763c095e`.
 The owner approved the complete source/licence delivery on 2026-10-20 for PR #24.

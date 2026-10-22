@@ -12,6 +12,15 @@ The [feature roadmap](docs/implementation-plan.md#feature-checklist) tracks comp
 
 ### 2026-10-22
 
+#### Build
+
+- Prepare v0.6.0 from main with the merged OCR geometry, capture/tray and UI
+  changes. Update all five app version files and preview PR-only release notes
+  from v0.5.0. The changed Python runtime requires a fresh reviewed macOS seed;
+  prepare and privately activate the owner-approved replacement while preserving
+  the strict compatibility and owner publication gates. See
+  [the preparation record](docs/release-preparation-0.6.0.md).
+
 #### Added
 
 - Add **Show OCR results** to the tray/menu bar menu. Restore the retained hidden

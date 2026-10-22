@@ -1,5 +1,15 @@
 # Shared desktop release checklist
 
+v0.6.0 preparation — **2026-10-22**: branch `release/0.6.0` binds version source
+`194dd5704b2a07c5f57c380f60adac35c748e46d`. Application and release-tool checks
+pass, including all six hosted Checks at `9f3d290`. The owner approved the exact
+replacement source/licence delivery and private seed activation. The
+[new seed](macos-runtime-seed.md#v060-replacement-seed--2026-10-22) passes mounted
+source/platform/signature and offline service smoke checks. Main integration
+and exact CI installer acceptance/publication remain pending. See the
+[preparation record](release-preparation-0.6.0.md); prior approvals and installer
+hashes retain their original scope.
+
 v0.5.0 public pre-release — **2026-10-21**:
 [Recovery run `39587407949`](https://github.com/chonnakanch/yomimado/actions/runs/39587407949)
 completed successfully after the workflow repair merged at

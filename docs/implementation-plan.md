@@ -42,12 +42,19 @@ at the owner's request.
   [Git conventions](git-conventions.md) and the [release runbook](release-runbook.md).
   Release dynamically selects an owner-reviewed compatible macOS seed; ordinary
   PR Checks do not block on seed availability.
+- **v0.6.0 is prepared on `release/0.6.0`**, including the merged OCR geometry,
+  capture/tray and UI changes. Local application/release checks and the initial
+  six hosted Checks pass. The fresh macOS runtime seed is owner-approved and
+  privately activated; it covers the changed Python service. Main integration
+  and publication remain
+  separate. See the [preparation record](release-preparation-0.6.0.md).
 
-The private macOS runtime seed now binds reviewed source `46a5649`, including
-initial small-selection OCR recovery. Source approval and all four uploaded hashes
-are recorded in the [OCR seed review](macos-runtime-review-ocr-20261021.md).
+The current private macOS runtime seed binds reviewed source `194dd57`, including
+horizontal/mixed-content geometry recovery. Actual source approval, four uploaded
+input hashes and the owner-uploaded activation manifest are retained in the
+[seed record](macos-runtime-seed.md#v060-replacement-seed--2026-10-22).
 Mounted source/signature and frozen offline smoke checks pass; this does not
-change the published v0.4.0 installer or establish new exact-installer acceptance.
+change published installers or establish new exact-installer acceptance.
 
 ## Maintenance priorities
 
