@@ -15,12 +15,12 @@
   --color-on-accent: #ffffff;
   --color-focus: var(--color-link);
   --color-status-error: #ff9ca5;
-  --color-region-default: var(--color-accent);
-  --color-region-hover: #4d91ff;
+  --color-region-default: #168bff;
+  --color-region-hover: #4d9fff;
   --color-region-selected: var(--color-link);
-  --color-region-halo: #0b1220;
-  --color-region-hover-fill: rgb(8 102 255 / 0.06);
-  --color-region-selected-fill: rgb(8 102 255 / 0.1);
+  --color-capture-edge: #0b1220;
+  --color-region-hover-fill: rgb(22 139 255 / 0.06);
+  --color-region-selected-fill: rgb(22 139 255 / 0.1);
   --color-capture-selection: var(--color-accent);
   --color-capture-selection-fill: rgb(8 102 255 / 0.06);
   --color-debug-candidate: #58d5e8;

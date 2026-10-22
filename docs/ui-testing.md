@@ -20,7 +20,7 @@ Exact installer tests remain in [macOS](macos-clean-mac-test.md),
 
 ## Charcoal and blue theme
 
-Development check — 2026-10-22: browser review with synthetic light and dark
+Initial development check — 2026-10-22: browser review with synthetic light and dark
 panels covers default, hovered, selected and dashed review OCR outlines, the
 bold X control, toolbar actions and the capture drag rectangle. OCR halos use a
 separate stroke-only polygon, leaving ordinary interiors transparent and limiting
@@ -46,6 +46,15 @@ Windows tray mark at 32 px. All PNGs retain RGBA transparency; ICO and ICNS deco
 successfully. Tray exports reproduce from their generator and the macOS template
 hash is unchanged. Generator lint and the macOS debug build pass. This does not
 establish installed Dock/taskbar/menu-bar acceptance for the new exports.
+
+Outline follow-up — 2026-10-22: default OCR strokes use brighter `#168BFF` and
+hover uses `#4D9FFF`. Remove the earlier dark halo and its decorative polygons;
+OCR regions now render as one polygon each. Review/demo dashes and keyboard focus
+remain, while buttons and the capture drag rectangle retain their existing
+palette. Synthetic light/dark browser review confirms normal, hovered, selected
+and dashed outlines have no dark border. All 45 capture/overlay tests, frontend
+build and formatting pass. Earlier halo observations above describe the initial
+theme only.
 
 Native macOS/WebView and Windows/WebView2 visual acceptance, fractional scaling,
 pass-through and exact-installer checks remain unverified for this theme. Follow

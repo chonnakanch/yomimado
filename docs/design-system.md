@@ -45,12 +45,12 @@ styles consume roles, never repeat hex values. The table matches the shared toke
 | `--color-on-accent`              | `#FFFFFF`                   | Text/icon on filled blue actions and selections.         |
 | `--color-focus`                  | `var(--color-link)`         | Keyboard outline independent of hover.                   |
 | `--color-status-error`           | `#FF9CA5`                   | Error text/icon with an explicit message.                |
-| `--color-region-default`         | `var(--color-accent)`       | Ordinary OCR polygon stroke.                             |
-| `--color-region-hover`           | `#4D91FF`                   | Brighter hovered OCR polygon stroke.                     |
+| `--color-region-default`         | `#168BFF`                   | Bright blue ordinary OCR polygon stroke.                             |
+| `--color-region-hover`           | `#4D9FFF`                   | Brighter hovered OCR polygon stroke.                     |
 | `--color-region-selected`        | `var(--color-link)`         | Selected OCR polygon stroke.                             |
-| `--color-region-halo`            | `#0B1220`                   | Thin dark edge beneath OCR and capture strokes.          |
-| `--color-region-hover-fill`      | `rgb(8 102 255 / 0.06)`     | Minimal blue hover wash above manga.                     |
-| `--color-region-selected-fill`   | `rgb(8 102 255 / 0.10)`     | Minimal selected wash above manga.                       |
+| `--color-capture-edge`           | `#0B1220`                   | Thin dark edge on the capture drag rectangle only.          |
+| `--color-region-hover-fill`      | `rgb(22 139 255 / 0.06)`    | Minimal blue hover wash above manga.                     |
+| `--color-region-selected-fill`   | `rgb(22 139 255 / 0.10)`    | Minimal selected wash above manga.                       |
 | `--color-capture-selection`      | `var(--color-accent)`       | Capture drag rectangle border.                           |
 | `--color-capture-selection-fill` | `rgb(8 102 255 / 0.06)`     | Faint fill inside the dragged area only.                 |
 | `--color-debug-candidate`        | `#58D5E8`                   | Detector candidates in the debug preview only.           |
@@ -213,12 +213,10 @@ region. Quit remains discoverable after expanding the toolbar.
 | Review/approximate | Same state colors      | Same state fill | Dashed stroke and “Review OCR” / “Approximate region” text. |
 | Demo               | Dashed outline         | Transparent     | “Demo boundary — no recognized text.”                       |
 
-Use a separate, noninteractive stroke-only halo beneath each OCR polygon:
-4 CSS px below the default 2 px stroke, 5 CSS px below the active 3 px stroke,
-and 6 CSS px below the keyboard-focused 4 px stroke.
-Match review/focus dash patterns and mark the halo `aria-hidden`. It must not add
-a hit target or darken the polygon interior. Keep fills limited to hover/selection.
-Use `vector-effect: non-scaling-stroke` on both strokes. Keep original polygons; the component
+Render one original polygon per region with a bright blue stroke and no black
+border, halo or drop shadow. Default strokes use `#168BFF`, hover uses `#4D9FFF`
+and selection retains the lighter blue. Keep fills limited to hover/selection.
+Use `vector-effect: non-scaling-stroke`. Keep original polygons; the component
 name does not justify reducing geometry to a rectangle. Region fill/hit area
 can remain clickable while visually transparent. Label uncertainty explicitly;
 unknown confidence must never become a percentage badge. Apply selected color

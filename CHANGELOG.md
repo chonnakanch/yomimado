@@ -48,6 +48,11 @@ The [feature roadmap](docs/implementation-plan.md#feature-checklist) tracks comp
 
 #### Fixed
 
+- Brighten default OCR outlines to `#168BFF` and hover strokes to `#4D9FFF`.
+  Remove the dark halo/black border from OCR polygons while retaining dashed
+  review indicators, keyboard focus strokes, original geometry and native hit
+  routing. Keep the app buttons and capture drag box styling unchanged.
+
 - Reconcile fragmented horizontal OCR rows when a selection also contains a
   non-Japanese label. Challenge false vertical fragments using complete glyph-row
   evidence, retain separate-column guards and suppress full/tile/mask duplicates
