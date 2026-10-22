@@ -9,6 +9,7 @@ use tauri::{
 use crate::toolbar::{self, SecondaryView};
 
 const VISIBILITY: &str = "yomimado.tray.visibility";
+const SHOW_OCR_RESULTS: &str = "yomimado.tray.show-ocr-results";
 const SAVED: &str = "yomimado.tray.saved";
 const SETTINGS: &str = "yomimado.tray.settings";
 const SOURCES: &str = "yomimado.tray.sources";
@@ -17,6 +18,7 @@ const QUIT: &str = "yomimado.tray.quit";
 struct TrayMenu {
     _icon: TrayIcon,
     visibility: MenuItem<tauri::Wry>,
+    show_ocr_results: MenuItem<tauri::Wry>,
     secondary: [MenuItem<tauri::Wry>; 3],
 }
 
@@ -39,6 +41,7 @@ impl TrayState {
 enum Action {
     ToggleToolbar,
     ShowToolbar,
+    ShowOcrResults,
     Secondary(SecondaryView),
     Quit,
 }
@@ -47,6 +50,7 @@ fn menu_action(id: &str) -> Option<Action> {
     // Tauri menu listeners also receive events from application/window menus.
     match id {
         VISIBILITY => Some(Action::ToggleToolbar),
+        SHOW_OCR_RESULTS => Some(Action::ShowOcrResults),
         SAVED => Some(Action::Secondary(SecondaryView::Saved)),
         SETTINGS => Some(Action::Secondary(SecondaryView::Settings)),
         SOURCES => Some(Action::Secondary(SecondaryView::Sources)),
@@ -70,6 +74,14 @@ fn show_on_click(button: MouseButton, state: MouseButtonState) -> bool {
 pub fn setup(app: &AppHandle) -> Result<(), String> {
     let visibility = MenuItem::with_id(app, VISIBILITY, "Hide Toolbar", true, None::<&str>)
         .map_err(|e| e.to_string())?;
+    let show_ocr_results = MenuItem::with_id(
+        app,
+        SHOW_OCR_RESULTS,
+        "Show OCR results",
+        false,
+        None::<&str>,
+    )
+    .map_err(|e| e.to_string())?;
     let saved =
         MenuItem::with_id(app, SAVED, "Saved", true, None::<&str>).map_err(|e| e.to_string())?;
     let settings = MenuItem::with_id(app, SETTINGS, "Settings", true, None::<&str>)
@@ -84,6 +96,7 @@ pub fn setup(app: &AppHandle) -> Result<(), String> {
         app,
         &[
             &visibility,
+            &show_ocr_results,
             &separator,
             &saved,
             &settings,
@@ -134,6 +147,7 @@ pub fn setup(app: &AppHandle) -> Result<(), String> {
         .set(TrayMenu {
             _icon: icon,
             visibility,
+            show_ocr_results,
             secondary: [saved, settings, sources],
         })
         .map_err(|_| "Tray icon is already initialized".to_string())?;
@@ -165,6 +179,9 @@ pub fn refresh(app: &AppHandle) {
         menu.visibility
             .set_enabled(enabled)
             .map_err(|e| e.to_string())?;
+        menu.show_ocr_results
+            .set_enabled(session.can_show_ocr_results(state.overlay.get().is_ok()))
+            .map_err(|e| e.to_string())?;
         for item in &menu.secondary {
             item.set_enabled(enabled).map_err(|e| e.to_string())?;
         }
@@ -185,6 +202,7 @@ fn dispatch(app: AppHandle, action: Action) {
                 return;
             }
             Action::ShowToolbar => toolbar::set_toolbar_visible(&app, true),
+            Action::ShowOcrResults => toolbar::set_overlay_visibility(app.clone(), true),
             Action::ToggleToolbar => app
                 .get_webview_window("toolbar")
                 .ok_or("Toolbar is unavailable".to_string())
@@ -223,7 +241,14 @@ mod tests {
 
     #[test]
     fn foreign_application_menu_events_do_not_quit_or_toggle_the_toolbar() {
-        for id in ["quit", "close", "settings", "", "yomimado.tray.unknown"] {
+        for id in [
+            "quit",
+            "close",
+            "settings",
+            "show-ocr-results",
+            "",
+            "yomimado.tray.unknown",
+        ] {
             assert!(menu_action(id).is_none());
         }
         assert!(matches!(menu_action(QUIT), Some(Action::Quit)));
@@ -242,6 +267,10 @@ mod tests {
         assert!(matches!(
             menu_action(VISIBILITY),
             Some(Action::ToggleToolbar)
+        ));
+        assert!(matches!(
+            menu_action(SHOW_OCR_RESULTS),
+            Some(Action::ShowOcrResults)
         ));
     }
 

@@ -405,14 +405,19 @@ is an explicit action and lasts only for the current run.
 | Menu item                   | Behavior                                                                                                                                                                                                  |
 | --------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Show Toolbar / Hide Toolbar | Label reflects actual toolbar visibility. Show restores, clamps to a connected display's work area, unminimizes and focuses the existing toolbar. Hide dismisses its overflow menu and hides the toolbar. |
+| Show OCR results            | Restores the latest hidden completed result without OCR, toolbar activation or keyboard focus changes. Disabled without retained results, during scans and while results are already shown. |
 | Saved                       | Opens the existing Saved window.                                                                                                                                                                          |
 | Settings                    | Opens the existing settings view.                                                                                                                                                                         |
 | Sources & licenses          | Opens the existing attribution window.                                                                                                                                                                    |
 | Quit YomiMado               | Uses the existing application exit and OCR cleanup path.                                                                                                                                                  |
 
 Use native separators between toolbar visibility, secondary windows and Quit.
-The tooltip is `YomiMado`. Keep this first menu small; scan modes, rescan and
-overlay controls remain in the toolbar.
+The tooltip is `YomiMado`. Keep this first menu small; scan modes, rescan and the
+overlay visibility toggle remain in the toolbar. **Show OCR results** reuses the
+same display-validation and overlay reveal path as the toolbar. Keep its enabled
+state synchronized with scan/result visibility transactions, and recheck active
+scans when dispatched. Repeated queued Show requests are no-ops after restoration;
+never navigate a visible overlay again or restore its old popup.
 
 Platform interaction:
 
@@ -429,8 +434,8 @@ results, trigger OCR, suspend the local service or unregister shortcuts. Documen
 this beside the toolbar visibility control. Existing keyboard shortcuts remain
 available while the toolbar is hidden.
 
-During an active selection/capture/OCR session, disable toolbar visibility and
-secondary-window tray actions. Keep Quit available. Recheck the scan guard when
+During an active selection/capture/OCR session, disable toolbar visibility,
+result restoration and secondary-window tray actions. Keep Quit available. Recheck the scan guard when
 an action executes, because state can change after a menu opens. A Windows
 left-click during capture must not reveal the toolbar into a screenshot or steal
 selector focus. Refresh menu state whenever scans or toolbar visibility change.

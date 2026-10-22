@@ -15,10 +15,17 @@ running.
 ### Tray / menu bar
 
 The macOS menu bar icon opens a native menu with **Show Toolbar / Hide Toolbar**,
-**Saved**, **Settings**, **Sources & licenses** and **Quit YomiMado**. On Windows,
+**Show OCR results**, **Saved**, **Settings**, **Sources & licenses** and
+**Quit YomiMado**. On Windows,
 left-click the notification-area icon to show and focus the toolbar; right-click
 for the same menu. Windows may place the icon inside its notification-area
 overflow; use Windows settings to keep it visible if desired.
+
+Choose **Show OCR results** to restore the latest hidden outlines without
+rescanning or bringing the toolbar forward. It is available only when a completed
+result is hidden; it is disabled during scans, before the first result, after
+clearing results and while outlines are already shown. If the page has changed,
+use Rescan from the toolbar instead.
 
 Choose **More actions → Hide Toolbar** or the tray menu's **Hide Toolbar** to hide
 only the floating toolbar. Restore it from the icon. OCR overlays stay visible,

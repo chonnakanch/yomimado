@@ -13,6 +13,7 @@ Exact installer tests remain in [macOS](macos-clean-mac-test.md),
 - [Horizontal OCR geometry recovery](#horizontal-ocr-geometry-recovery)
 - [Native overlay checks](#native-overlay-checks)
 - [Windows acceptance checklist](#windows-acceptance-checklist)
+- [Tray OCR result restoration](#tray-ocr-result-restoration)
 - [Tray verification and acceptance](#tray-verification-and-acceptance)
 - [Dated redesign review](#dated-redesign-review)
 - [Retained window and debug evidence](#retained-window-and-debug-evidence)
@@ -383,6 +384,27 @@ tests cover exclusive recognition admission and its lifetime across cancellation
 These tests establish calculations and application state behavior. They do not
 establish actual WebView2 input routing, physical mixed-DPI transitions or installer
 acceptance. Record those results above when a Windows desktop is available.
+
+## Tray OCR result restoration
+
+Development source — 2026-10-22: all 80 native tests, Rust formatting, Clippy with
+warnings denied and the macOS debug build pass. The lifecycle regression covers
+startup/no completed result, visible results, hidden retained results, cleared
+results, capture in progress, cancellation, late cancelled capture updates and a
+new completed result. The existing menu routing test includes the scoped restore
+ID. The debug app starts successfully; a completed-result restore through the
+native tray has not been verified by UI automation.
+
+For native acceptance on macOS and Windows, complete a synthetic scan, hide its
+outlines with Escape/X and hide the toolbar. Open the tray menu and choose
+**Show OCR results**. Verify the same outlines reappear, the toolbar stays hidden,
+reader focus is retained and no OCR request runs. The item should then be disabled.
+Repeat after cancellation, errors and a newer scan; it must remain disabled during
+capture and when no retained result exists. Check display-disconnect/scale-change
+errors and repeat queued clicks without reloading a visible result. Existing
+Windows left-click toolbar recovery, right-click menus, quit and native input
+routing remain separate acceptance cases. Windows interaction and exact-installer
+acceptance are unverified for this feature.
 
 ## Tray verification and acceptance
 
