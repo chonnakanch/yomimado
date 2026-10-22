@@ -13,7 +13,12 @@ from types import SimpleNamespace
 from typing import Any, Literal
 
 from app.models import OcrDebug, OcrDebugDetection, OcrResponse, Point, TextRegion
-from app.pipeline.geometry import clip_polygon, extend_to_visible_ink, horizontal_text_lines
+from app.pipeline.geometry import (
+    clip_polygon,
+    extend_to_visible_ink,
+    horizontal_text_lines,
+    ink_covered_by_rows,
+)
 from app.security import validate_capture_dimensions
 
 SMALL_SELECTION_MAX_SIDE = 320
@@ -40,6 +45,9 @@ LINE_REVIEW_REASON = (
 )
 CLIPPED_REVIEW_REASON = "Detector polygon clipped to the captured image; verify on page"
 OVERLAP_REVIEW_REASON = "Overlapping detector regions need review on the page"
+LANGUAGE_REVIEW_REASON = (
+    "Detector classified this crop as non-Japanese; Japanese OCR may be unreliable"
+)
 SELECTION_REVIEW_REASON = "Text recovered from the whole selection; area approximate—verify on page"
 logger = logging.getLogger(__name__)
 
@@ -237,26 +245,110 @@ def _refine_horizontal_blocks(
     candidates: list[tuple[Any, int, int, str]], bgr: Any, cv2: Any, np: Any
 ) -> list[tuple[Any, int, int, str, tuple[int, int]]]:
     height, width = bgr.shape[:2]
-    barriers = [
-        (int(b.xyxy[0] + x), int(b.xyxy[1] + y), int(b.xyxy[2] + x), int(b.xyxy[3] + y))
-        for b, x, y, stage in candidates
-        if stage == "full" and b.xyxy[2] > b.xyxy[0] and b.xyxy[3] > b.xyxy[1]
+    bounds = [
+        tuple(int(v + (x if i % 2 == 0 else y)) for i, v in enumerate(block.xyxy))
+        for block, x, y, _ in candidates
     ]
+    full = [
+        i
+        for i, (_, _, _, stage) in enumerate(candidates)
+        if stage == "full" and bounds[i][2] > bounds[i][0] and bounds[i][3] > bounds[i][1]
+    ]
+    horizontal = [
+        i
+        for i in full
+        if not candidates[i][0].vertical and abs(getattr(candidates[i][0], "angle", 0)) <= 5
+    ]
+
+    # Join touching horizontal detector fragments before applying column guards.
+    # Similar row height/alignment and a sub-glyph gap distinguish these from
+    # separately bounded columns. A tiny partial glyph gets a little more room.
+    groups: list[list[int]] = []
+    remaining = set(horizontal)
+    while remaining:
+        group = [min(remaining)]
+        remaining.remove(group[0])
+        for i in group:
+            l, t, r, b = bounds[i]
+            h = b - t
+            glyph_i = float(getattr(candidates[i][0], "font_size", 0))
+            for j in sorted(remaining):
+                ll, tt, rr, bb = bounds[j]
+                hh = bb - tt
+                glyph_j = float(getattr(candidates[j][0], "font_size", 0))
+                language_i = getattr(candidates[i][0], "language", "unknown")
+                language_j = getattr(candidates[j][0], "language", "unknown")
+                gap = max(l - rr, ll - r, 0)
+                narrow = min(r - l, rr - ll) < min(h, hh)
+                if (
+                    0 < h <= glyph_i * 1.5
+                    and 0 < hh <= glyph_j * 1.5
+                    and min(h, hh) >= max(h, hh) * 0.6
+                    and min(b, bb) - max(t, tt) >= min(h, hh) * 0.7
+                    and gap <= min(h, hh) * (0.5 if narrow else 0.25)
+                    and (language_i == "eng") == (language_j == "eng")
+                ):
+                    group.append(j)
+                    remaining.remove(j)
+        groups.append(group)
+
+    def enclosing(indices: list[int]) -> tuple[int, int, int, int]:
+        boxes = [bounds[i] for i in indices]
+        return (
+            min(b[0] for b in boxes),
+            min(b[1] for b in boxes),
+            max(b[2] for b in boxes),
+            max(b[3] for b in boxes),
+        )
+
+    proposals = {}
+    for group in groups:
+        raw_box = enclosing(group)
+        l, t, r, b = raw_box
+        glyph = max(float(getattr(candidates[i][0], "font_size", 0)) for i in group)
+        # Only dispute a nearby tall fragment when complete, wide glyph rows
+        # also explain its pixels. A genuine adjacent vertical column contributes
+        # narrow rows and therefore keeps its detector interpretation and barrier.
+        disputed = []
+        for i in full:
+            if not candidates[i][0].vertical:
+                continue
+            ll, tt, rr, bb = bounds[i]
+            if (
+                glyph > 0
+                and rr - ll <= glyph * 1.75
+                and bb - tt >= (b - t) * 1.4
+                and max(l - rr, ll - r, 0) <= glyph * 0.65
+                and min(b, bb) - max(t, tt) >= min(b - t, bb - tt) * 0.5
+            ):
+                disputed.append(i)
+        members = group + disputed
+        search = enclosing(members)
+        clipped = (
+            max(0, search[0]),
+            max(0, search[1]),
+            min(width, search[2]),
+            min(height, search[3]),
+        )
+        barriers = [bounds[i] for i in full if i not in members]
+        lines = horizontal_text_lines(bgr, clipped, glyph, barriers, cv2, np)
+        if disputed and (len(lines) < 2 or any(r - l < (b - t) * 1.4 for l, t, r, b in lines)):
+            # Keep the original column guards when horizontal evidence is weak.
+            search = raw_box
+            clipped = (max(0, l), max(0, t), min(width, r), min(height, b))
+            lines = horizontal_text_lines(
+                bgr, clipped, glyph, [bounds[i] for i in full if i not in group], cv2, np
+            )
+        if lines:
+            proposals[min(group)] = (search, lines)
     prepared = []
     line_crops = 0
     for source_order, (block, x, y, stage) in enumerate(candidates):
         lines = []
-        raw_box = tuple(int(v + (x if i % 2 == 0 else y)) for i, v in enumerate(block.xyxy))
-        box = (
-            max(0, raw_box[0]),
-            max(0, raw_box[1]),
-            min(width, raw_box[2]),
-            min(height, raw_box[3]),
-        )
-        if stage == "full" and not block.vertical and abs(getattr(block, "angle", 0)) <= 5:
-            lines = horizontal_text_lines(
-                bgr, box, float(getattr(block, "font_size", 0)), barriers, cv2, np
-            )
+        raw_box = bounds[source_order]
+        recovery_box = raw_box
+        if source_order in proposals:
+            recovery_box, lines = proposals[source_order]
         if not lines or line_crops + len(lines) > MAX_HORIZONTAL_LINE_CROPS:
             prepared.append((block, x, y, stage, (source_order, 0)))
             continue
@@ -270,7 +362,9 @@ def _refine_horizontal_blocks(
                         vertical=False,
                         font_size=line[3] - line[1],
                         original_box=raw_box,
+                        recovery_box=recovery_box,
                         refined_line=True,
+                        language=getattr(block, "language", "unknown"),
                     ),
                     0,
                     0,
@@ -283,7 +377,7 @@ def _refine_horizontal_blocks(
     # fragments. Tile/mask candidates retain their existing fallback priority.
     def priority(item):
         refined = getattr(item[0], "refined_line", False)
-        bounds = item[0].original_box if refined else item[0].xyxy
+        bounds = item[0].recovery_box if refined else item[0].xyxy
         area = (bounds[2] - bounds[0]) * (bounds[3] - bounds[1]) if refined else 0
         return item[3] != "full", not refined, -area
 
@@ -522,7 +616,8 @@ def recognize_with_models(image_bytes: bytes, *, debug: bool = False) -> OcrResp
                 )
             continue
         box = (x1, y1, x2, y2)
-        if any(
+        covered_by_rows = ink_covered_by_rows(bgr, box, refined_boxes, cv2, np)
+        if covered_by_rows or any(
             _overlap_over_smaller(box, previous) >= 0.6
             and previous[0] <= (x1 + x2) / 2 <= previous[2]
             and previous[1] <= (y1 + y2) / 2 <= previous[3]
@@ -584,6 +679,7 @@ def recognize_with_models(image_bytes: bytes, *, debug: bool = False) -> OcrResp
                 )
             continue
         crop = image.crop(box)
+        non_japanese = getattr(block, "language", "unknown") == "eng"
         filter_reason = _crop_filter_reason(crop)
         text = "" if filter_reason else recognize_crop(box, crop)
         if not filter_reason:
@@ -610,6 +706,8 @@ def recognize_with_models(image_bytes: bytes, *, debug: bool = False) -> OcrResp
             decision_reason = CLIPPED_REVIEW_REASON
         else:
             decision_reason = "Japanese script recognized inside a detector box"
+        if non_japanese and not filter_reason:
+            decision_reason += "; " + LANGUAGE_REVIEW_REASON
         if debug:
             detections.append(
                 OcrDebugDetection(
@@ -654,7 +752,10 @@ def recognize_with_models(image_bytes: bytes, *, debug: bool = False) -> OcrResp
                 type="other",
                 tokens=[],
                 geometrySource="expandedCrop" if geometry_adjusted else None,
-                needsReview=detection_pass == "mask" or geometry_adjusted or geometry_clipped,
+                needsReview=detection_pass == "mask"
+                or geometry_adjusted
+                or geometry_clipped
+                or non_japanese,
                 reviewReason=MASK_REVIEW_REASON
                 if detection_pass == "mask"
                 else LINE_REVIEW_REASON
@@ -666,6 +767,13 @@ def recognize_with_models(image_bytes: bytes, *, debug: bool = False) -> OcrResp
                 else None,
             )
         )
+        if non_japanese:
+            region = regions[-1]
+            region.reviewReason = (
+                region.reviewReason + "; " + LANGUAGE_REVIEW_REASON
+                if region.reviewReason
+                else LANGUAGE_REVIEW_REASON
+            )
         region_boxes.append(box)
         region_debug_indices.append(len(detections) - 1 if debug else None)
         region_orders.append(source_order)

@@ -67,6 +67,10 @@ def horizontal_text_lines(
         return []
     padding = math.ceil(min(y2 - y1, glyph_size) * 3)
     left, right = max(0, x1 - padding), min(width, x2 + padding)
+    # Detector edges can cut the first/last glyph row. Inspect its complete
+    # components, rather than manufacturing a shorter row from clipped strokes.
+    across = math.ceil(min(y2 - y1, glyph_size) * 0.5)
+    top_edge, bottom_edge = max(0, y1 - across), min(height, y2 + across)
     for l, t, r, b in barriers:
         overlap = min(b, y2) - max(t, y1)
         if overlap < min(b - t, y2 - y1) * 0.5:
@@ -75,7 +79,7 @@ def horizontal_text_lines(
             left = max(left, r)
         elif l >= x2:
             right = min(right, l)
-    gray = cv2.cvtColor(bgr[y1:y2, left:right], cv2.COLOR_BGR2GRAY)
+    gray = cv2.cvtColor(bgr[top_edge:bottom_edge, left:right], cv2.COLOR_BGR2GRAY)
     background = float(np.median(gray))
     if float(np.mean(np.abs(gray.astype(np.float32) - background) < 20)) < 0.55:
         return []
@@ -87,7 +91,7 @@ def horizontal_text_lines(
         return []
     _, _, stats, _ = cv2.connectedComponentsWithStats(ink.astype(np.uint8), connectivity=8)
     components = [
-        (int(x + left), int(y + y1), int(x + left + w), int(y + y1 + h))
+        (int(x + left), int(y + top_edge), int(x + left + w), int(y + top_edge + h))
         for x, y, w, h, area in stats[1:]
         if area >= 4 and h >= 3 and 0.08 <= w / h <= 5
     ]
@@ -105,6 +109,10 @@ def horizontal_text_lines(
     strong_line = False
     for band in bands:
         top, bottom = min(c[1] for c in band), max(c[3] for c in band)
+        if bottom <= y1 or top >= y2:
+            continue
+        if (top == top_edge and top_edge > 0) or (bottom == bottom_edge and bottom_edge < height):
+            continue
         line_height = bottom - top
         if line_height < 5:
             continue
@@ -134,6 +142,67 @@ def horizontal_text_lines(
         if y2 - y1 < h * 1.4 and l >= x1 - h * 0.25 and r <= x2 + h * 0.25:
             return []
     return lines
+
+
+def ink_covered_by_rows(
+    bgr: Any,
+    box: tuple[int, int, int, int],
+    rows: list[tuple[int, int, int, int]],
+    cv2: Any,
+    np: Any,
+) -> bool:
+    """Require recognized rows to cover almost all a fragment's visible ink.
+
+    Box-area overlap misses false vertical fragments crossing whitespace between
+    horizontal rows. Ink coverage avoids counting that whitespace, while retaining
+    a real vertical column with glyphs outside the recognized horizontal rows.
+    """
+    x1, y1, x2, y2 = box
+    intersecting = [
+        row
+        for row in set(rows)
+        if min(x2, row[2]) > max(x1, row[0]) and min(y2, row[3]) > max(y1, row[1])
+    ]
+    if not intersecting:
+        return False
+    gray = cv2.cvtColor(bgr[y1:y2, x1:x2], cv2.COLOR_BGR2GRAY)
+    height, width = bgr.shape[:2]
+    pad = math.ceil(min(x2 - x1, y2 - y1) * 0.5)
+    context = cv2.cvtColor(
+        bgr[max(0, y1 - pad) : min(height, y2 + pad), max(0, x1 - pad) : min(width, x2 + pad)],
+        cv2.COLOR_BGR2GRAY,
+    )
+    background = float(np.median(context))
+    if background <= 35:
+        ink = gray > max(75, background + 40)
+    elif background >= 220:
+        ink = gray < min(180, background - 40)
+    else:
+        return False
+    if float(np.mean(np.abs(context.astype(np.float32) - background) < 20)) < 0.55:
+        return False
+    total = int(np.count_nonzero(ink))
+    if total < 12:
+        return False
+    covered = np.zeros_like(ink)
+    supported_centers = []
+    for l, t, r, b in intersecting:
+        left, top = max(x1, l) - x1, max(y1, t) - y1
+        right, bottom = min(x2, r) - x1, min(y2, b) - y1
+        if np.count_nonzero(ink[top:bottom, left:right]) >= max(4, total * 0.05):
+            supported_centers.append(((t + b) / 2, b - t))
+            covered[top:bottom, left:right] = True
+    # Two overlapping estimates of the same row are not independent evidence.
+    separate_rows = any(
+        abs(a - b) >= max(ha, hb) for a, ha in supported_centers for b, hb in supported_centers
+    )
+    # A padded detector crop around a single row can also be a duplicate. Do not
+    # let one row alone explain a tall fragment reaching into another text area.
+    same_row = any(
+        y2 - y1 <= row_height * 2 and abs((y1 + y2) / 2 - center) <= row_height / 2
+        for center, row_height in supported_centers
+    )
+    return (separate_rows or same_row) and np.count_nonzero(ink & covered) >= total * 0.95
 
 
 def extend_to_visible_ink(

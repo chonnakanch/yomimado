@@ -24,7 +24,8 @@ For [small-text and vertical OCR accuracy](implementation-plan.md#small-text-and
 see the initial recovery scope, measurements and remaining work.
 For horizontal drag-selection outlines, see the
 [geometry verification](ui-testing.md#horizontal-ocr-geometry-recovery) and
-[synthetic measurement record](ocr-geometry-results.json).
+[synthetic measurement record](ocr-geometry-results.json), plus the
+[mixed-content follow-up](ocr-mixed-text-results.json).
 
 ## Releases and exact acceptance
 

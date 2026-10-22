@@ -140,11 +140,26 @@ and four new clean cases were compared with the Windows ONNX source components
 on macOS; [measurements and limitations](ocr-geometry-results.json) retain accuracy,
 model-call counts and scan time. Supplied screenshots stayed private and local.
 
+Mixed-content follow-up — 2026-10-22: 16 additional model-free regressions cover
+identical glyph rows with/without a non-Japanese label at 1×/1.5×/2× on light/dark
+backgrounds, nearby genuine vertical text, separate columns, same-baseline labels,
+failed row recognition, uncovered glyphs, padded duplicates and tile/mask retries.
+225 service tests, seven benchmark-metric tests, Ruff, 318 frontend tests,
+TypeScript and the frontend build pass. Nine clean context variations and the
+annotated attachment were checked locally with Windows ONNX source components on
+macOS. The Japanese row outlines agree across the clean header controls; Thai
+recognition remains unsupported and carries a warning when the detector classifies
+it as non-Japanese. [Mixed-content measurements](ocr-mixed-text-results.json)
+record the geometry outcomes, older fixture comparison and limits.
+
 For native acceptance, repeat Selected Area and Whole Screen on the Windows laptop
 and extended monitor, including differing display scales and reversed monitor
 origins. Use a large horizontal title and separate paragraphs on light/dark pages.
 Verify complete title text, separate row targets, no nested click targets and
-no polygons outside the selected image. Test vertical/rotated text, close columns
+no polygons outside the selected image. Repeat identical Japanese with a blank,
+Thai and English header, then tight and expanded selections on both sides of the
+800-pixel retry threshold. Check that false vertical targets do not return and
+that non-Japanese warnings remain isolated from Japanese rows. Test vertical/rotated text, close columns
 and artwork negatives too. Native Windows interaction and new exact installers
 remain unverified; source inference does not establish hardware acceptance.
 
