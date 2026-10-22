@@ -28,41 +28,39 @@ service exposes every Jisho field.
 Declare tokens centrally in `apps/desktop/src/styles/tokens.css`; component
 styles consume roles, never repeat hex values. The table matches the shared token definitions.
 
-| CSS token                        | Value                       | Role                                                     |
-| -------------------------------- | --------------------------- | -------------------------------------------------------- |
-| `--color-background`             | `#10141B`                   | Secondary-window canvas.                                 |
-| `--color-surface`                | `#171B22`                   | Toolbar, popup, collection rows and settings surfaces.   |
-| `--color-surface-elevated`       | `#232B38`                   | Overflow menu, disclosure panels and hovered controls.   |
-| `--color-accent`                 | `#0866FF`                   | Filled primary action and active controls.               |
-| `--color-accent-hover`           | `#0058E0`                   | Filled primary action hover.                             |
-| `--color-selected`               | `var(--color-accent)`       | Filled chosen token or character.                        |
-| `--color-link`                   | `#80B2FF`                   | Readable links and inline text actions on dark surfaces. |
-| `--color-text-primary`           | `#F4F7FF`                   | Japanese and primary UI text.                            |
-| `--color-text-secondary`         | `#BDC9DA`                   | Readings, metadata and supporting text.                  |
-| `--color-text-muted`             | `#A3B0C2`                   | Dates, secondary hints and compact attributions.         |
-| `--color-border`                 | `#46566C`                   | Surface separators and quiet decorative borders.         |
-| `--color-success`                | `#7FB58B`                   | Explicit saved/installed feedback, paired with words.    |
-| `--color-on-accent`              | `#FFFFFF`                   | Text/icon on filled blue actions and selections.         |
-| `--color-focus`                  | `var(--color-link)`         | Keyboard outline independent of hover.                   |
-| `--color-status-error`           | `#FF9CA5`                   | Error text/icon with an explicit message.                |
-| `--color-region-default`         | `var(--color-accent)`       | Ordinary OCR polygon stroke.                             |
-| `--color-region-hover`           | `#4D91FF`                   | Brighter hovered OCR polygon stroke.                     |
-| `--color-region-selected`        | `var(--color-link)`         | Selected OCR polygon stroke.                             |
-| `--color-region-halo`            | `#0B1220`                   | Thin dark edge beneath OCR and capture strokes.          |
-| `--color-region-hover-fill`      | `rgb(8 102 255 / 0.06)`     | Minimal blue hover wash above manga.                     |
-| `--color-region-selected-fill`   | `rgb(8 102 255 / 0.10)`     | Minimal selected wash above manga.                       |
-| `--color-capture-selection`      | `var(--color-accent)`       | Capture drag rectangle border.                           |
-| `--color-capture-selection-fill` | `rgb(8 102 255 / 0.06)`     | Faint fill inside the dragged area only.                 |
-| `--color-debug-candidate`        | `#58D5E8`                   | Detector candidates in the debug preview only.           |
+| CSS token                                          | Value                       | Role                                                  |
+| -------------------------------------------------- | --------------------------- | ----------------------------------------------------- |
+| `--color-background`                               | `#131519`                   | Secondary-window canvas.                              |
+| `--color-surface`                                  | `#1A1D24`                   | Toolbar, cards and inputs.                            |
+| `--color-surface-elevated`                         | `var(--color-surface)`      | Quiet control surfaces.                               |
+| `--color-menu-surface / --color-popup-surface`     | `#20242C`                   | Raised menu and learning-popup surfaces.              |
+| `--color-accent`                                   | `#0080FF`                   | Primary actions, active controls and OCR outlines.    |
+| `--color-accent-hover / --color-link`              | `#339AFF`                   | Hover actions and small link text.                    |
+| `--color-accent-pressed`                           | `#0066CC`                   | Pressed primary actions.                              |
+| `--color-accent-tint`                              | `rgb(0 128 255 / 0.16)`     | Selected Settings/mode tabs and menu hover.           |
+| `--color-brand`                                    | `#D98B5F`                   | Logo frame, toolbar book and saved bookmark identity. |
+| `--color-selected`                                 | `var(--color-accent)`       | Chosen token or character.                            |
+| `--color-text-primary`                             | `#F2F4F8`                   | Japanese and primary UI text.                         |
+| `--color-text-secondary / --color-text-muted`      | `#8B93A3`                   | Readings, metadata and supporting text.               |
+| `--color-border`                                   | `#3A4150`                   | Surface borders and dividers.                         |
+| `--color-success / --color-success-tint`           | `#2DD4A0 / 14% tint`        | Explicit successful-action feedback.                  |
+| `--color-on-accent`                                | `#FFFFFF`                   | Text/icon on filled blue actions and selections.      |
+| `--color-focus`                                    | `var(--color-accent)`       | Keyboard focus outline.                               |
+| `--color-status-error / --color-error-tint`        | `#FF5C5C / 14% tint`        | Error and destructive feedback.                       |
+| `--color-warning / --color-warning-tint`           | `#F4B544 / 14% tint`        | OCR review cue.                                       |
+| `--color-region-default / --color-region-selected` | `var(--color-accent)`       | Ordinary and selected OCR strokes.                    |
+| `--color-region-hover`                             | `var(--color-accent-hover)` | Hovered OCR strokes.                                  |
+| `--color-region-fill`                              | `rgb(0 128 255 / 0.14)`     | OCR interior, including hover and selection.          |
+| `--color-capture-edge`                             | `var(--color-background)`   | Thin dark edge on capture selection only.             |
+| `--color-capture-selection`                        | `var(--color-accent)`       | Capture drag rectangle border.                        |
+| `--color-capture-selection-fill`                   | `var(--color-region-fill)`  | Fill inside the dragged rectangle.                    |
+| `--color-debug-candidate`                          | `#58D5E8`                   | Detector candidates in the debug preview only.        |
 
-Use white labels on filled blue actions; the darker hover preserves their
-contrast. Use the brighter link token for text actions on dark surfaces.
-Secondary controls use primary text on elevated/surface backgrounds. Verify
-normal text contrast ≥4.5:1 and large text ≥3:1. The quiet border is not sufficient
-as the sole affordance or focus indicator: use readable labels/icons and the
-bright blue focus ring. Check controls and focus against a ≥3:1 target, including
-hover/selected states. These are design acceptance targets; measure actual
-composited styles during implementation.
+Blue identifies clickable/active controls; copper is reserved for identity marks,
+never filled buttons. Use white labels on primary actions, readable blue links
+and explicit success/error labels. Verify contrast against actual composited
+styles; historical measurements in the UI testing guide apply only to their
+stated palette. Keep keyboard focus visible independently of hover.
 
 Do not dim entire components with parent opacity when that makes their text
 unreadable. Disabled actions retain legible labels, suppress hover behavior and
@@ -118,7 +116,8 @@ dimensions using the actual display scale; do not multiply CSS values by DPI.
 | `--space-8`           | 32 px            | Large secondary-window grouping only.          |
 | `--radius-small`      | 4 px             | Token and character focus surfaces.            |
 | `--radius-control`    | 8 px             | Buttons, inputs and rows.                      |
-| `--radius-window`     | 12 px            | Toolbar/popup/menu surface.                    |
+| `--radius-window`     | 12 px            | Toolbar window surface.                        |
+| `--radius-card`       | 14 px            | Cards, popup and overflow menu.                |
 | `--control-compact`   | 32 px            | Small menu and token-adjacent actions.         |
 | `--control-default`   | 36 px            | Toolbar/settings action height.                |
 | `--popup-width`       | 420 px           | Preferred logical width; work-area clamp wins. |
@@ -149,8 +148,8 @@ The native overflow popover starts without a focus ring after mouse opening.
 Keyboard navigation shows the blue 2 px ring inset inside its menu row, so it
 cannot collide with adjacent rows or the window edge.
 
-Use one quiet shadow for popup/menu/toolbar where safe; do not add a native
-Windows overlay shadow that shifts the geometry. Surface borders are 1 px;
+Cards use a surface fill, 1 px border and 14 px radius without shadows. Do not
+add native overlay shadows that shift geometry. Surface borders are 1 px;
 focus and selected outlines are distinct from those decorative borders.
 Suppress transitions under `prefers-reduced-motion`. No window-position animation,
 scale animation or repeated pulsing while OCR is running.
@@ -161,9 +160,11 @@ scale animation or repeated pulsing while OCR is running.
 
 One restrained surface; separate drag handle from buttons. Use short text for
 Selected Area and Whole Screen, with a simple 16–20 px icon where useful.
-Use the lighter blue link token for the book mark so it is distinct from the
-filled primary scan action. Controls use 3 px keyboard focus rings; selected
-Settings categories retain a 3 px inset outline without changing layout.
+Use copper for the book identity mark and blue for the primary scan action.
+Controls use 3 px keyboard focus rings. Active Settings tabs have a blue border
+and 16% blue fill; Saved tabs use a 2 px blue underline. Settings begins with its
+heading, without a repeated app-name header. The overflow menu uses white labels,
+muted disabled items, rounded 16% blue hover rows and a divider before Hide/Quit.
 Rescan and Hide/Show may use icons with accessible names. Hover tooltips appear
 only with capture debug mode enabled (`VITE_CAPTURE_DEBUG=1`).
 Do not infer meaning from an icon alone. The model-install action belongs in
@@ -182,8 +183,8 @@ It and any error detail ignore pointer events, so a drag can begin through the h
 Hide the hint immediately while dragging; Escape cancels. Keep longer explanations
 in help rather than over the reading area. Expected uncertainty is not an error;
 actual capture/save failures retain an accessible alert above the hint.
-Draw the capture rectangle with a 2 CSS px `#0866FF` border, a thin dark inner
-and outer edge, and a 6% blue fill inside the rectangle. Keep the rest of the
+Draw the capture rectangle with a 2 CSS px `#0080FF` border, a thin dark inner
+and outer edge, and a 14% blue fill inside the rectangle. Keep the rest of the
 selector fully transparent; do not apply a full-screen tint. Hide all selection
 chrome before capture using the existing capture state.
 Only a primary-button drag starts a selection. Suppress the selector's context
@@ -207,18 +208,16 @@ region. Quit remains discoverable after expanding the toolbar.
 
 | State              | Stroke                 | Fill            | Additional cue                                              |
 | ------------------ | ---------------------- | --------------- | ----------------------------------------------------------- |
-| Default            | 2 CSS px blue          | Transparent     | Region orientation in accessible label.                     |
-| Hover              | 3 CSS px brighter blue | Blue at 6%      | Pointer cursor, no lookup triggered.                        |
-| Selected           | 3 CSS px blue          | Blue at 10%     | Selected semantics and keyboard focus if active.            |
+| Default            | 2 CSS px blue          | Blue at 14%     | Region orientation in accessible label.                     |
+| Hover              | 2 CSS px brighter blue | Blue at 14%     | Pointer cursor, no lookup triggered.                        |
+| Selected           | 2 CSS px blue          | Blue at 14%     | Selected semantics and keyboard focus if active.            |
 | Review/approximate | Same state colors      | Same state fill | Dashed stroke and “Review OCR” / “Approximate region” text. |
 | Demo               | Dashed outline         | Transparent     | “Demo boundary — no recognized text.”                       |
 
-Use a separate, noninteractive stroke-only halo beneath each OCR polygon:
-4 CSS px below the default 2 px stroke, 5 CSS px below the active 3 px stroke,
-and 6 CSS px below the keyboard-focused 4 px stroke.
-Match review/focus dash patterns and mark the halo `aria-hidden`. It must not add
-a hit target or darken the polygon interior. Keep fills limited to hover/selection.
-Use `vector-effect: non-scaling-stroke` on both strokes. Keep original polygons; the component
+Render one original polygon per region with a bright blue stroke and no black
+border, halo or drop shadow. Default and selected strokes use `#0080FF`; hover
+uses `#339AFF`. All ordinary states retain a 14% blue fill.
+Use `vector-effect: non-scaling-stroke`. Keep original polygons; the component
 name does not justify reducing geometry to a rectangle. Region fill/hit area
 can remain clickable while visually transparent. Label uncertainty explicitly;
 unknown confidence must never become a percentage badge. Apply selected color
@@ -248,7 +247,7 @@ that underlying applications receive input.
 
 ### DictionaryPopup and ClickableSentence
 
-The first view contains the Japanese sentence, Copy sentence and Save sentence,
+The first view contains the Japanese sentence, Copy/Save/Translate actions,
 close control, and a quiet word-selection instruction. No headword, meanings,
 kanji or translation result before explicit selection/request. Show the source
 while tokenization loads or fails. The reference image's full-sentence hierarchy
@@ -263,16 +262,36 @@ do not nest character buttons within token buttons. A selected token receives a
 blue cue; normal hover uses a quiet accent cue. Keep ordinary text selection and
 explicit sentence copying usable.
 
-The hidden correction editor opens through **Edit OCR text**. Use a labeled
-Japanese textarea only in that state, with Apply/Analyze and Cancel. Keep the
-applied sentence visible until editing is committed, and reset all dependent
-lookup/translation/save states on commit. Review/approximate regions show a small
+Use a three-part **Words / Select / Edit** mode bar. Words retains the original
+token split; Select uses native caret/range selection without modifying the
+source. Both share a bordered sentence card and Copy/Save/Translate actions.
+Pin actions beneath the text area. Keep visible selection help to one short
+sentence; retain full caret/keyboard guidance in its accessible description.
+Mode tabs support arrows/Home/End for focus and Enter/Space for activation.
+
+Edit replaces the visible sentence card with a labeled Japanese textarea and
+Reset to OCR text, Cancel and Apply controls. A reset changes only the draft;
+Cancel/Escape returns to Words without changing applied data. Apply resets dependent
+lookup/translation/save states and analyzes the correction. Disable spellcheck;
+do not draw character confidence underlines or infer them from unknown confidence.
+Inset the Edit textarea focus ring so scroll containers cannot clip its edges.
+Review/approximate regions show a small
 outlined status icon and **Check OCR** beside the Japanese heading, without a
 warning block or repeated edit action. Keep the full review reason and correction
-guidance in its debug-only hover tooltip and screen-reader text; **Edit OCR text** remains in
-the secondary actions. Use an 11 px caption token,
+guidance in its debug-only hover tooltip and screen-reader text. Use an 11 px caption token,
 12 px icon and 2 px icon/text gap for this brief status, preserving its contrast.
 Demo text is identified and never treated as recognized Japanese.
+
+Show source Copy feedback as green **Copied** for 1.5 seconds. Sentence and word
+save actions show **Saved**, retain a copper bookmark identity mark and disable
+duplicate saves for that current result. Primary word saving sits beside the
+selected headword; alternative matches retain entry-specific saves. Translation
+uses **Translating…**/busy and **Retry**/error states. Keep the requested Local
+translation card above dictionary details, with separate copy and collapse controls
+and explicit unsaved/saved-with-sentence text. No translation or saving happens
+on mode changes, word selection or card expansion. Conjugation summaries and
+Example compounds use blue labels without a filled hover/pressed background.
+Conjugation is present only when the selected analyzed form needs an explanation.
 
 ### CaptureDebugPreview
 
@@ -405,7 +424,7 @@ is an explicit action and lasts only for the current run.
 | Menu item                   | Behavior                                                                                                                                                                                                  |
 | --------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Show Toolbar / Hide Toolbar | Label reflects actual toolbar visibility. Show restores, clamps to a connected display's work area, unminimizes and focuses the existing toolbar. Hide dismisses its overflow menu and hides the toolbar. |
-| Show OCR results            | Restores the latest hidden completed result without OCR, toolbar activation or keyboard focus changes. Disabled without retained results, during scans and while results are already shown. |
+| Show OCR results            | Restores the latest hidden completed result without OCR, toolbar activation or keyboard focus changes. Disabled without retained results, during scans and while results are already shown.               |
 | Saved                       | Opens the existing Saved window.                                                                                                                                                                          |
 | Settings                    | Opens the existing settings view.                                                                                                                                                                         |
 | Sources & licenses          | Opens the existing attribution window.                                                                                                                                                                    |
@@ -456,13 +475,14 @@ visibility remain separate enhancements.
 
 ## Icon provenance and regeneration
 
-The current icon uses a blue capture window around a cool white manga page on a
-charcoal tile. Two vertical marks suggest Japanese reading; an offset page edge
+The current icon uses a copper capture window, a blue upper-right corner bracket
+and a white manga page on a charcoal tile. Two vertical marks suggest Japanese reading; an offset page edge
 adds depth. Transparent padding remains outside the rounded tile.
 
-The current master is `apps/desktop/src-tauri/icons/source-v2-blue.png`, recolored
-with the built-in imagegen tool on 2026-10-22 to match `#0866FF`, `#171B22` /
-`#10141B` and `#F4F7FF`. Its 1254 × 1254 canvas and transparent corners are retained.
+The current master is `apps/desktop/src-tauri/icons/source-v3-copper-blue.png`,
+recolored with the built-in imagegen tool on 2026-10-22 using the palette above.
+Its transparent outer padding is retained. The preceding blue master,
+`apps/desktop/src-tauri/icons/source-v2-blue.png`, remains as provenance.
 The original copper/ivory master, `apps/desktop/src-tauri/icons/source-v1.png`,
 was generated with the same tool on 2026-10-04 and remains as provenance.
 No font, third-party logo, manga image or model asset was used as an input.
@@ -475,7 +495,7 @@ in this repository.
 To regenerate the desktop exports from the master, run from `apps/desktop`:
 
 ```sh
-rtk npm run tauri -- icon src-tauri/icons/source-v2-blue.png --output /tmp/yomimado-icons-blue
+rtk npm run tauri -- icon src-tauri/icons/source-v3-copper-blue.png --output /tmp/yomimado-icons-copper-blue
 ```
 
 Copy only the top-level desktop files from that output into
@@ -492,15 +512,28 @@ Run `python3 scripts/generate_tray_icons.py` from the repository root to regener
 
 - `tray-template.png`: transparent 36 × 36 black mark, displayed by the native
   macOS status item at 18 logical points with template adaptation.
-- `tray-windows.png`: transparent 32 × 32 blue/cool-white mark for Windows.
+- `tray-windows.png`: transparent 32 × 32 copper/white mark with a blue bracket.
 
 These assets are embedded in Rust and do not replace the desktop app icons.
 Inspect the actual icons in light/dark system UI at supported display scales.
 
-### Blue recolor prompt
+### Copper and blue recolor prompt
+
+The built-in imagegen tool edited the preceding blue master with transparent
+output. Tauri generated the current desktop exports.
+
+```text
+Use case: precise-object-edit.
+Asset type: local trial YomiMado desktop app icon.
+Edit target: the provided existing source-v2-blue.png app icon.
+Primary request: change the large capture-window frame ONLY to copper #D98B5F, while changing the separate offset upper-right corner bracket ONLY to primary blue #0080FF. The main frame must be copper throughout; the detached/offset top-right bracket must be blue throughout. Keep the manga page white #F2F4F8. Set the charcoal rounded-square tile to #1A1D24, with dark inner area and reading marks #131519.
+Constraints: preserve all existing shapes, geometry, position, proportions, round corners, original silhouette, canvas size and page depth. Color palette edit only. No new objects, text, badges, outlines, added gradients or new shadows. Preserve genuine transparent padding outside the rounded-square tile and all alpha. Output one square icon matching source resolution if possible.
+```
+
+### Previous blue recolor prompt
 
 The edit target was the original master; the built-in imagegen tool supplied the
-recolor with transparent output. Tauri generated all current desktop exports.
+preceding blue recolor with transparent output.
 The tray generator uses the same palette directly, while the macOS template
 remains monochrome for system adaptation.
 

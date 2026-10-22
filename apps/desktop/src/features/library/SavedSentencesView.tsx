@@ -84,7 +84,7 @@ export function SavedSentencesView({ active }: { active: boolean }) {
                 {sentence.sourceText}
               </p>
               <button
-                className="utility-button"
+                className="utility-button library-remove"
                 data-remove
                 disabled={collection.removingId !== null}
                 onClick={(event) =>

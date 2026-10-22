@@ -40,11 +40,14 @@
 .settings-tabs {
   margin: var(--space-4) 0;
 }
-.settings-tabs [aria-selected="true"] {
-  background: var(--color-surface-elevated);
-  border-color: var(--color-focus);
-  outline: var(--focus-width) solid var(--color-focus);
-  outline-offset: calc(-1 * var(--focus-width));
+.settings-tabs .utility-button {
+  color: var(--color-text-muted);
+}
+.settings-tabs .utility-button[aria-selected="true"],
+.settings-tabs .utility-button[aria-selected="true"]:hover {
+  background: var(--color-accent-tint);
+  border-color: var(--color-accent);
+  color: var(--color-text-primary);
 }
 .settings-window[hidden],
 .settings-window [role="tabpanel"][hidden] {
@@ -56,7 +59,7 @@
 .settings-card {
   background: var(--color-surface);
   border: 1px solid var(--color-border);
-  border-radius: var(--radius-window);
+  border-radius: var(--radius-card);
   padding: var(--space-4);
   margin-top: var(--space-3);
   overflow-wrap: anywhere;
@@ -89,6 +92,9 @@
 }
 .settings-card .settings-model-status {
   color: var(--color-text-primary);
+}
+.settings-card .settings-model-status.status-chip-success {
+  color: var(--color-success);
 }
 .settings-card .settings-error {
   color: var(--color-status-error);
@@ -144,6 +150,9 @@
   min-height: var(--control-default);
   padding: var(--space-2) var(--space-3);
   white-space: normal;
+}
+.settings-card .utility-button:not(.utility-button-primary):not(:disabled) {
+  border-color: var(--color-accent);
 }
 .settings-model-field {
   display: grid;

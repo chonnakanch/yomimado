@@ -7,6 +7,7 @@ Exact installer tests remain in [macOS](macos-clean-mac-test.md),
 [Windows](windows-installed-test.md) and [shared release records](desktop-release.md).
 
 - [Charcoal and blue theme](#charcoal-and-blue-theme)
+- [Learning popup modes](#learning-popup-modes)
 - [Capture shortcut verification](#capture-shortcut-verification)
 - [Detector release link verification](#detector-release-link-verification)
 - [Completed-overlay hide controls](#completed-overlay-hide-controls)
@@ -20,7 +21,7 @@ Exact installer tests remain in [macOS](macos-clean-mac-test.md),
 
 ## Charcoal and blue theme
 
-Development check — 2026-10-22: browser review with synthetic light and dark
+Initial development check — 2026-10-22: browser review with synthetic light and dark
 panels covers default, hovered, selected and dashed review OCR outlines, the
 bold X control, toolbar actions and the capture drag rectangle. OCR halos use a
 separate stroke-only polygon, leaving ordinary interiors transparent and limiting
@@ -47,11 +48,50 @@ successfully. Tray exports reproduce from their generator and the macOS template
 hash is unchanged. Generator lint and the macOS debug build pass. This does not
 establish installed Dock/taskbar/menu-bar acceptance for the new exports.
 
+Outline follow-up — 2026-10-22: default OCR strokes use brighter `#0080FF` and
+hover uses `#4D9FFF`. Remove the earlier dark halo and its decorative polygons;
+OCR regions now render as one polygon each. Review/demo dashes and keyboard focus
+remain, while buttons and the capture drag rectangle retain their existing
+palette. Synthetic light/dark browser review confirms normal, hovered, selected
+and dashed outlines have no dark border. All 45 capture/overlay tests, frontend
+build and formatting pass. Earlier halo observations above describe the initial
+theme only.
+
+Final palette follow-up — 2026-10-22: primary actions and 2 px OCR strokes now
+use `#0080FF`, hover/link uses `#339AFF`, and copper `#D98B5F` is reserved for
+identity marks. OCR and capture interiors use 14% blue. Cards have 14 px corners
+and 1 px borders. The current copper/blue desktop exports and Windows tray mark
+replace the earlier all-blue assets; the monochrome macOS template is unchanged.
+The earlier contrast measurements describe the earlier palette, not this update.
+Synthetic browser review covers the overflow menu, Settings heading, popup modes,
+inside-field editor focus and both disclosure controls without filled hover.
+All 324 frontend tests, formatting, TypeScript/Vite and the macOS debug build pass.
+
 Native macOS/WebView and Windows/WebView2 visual acceptance, fractional scaling,
 pass-through and exact-installer checks remain unverified for this theme. Follow
 the [native overlay checks](#native-overlay-checks), including light/dark pages,
 vertical polygons, capture cancellation, hidden capture chrome and Hide/Show.
 The theme changes no native window sizes, coordinate transforms or hit geometry.
+
+## Learning popup modes
+
+The Words/Select/Edit redesign is covered by popup regressions for source-preserving
+Unicode selection, draft reset/cancel/apply, stale responses, request-only
+translation, saved-entry identity, temporary Copied feedback, translation retry,
+translation copying and collapse. Browser review uses synthetic text and fake
+service/clipboard/storage responses at 420 px and 320 px; it checks the actual
+components, pinned sentence actions, saved/retry states and the editor without
+confidence underlines. Selection help is a short visible sentence with full
+keyboard guidance retained for assistive technology. The focused editor border
+stays within the field. Conjugation and compound controls remain readable on
+hover and expand/collapse with synthetic data.
+All 324 frontend tests, frontend formatting and the TypeScript/Vite build pass;
+73 local links/fragments in the affected guides were checked.
+
+This does not establish native WebKit/WebView2 caret/IME, anchored resizing,
+focus/pass-through or Windows hardware acceptance. Follow the native overlay
+matrix below and verify Words/Select/Edit, cancellation, correction, copy/save,
+translation retry and a long sentence in the real app.
 
 ## Capture shortcut verification
 

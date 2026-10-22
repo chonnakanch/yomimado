@@ -165,19 +165,20 @@ add YomiMado to that utility's exceptions. Its bundle identifier is
 
 ### Learning popup
 
-Click an OCR region to open its full Japanese sentence. Copy sentence and Save
-sentence are available immediately; word meanings and translation appear only
+Click an OCR region to open its full Japanese sentence. **Words**, **Select** and
+**Edit** switch how you work with the Japanese text. **Copy**, **Save** and
+**Translate** are grouped below the sentence; word meanings and translation appear only
 after explicit selection/request. Select a word in the sentence to see its
 hiragana reading, base form, token-analysis POS and numbered possible meanings.
 Alternative dictionary matches are collapsed; each has its own Save this word
 action. Display readings use hiragana, while saved/lookup readings retain the
 original dictionary data. Missing dictionaries still allow Save without meaning.
 
-If a word boundary is wrong, choose **Select text** above the learning details.
+If a word boundary is wrong, choose **Select** above the sentence.
 Drag over any continuous part of the Japanese sentence, or click to place the
 visible cursor. Arrow keys move the cursor; Shift + arrow keys extend the
 highlighted selection. The selection box blocks typing, deletion, paste, cut and
-drop; use **Edit OCR text** to change the original sentence. Choose **Look up selection** to look
+drop; use **Edit** to change the original sentence. Choose **Look up selection** to look
 up that exact expression in local JMdict. Selection can cross automatic word
 boundaries or include only part of a word, and works even if word analysis fails.
 Leading/trailing whitespace is ignored; the lookup limit is 100 characters.
@@ -185,8 +186,8 @@ No match keeps the selection available to adjust and try again. Manual lookup
 does not infer a base form or reading; dictionary matches show their own readings.
 Saving a match keeps its expression as the dictionary form, its reading/meanings,
 the selected surface and the original sentence. Kanji exploration still works.
-Choose **Back to normal**, or press Escape once, to return to automatic words;
-Escape returns keyboard focus to **Select text** before a later Escape closes
+Choose **Words**, or press Escape once, to return to automatic words;
+Escape returns keyboard focus to **Words** before a later Escape closes
 the popup. Selecting or looking up text never changes OCR text or starts translation.
 
 Select a kanji below the word for meanings and on’yomi/kun’yomi. Expand Example
@@ -205,7 +206,9 @@ offline and require no extra setup, model, API key or lookup service. See
 **Sources & licenses** for attribution and the full data license.
 
 **Check OCR** marks uncertain or approximate text for review against the page.
-Use **Edit OCR text** to correct a known recognition error, or scan the area again.
+Use **Edit** to correct a known recognition error, or scan the area again.
+This is a region review cue, not a character confidence score. The editor has no
+confidence underlines because the OCR engine does not supply character confidence.
 
 For an inflected verb or i-adjective, expand **Conjugation** in its word details.
 The app includes adjacent analyzed endings and shows steps such as
@@ -219,10 +222,18 @@ expressions remain **Not covered**.
 The sentence and its actions stay above scrollable details as the popup grows
 to fit the available screen space. Long sentences have their own scroll area.
 
-Edit OCR text opens a correction draft. **Apply and analyze** applies it and
-refreshes word analysis and learning details. Cancel or Escape in the editor keeps
+**Edit** opens a correction draft. **Reset to OCR text** restores the original
+recognition text in the draft without applying it. **Apply** commits the draft and
+refreshes word analysis and learning details. **Cancel** or Escape in the editor keeps
 the applied sentence; Escape elsewhere closes the popup and returns keyboard
-focus to the region when it was opened through region navigation. Translate
-locally retains the existing explicit translation/cache behavior. Save sentence
+focus to the region when it was opened through region navigation. **Translate**
+retains the existing explicit local translation/cache behavior. **Save**
 includes a matching translation only when one has been requested. Copy/save
 failures are shown inline and can be retried.
+
+**Copy** briefly becomes **Copied** after a successful clipboard write. Saved
+sentences and dictionary matches show **Saved** and prevent another save of the
+same current result. Translation shows **Translating…** while running and **Retry**
+after a failure. Its Local card can be collapsed or copied separately; translation
+is not saved until you explicitly save the sentence. Requesting a translation
+after saving enables Save again so you can retain the translation too.

@@ -12,6 +12,7 @@ import { JlptBadge } from "../jlpt/JlptBadge";
 import { useJlptVisible } from "../jlpt/preference";
 import { SavedSearch, NoSearchResults, useSavedQuery } from "./SavedSearch";
 import { matchesSavedWord } from "./saved-search";
+import { SavedBookmark } from "./SavedBookmark";
 
 export function SavedWordsView({ active }: { active: boolean }) {
   const showJlpt = useJlptVisible();
@@ -86,6 +87,7 @@ export function SavedWordsView({ active }: { active: boolean }) {
               <div className="library-word">
                 <div className="library-word-title">
                   <strong lang="ja">{word.surface}</strong>
+                  <SavedBookmark />
                   {showJlpt && (
                     <JlptBadge
                       expression={word.dictionaryForm || word.surface}

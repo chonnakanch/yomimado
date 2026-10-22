@@ -79,10 +79,6 @@ export function ManualWordSelection({
   }, []);
   return (
     <>
-      <p className="popup-metadata" id={helpId}>
-        Drag to select text, or click to place the cursor. Arrow keys move it;
-        Shift + arrow keys select text.
-      </p>
       <textarea
         ref={inputRef}
         className="sentence-selection-text"
@@ -111,6 +107,14 @@ export function ManualWordSelection({
           });
         }}
       />
+      <p className="popup-metadata selection-help" id={helpId}>
+        Drag to select text, then look up.
+        <span className="visually-hidden">
+          {" "}
+          Or click to place the cursor. Arrow keys move it; Shift + arrow keys
+          select text. Selecting text does not save it.
+        </span>
+      </p>
       <div className="manual-selection-actions">
         <button
           className="utility-button utility-button-primary"
@@ -123,9 +127,12 @@ export function ManualWordSelection({
           {tooLong ? (
             "Select at most 100 characters."
           ) : token ? (
-            <span lang="ja">{token.surface}</span>
+            <>
+              <span lang="ja">{token.surface}</span> · {token.end - token.start}{" "}
+              characters
+            </>
           ) : (
-            "Select the expression to look up."
+            "Select text to look up."
           )}
         </span>
       </div>

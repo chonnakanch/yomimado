@@ -29,8 +29,8 @@
   background: var(--color-capture-selection-fill);
   border: 2px solid var(--color-capture-selection);
   box-shadow:
-    0 0 0 1px var(--color-region-halo),
-    inset 0 0 0 1px var(--color-region-halo);
+    0 0 0 1px var(--color-capture-edge),
+    inset 0 0 0 1px var(--color-capture-edge);
   box-sizing: border-box;
   pointer-events: none;
   position: absolute;

@@ -35,3 +35,9 @@ button:disabled {
   cursor: not-allowed;
   opacity: 0.55;
 }
+button:hover:not(:disabled) {
+  background: var(--color-accent-hover);
+}
+button:active:not(:disabled) {
+  background: var(--color-accent-pressed);
+}

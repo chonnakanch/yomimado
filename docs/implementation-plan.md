@@ -79,8 +79,8 @@ recorded in the [release checklist](desktop-release.md).
       guards remain active. [Controls](usage.md#tray--menu-bar) and
       [verification limits](ui-testing.md#tray-ocr-result-restoration).
 
-- [x] **Charcoal and blue theme** — shared `#0866FF` actions, blue OCR outlines
-      with dark halos, a matching capture drag box on a transparent selector,
+- [x] **Charcoal and blue theme** — shared `#0866FF` actions, brighter blue OCR outlines
+      without black borders, a blue capture drag box on a transparent selector,
       and matching desktop/Windows tray icons;
       [design contract](design-system.md#2-semantic-color-tokens) and
       [verification limits](ui-testing.md#charcoal-and-blue-theme).
@@ -94,6 +94,11 @@ recorded in the [release checklist](desktop-release.md).
       and Restore defaults; [controls](usage.md#customize-capture-shortcuts).
 
 - [x] **Manual word selection** — implemented.
+- [x] **Popup reading modes and action states** — Words, Select and Edit share
+      explicit copy/save/translation controls; correction reset, transient copy
+      feedback, saved/busy/retry states and a collapsible local translation card.
+      [Controls](usage.md#learning-popup) and
+      [verification limits](ui-testing.md#learning-popup-modes).
 - [x] **JLPT vocabulary tags** — implemented.
 - [x] **Saved search and dictionary-style library** — implemented; UI approved.
 - [x] **Conjugation explanations (initial forms and contractions)** — implemented.

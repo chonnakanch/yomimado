@@ -5,6 +5,7 @@ import { JlptBadge } from "../jlpt/JlptBadge";
 import { useJlptVisible } from "../jlpt/preference";
 import { ConjugationExplanation } from "./ConjugationExplanation";
 import type { ConjugationAnalysis } from "./conjugation";
+import { PopupIcon } from "./PopupIcon";
 
 export function WordDefinition({
   token,
@@ -32,6 +33,18 @@ export function WordDefinition({
   onRetry: () => void;
 }) {
   const showJlpt = useJlptVisible();
+  const saveButton = (entry: WordEntry, index: number) => (
+    <button
+      type="button"
+      className={`utility-button save-word-button${savedIndex === index ? " is-saved" : ""}`}
+      disabled={saving || savedIndex === index}
+      aria-busy={saving}
+      onClick={() => onSave(entry, index)}
+    >
+      <PopupIcon name={saving ? "loading" : "bookmark"} />
+      {savedIndex === index ? "Saved" : saving ? "Saving…" : "Save word"}
+    </button>
+  );
   const entryView = (entry: WordEntry, index: number) => (
     <div
       className="word-entry"
@@ -63,32 +76,28 @@ export function WordDefinition({
       ) : (
         <p>No English meanings listed for this entry.</p>
       )}
-      <button
-        type="button"
-        className="utility-button save-word-button"
-        disabled={saving || savedIndex === index}
-        onClick={() => onSave(entry, index)}
-      >
-        {savedIndex === index
-          ? "Saved locally"
-          : saving
-            ? "Saving…"
-            : "Save this word"}
-      </button>
+      {index > 0 && saveButton(entry, index)}
     </div>
   );
   return (
     <section className="word-definition" aria-label="Selected word">
-      <h2 className="selected-word" lang="ja">
-        {token.surface}
-      </h2>
+      <div className="word-heading">
+        <div className="word-heading-text">
+          <h2 className="selected-word" lang="ja">
+            {token.surface}
+          </h2>
+          <p className="selected-reading" lang="ja">
+            {hiraganaReading(
+              manualSelection ? (entries?.[0]?.reading ?? "") : token.reading,
+            ) || (manualSelection ? "" : "Reading unavailable")}
+          </p>
+        </div>
+        {entries && entries.length > 0 && saveButton(entries[0], 0)}
+      </div>
       {manualSelection ? (
-        <p className="popup-metadata">Manual selection</p>
+        <p className="popup-metadata popup-badge">Manual selection</p>
       ) : (
         <>
-          <p className="selected-reading" lang="ja">
-            {hiraganaReading(token.reading) || "Reading unavailable"}
-          </p>
           <dl className="word-metadata">
             <div>
               <dt>Base form</dt>
@@ -120,10 +129,11 @@ export function WordDefinition({
       )}
       {(entries?.length === 0 || error) && (
         <button
-          className="utility-button save-word-button"
+          className={`utility-button save-word-button${savedIndex === -1 ? " is-saved" : ""}`}
           disabled={saving || savedIndex === -1}
           onClick={() => onSave(null, -1)}
         >
+          <PopupIcon name={saving ? "loading" : "bookmark"} />
           {savedIndex === -1
             ? "Saved without meaning"
             : saving
@@ -161,6 +171,11 @@ export function WordDefinition({
       {saveError && (
         <p className="translation-error" role="alert">
           {saveError}
+        </p>
+      )}
+      {manualSelection && (
+        <p className="popup-metadata">
+          Switch to Words to go back to the original split.
         </p>
       )}
       <span className="visually-hidden" role="status">

@@ -23,6 +23,24 @@ The [feature roadmap](docs/implementation-plan.md#feature-checklist) tracks comp
 
 #### Changed
 
+- Redesign the reading UI around `#0080FF` blue actions and OCR boxes, copper
+  identity marks and charcoal surfaces. Add the copper-frame/blue-bracket app
+  icon and matching Windows tray mark; preserve the macOS template. Use 14% blue
+  OCR/capture fills, 14 px cards, active Settings fills and Saved tab underlines.
+  Refresh the overflow menu and start Settings with its heading.
+
+- Reorganize the learning popup into **Words / Select / Edit**, with grouped
+  Copy/Save/Translate actions, temporary Copied feedback, Saved/busy/retry states
+  and a collapsible local translation card with separate copying. Add draft-only
+  Reset to OCR text and retain explicit apply/cancel, translation and saving.
+  Keep the Edit focus ring inside the textarea, shorten Select guidance and
+  remove filled hover backgrounds from compound/conjugation disclosures. The
+  editor has no character confidence underlines. All 324 frontend tests,
+  formatting, TypeScript/Vite and the macOS debug build pass; native WebKit/IME,
+  Windows hardware and exact-installer acceptance remain separate. See the
+  [design system](docs/design-system.md) and
+  [popup verification](docs/ui-testing.md#learning-popup-modes).
+
 - Restore the original `#0866FF` button backgrounds and `#0058E0` hover at the
   owner's request, reverting the muted button palette from `6351025`. Drawing
   outlines and the capture drag box continue to use the same vivid blue.
@@ -47,6 +65,11 @@ The [feature roadmap](docs/implementation-plan.md#feature-checklist) tracks comp
   [theme verification](docs/ui-testing.md#charcoal-and-blue-theme).
 
 #### Fixed
+
+- Brighten default OCR outlines to `#0080FF` and hover strokes to `#4D9FFF`.
+  Remove the dark halo/black border from OCR polygons while retaining dashed
+  review indicators, keyboard focus strokes, original geometry and native hit
+  routing. Keep the app buttons and capture drag box styling unchanged.
 
 - Reconcile fragmented horizontal OCR rows when a selection also contains a
   non-Japanese label. Challenge false vertical fragments using complete glyph-row
