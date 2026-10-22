@@ -163,7 +163,7 @@ it("shows the exact captured image and OCR text with image-space polygons", () =
   expect(container.textContent).toContain("数か月前");
   expect(container.textContent).toContain("confidence: unknown");
   expect(container.textContent).toContain("approximate selected-area box");
-  expect(container.textContent).toContain("approximate expanded-crop box");
+  expect(container.textContent).toContain("approximate crop boundary");
   expect(container.textContent).toContain("review suggested");
   expect(
     Array.from(

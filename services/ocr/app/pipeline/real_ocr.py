@@ -13,7 +13,7 @@ from types import SimpleNamespace
 from typing import Any, Literal
 
 from app.models import OcrDebug, OcrDebugDetection, OcrResponse, Point, TextRegion
-from app.pipeline.geometry import extend_to_visible_ink
+from app.pipeline.geometry import clip_polygon, extend_to_visible_ink, horizontal_text_lines
 from app.security import validate_capture_dimensions
 
 SMALL_SELECTION_MAX_SIDE = 320
@@ -27,6 +27,7 @@ MAX_RETRY_TILES = 8
 MASK_TEXT_THRESHOLD = 150
 MAX_MASK_CANDIDATES_PER_TILE = 20
 MAX_SHORT_VERTICAL_RETRIES = 6
+MAX_HORIZONTAL_LINE_CROPS = 32
 # Only skip crops that are almost flat; this is not an OCR confidence estimate.
 MIN_CROP_LUMINANCE_RANGE = 12
 MASK_REVIEW_REASON = "Short Japanese-looking text found only in the detector mask; verify on page"
@@ -34,6 +35,11 @@ EXPANDED_REVIEW_REASON = (
     "Short vertical text recovered from an expanded crop; area approximate—verify on page"
 )
 INK_REVIEW_REASON = "Detector boundary extended around visible strokes; verify on page"
+LINE_REVIEW_REASON = (
+    "Horizontal text localized from visible glyph rows; area approximate—verify on page"
+)
+CLIPPED_REVIEW_REASON = "Detector polygon clipped to the captured image; verify on page"
+OVERLAP_REVIEW_REASON = "Overlapping detector regions need review on the page"
 SELECTION_REVIEW_REASON = "Text recovered from the whole selection; area approximate—verify on page"
 logger = logging.getLogger(__name__)
 
@@ -225,6 +231,63 @@ def _detected_blocks(
     # omits. Process these after regular boxes so duplicate candidates disappear.
     for box, x, y in mask_candidates:
         yield SimpleNamespace(xyxy=box, lines=[], vertical=True), x, y, "mask"
+
+
+def _refine_horizontal_blocks(
+    candidates: list[tuple[Any, int, int, str]], bgr: Any, cv2: Any, np: Any
+) -> list[tuple[Any, int, int, str, tuple[int, int]]]:
+    height, width = bgr.shape[:2]
+    barriers = [
+        (int(b.xyxy[0] + x), int(b.xyxy[1] + y), int(b.xyxy[2] + x), int(b.xyxy[3] + y))
+        for b, x, y, stage in candidates
+        if stage == "full" and b.xyxy[2] > b.xyxy[0] and b.xyxy[3] > b.xyxy[1]
+    ]
+    prepared = []
+    line_crops = 0
+    for source_order, (block, x, y, stage) in enumerate(candidates):
+        lines = []
+        raw_box = tuple(int(v + (x if i % 2 == 0 else y)) for i, v in enumerate(block.xyxy))
+        box = (
+            max(0, raw_box[0]),
+            max(0, raw_box[1]),
+            min(width, raw_box[2]),
+            min(height, raw_box[3]),
+        )
+        if stage == "full" and not block.vertical and abs(getattr(block, "angle", 0)) <= 5:
+            lines = horizontal_text_lines(
+                bgr, box, float(getattr(block, "font_size", 0)), barriers, cv2, np
+            )
+        if not lines or line_crops + len(lines) > MAX_HORIZONTAL_LINE_CROPS:
+            prepared.append((block, x, y, stage, (source_order, 0)))
+            continue
+        line_crops += len(lines)
+        for line_order, line in enumerate(lines):
+            prepared.append(
+                (
+                    SimpleNamespace(
+                        xyxy=line,
+                        lines=[],
+                        vertical=False,
+                        font_size=line[3] - line[1],
+                        original_box=raw_box,
+                        refined_line=True,
+                    ),
+                    0,
+                    0,
+                    stage,
+                    (source_order, line_order),
+                )
+            )
+
+    # Localized full-pass rows establish coverage before their competing raw
+    # fragments. Tile/mask candidates retain their existing fallback priority.
+    def priority(item):
+        refined = getattr(item[0], "refined_line", False)
+        bounds = item[0].original_box if refined else item[0].xyxy
+        area = (bounds[2] - bounds[0]) * (bounds[3] - bounds[1]) if refined else 0
+        return item[3] != "full", not refined, -area
+
+    return sorted(prepared, key=priority)
 
 
 def _overlap_over_smaller(
@@ -427,17 +490,21 @@ def recognize_with_models(image_bytes: bytes, *, debug: bool = False) -> OcrResp
     regions: list[TextRegion] = []
     region_boxes: list[tuple[int, int, int, int]] = []
     region_debug_indices: list[int | None] = []
+    region_orders: list[tuple[int, int]] = []
     detections: list[OcrDebugDetection] = []
     seen_boxes: list[tuple[int, int, int, int]] = []
+    refined_boxes: list[tuple[int, int, int, int]] = []
     filtered_detection = False
     index = 0
-    for block, offset_x, offset_y, detection_pass in _detected_blocks(
-        detector, bgr, retry_tiles, cv2
+    candidates = list(_detected_blocks(detector, bgr, retry_tiles, cv2))
+    for block, offset_x, offset_y, detection_pass, source_order in _refine_horizontal_blocks(
+        candidates, bgr, cv2, np
     ):
         raw_x1, raw_y1, raw_x2, raw_y2 = [int(value) for value in block.xyxy]
         x1, y1 = raw_x1 + offset_x, raw_y1 + offset_y
         x2, y2 = raw_x2 + offset_x, raw_y2 + offset_y
-        raw_box = (x1, y1, x2, y2)
+        raw_box = getattr(block, "original_box", (x1, y1, x2, y2))
+        refined_line = getattr(block, "refined_line", False)
         x1, y1 = max(0, x1), max(0, y1)
         x2, y2 = min(image.width, x2), min(image.height, y2)
         index += 1
@@ -455,6 +522,25 @@ def recognize_with_models(image_bytes: bytes, *, debug: bool = False) -> OcrResp
                 )
             continue
         box = (x1, y1, x2, y2)
+        if any(
+            _overlap_over_smaller(box, previous) >= 0.6
+            and previous[0] <= (x1 + x2) / 2 <= previous[2]
+            and previous[1] <= (y1 + y2) / 2 <= previous[3]
+            for previous in refined_boxes
+        ):
+            if debug:
+                detections.append(
+                    OcrDebugDetection(
+                        id=f"detection-{index}",
+                        box=_box_polygon(raw_box),
+                        text="",
+                        status="filtered",
+                        filterReason="Covered by a localized horizontal text row",
+                        decisionReason="Covered by a localized horizontal text row",
+                        detectionPass=detection_pass,
+                    )
+                )
+            continue
         if detection_pass != "full":
             overlapping = [
                 previous for previous in seen_boxes if _overlap_over_smaller(box, previous) >= 0.6
@@ -472,8 +558,8 @@ def recognize_with_models(image_bytes: bytes, *, debug: bool = False) -> OcrResp
                 continue
         seen_boxes.append(box)
         polygon = [Point(x=point.x + offset_x, y=point.y + offset_y) for point in _polygon(block)]
-        geometry_adjusted = False
-        if detection_pass != "mask":
+        geometry_adjusted = refined_line
+        if detection_pass != "mask" and not refined_line:
             box, polygon, geometry_adjusted = extend_to_visible_ink(
                 bgr,
                 box,
@@ -483,6 +569,20 @@ def recognize_with_models(image_bytes: bytes, *, debug: bool = False) -> OcrResp
                 cv2,
                 np,
             )
+        polygon, geometry_clipped = clip_polygon(polygon, image.width, image.height)
+        if not polygon:
+            if debug:
+                detections.append(
+                    OcrDebugDetection(
+                        id=f"detection-{index}",
+                        box=_box_polygon(raw_box),
+                        text="",
+                        status="invalid",
+                        decisionReason="Detector polygon has no area inside the captured image",
+                        detectionPass=detection_pass,
+                    )
+                )
+            continue
         crop = image.crop(box)
         filter_reason = _crop_filter_reason(crop)
         text = "" if filter_reason else recognize_crop(box, crop)
@@ -502,8 +602,12 @@ def recognize_with_models(image_bytes: bytes, *, debug: bool = False) -> OcrResp
             decision_reason = "Manga OCR returned no text"
         elif detection_pass == "mask":
             decision_reason = MASK_REVIEW_REASON
+        elif refined_line:
+            decision_reason = LINE_REVIEW_REASON
         elif geometry_adjusted:
             decision_reason = INK_REVIEW_REASON
+        elif geometry_clipped:
+            decision_reason = CLIPPED_REVIEW_REASON
         else:
             decision_reason = "Japanese script recognized inside a detector box"
         if debug:
@@ -538,6 +642,7 @@ def recognize_with_models(image_bytes: bytes, *, debug: bool = False) -> OcrResp
                         previous_detection.decisionReason = previous_detection.filterReason
                     del regions[previous_index]
                     del region_boxes[previous_index]
+                    del region_orders[previous_index]
         regions.append(
             TextRegion(
                 id=f"region-{len(regions) + 1}",
@@ -549,16 +654,23 @@ def recognize_with_models(image_bytes: bytes, *, debug: bool = False) -> OcrResp
                 type="other",
                 tokens=[],
                 geometrySource="expandedCrop" if geometry_adjusted else None,
-                needsReview=detection_pass == "mask" or geometry_adjusted,
+                needsReview=detection_pass == "mask" or geometry_adjusted or geometry_clipped,
                 reviewReason=MASK_REVIEW_REASON
                 if detection_pass == "mask"
+                else LINE_REVIEW_REASON
+                if refined_line
                 else INK_REVIEW_REASON
                 if geometry_adjusted
+                else CLIPPED_REVIEW_REASON
+                if geometry_clipped
                 else None,
             )
         )
         region_boxes.append(box)
         region_debug_indices.append(len(detections) - 1 if debug else None)
+        region_orders.append(source_order)
+        if refined_line:
+            refined_boxes.append(box)
 
     short_retries = 0
     if max(image.width, image.height) >= RETRY_MIN_LONG_SIDE:
@@ -603,6 +715,17 @@ def recognize_with_models(image_bytes: bytes, *, debug: bool = False) -> OcrResp
                 debug_detection.decisionReason = (
                     f"Expanded short vertical crop recognized {expanded_text}; area approximate"
                 )
+
+    ordered = sorted(zip(region_orders, regions, region_boxes), key=lambda item: item[0])
+    regions = [item[1] for item in ordered]
+    region_boxes = [item[2] for item in ordered]
+    for i, region in enumerate(regions):
+        if not region.needsReview and any(
+            j != i and _overlap_over_smaller(region_boxes[i], other) >= 0.8
+            for j, other in enumerate(region_boxes)
+        ):
+            region.needsReview = True
+            region.reviewReason = OVERLAP_REVIEW_REASON
 
     for region_number, region in enumerate(regions, start=1):
         region.id = f"region-{region_number}"

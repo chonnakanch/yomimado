@@ -1,0 +1,444 @@
+{
+  "date": "2026-10-22",
+  "baselineRef": "9bd08d0",
+  "candidateBaseRef": "9bd08d0",
+  "candidateSourceSha256": {
+    "services/ocr/app/pipeline/geometry.py": "46dbb763c85a63a7783e1e34e02948e82e2a1e46bdfe7d293464e43bbe6f7acd",
+    "services/ocr/app/pipeline/real_ocr.py": "ae92bd50ec1786edbbaade0abb1f100896440b10ed93894c07b29a00e8110482"
+  },
+  "backend": "Windows ONNX source components, executed on macOS Apple Silicon; not a native Windows app test",
+  "detectorSha256": "1a86ace74961413cbd650002e7bb4dcec4980ffa21b2f19b86933372071d718f",
+  "exportManifestSha256": "5ae1a2060fbde77c8faed3258502618da5d5b800acdbd8900e6dab6679b2e1f2",
+  "method": "17 clean synthetic images; one warmed run per profile per image, alternating order. Baseline geometry loaded from baseline source separately. Existing 13 fixtures retain prior reference strings; new cases have three title sizes plus a fully visible, ten-row dark paragraph.",
+  "fixtureSpecifications": {
+    "existing": "scripts/benchmark_detector_retries.py fixtures(), with the retained scan-benchmark inputs and Hiragino Kaku Gothic W3",
+    "titles": {
+      "dimensions": [808, 350],
+      "font": "Hiragino Kaku Gothic W6",
+      "headingPixels": 30,
+      "titlePixels": [52, 64, 72],
+      "titlePosition": [140, 220],
+      "expectedTitleCharacters": 8
+    },
+    "darkParagraph": {
+      "dimensions": [375, 418],
+      "font": "Hiragino Kaku Gothic W6",
+      "fontPixels": 16,
+      "lineStepPixels": 24,
+      "visibleRows": 10,
+      "expectedCharacters": 111
+    }
+  },
+  "summary": {
+    "baseline": {
+      "existing": {
+        "exact": 12,
+        "regions": 13,
+        "edits": 5,
+        "characters": 84,
+        "characterErrorRate": 0.05952380952380952,
+        "medianMs": 1230.45,
+        "detectorCalls": 18,
+        "recognizerCalls": 17
+      },
+      "new": {
+        "exact": 4,
+        "regions": 16,
+        "edits": 134,
+        "characters": 177,
+        "characterErrorRate": 0.7570621468926554,
+        "medianMs": 3537.18,
+        "detectorCalls": 10,
+        "recognizerCalls": 10
+      }
+    },
+    "candidate": {
+      "existing": {
+        "exact": 12,
+        "regions": 13,
+        "edits": 5,
+        "characters": 84,
+        "characterErrorRate": 0.05952380952380952,
+        "medianMs": 1219.46,
+        "detectorCalls": 18,
+        "recognizerCalls": 17
+      },
+      "new": {
+        "exact": 12,
+        "regions": 16,
+        "edits": 8,
+        "characters": 177,
+        "characterErrorRate": 0.04519774011299435,
+        "medianMs": 3685.05,
+        "detectorCalls": 10,
+        "recognizerCalls": 16
+      }
+    }
+  },
+  "cases": [
+    {
+      "fixture": "small-horizontal",
+      "baseline": {
+        "ms": 1216.52,
+        "detectorCalls": 1,
+        "recognizerCalls": 2,
+        "outputRegions": 1,
+        "exactReferences": 1,
+        "referenceCharacters": 3,
+        "characterEditsIncludingExtras": 0
+      },
+      "candidate": {
+        "ms": 1210.0,
+        "detectorCalls": 1,
+        "recognizerCalls": 2,
+        "outputRegions": 1,
+        "exactReferences": 1,
+        "referenceCharacters": 3,
+        "characterEditsIncludingExtras": 0
+      }
+    },
+    {
+      "fixture": "small-vertical",
+      "baseline": {
+        "ms": 1230.45,
+        "detectorCalls": 1,
+        "recognizerCalls": 2,
+        "outputRegions": 1,
+        "exactReferences": 1,
+        "referenceCharacters": 3,
+        "characterEditsIncludingExtras": 0
+      },
+      "candidate": {
+        "ms": 1219.46,
+        "detectorCalls": 1,
+        "recognizerCalls": 2,
+        "outputRegions": 1,
+        "exactReferences": 1,
+        "referenceCharacters": 3,
+        "characterEditsIncludingExtras": 0
+      }
+    },
+    {
+      "fixture": "sentence-horizontal",
+      "baseline": {
+        "ms": 1172.09,
+        "detectorCalls": 1,
+        "recognizerCalls": 1,
+        "outputRegions": 1,
+        "exactReferences": 1,
+        "referenceCharacters": 11,
+        "characterEditsIncludingExtras": 0
+      },
+      "candidate": {
+        "ms": 1186.89,
+        "detectorCalls": 1,
+        "recognizerCalls": 1,
+        "outputRegions": 1,
+        "exactReferences": 1,
+        "referenceCharacters": 11,
+        "characterEditsIncludingExtras": 0
+      }
+    },
+    {
+      "fixture": "sentence-vertical",
+      "baseline": {
+        "ms": 1059.85,
+        "detectorCalls": 1,
+        "recognizerCalls": 1,
+        "outputRegions": 1,
+        "exactReferences": 1,
+        "referenceCharacters": 7,
+        "characterEditsIncludingExtras": 0
+      },
+      "candidate": {
+        "ms": 1044.01,
+        "detectorCalls": 1,
+        "recognizerCalls": 1,
+        "outputRegions": 1,
+        "exactReferences": 1,
+        "referenceCharacters": 7,
+        "characterEditsIncludingExtras": 0
+      }
+    },
+    {
+      "fixture": "small-font",
+      "baseline": {
+        "ms": 1082.82,
+        "detectorCalls": 1,
+        "recognizerCalls": 1,
+        "outputRegions": 1,
+        "exactReferences": 1,
+        "referenceCharacters": 6,
+        "characterEditsIncludingExtras": 0
+      },
+      "candidate": {
+        "ms": 1093.17,
+        "detectorCalls": 1,
+        "recognizerCalls": 1,
+        "outputRegions": 1,
+        "exactReferences": 1,
+        "referenceCharacters": 6,
+        "characterEditsIncludingExtras": 0
+      }
+    },
+    {
+      "fixture": "low-contrast",
+      "baseline": {
+        "ms": 1548.58,
+        "detectorCalls": 1,
+        "recognizerCalls": 3,
+        "outputRegions": 2,
+        "exactReferences": 0,
+        "referenceCharacters": 10,
+        "characterEditsIncludingExtras": 5
+      },
+      "candidate": {
+        "ms": 1551.29,
+        "detectorCalls": 1,
+        "recognizerCalls": 3,
+        "outputRegions": 2,
+        "exactReferences": 0,
+        "referenceCharacters": 10,
+        "characterEditsIncludingExtras": 5
+      }
+    },
+    {
+      "fixture": "skew-horizontal",
+      "baseline": {
+        "ms": 1671.17,
+        "detectorCalls": 1,
+        "recognizerCalls": 1,
+        "outputRegions": 1,
+        "exactReferences": 1,
+        "referenceCharacters": 11,
+        "characterEditsIncludingExtras": 0
+      },
+      "candidate": {
+        "ms": 1972.55,
+        "detectorCalls": 1,
+        "recognizerCalls": 1,
+        "outputRegions": 1,
+        "exactReferences": 1,
+        "referenceCharacters": 11,
+        "characterEditsIncludingExtras": 0
+      }
+    },
+    {
+      "fixture": "mixed-page",
+      "baseline": {
+        "ms": 5593.78,
+        "detectorCalls": 5,
+        "recognizerCalls": 3,
+        "outputRegions": 3,
+        "exactReferences": 3,
+        "referenceCharacters": 24,
+        "characterEditsIncludingExtras": 0
+      },
+      "candidate": {
+        "ms": 8653.92,
+        "detectorCalls": 5,
+        "recognizerCalls": 3,
+        "outputRegions": 3,
+        "exactReferences": 3,
+        "referenceCharacters": 24,
+        "characterEditsIncludingExtras": 0
+      }
+    },
+    {
+      "fixture": "blank",
+      "baseline": {
+        "ms": 5.99,
+        "detectorCalls": 0,
+        "recognizerCalls": 0,
+        "outputRegions": 0,
+        "exactReferences": 0,
+        "referenceCharacters": 0,
+        "characterEditsIncludingExtras": 0
+      },
+      "candidate": {
+        "ms": 5.97,
+        "detectorCalls": 0,
+        "recognizerCalls": 0,
+        "outputRegions": 0,
+        "exactReferences": 0,
+        "referenceCharacters": 0,
+        "characterEditsIncludingExtras": 0
+      }
+    },
+    {
+      "fixture": "sparse-page-14",
+      "baseline": {
+        "ms": 1866.23,
+        "detectorCalls": 2,
+        "recognizerCalls": 1,
+        "outputRegions": 1,
+        "exactReferences": 1,
+        "referenceCharacters": 3,
+        "characterEditsIncludingExtras": 0
+      },
+      "candidate": {
+        "ms": 1958.21,
+        "detectorCalls": 2,
+        "recognizerCalls": 1,
+        "outputRegions": 1,
+        "exactReferences": 1,
+        "referenceCharacters": 3,
+        "characterEditsIncludingExtras": 0
+      }
+    },
+    {
+      "fixture": "sparse-page-24",
+      "baseline": {
+        "ms": 1859.06,
+        "detectorCalls": 2,
+        "recognizerCalls": 1,
+        "outputRegions": 1,
+        "exactReferences": 1,
+        "referenceCharacters": 3,
+        "characterEditsIncludingExtras": 0
+      },
+      "candidate": {
+        "ms": 1964.23,
+        "detectorCalls": 2,
+        "recognizerCalls": 1,
+        "outputRegions": 1,
+        "exactReferences": 1,
+        "referenceCharacters": 3,
+        "characterEditsIncludingExtras": 0
+      }
+    },
+    {
+      "fixture": "sparse-page-40",
+      "baseline": {
+        "ms": 1823.15,
+        "detectorCalls": 2,
+        "recognizerCalls": 1,
+        "outputRegions": 1,
+        "exactReferences": 1,
+        "referenceCharacters": 3,
+        "characterEditsIncludingExtras": 0
+      },
+      "candidate": {
+        "ms": 1898.2,
+        "detectorCalls": 2,
+        "recognizerCalls": 1,
+        "outputRegions": 1,
+        "exactReferences": 1,
+        "referenceCharacters": 3,
+        "characterEditsIncludingExtras": 0
+      }
+    },
+    {
+      "fixture": "blank-large",
+      "baseline": {
+        "ms": 17.09,
+        "detectorCalls": 0,
+        "recognizerCalls": 0,
+        "outputRegions": 0,
+        "exactReferences": 0,
+        "referenceCharacters": 0,
+        "characterEditsIncludingExtras": 0
+      },
+      "candidate": {
+        "ms": 16.43,
+        "detectorCalls": 0,
+        "recognizerCalls": 0,
+        "outputRegions": 0,
+        "exactReferences": 0,
+        "referenceCharacters": 0,
+        "characterEditsIncludingExtras": 0
+      }
+    },
+    {
+      "fixture": "synthetic-title-52",
+      "baseline": {
+        "ms": 3520.28,
+        "detectorCalls": 3,
+        "recognizerCalls": 2,
+        "outputRegions": 2,
+        "exactReferences": 2,
+        "referenceCharacters": 22,
+        "characterEditsIncludingExtras": 0
+      },
+      "candidate": {
+        "ms": 3754.42,
+        "detectorCalls": 3,
+        "recognizerCalls": 2,
+        "outputRegions": 2,
+        "exactReferences": 2,
+        "referenceCharacters": 22,
+        "characterEditsIncludingExtras": 0
+      }
+    },
+    {
+      "fixture": "synthetic-title-64",
+      "baseline": {
+        "ms": 3554.07,
+        "detectorCalls": 3,
+        "recognizerCalls": 2,
+        "outputRegions": 2,
+        "exactReferences": 1,
+        "referenceCharacters": 22,
+        "characterEditsIncludingExtras": 2
+      },
+      "candidate": {
+        "ms": 3615.67,
+        "detectorCalls": 3,
+        "recognizerCalls": 2,
+        "outputRegions": 2,
+        "exactReferences": 2,
+        "referenceCharacters": 22,
+        "characterEditsIncludingExtras": 0
+      }
+    },
+    {
+      "fixture": "synthetic-title-72",
+      "baseline": {
+        "ms": 3424.0,
+        "detectorCalls": 3,
+        "recognizerCalls": 2,
+        "outputRegions": 2,
+        "exactReferences": 1,
+        "referenceCharacters": 22,
+        "characterEditsIncludingExtras": 2
+      },
+      "candidate": {
+        "ms": 3577.32,
+        "detectorCalls": 3,
+        "recognizerCalls": 2,
+        "outputRegions": 2,
+        "exactReferences": 2,
+        "referenceCharacters": 22,
+        "characterEditsIncludingExtras": 0
+      }
+    },
+    {
+      "fixture": "synthetic-dark-paragraph",
+      "baseline": {
+        "ms": 7467.98,
+        "detectorCalls": 1,
+        "recognizerCalls": 4,
+        "outputRegions": 3,
+        "exactReferences": 0,
+        "referenceCharacters": 111,
+        "characterEditsIncludingExtras": 130
+      },
+      "candidate": {
+        "ms": 6943.17,
+        "detectorCalls": 1,
+        "recognizerCalls": 10,
+        "outputRegions": 10,
+        "exactReferences": 6,
+        "referenceCharacters": 111,
+        "characterEditsIncludingExtras": 8
+      }
+    }
+  ],
+  "limits": [
+    "Single timing sample per case; no performance improvement claim.",
+    "Dark paragraph still has eight character edits; low-contrast fixture remains incorrect.",
+    "Recognition calls increase for separate paragraph rows; no new detector calls, dependencies or model weights.",
+    "Private annotated screenshot replay is supplemental; supplied screenshots are not committed or uploaded.",
+    "Native Windows extended-monitor/mixed-DPI and exact-installer acceptance remain unverified."
+  ]
+}
