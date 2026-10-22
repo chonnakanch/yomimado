@@ -14,10 +14,11 @@ def rounded(x, y, left, top, right, bottom, radius):
 
 
 def color_at(x, y, template):
-    ink = (0, 0, 0) if template else (16, 20, 27)
-    accent = ink if template else (8, 102, 255)
+    ink = (0, 0, 0) if template else (19, 21, 25)
+    accent = ink if template else (217, 139, 95)
+    bracket = ink if template else (0, 128, 255)
     if rounded(x, y, 14.5, 4, 16, 14.5, 0.75):
-        return (*accent, 255)
+        return (*bracket, 255)
     if not rounded(x, y, 2, 2, 13.5, 16, 2):
         return (0, 0, 0, 0)
     if not rounded(x, y, 3.5, 3.5, 12, 14.5, 0.75):
@@ -26,7 +27,7 @@ def color_at(x, y, template):
         x, y, 9, 5.5, 10.5, 10.5, 0.75
     ):
         return (*ink, 255)
-    return (0, 0, 0, 0) if template else (244, 247, 255, 255)
+    return (0, 0, 0, 0) if template else (242, 244, 248, 255)
 
 
 def png(size, template):

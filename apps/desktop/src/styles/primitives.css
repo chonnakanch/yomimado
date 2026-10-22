@@ -5,6 +5,7 @@ button:focus-visible,
 a:focus-visible,
 input:focus-visible,
 textarea:focus-visible,
+select:focus-visible,
 summary:focus-visible {
   outline: var(--focus-width) solid var(--color-focus);
   outline-offset: 2px;
@@ -14,7 +15,7 @@ summary:focus-visible {
   background: var(--color-surface);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-control);
-  color: var(--color-text-primary);
+  color: var(--color-link);
   display: inline-flex;
   flex: none;
   font-size: var(--font-size-label);
@@ -30,6 +31,12 @@ summary:focus-visible {
 }
 .utility-button:hover:not(:disabled) {
   background: var(--color-surface-elevated);
+  border-color: var(--color-accent-hover);
+  color: var(--color-link);
+}
+.utility-button:active:not(:disabled) {
+  border-color: var(--color-accent-pressed);
+  color: var(--color-accent-pressed);
 }
 .utility-button-primary {
   background: var(--color-accent);
@@ -38,6 +45,13 @@ summary:focus-visible {
 }
 .utility-button-primary:hover:not(:disabled) {
   background: var(--color-accent-hover);
+  border-color: var(--color-accent-hover);
+  color: var(--color-on-accent);
+}
+.utility-button-primary:active:not(:disabled) {
+  background: var(--color-accent-pressed);
+  border-color: var(--color-accent-pressed);
+  color: var(--color-on-accent);
 }
 .utility-button:disabled {
   background: var(--color-surface);
@@ -64,6 +78,36 @@ summary:focus-visible {
   position: absolute;
   white-space: nowrap;
   width: 1px;
+}
+.status-chip,
+.settings-success,
+.popup-success,
+.settings-error,
+.translation-error,
+p.library-error {
+  border-radius: var(--radius-control);
+  display: inline-block;
+  font-size: var(--font-size-label);
+  line-height: 1.5;
+  padding: var(--space-1) var(--space-2);
+}
+.status-chip:empty,
+.settings-success:empty,
+.popup-success:empty {
+  display: none;
+}
+.status-chip-success,
+.settings-success,
+.popup-success {
+  background: var(--color-success-tint);
+  color: var(--color-success);
+}
+.status-chip-error,
+.settings-error,
+.translation-error,
+p.library-error {
+  background: var(--color-error-tint);
+  color: var(--color-status-error);
 }
 @media (prefers-reduced-motion: reduce) {
   .utility-button {

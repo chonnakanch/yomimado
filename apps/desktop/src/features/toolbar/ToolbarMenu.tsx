@@ -1,4 +1,10 @@
-import { useEffect, useRef, useState, type KeyboardEvent } from "react";
+import {
+  Fragment,
+  useEffect,
+  useRef,
+  useState,
+  type KeyboardEvent,
+} from "react";
 import { invoke } from "@tauri-apps/api/core";
 import { emitTo } from "@tauri-apps/api/event";
 import { type ToolbarState } from "./FloatingToolbar";
@@ -166,20 +172,25 @@ export function ToolbarMenu() {
         {items
           .filter(({ view }) => view !== "hideToolbar" || state?.trayAvailable)
           .map(({ label, view }) => (
-            <button
-              role="menuitem"
-              key={label}
-              disabled={
-                view !== null &&
-                (!state ||
-                  state.sessionId !== null ||
-                  (view === "regions" &&
-                    (!state.hasOverlay || !state.overlayVisible)))
-              }
-              onClick={() => void run(view)}
-            >
-              {label}
-            </button>
+            <Fragment key={label}>
+              {(view === "hideToolbar" ||
+                (view === null && !state?.trayAvailable)) && (
+                <div role="separator" />
+              )}
+              <button
+                role="menuitem"
+                disabled={
+                  view !== null &&
+                  (!state ||
+                    state.sessionId !== null ||
+                    (view === "regions" &&
+                      (!state.hasOverlay || !state.overlayVisible)))
+                }
+                onClick={() => void run(view)}
+              >
+                {label}
+              </button>
+            </Fragment>
           ))}
         {error && (
           <p className="toolbar-menu-error" role="alert">

@@ -20,11 +20,9 @@ export function App() {
   }, [showSaved]);
   return (
     <main className={`secondary-window${showSaved ? " saved-window" : ""}`}>
-      {!showSaved && (
+      {showSources && (
         <header className="secondary-header">
-          <span className="secondary-brand">
-            YomiMado {!showSources && <span lang="ja">読み窓</span>}
-          </span>
+          <span className="secondary-brand">YomiMado</span>
         </header>
       )}
       {showSaved && (

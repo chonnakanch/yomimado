@@ -106,7 +106,10 @@ export function ScanSettings({ active }: { active: boolean }) {
             Refresh status
           </button>
         </div>
-        <p role="status" className="settings-model-status">
+        <p
+          role="status"
+          className={`settings-model-status${model?.required && model.installed ? " status-chip status-chip-success" : ""}`}
+        >
           {loading
             ? "Checking detector model…"
             : !model

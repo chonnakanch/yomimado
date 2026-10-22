@@ -31,7 +31,7 @@
 }
 .toolbar-brand {
   align-items: center;
-  color: var(--color-link);
+  color: var(--color-brand);
   display: flex;
   flex: none;
   padding: 0 var(--space-1);
@@ -76,21 +76,21 @@
   padding: var(--space-1) var(--space-2);
 }
 .toolbar-menu {
-  background: var(--color-surface-elevated);
+  background: var(--color-menu-surface);
   border: 1px solid var(--color-border);
-  border-radius: var(--radius-control);
+  border-radius: var(--radius-card);
   box-sizing: border-box;
   margin-left: auto;
   margin-top: var(--space-1);
   width: 224px;
   overflow-y: auto;
-  scrollbar-gutter: stable;
+  scrollbar-gutter: auto;
   flex: none;
 }
 .toolbar-menu-content {
   display: grid;
-  gap: var(--space-1);
-  padding: var(--space-2);
+  gap: 0;
+  padding: 6px;
 }
 .panel-above .toolbar-menu,
 .panel-above .toolbar-feedback {
@@ -99,14 +99,27 @@
 }
 .toolbar-menu button {
   background: transparent;
+  box-sizing: border-box;
   color: var(--color-text-primary);
-  font-size: var(--font-size-label);
+  font-size: 14px;
   font-weight: 400;
-  padding: var(--space-2);
+  line-height: 20px;
+  min-height: 34px;
+  padding: 6px var(--space-3);
   text-align: left;
 }
 .toolbar-menu button:hover:not(:disabled) {
-  background: var(--color-surface);
+  background: var(--color-accent-tint);
+  color: var(--color-text-primary);
+}
+.toolbar-menu button:active:not(:disabled) {
+  background: var(--color-accent-tint);
+  color: var(--color-text-primary);
+}
+.toolbar-menu [role="separator"] {
+  background: var(--color-border);
+  height: 1px;
+  margin: var(--space-2) var(--space-1);
 }
 .toolbar-menu button:disabled {
   color: var(--color-text-muted);
@@ -136,7 +149,11 @@
 
 .floating-toolbar .utility-button {
   box-sizing: border-box;
+  color: var(--color-text-primary);
   height: var(--control-default);
+}
+.floating-toolbar .utility-button-primary {
+  color: var(--color-on-accent);
 }
 .floating-toolbar .utility-icon-button {
   width: var(--control-default);

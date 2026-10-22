@@ -20,6 +20,9 @@ import { ClickableSentence, isWord } from "./ClickableSentence";
 import { ManualWordSelection } from "./ManualWordSelection";
 import { WordDefinition } from "./WordDefinition";
 import { KanjiDetail } from "./KanjiDetail";
+import { PopupIcon } from "./PopupIcon";
+import { PopupModes, type PopupMode } from "./PopupModes";
+import { TranslationOutput } from "./TranslationOutput";
 import { explainConjugation, type ConjugationAnalysis } from "./conjugation";
 import "./popup.css";
 
@@ -49,9 +52,8 @@ export function TranslationPopup() {
   const detailsRef = useRef<HTMLDivElement>(null);
   const detailsContentRef = useRef<HTMLDivElement>(null);
   const editorRef = useRef<HTMLTextAreaElement>(null);
-  const editButtonRef = useRef<HTMLButtonElement>(null);
+  const wordsButtonRef = useRef<HTMLButtonElement>(null);
   const returnEditorFocus = useRef(false);
-  const selectTextButtonRef = useRef<HTMLButtonElement>(null);
   const [selectingText, setSelectingText] = useState(false);
   const [editing, setEditing] = useState(state?.demo ?? false);
   const [draft, setDraft] = useState(state?.demo ? "" : (state?.text ?? ""));
@@ -62,6 +64,7 @@ export function TranslationPopup() {
   const [source, setSource] = useState(state?.demo ? "" : (state?.text ?? ""));
   const [result, setResult] = useState<TranslationResult | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [popupError, setPopupError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const translationRequestId = useRef(0);
   const [savingSentence, setSavingSentence] = useState(false);
@@ -237,13 +240,15 @@ export function TranslationPopup() {
       }
       if (selectingText) {
         setSelectingText(false);
-        selectTextButtonRef.current?.focus();
+        wordsButtonRef.current?.focus();
         return;
       }
       void invoke("close_translation_popup", {
         returnFocus: true,
         viewQuery,
-      }).catch((error) => setError(`Could not close popup: ${String(error)}`));
+      }).catch((error) =>
+        setPopupError(`Could not close popup: ${String(error)}`),
+      );
     };
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
@@ -253,9 +258,15 @@ export function TranslationPopup() {
     if (editing) editorRef.current?.focus();
     else if (returnEditorFocus.current) {
       returnEditorFocus.current = false;
-      editButtonRef.current?.focus();
+      wordsButtonRef.current?.focus();
     }
   }, [editing]);
+
+  useEffect(() => {
+    if (!copied) return;
+    const timer = setTimeout(() => setCopied(false), 1500);
+    return () => clearTimeout(timer);
+  }, [copied]);
 
   useEffect(
     () => () => {
@@ -343,7 +354,17 @@ export function TranslationPopup() {
 
   if (!state) return null;
 
+  const mode: PopupMode = editing ? "edit" : selectingText ? "select" : "words";
+  const changeMode = (next: PopupMode) => {
+    if (next === mode) return;
+    returnEditorFocus.current = false;
+    setDraft(source);
+    setSelectingText(next === "select");
+    setEditing(next === "edit");
+  };
+
   const translate = async () => {
+    if (loading || editing || !source.trim()) return;
     const requestId = ++translationRequestId.current;
     setLoading(true);
     setError(null);
@@ -365,6 +386,7 @@ export function TranslationPopup() {
   };
 
   const saveCurrentSentence = async () => {
+    if (savingSentence || sentenceSaved || editing || !source.trim()) return;
     const requestId = ++sentenceSaveRequestId.current;
     setSavingSentence(true);
     setSentenceSaved(false);
@@ -470,7 +492,7 @@ export function TranslationPopup() {
   const sentenceMaxHeight = Math.max(56, Math.min(180, popupHeightCap * 0.3));
   const reviewDescription =
     state.reviewReason || state.approximate
-      ? `${state.approximate ? "Approximate OCR region." : "Review OCR."} ${state.reviewReason ?? "Check the text against the page before saving."} Use Edit OCR text to correct it.`
+      ? `${state.approximate ? "Approximate OCR region." : "Review OCR."} ${state.reviewReason ?? "Check the text against the page before saving."} Use Edit to correct it.`
       : null;
 
   return (
@@ -507,18 +529,19 @@ export function TranslationPopup() {
               )}
             </div>
             <button
+              type="button"
               className="utility-button utility-icon-button translation-close"
               onClick={(event) => {
                 void invoke("close_translation_popup", {
                   returnFocus: event.detail === 0,
                   viewQuery,
                 }).catch((error) =>
-                  setError(`Could not close popup: ${String(error)}`),
+                  setPopupError(`Could not close popup: ${String(error)}`),
                 );
               }}
               aria-label="Close translation"
             >
-              ×
+              <PopupIcon name="close" />
             </button>
           </div>
           {state.demo && (
@@ -527,96 +550,217 @@ export function TranslationPopup() {
               learning tools.
             </p>
           )}
-          {selectingText ? (
-            <ManualWordSelection
-              source={source}
-              maxHeight={sentenceMaxHeight}
-              onLookup={(token) => {
-                detailsRef.current?.scrollTo?.({ top: 0 });
-                void lookupWord(token, null);
-              }}
-            />
-          ) : (
+          <PopupModes
+            mode={mode}
+            onChange={changeMode}
+            canSelect={!!source.trim()}
+            wordsRef={wordsButtonRef}
+          />
+          <section
+            className="sentence-card"
+            hidden={editing}
+            aria-label="Japanese sentence and actions"
+          >
             <div
-              className="sentence-scroll"
-              style={{ maxHeight: sentenceMaxHeight }}
+              role="tabpanel"
+              id="popup-panel-words"
+              aria-labelledby="popup-mode-words"
+              hidden={mode !== "words"}
             >
-              <ClickableSentence
-                source={source}
-                tokens={tokens}
-                selectedTokenIndex={selectedTokenIndex}
-                onSelect={(index) => {
-                  detailsRef.current?.scrollTo?.({ top: 0 });
-                  selectWord(index);
-                }}
-              />
+              <div
+                className="sentence-scroll"
+                style={{ maxHeight: sentenceMaxHeight }}
+              >
+                <ClickableSentence
+                  source={source}
+                  tokens={tokens}
+                  selectedTokenIndex={selectedTokenIndex}
+                  onSelect={(index) => {
+                    detailsRef.current?.scrollTo?.({ top: 0 });
+                    selectWord(index);
+                  }}
+                />
+              </div>
             </div>
+            <div
+              role="tabpanel"
+              id="popup-panel-select"
+              aria-labelledby="popup-mode-select"
+              hidden={mode !== "select"}
+            >
+              {selectingText && (
+                <ManualWordSelection
+                  source={source}
+                  maxHeight={sentenceMaxHeight}
+                  onLookup={(token) => {
+                    detailsRef.current?.scrollTo?.({ top: 0 });
+                    void lookupWord(token, null);
+                  }}
+                />
+              )}
+            </div>
+            <div
+              className="sentence-save-actions"
+              aria-label="Sentence actions"
+            >
+              <button
+                type="button"
+                className={`utility-button popup-action${copied ? " is-copied" : ""}`}
+                aria-label={copied ? "Copied" : "Copy sentence"}
+                disabled={editing || !source.trim()}
+                onClick={() => void copySentence()}
+              >
+                <PopupIcon name={copied ? "check" : "copy"} />
+                <span>{copied ? "Copied" : "Copy"}</span>
+              </button>
+              <button
+                type="button"
+                className={`utility-button popup-action${sentenceSaved ? " is-saved" : ""}`}
+                aria-label={
+                  sentenceSaved ? "Sentence saved locally" : "Save sentence"
+                }
+                aria-busy={savingSentence}
+                disabled={
+                  editing || savingSentence || sentenceSaved || !source.trim()
+                }
+                onClick={() => void saveCurrentSentence()}
+              >
+                <PopupIcon name={savingSentence ? "loading" : "bookmark"} />
+                <span>
+                  {savingSentence
+                    ? "Saving…"
+                    : sentenceSaved
+                      ? "Saved"
+                      : "Save"}
+                </span>
+              </button>
+              <button
+                type="button"
+                className={`utility-button popup-action translate-button${loading || result ? " is-active" : ""}${error ? " is-error" : ""}`}
+                aria-label={
+                  error
+                    ? "Retry translation"
+                    : loading
+                      ? "Translating locally"
+                      : "Translate locally"
+                }
+                aria-busy={loading}
+                disabled={editing || loading || !source.trim()}
+                onClick={() => void translate()}
+              >
+                <PopupIcon
+                  name={loading ? "loading" : error ? "retry" : "translate"}
+                />
+                <span>
+                  {loading ? "Translating…" : error ? "Retry" : "Translate"}
+                </span>
+              </button>
+            </div>
+            <div className="sentence-feedback">
+              <span className="visually-hidden" role="status">
+                {copied ? "Sentence copied." : ""}{" "}
+                {sentenceSaved ? "Sentence saved locally." : ""}
+              </span>
+              {copyError && (
+                <p className="translation-error" role="alert">
+                  {copyError}
+                </p>
+              )}
+              {sentenceSaveError && (
+                <p className="translation-error" role="alert">
+                  {sentenceSaveError}
+                </p>
+              )}
+            </div>
+          </section>
+          <section
+            className="ocr-editor"
+            role="tabpanel"
+            id="popup-panel-edit"
+            aria-labelledby="popup-mode-edit"
+            hidden={!editing}
+          >
+            {editing && (
+              <>
+                <p className="popup-metadata">
+                  Fix any characters OCR got wrong. Apply splits the sentence
+                  into words again.
+                </p>
+                <label className="visually-hidden" htmlFor="translation-source">
+                  {state.demo ? "Demo Japanese text" : "OCR text"}
+                </label>
+                <textarea
+                  ref={editorRef}
+                  id="translation-source"
+                  lang="ja"
+                  spellCheck={false}
+                  value={draft}
+                  rows={3}
+                  onChange={(event) => setDraft(event.target.value)}
+                />
+                <div className="popup-actions editor-actions">
+                  <button
+                    type="button"
+                    className="inline-action editor-reset"
+                    onClick={() => {
+                      setDraft(state.demo ? "" : state.text);
+                      editorRef.current?.focus();
+                    }}
+                  >
+                    Reset to OCR text
+                  </button>
+                  <button
+                    type="button"
+                    className="utility-button"
+                    onClick={cancelEdit}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="button"
+                    className="utility-button utility-button-primary analyze-button"
+                    disabled={!draft.trim()}
+                    onClick={applyEdit}
+                  >
+                    Apply
+                  </button>
+                </div>
+              </>
+            )}
+          </section>
+          {popupError && (
+            <p className="translation-error" role="alert">
+              {popupError}
+            </p>
           )}
-          <div className="sentence-save-actions">
-            <button
-              ref={selectTextButtonRef}
-              className="utility-button"
-              aria-pressed={selectingText}
-              disabled={editing || !source.trim()}
-              onClick={() => setSelectingText(!selectingText)}
-            >
-              {selectingText ? "Back to normal" : "Select text"}
-            </button>
-            <button
-              className="utility-button"
-              disabled={!source.trim()}
-              onClick={() => void copySentence()}
-            >
-              {copied ? "Copied" : "Copy sentence"}
-            </button>
-            <button
-              className="utility-button"
-              disabled={savingSentence || !source.trim()}
-              onClick={() => void saveCurrentSentence()}
-            >
-              {savingSentence ? "Saving…" : "Save sentence"}
-            </button>
-          </div>
-          <div className="sentence-feedback">
-            {copied && (
-              <p className="popup-success" role="status">
-                Sentence copied.
-              </p>
-            )}
-            {copyError && (
-              <p className="translation-error" role="alert">
-                {copyError}
-              </p>
-            )}
-            {sentenceSaved && (
-              <p className="popup-success" role="status">
-                Sentence saved locally.
-              </p>
-            )}
-            {sentenceSaveError && (
-              <p className="translation-error" role="alert">
-                {sentenceSaveError}
-              </p>
-            )}
-          </div>
         </div>
         <div
           className="popup-details"
           ref={detailsRef}
           tabIndex={0}
           aria-label="Learning details"
+          hidden={editing}
         >
           <div className="popup-details-content" ref={detailsContentRef}>
+            {(error || result || loading) && (
+              <TranslationOutput
+                key={`${result?.provider ?? "pending"}:${result?.sourceText ?? source}:${result?.translatedText ?? ""}`}
+                result={result}
+                loading={loading}
+                error={error}
+                saved={sentenceSaved && result?.sourceText === source.trim()}
+              />
+            )}
             <div className="tokenization-status" role="status">
               {tokenLoading
                 ? "Analyzing words…"
-                : tokenError
+                : tokenError || selectedToken
                   ? null
                   : selectingText
                     ? "Select text and choose Look up selection to explore its meaning."
                     : tokens && !tokens.some(isWord)
                       ? "No words found in this text."
-                      : "Select a word in the sentence to explore its meaning."}
+                      : "Tap a word to see its meaning."}
             </div>
             {tokenError && (
               <div role="alert">
@@ -669,73 +813,6 @@ export function TranslationPopup() {
                   onRetryExamples={() => void loadExamples()}
                 />
               </div>
-            )}
-            {editing && (
-              <section className="ocr-editor" aria-label="Edit OCR text">
-                <label htmlFor="translation-source">
-                  {state.demo ? "Demo Japanese text" : "OCR text"}
-                </label>
-                <textarea
-                  ref={editorRef}
-                  id="translation-source"
-                  lang="ja"
-                  value={draft}
-                  onChange={(event) => setDraft(event.target.value)}
-                />
-                <div className="popup-actions">
-                  <button
-                    className="utility-button utility-button-primary analyze-button"
-                    disabled={!draft.trim()}
-                    onClick={applyEdit}
-                  >
-                    Apply and analyze
-                  </button>
-                  <button className="utility-button" onClick={cancelEdit}>
-                    Cancel
-                  </button>
-                </div>
-              </section>
-            )}
-            <div className="popup-secondary-actions">
-              <button
-                ref={editButtonRef}
-                className="utility-button"
-                onClick={() => {
-                  setSelectingText(false);
-                  setDraft(source);
-                  setEditing(true);
-                }}
-                disabled={editing}
-              >
-                Edit OCR text
-              </button>
-              <button
-                className="utility-button translate-button"
-                onClick={() => void translate()}
-                disabled={loading || !source.trim()}
-              >
-                {loading ? "Translating…" : "Translate locally"}
-              </button>
-            </div>
-            {(error || result || loading) && (
-              <section
-                className="translation-output"
-                aria-label="Requested translation"
-                aria-live="polite"
-              >
-                {loading && <p role="status">Translating locally…</p>}
-                {error && (
-                  <p className="translation-error" role="alert">
-                    {error}
-                  </p>
-                )}
-                {result && (
-                  <>
-                    <h3>English{result.cached ? " · cached" : ""}</h3>
-                    <p lang="en">{result.translatedText}</p>
-                  </>
-                )}
-              </section>
             )}
           </div>
         </div>
