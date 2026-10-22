@@ -14,9 +14,9 @@ The [feature roadmap](docs/implementation-plan.md#feature-checklist) tracks comp
 
 #### Changed
 
-- Tone down filled action/selection backgrounds to muted blue `#2D4F7F`, with
-  `#355F96` hover and white labels. Keep the original `#0866FF` for OCR drawing
-  outlines and the capture drag box through independent color roles.
+- Restore the original `#0866FF` button backgrounds and `#0058E0` hover at the
+  owner's request, reverting the muted button palette from `6351025`. Drawing
+  outlines and the capture drag box continue to use the same vivid blue.
 
 - Recolor the desktop app icon and Windows tray mark to the charcoal/blue theme.
   Keep the original master as provenance, add a transparent blue master and

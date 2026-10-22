@@ -4,9 +4,8 @@
   --color-surface: #171b22;
   --color-surface-elevated: #232b38;
   --color-accent: #0866ff;
-  --color-action: #2d4f7f;
-  --color-action-hover: #355f96;
-  --color-selected: var(--color-action);
+  --color-accent-hover: #0058e0;
+  --color-selected: var(--color-accent);
   --color-link: #80b2ff;
   --color-text-primary: #f4f7ff;
   --color-text-secondary: #bdc9da;

@@ -32,12 +32,12 @@ summary:focus-visible {
   background: var(--color-surface-elevated);
 }
 .utility-button-primary {
-  background: var(--color-action);
-  border-color: var(--color-action);
+  background: var(--color-accent);
+  border-color: var(--color-accent);
   color: var(--color-on-accent);
 }
 .utility-button-primary:hover:not(:disabled) {
-  background: var(--color-action-hover);
+  background: var(--color-accent-hover);
 }
 .utility-button:disabled {
   background: var(--color-surface);
