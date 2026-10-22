@@ -10,6 +10,18 @@ The [feature roadmap](docs/implementation-plan.md#feature-checklist) tracks comp
 
 ## Unreleased
 
+### 2026-10-22
+
+#### Changed
+
+- Apply charcoal surfaces and `#0866FF` blue actions across the app, with white
+  action labels, readable blue links and distinct error feedback. Use blue OCR
+  outlines with a thin dark halo and faint hover/selection fill. Match the
+  capture drag box to the blue theme and remove the full-screen capture tint,
+  preserving a clear view of the manga. Keep the bold X and existing geometry,
+  native hit routing and capture lifecycle. See the
+  [theme verification](docs/ui-testing.md#charcoal-and-blue-theme).
+
 ### 2026-10-21
 
 #### Removed

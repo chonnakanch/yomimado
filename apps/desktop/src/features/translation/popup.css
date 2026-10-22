@@ -240,7 +240,7 @@
   font-size: var(--font-size-metadata);
 }
 .translation-popup a {
-  color: var(--color-accent-hover);
+  color: var(--color-link);
 }
 .kanji-section,
 .kanji-detail,
@@ -289,7 +289,7 @@
   min-height: var(--control-compact);
 }
 .translation-popup .inline-action {
-  color: var(--color-accent-hover);
+  color: var(--color-link);
   text-decoration: underline;
 }
 .kanji-examples ul {

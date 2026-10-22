@@ -42,7 +42,7 @@
 }
 .settings-tabs [aria-selected="true"] {
   background: var(--color-surface-elevated);
-  border-color: var(--color-accent);
+  border-color: var(--color-focus);
 }
 .settings-window[hidden],
 .settings-window [role="tabpanel"][hidden] {
@@ -79,7 +79,7 @@
   margin: var(--space-3) 0;
 }
 .settings-card a {
-  color: var(--color-accent-hover);
+  color: var(--color-link);
 }
 .settings-card .settings-note {
   font-size: var(--font-size-label);

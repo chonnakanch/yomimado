@@ -33,37 +33,41 @@ export function OCRBoundingBox({
   elementRef: (element: SVGPolygonElement | null) => void;
 }) {
   const label = regionLabel(region, demo, number);
+  const stateClasses = `${demo ? " demo" : ""}${region.geometrySource ? " approximate" : ""}${region.needsReview ? " needs-review" : ""}${selected ? " active" : ""}`;
   return (
-    <polygon
-      className={`ocr-region${demo ? " demo" : ""}${region.geometrySource ? " approximate" : ""}${region.needsReview ? " needs-review" : ""}${selected ? " active" : ""}`}
-      points={points}
-      role="button"
-      aria-label={label}
-      aria-pressed={selected}
-      tabIndex={tabIndex}
-      ref={elementRef}
-      onFocus={onFocus}
-      onClick={(event) => onActivate(event.detail === 0)}
-      onKeyDown={(event) => {
-        if (event.key === "Enter" || event.key === " ") {
-          event.preventDefault();
-          onActivate(true);
-        } else if (
-          [
-            "ArrowUp",
-            "ArrowDown",
-            "ArrowLeft",
-            "ArrowRight",
-            "Home",
-            "End",
-          ].includes(event.key)
-        ) {
-          event.preventDefault();
-          onNavigate(event.key);
-        }
-      }}
-    >
-      {captureDebugEnabled() && <title>{label}</title>}
-    </polygon>
+    <g className={`ocr-region-group${stateClasses}`}>
+      <polygon className="ocr-region-halo" points={points} aria-hidden="true" />
+      <polygon
+        className={`ocr-region${stateClasses}`}
+        points={points}
+        role="button"
+        aria-label={label}
+        aria-pressed={selected}
+        tabIndex={tabIndex}
+        ref={elementRef}
+        onFocus={onFocus}
+        onClick={(event) => onActivate(event.detail === 0)}
+        onKeyDown={(event) => {
+          if (event.key === "Enter" || event.key === " ") {
+            event.preventDefault();
+            onActivate(true);
+          } else if (
+            [
+              "ArrowUp",
+              "ArrowDown",
+              "ArrowLeft",
+              "ArrowRight",
+              "Home",
+              "End",
+            ].includes(event.key)
+          ) {
+            event.preventDefault();
+            onNavigate(event.key);
+          }
+        }}
+      >
+        {captureDebugEnabled() && <title>{label}</title>}
+      </polygon>
+    </g>
   );
 }

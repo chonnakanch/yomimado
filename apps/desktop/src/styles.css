@@ -35,37 +35,3 @@ button:disabled {
   cursor: not-allowed;
   opacity: 0.55;
 }
-.capture-selector {
-  background: rgb(20 15 12 / 0.2);
-  box-sizing: border-box;
-  cursor: crosshair;
-  height: 100vh;
-  overflow: hidden;
-  position: relative;
-  user-select: none;
-  width: 100vw;
-}
-:root[data-capturing="true"] .capture-selector {
-  opacity: 0;
-  pointer-events: none;
-}
-.capture-selector p {
-  background: rgb(20 15 12 / 0.8);
-  border-radius: 6px;
-  left: 1rem;
-  margin: 0;
-  padding: 0.5rem 0.75rem;
-  position: absolute;
-  top: 1rem;
-}
-.capture-selector .capture-error {
-  background: rgb(110 32 25 / 0.9);
-  top: 3.8rem;
-}
-.selection {
-  background: rgb(223 130 89 / 0.16);
-  border: 2px solid #ffab83;
-  box-sizing: border-box;
-  pointer-events: none;
-  position: absolute;
-}

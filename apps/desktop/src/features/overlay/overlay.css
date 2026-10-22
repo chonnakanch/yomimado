@@ -45,6 +45,24 @@
   cursor: wait;
   opacity: 0.6;
 }
+.ocr-region-halo {
+  fill: none;
+  pointer-events: none;
+  stroke: var(--color-region-halo);
+  stroke-width: 4px;
+  vector-effect: non-scaling-stroke;
+}
+.ocr-region-group:hover .ocr-region-halo,
+.ocr-region-group.active .ocr-region-halo,
+.ocr-region-group:focus-within .ocr-region-halo {
+  stroke-width: 5px;
+}
+.ocr-region-group:has(> .ocr-region:focus-visible) .ocr-region-halo {
+  stroke-dasharray: 3 2;
+}
+.ocr-region-group:is(.demo, .approximate, .needs-review) .ocr-region-halo {
+  stroke-dasharray: 6 5;
+}
 .ocr-region {
   cursor: pointer;
   fill: transparent;
