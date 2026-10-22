@@ -48,7 +48,7 @@ The [feature roadmap](docs/implementation-plan.md#feature-checklist) tracks comp
 
 #### Fixed
 
-- Brighten default OCR outlines to `#168BFF` and hover strokes to `#4D9FFF`.
+- Brighten default OCR outlines to `#0080FF` and hover strokes to `#4D9FFF`.
   Remove the dark halo/black border from OCR polygons while retaining dashed
   review indicators, keyboard focus strokes, original geometry and native hit
   routing. Keep the app buttons and capture drag box styling unchanged.

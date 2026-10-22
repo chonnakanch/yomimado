@@ -45,12 +45,12 @@ styles consume roles, never repeat hex values. The table matches the shared toke
 | `--color-on-accent`              | `#FFFFFF`                   | Text/icon on filled blue actions and selections.         |
 | `--color-focus`                  | `var(--color-link)`         | Keyboard outline independent of hover.                   |
 | `--color-status-error`           | `#FF9CA5`                   | Error text/icon with an explicit message.                |
-| `--color-region-default`         | `#168BFF`                   | Bright blue ordinary OCR polygon stroke.                             |
+| `--color-region-default`         | `#0080FF`                   | Bright blue ordinary OCR polygon stroke.                             |
 | `--color-region-hover`           | `#4D9FFF`                   | Brighter hovered OCR polygon stroke.                     |
 | `--color-region-selected`        | `var(--color-link)`         | Selected OCR polygon stroke.                             |
 | `--color-capture-edge`           | `#0B1220`                   | Thin dark edge on the capture drag rectangle only.          |
-| `--color-region-hover-fill`      | `rgb(22 139 255 / 0.06)`    | Minimal blue hover wash above manga.                     |
-| `--color-region-selected-fill`   | `rgb(22 139 255 / 0.10)`    | Minimal selected wash above manga.                       |
+| `--color-region-hover-fill`      | `rgb(0 128 255 / 0.06)`    | Minimal blue hover wash above manga.                     |
+| `--color-region-selected-fill`   | `rgb(0 128 255 / 0.10)`    | Minimal selected wash above manga.                       |
 | `--color-capture-selection`      | `var(--color-accent)`       | Capture drag rectangle border.                           |
 | `--color-capture-selection-fill` | `rgb(8 102 255 / 0.06)`     | Faint fill inside the dragged area only.                 |
 | `--color-debug-candidate`        | `#58D5E8`                   | Detector candidates in the debug preview only.           |
@@ -214,7 +214,7 @@ region. Quit remains discoverable after expanding the toolbar.
 | Demo               | Dashed outline         | Transparent     | “Demo boundary — no recognized text.”                       |
 
 Render one original polygon per region with a bright blue stroke and no black
-border, halo or drop shadow. Default strokes use `#168BFF`, hover uses `#4D9FFF`
+border, halo or drop shadow. Default strokes use `#0080FF`, hover uses `#4D9FFF`
 and selection retains the lighter blue. Keep fills limited to hover/selection.
 Use `vector-effect: non-scaling-stroke`. Keep original polygons; the component
 name does not justify reducing geometry to a rectangle. Region fill/hit area

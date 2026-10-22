@@ -47,7 +47,7 @@ successfully. Tray exports reproduce from their generator and the macOS template
 hash is unchanged. Generator lint and the macOS debug build pass. This does not
 establish installed Dock/taskbar/menu-bar acceptance for the new exports.
 
-Outline follow-up — 2026-10-22: default OCR strokes use brighter `#168BFF` and
+Outline follow-up — 2026-10-22: default OCR strokes use brighter `#0080FF` and
 hover uses `#4D9FFF`. Remove the earlier dark halo and its decorative polygons;
 OCR regions now render as one polygon each. Review/demo dashes and keyboard focus
 remain, while buttons and the capture drag rectangle retain their existing
