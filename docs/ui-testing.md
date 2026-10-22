@@ -39,6 +39,12 @@ app-name subtitle. Its source descriptions and licence links remain present.
 The 49 app, Settings, toolbar and overlay tests, frontend build and formatting
 pass after this refinement. Keyboard-focused OCR strokes use 4 px with a 6 px
 dark halo; other control focus rings use 3 px.
+Icon follow-up — 2026-10-22: reviewed the blue desktop exports at 32/128 px and
+Windows tray mark at 32 px. All PNGs retain RGBA transparency; ICO and ICNS decode
+successfully. Tray exports reproduce from their generator and the macOS template
+hash is unchanged. Generator lint and the macOS debug build pass. This does not
+establish installed Dock/taskbar/menu-bar acceptance for the new exports.
+
 Native macOS/WebView and Windows/WebView2 visual acceptance, fractional scaling,
 pass-through and exact-installer checks remain unverified for this theme. Follow
 the [native overlay checks](#native-overlay-checks), including light/dark pages,

@@ -451,14 +451,16 @@ visibility remain separate enhancements.
 
 ## Icon provenance and regeneration
 
-The initial icon uses a copper capture window around an ivory manga page. Two
-vertical marks suggest Japanese reading; an offset page edge adds depth.
-The charcoal tile follows the desktop UI palette and leaves
-transparent padding around its rounded corners.
+The current icon uses a blue capture window around a cool white manga page on a
+charcoal tile. Two vertical marks suggest Japanese reading; an offset page edge
+adds depth. Transparent padding remains outside the rounded tile.
 
-The master artwork is `apps/desktop/src-tauri/icons/source-v1.png`, generated
-with the built-in imagegen tool on 2026-10-04. No font, third-party logo, manga
-image, or model asset was used as an input.
+The current master is `apps/desktop/src-tauri/icons/source-v2-blue.png`, recolored
+with the built-in imagegen tool on 2026-10-22 to match `#0866FF`, `#171B22` /
+`#10141B` and `#F4F7FF`. Its 1254 × 1254 canvas and transparent corners are retained.
+The original copper/ivory master, `apps/desktop/src-tauri/icons/source-v1.png`,
+was generated with the same tool on 2026-10-04 and remains as provenance.
+No font, third-party logo, manga image or model asset was used as an input.
 
 Tauri's existing CLI generated the PNG sizes, Windows ICO/Store assets, and
 macOS ICNS. The main Tauri configuration references the desktop icons; the
@@ -468,7 +470,7 @@ in this repository.
 To regenerate the desktop exports from the master, run from `apps/desktop`:
 
 ```sh
-npm run tauri -- icon src-tauri/icons/source-v1.png --output /tmp/yomimado-icons-v1
+rtk npm run tauri -- icon src-tauri/icons/source-v2-blue.png --output /tmp/yomimado-icons-blue
 ```
 
 Copy only the top-level desktop files from that output into
@@ -485,12 +487,34 @@ Run `python3 scripts/generate_tray_icons.py` from the repository root to regener
 
 - `tray-template.png`: transparent 36 × 36 black mark, displayed by the native
   macOS status item at 18 logical points with template adaptation.
-- `tray-windows.png`: transparent 32 × 32 copper/ivory mark for Windows.
+- `tray-windows.png`: transparent 32 × 32 blue/cool-white mark for Windows.
 
 These assets are embedded in Rust and do not replace the desktop app icons.
 Inspect the actual icons in light/dark system UI at supported display scales.
 
-### Generation prompt
+### Blue recolor prompt
+
+The edit target was the original master; the built-in imagegen tool supplied the
+recolor with transparent output. Tauri generated all current desktop exports.
+The tray generator uses the same palette directly, while the macOS template
+remains monochrome for system adaptation.
+
+```text
+Use case: precise-object-edit. Asset type: production desktop app icon recolor.
+Edit target: the supplied existing YomiMado app icon.
+Change ONLY its palette to match the app's new charcoal and #0866FF blue theme.
+Recolor the copper/orange capture-window frame and offset top-right corner to vivid blue #0866FF;
+recolor the warm charcoal rounded-square tile and the two vertical reading marks to cool charcoal #171B22 / #10141B;
+recolor the ivory page to cool white #F4F7FF.
+Preserve the existing recognizable symbol, all geometry, proportions, exact positioning, rounded corners,
+side page edge, subtle depth, clean silhouette and original square canvas.
+Preserve the original transparent padding outside the rounded tile, with genuine alpha, not a checkerboard.
+Color change only, no redesign, no new elements, no text, no logos, no gradients added, no outer shadow.
+Keep edges crisp and the symbol legible at 32 pixels.
+Output one square icon at the source resolution if possible.
+```
+
+### Original generation prompt
 
 ```text
 Use case: logo-brand

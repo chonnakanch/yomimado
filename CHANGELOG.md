@@ -14,6 +14,12 @@ The [feature roadmap](docs/implementation-plan.md#feature-checklist) tracks comp
 
 #### Changed
 
+- Recolor the desktop app icon and Windows tray mark to the charcoal/blue theme.
+  Keep the original master as provenance, add a transparent blue master and
+  regenerate the desktop PNG, ICO and ICNS exports. Preserve the monochrome
+  macOS tray template for system adaptation; record the prompt and regeneration
+  recipe in the [design guide](docs/design-system.md#icon-provenance-and-regeneration).
+
 - Give the toolbar book mark a lighter blue than scan actions. Increase keyboard
   focus rings to 3 px, selected Settings category outlines to 3 px and focused
   OCR strokes to 4 px. Remove the slogan and Japanese app-name subtitle from the
