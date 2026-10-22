@@ -285,6 +285,25 @@ follows the original detector sequence, and polygons are clipped to image bounds
 before publication. The stroke fallback uses an enclosing oriented rectangle.
 No detector passes, model weights or display-coordinate transforms are added.
 
+For mixed-content selections, touching fragments of a horizontal row can be
+reconciled before applying neighboring-column guards. A nearby vertical fragment
+can extend the search only when complete, wide glyph rows support that interpretation;
+weak evidence retains the original barriers. Searches include a bounded margin
+above/below detector edges and decline partially observed rows. Recognition still
+precedes suppression: successful rows must cover at least 95% of a competing
+fragment's visible ink on a plain background. Multiple rows can jointly cover a
+false vertical run; a padded single-row duplicate also needs matching height and
+center. This coverage applies to full, tile and mask results, preserving fragments
+with uncovered glyphs. Existing row/crop limits and original debug boxes remain.
+
+Detector regions classified `eng` stay separate from Japanese/unknown horizontal
+fragments and carry an explicit non-Japanese review reason, even if the Japanese
+recognizer returns Japanese-looking text. This is a warning from the detector's
+coarse classification, not Thai OCR or reliable script identification; unknown
+regions can still contain recognition errors. See the
+[mixed-content measurements](ocr-mixed-text-results.json) and
+[geometry acceptance cases](ui-testing.md#horizontal-ocr-geometry-recovery).
+
 ## Resource inventory
 
 | Resource                                               | What it contributes                                                                         | Delivery in packaged apps                                                             |

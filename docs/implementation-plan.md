@@ -18,7 +18,10 @@ at the owner's request.
   contracts are in [design specifications](design-system.md); native checks and
   dated review evidence are in [UI testing](ui-testing.md).
 - Horizontal OCR geometry recovery localizes loose titles and plain light/dark
-  paragraphs into bounded text rows, retaining review metadata. Source checks and
+  paragraphs into bounded text rows, retaining review metadata. Mixed-content
+  recovery reconciles fragmented rows and suppresses false vertical runs using
+  combined ink coverage; non-Japanese detector classifications receive a warning.
+  Source checks and
   [synthetic measurements](ocr-geometry-results.json) pass; native Windows
   extended-monitor acceptance remains unrecorded.
 - Detector setup's release link opens the latest upstream page in the system
@@ -171,9 +174,14 @@ rtk services/ocr/build/release-venv/bin/python scripts/benchmark_detector_retrie
 
 The horizontal title/paragraph geometry follow-up is implemented in source.
 It recovers the reproduced large title's missing ending and separates plain
-light/dark paragraph rows while retaining review metadata. The older low-contrast
-limitation remains. [Runtime behavior](architecture.md#resources-and-data-flow),
+light/dark paragraph rows while retaining review metadata. Mixed-content selection
+recovery also reconciles competing fragments before column guards and removes
+covered full/tile/mask duplicates only after row recognition. Non-Japanese detector
+classifications remain separate and explicitly uncertain. Thai recognition and
+reliable script identification are not implemented; low-contrast and recognition
+errors remain. [Runtime behavior](architecture.md#resources-and-data-flow),
 [measurements](ocr-geometry-results.json) and
+[mixed-content checks](ocr-mixed-text-results.json), plus
 [native acceptance cases](ui-testing.md#horizontal-ocr-geometry-recovery) describe
 the supported scope; native Windows extended-monitor verification is still pending.
 

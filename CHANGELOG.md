@@ -39,6 +39,16 @@ The [feature roadmap](docs/implementation-plan.md#feature-checklist) tracks comp
 
 #### Fixed
 
+- Reconcile fragmented horizontal OCR rows when a selection also contains a
+  non-Japanese label. Challenge false vertical fragments using complete glyph-row
+  evidence, retain separate-column guards and suppress full/tile/mask duplicates
+  using recognized-row ink coverage. Keep genuine vertical text and uncovered
+  glyphs; warn when the detector classifies a crop as non-Japanese despite
+  Japanese-looking recognition. Add 16 regression cases. All 225 service tests,
+  seven benchmark-metric tests, 318 frontend tests, Ruff, TypeScript and the
+  frontend build pass. Thai OCR remains unsupported; native Windows acceptance is unverified;
+  see the [mixed-content record](docs/ocr-mixed-text-results.json).
+
 - Localize loose horizontal OCR title/paragraph detections from visible glyph rows
   on plain light/dark backgrounds. Recover the reproduced title's missing ending,
   avoid pointed stroke-recovery polygons and suppress covered nested fragments.

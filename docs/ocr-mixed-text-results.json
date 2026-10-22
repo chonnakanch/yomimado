@@ -1,0 +1,223 @@
+{
+  "date": "2026-10-22",
+  "baselineRef": "3506637",
+  "candidateBaseRef": "3506637",
+  "candidateSourceSha256": {
+    "services/ocr/app/pipeline/geometry.py": "dc3b2dae18463159863d7c2082373fd2d20db1bdca21ebadb0436db641e232a0",
+    "services/ocr/app/pipeline/real_ocr.py": "3635ca876abeed53446d571e00603262c839bd1c3e91e0b8522f0587727e3155"
+  },
+  "backend": "Windows ONNX source components, executed on macOS Apple Silicon; not native Windows acceptance",
+  "detectorSha256": "1a86ace74961413cbd650002e7bb4dcec4980ffa21b2f19b86933372071d718f",
+  "exportManifestSha256": "5ae1a2060fbde77c8faed3258502618da5d5b800acdbd8900e6dab6679b2e1f2",
+  "method": {
+    "contextControls": "Nine clean synthetic variations of identical Japanese glyph pixels with blank, Thai, English and white-Thai headers, plus tighter Japanese-only selections. Approximate recreation of the reported layout, not exact Windows font rasterization. Both detector and recognition ran locally. No private images or recognized strings included in this record.",
+    "fonts": "Hiragino Kaku Gothic W3 32px Japanese; Thonburi 26px Thai; Arial 26px English",
+    "dimensions": [
+      [700, 310],
+      [700, 210],
+      [700, 842],
+      [700, 742]
+    ],
+    "olderFixtures": "Same 17 clean synthetic inputs as ocr-geometry-results.json; one warmed run per profile per image, alternating order. Baseline source from PR #33 is byte-identical to main 3506637 for the compared service files."
+  },
+  "contextGeometry": {
+    "identicalOpeningRowsAcrossAllNineControls": true,
+    "cropOriginCompensatedPixels": 100,
+    "openingRowBounds": [
+      [28, 112, 568, 144],
+      [30, 160, 79, 189],
+      [29, 209, 604, 242],
+      [34, 258, 239, 288]
+    ],
+    "fullParagraphJapaneseRows": 12,
+    "candidateFalseVerticalRegions": 0,
+    "cases": [
+      {
+        "fixture": "short-blank-header",
+        "baseline": {
+          "outputRegions": 5,
+          "verticalRegions": 1,
+          "nonJapaneseWarnings": 0
+        },
+        "candidate": {
+          "outputRegions": 4,
+          "verticalRegions": 0,
+          "nonJapaneseWarnings": 0
+        }
+      },
+      {
+        "fixture": "short-thai-header",
+        "baseline": {
+          "outputRegions": 6,
+          "verticalRegions": 1,
+          "nonJapaneseWarnings": 0
+        },
+        "candidate": {
+          "outputRegions": 5,
+          "verticalRegions": 0,
+          "nonJapaneseWarnings": 1
+        }
+      },
+      {
+        "fixture": "short-thai-user-word",
+        "baseline": {
+          "outputRegions": 6,
+          "verticalRegions": 1,
+          "nonJapaneseWarnings": 0
+        },
+        "candidate": {
+          "outputRegions": 5,
+          "verticalRegions": 0,
+          "nonJapaneseWarnings": 1
+        }
+      },
+      {
+        "fixture": "short-english-header",
+        "baseline": {
+          "outputRegions": 5,
+          "verticalRegions": 1,
+          "nonJapaneseWarnings": 0
+        },
+        "candidate": {
+          "outputRegions": 4,
+          "verticalRegions": 0,
+          "nonJapaneseWarnings": 0
+        }
+      },
+      {
+        "fixture": "short-white-thai",
+        "baseline": {
+          "outputRegions": 6,
+          "verticalRegions": 1,
+          "nonJapaneseWarnings": 0
+        },
+        "candidate": {
+          "outputRegions": 5,
+          "verticalRegions": 0,
+          "nonJapaneseWarnings": 1
+        }
+      },
+      {
+        "fixture": "short-japanese-only-crop",
+        "baseline": {
+          "outputRegions": 4,
+          "verticalRegions": 1,
+          "nonJapaneseWarnings": 0
+        },
+        "candidate": {
+          "outputRegions": 4,
+          "verticalRegions": 0,
+          "nonJapaneseWarnings": 0
+        }
+      },
+      {
+        "fixture": "full-blank-header",
+        "baseline": {
+          "outputRegions": 31,
+          "verticalRegions": 17,
+          "nonJapaneseWarnings": 0
+        },
+        "candidate": {
+          "outputRegions": 12,
+          "verticalRegions": 0,
+          "nonJapaneseWarnings": 0
+        }
+      },
+      {
+        "fixture": "full-thai-header",
+        "baseline": {
+          "outputRegions": 32,
+          "verticalRegions": 17,
+          "nonJapaneseWarnings": 0
+        },
+        "candidate": {
+          "outputRegions": 13,
+          "verticalRegions": 0,
+          "nonJapaneseWarnings": 1
+        }
+      },
+      {
+        "fixture": "full-japanese-only-crop",
+        "baseline": {
+          "outputRegions": 14,
+          "verticalRegions": 2,
+          "nonJapaneseWarnings": 0
+        },
+        "candidate": {
+          "outputRegions": 12,
+          "verticalRegions": 0,
+          "nonJapaneseWarnings": 0
+        }
+      }
+    ]
+  },
+  "olderFixtureSummary": {
+    "baseline": {
+      "existing": {
+        "exact": 12,
+        "regions": 13,
+        "edits": 5,
+        "characters": 84,
+        "characterErrorRate": 0.05952380952380952,
+        "medianMs": 1262.68,
+        "detectorCalls": 18,
+        "recognizerCalls": 17
+      },
+      "new": {
+        "exact": 12,
+        "regions": 16,
+        "edits": 8,
+        "characters": 177,
+        "characterErrorRate": 0.04519774011299435,
+        "medianMs": 3450.8,
+        "detectorCalls": 10,
+        "recognizerCalls": 16
+      }
+    },
+    "candidate": {
+      "existing": {
+        "exact": 12,
+        "regions": 13,
+        "edits": 5,
+        "characters": 84,
+        "characterErrorRate": 0.05952380952380952,
+        "medianMs": 1296.27,
+        "detectorCalls": 18,
+        "recognizerCalls": 17
+      },
+      "new": {
+        "exact": 12,
+        "regions": 16,
+        "edits": 8,
+        "characters": 177,
+        "characterErrorRate": 0.04519774011299435,
+        "medianMs": 3557.71,
+        "detectorCalls": 10,
+        "recognizerCalls": 16
+      }
+    }
+  },
+  "checks": {
+    "serviceTests": 225,
+    "benchmarkMetricTests": 7,
+    "frontendTests": 318,
+    "additionalModelFreeMixedTextCases": 16,
+    "ruff": "pass",
+    "pythonCompilation": "pass",
+    "typescript": "pass",
+    "frontendBuild": "pass"
+  },
+  "limits": [
+    "Geometry improvement does not establish transcription accuracy; character recognition errors remain.",
+    "Thai OCR is unsupported. Detector eng classifications warn instead of silently trusting Japanese-looking recognition; unknown classifications can still contain unsupported script.",
+    "The older fixtures retain 13 character edits across 261 reference characters, including the low-contrast failure; no recognition-accuracy improvement is claimed for those fixtures.",
+    "Single timing samples; no scan-speed improvement claim.",
+    "The annotated attachment was replayed only as a supplemental check; existing outlines affect inference.",
+    "Native Windows extended-monitor/mixed-DPI capture, macOS native overlay interaction and exact installers remain unverified."
+  ],
+  "reproduction": {
+    "modelFreeTests": "services/ocr/tests/test_mixed_text_geometry.py",
+    "privateLocalArtifacts": "services/ocr/build/mixed-geometry-20261022 (ignored, not distributed)",
+    "previousRecord": "docs/ocr-geometry-results.json"
+  }
+}
