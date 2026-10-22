@@ -22,6 +22,9 @@ first table; dated investigations and exact-candidate records remain separate.
 
 For [small-text and vertical OCR accuracy](implementation-plan.md#small-text-and-vertical-ocr-accuracy),
 see the initial recovery scope, measurements and remaining work.
+For horizontal drag-selection outlines, see the
+[geometry verification](ui-testing.md#horizontal-ocr-geometry-recovery) and
+[synthetic measurement record](ocr-geometry-results.json).
 
 ## Releases and exact acceptance
 

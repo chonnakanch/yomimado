@@ -10,6 +10,7 @@ Exact installer tests remain in [macOS](macos-clean-mac-test.md),
 - [Capture shortcut verification](#capture-shortcut-verification)
 - [Detector release link verification](#detector-release-link-verification)
 - [Completed-overlay hide controls](#completed-overlay-hide-controls)
+- [Horizontal OCR geometry recovery](#horizontal-ocr-geometry-recovery)
 - [Native overlay checks](#native-overlay-checks)
 - [Windows acceptance checklist](#windows-acceptance-checklist)
 - [Tray verification and acceptance](#tray-verification-and-acceptance)
@@ -127,6 +128,25 @@ passes reader input. Reopen a popup/menu/Settings and check its ordinary Escape
 behavior. Start/cancel/rescan, then ensure a delayed hide request cannot hide the
 new result. Windows interaction, registration-conflict behavior and exact
 installers remain unverified.
+
+## Horizontal OCR geometry recovery
+
+Development source — 2026-10-22: model-free regressions cover light/dark paragraph
+rows at 1×/2×, truncated title continuation, neighboring-column boundaries, rotated
+polygon clipping, source ordering, nested fragments and bounded crop counts.
+216 service/benchmark tests, 318 frontend tests, Ruff, frontend formatting,
+TypeScript and the frontend build pass. The existing 13-image synthetic benchmark
+and four new clean cases were compared with the Windows ONNX source components
+on macOS; [measurements and limitations](ocr-geometry-results.json) retain accuracy,
+model-call counts and scan time. Supplied screenshots stayed private and local.
+
+For native acceptance, repeat Selected Area and Whole Screen on the Windows laptop
+and extended monitor, including differing display scales and reversed monitor
+origins. Use a large horizontal title and separate paragraphs on light/dark pages.
+Verify complete title text, separate row targets, no nested click targets and
+no polygons outside the selected image. Test vertical/rotated text, close columns
+and artwork negatives too. Native Windows interaction and new exact installers
+remain unverified; source inference does not establish hardware acceptance.
 
 ## Native overlay checks
 

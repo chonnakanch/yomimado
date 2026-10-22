@@ -37,6 +37,19 @@ The [feature roadmap](docs/implementation-plan.md#feature-checklist) tracks comp
   native hit routing and capture lifecycle. See the
   [theme verification](docs/ui-testing.md#charcoal-and-blue-theme).
 
+#### Fixed
+
+- Localize loose horizontal OCR title/paragraph detections from visible glyph rows
+  on plain light/dark backgrounds. Recover the reproduced title's missing ending,
+  avoid pointed stroke-recovery polygons and suppress covered nested fragments.
+  Clip polygons to captured image bounds and mark unresolved overlaps for review.
+  Preserve original detector diagnostics, source ordering, unknown confidence and
+  the existing native coordinate path. Add 15 model-free geometry regressions;
+  216 service/benchmark tests and 318 frontend tests, Ruff, frontend formatting,
+  TypeScript and the frontend build pass. Native Windows extended-monitor and
+  exact-installer acceptance remain unverified; see the
+  [measurement record](docs/ocr-geometry-results.json).
+
 ### 2026-10-21
 
 #### Removed
