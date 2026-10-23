@@ -27,6 +27,9 @@ For horizontal drag-selection outlines, see the
 [synthetic measurement record](ocr-geometry-results.json), plus the
 [mixed-content follow-up](ocr-mixed-text-results.json).
 
+For portable saved-library files, see [local backup and restore](usage.md#local-backup-and-restore)
+and its [verification limits](ui-testing.md#local-backup-and-restore).
+
 ## Releases and exact acceptance
 
 The [shared checklist](desktop-release.md) is the authority for recorded release

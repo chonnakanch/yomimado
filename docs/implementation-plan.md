@@ -114,6 +114,10 @@ recorded in the [release checklist](desktop-release.md).
       [verification limits](ui-testing.md#learning-popup-modes).
 - [x] **JLPT vocabulary tags** — implemented.
 - [x] **Saved search and dictionary-style library** — implemented; UI approved.
+- [x] **Local backup and restore** — export all saved words/sentences to portable
+      JSON, preview new/duplicate counts and restore missing entries atomically;
+      [controls and limits](usage.md#local-backup-and-restore) and
+      [verification](ui-testing.md#local-backup-and-restore).
 - [x] **Conjugation explanations** — initial forms, ちゃう／じゃう contractions,
       continuing-action/state ている／てる and desire たい families are implemented;
       [supported forms](#conjugation-behavior-and-supported-forms).

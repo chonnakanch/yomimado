@@ -1,7 +1,9 @@
 import sqlite3
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Request, Response
+from starlette.concurrency import run_in_threadpool
 
+from app.backup import MAX_BACKUP_BYTES, RestoreSummary, parse_backup
 from app.models import (
     SavedSentence,
     SavedSentencesResponse,
@@ -14,6 +16,39 @@ from app.vocabulary import VocabularyStore, default_vocabulary_path
 
 router = APIRouter()
 store = VocabularyStore(default_vocabulary_path())
+
+
+@router.get("/api/v1/backup")
+def export_backup() -> Response:
+    try:
+        content = store.backup().model_dump_json().encode("utf-8")
+        if len(content) > MAX_BACKUP_BYTES:
+            raise ValueError("Saved data exceeds the 16 MiB backup size limit")
+        return Response(content, media_type="application/json")
+    except ValueError as error:
+        raise HTTPException(
+            status_code=422, detail="Saved data exceeds backup limits or has invalid records"
+        ) from error
+    except (OSError, sqlite3.DatabaseError) as error:
+        raise HTTPException(
+            status_code=503, detail="Could not read saved data for backup"
+        ) from error
+
+
+@router.post("/api/v1/backup/preview", response_model=RestoreSummary)
+@router.post("/api/v1/backup/restore", response_model=RestoreSummary)
+async def restore_backup(request: Request) -> RestoreSummary:
+    try:
+        backup = await run_in_threadpool(parse_backup, await request.body())
+        return await run_in_threadpool(
+            store.restore, backup, preview=request.url.path.endswith("/preview")
+        )
+    except ValueError as error:
+        raise HTTPException(status_code=422, detail=str(error)) from error
+    except (OSError, sqlite3.DatabaseError) as error:
+        raise HTTPException(
+            status_code=503, detail="Could not restore saved data; no entries were added"
+        ) from error
 
 
 @router.post("/api/v1/vocabulary", response_model=SavedWord)

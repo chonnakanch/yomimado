@@ -129,6 +129,30 @@ Removal still requires confirmation. During removal, other Remove/Refresh action
 are disabled. Keyboard focus returns to the next/previous row or Refresh when a
 row is removed, and stays in the selected tab if you switched collections.
 
+### Local backup and restore
+
+Open **Saved → Backup & restore**. **Export backup** saves every saved word and
+sentence to a JSON file through the native Save dialog, regardless of the current
+tab or search filter. It includes Japanese text, readings, dictionary forms,
+meanings, source sentences, saved translations, save dates and dictionary
+attribution. Keep the file somewhere you can recover it when moving computers
+or reinstalling YomiMado.
+
+Choose **Restore backup**, select a YomiMado JSON backup and review the numbers
+of new words, new sentences and duplicates. Nothing is imported until you choose
+**Restore missing entries**. **Cancel restore** leaves your library unchanged.
+Restore adds missing entries and skips duplicates, keeping existing meanings,
+translations and dates. A word with the same spelling and reading but a different
+source sentence is a separate entry. Reimporting the same file adds no duplicates.
+Counts are checked again during restore if your library has changed since preview.
+
+After restoring, the library refreshes and keeps your search. Errors stay visible
+and can be retried; failed restore transactions add no entries. Unsupported,
+invalid or oversized files are rejected. Backups support up to 16 MiB and 50,000
+entries per collection. They contain saved text in plain JSON; screenshots,
+models, settings and the translation cache are excluded. Backup and restore run
+locally and do not request OCR, dictionary lookup or translation.
+
 ### Keyboard reading
 
 After a scan finishes, choose **More actions → Read with keyboard** while the

@@ -365,6 +365,14 @@ field; stack headwords and meanings at narrow widths. Keep local dates, existing
 refresh/error/empty states and confirmed Remove actions. Lists remain readable
 with larger text and narrow windows.
 
+Keep **Backup & restore** as a collapsed disclosure above the collection search.
+Use native file dialogs and explicit Export/Restore labels. Restore first shows
+the selected file name and new/duplicate counts, explaining that existing entries
+stay unchanged. Focus its confirmation button (or the preview when nothing is new)
+and return focus to Restore backup after cancel/success. Announce progress/results
+and show retryable errors inline. Keep both action rows wrapping at narrow widths,
+and refresh collections after restore without clearing searches.
+
 Settings uses ordinary labeled controls for actual capabilities. Scan & OCR holds
 verified detector status/import/replacement and editable capture shortcuts;
 show a readable chord and labeled Change button for each capture action. Recording

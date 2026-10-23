@@ -123,6 +123,38 @@ Windows compilation and exact-installer acceptance were not performed for this
 change. The existing disclosure layout and native capture/overlay behavior are
 unchanged. Follow the native popup checks above when recording hardware acceptance.
 
+## Local backup and restore
+
+Development check — 2026-10-23: the Saved disclosure and restore preview were
+reviewed in the browser with synthetic saved text and mocked native dialogs/service.
+The preview shows new/duplicate counts before confirmation; completion returns
+focus to Restore backup and refreshes the list. Frontend regressions cover native
+dialog cancellation, duplicate-only previews, duplicate click admission, retry
+after storage failure, invalid response handling, search retention, both collections
+and refresh deferred until a pending removal finishes.
+
+Service regressions verify portable round trips, Unicode/source text, readings,
+meanings, translations, save dates, existing IDs, repeated imports, duplicate
+identity, first-entry handling, preview without writes, concurrent saves since
+preview, complete-file validation, bounds and request guards. A failing sentence
+insert rolls back earlier word inserts. Native file tests verify same-directory
+replacement, preserved backups on failure, staging cleanup, UTF-8/size checks and
+window authorization.
+
+All 392 frontend, 269 service and 83 native tests pass, along with frontend/Ruff
+formatting, Ruff, TypeScript/Vite, Clippy and the macOS Apple Silicon debug build.
+Local Node 26 uses `NODE_OPTIONS=--no-experimental-webstorage npm test` for jsdom
+storage. No screenshot or user database is used by these tests. Native file-dialog
+interaction, Windows compilation/hardware and exact-installer acceptance remain
+unverified; the source tests do not establish those passes.
+
+For native acceptance, export from Saved with a search active, cancel both dialogs,
+restore into an empty library and repeat the import. Check preview/cancel,
+read-only or unavailable destinations, Japanese file paths, existing-backup
+replacement and preservation of search, dates, readings and translations. Record
+the source, platform and results. The changed Python runtime requires a compatible
+reviewed macOS seed before packaging; existing approvals retain their source identities.
+
 ## Capture shortcut verification
 
 For configurable bindings, test **Settings → Scan & OCR → Scan shortcuts**:

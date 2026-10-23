@@ -6,6 +6,7 @@ export function useSavedCollection<T extends { id: number }>(
   active: boolean,
   list: () => Promise<T[]>,
   deleteItem: (id: number) => Promise<void>,
+  revision = 0,
 ) {
   const [items, setItems] = useState<T[]>([]);
   const [loading, setLoading] = useState(active);
@@ -17,6 +18,7 @@ export function useSavedCollection<T extends { id: number }>(
   } | null>(null);
   const [removed, setRemoved] = useState(false);
   const pendingRemoval = useRef<number | null>(null);
+  const refreshAfterRemoval = useRef(false);
   const listRequest = useRef(0);
   const deleteRequest = useRef(0);
   const mounted = useRef(false);
@@ -31,7 +33,10 @@ export function useSavedCollection<T extends { id: number }>(
   }, []);
 
   const refresh = useCallback(async () => {
-    if (pendingRemoval.current !== null) return;
+    if (pendingRemoval.current !== null) {
+      refreshAfterRemoval.current = true;
+      return;
+    }
     const request = ++listRequest.current;
     setLoading(true);
     setError(null);
@@ -54,7 +59,7 @@ export function useSavedCollection<T extends { id: number }>(
     return () => {
       listRequest.current++;
     };
-  }, [active, refresh]);
+  }, [active, refresh, revision]);
 
   const remove = async (item: T, confirmation: string): Promise<boolean> => {
     if (pendingRemoval.current !== null || !window.confirm(confirmation))
@@ -87,6 +92,10 @@ export function useSavedCollection<T extends { id: number }>(
       if (request === deleteRequest.current) {
         pendingRemoval.current = null;
         if (mounted.current) setRemovingId(null);
+        if (mounted.current && refreshAfterRemoval.current) {
+          refreshAfterRemoval.current = false;
+          void refresh();
+        }
       }
     }
   };

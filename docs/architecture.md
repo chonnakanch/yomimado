@@ -418,6 +418,36 @@ on macOS or `%APPDATA%\com.yomimado.desktop` on Windows. Packaged notices are at
 Windows. Standalone service defaults and environment overrides are in
 [development setup](development.md).
 
+## Saved-data backup contract
+
+`GET /api/v1/backup` exports a version-1 `yomimado-saved` JSON document containing
+`createdAt`, `words`, `sentences` and JMdict attribution. Records retain saved
+fields and timestamps, excluding database IDs. Both collections are read in one
+SQLite snapshot. `POST /api/v1/backup/preview` validates the entire document and
+counts new/duplicate records without importing. `POST /api/v1/backup/restore`
+revalidates and inserts missing records in a single `BEGIN IMMEDIATE` transaction.
+Existing records are never overwritten. Word identity is `(surface, reading,
+source_text)`; sentence identity is `source_text`, matching the existing unique
+constraints. Duplicates inside a file keep the first entry. Counts are recalculated
+under the write reservation, including saves since preview.
+
+The portable models in [`backup.py`](../services/ocr/app/backup.py) enforce field,
+date, version and collection limits. Save dates are normalized to UTC while
+preserving their instant. Unsupported versions, unknown fields, duplicate JSON
+keys, malformed Unicode and invalid records reject the whole file. A 16 MiB body
+allowance applies only to the two backup POST routes; other JSON/OCR request
+limits and loopback origin/client-header guards remain. Exports exceeding 16 MiB
+or 50,000 records per collection fail rather than silently truncating.
+
+Native `choose_learning_backup` and `save_learning_backup` commands are restricted
+to the `saved` window, use the existing dialog plugin and accept no webview-provided
+file paths. Reads are bounded and validate the JSON envelope. Writes sync a unique
+staging file beside the selected destination and rename it only when complete;
+failures clean up staging and preserve an existing backup. POSIX staging permissions
+are owner-only. Backup files carry saved learning data, never screenshots, models,
+preferences or translation caches. No database schema, resource or dependency changes
+are required. See [user controls](usage.md#local-backup-and-restore).
+
 ## Translation selection and cache
 
 `YOMIMADO_TRANSLATION_RESOURCES` points to the model resource root; packaged apps
