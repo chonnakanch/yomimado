@@ -300,11 +300,15 @@ precedes suppression: successful rows must cover at least 95% of a competing
 fragment's visible ink on a plain background. Multiple rows can jointly cover a
 false vertical run; a padded single-row duplicate also needs matching height and
 center. This coverage applies to full, tile and mask results, preserving fragments
-with uncovered glyphs. Existing row/crop limits and original debug boxes remain.
+with uncovered glyphs. Localized rows do not enter the legacy box-overlap retry
+filter; failed row recognition leaves fallback crops available. Existing row/crop
+limits and original debug boxes remain.
 
 Detector regions classified `eng` stay separate from Japanese/unknown horizontal
 fragments and carry an explicit non-Japanese review reason, even if the Japanese
-recognizer returns Japanese-looking text. This is a warning from the detector's
+recognizer returns Japanese-looking text. Selection and short vertical recovery
+append their geometry reasons without replacing earlier warnings, including in
+expanded-crop diagnostics. This is a warning from the detector's
 coarse classification, not Thai OCR or reliable script identification; unknown
 regions can still contain recognition errors. See the
 [mixed-content measurements](ocr-mixed-text-results.json) and

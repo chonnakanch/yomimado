@@ -232,7 +232,9 @@ export function TranslationPopup() {
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key !== "Escape") return;
+      // Escape can cancel Japanese IME candidates without cancelling the draft.
+      if (event.key !== "Escape" || event.isComposing || event.keyCode === 229)
+        return;
       event.preventDefault();
       if (editing) {
         cancelEdit();
