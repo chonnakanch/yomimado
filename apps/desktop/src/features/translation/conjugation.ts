@@ -37,7 +37,7 @@ const isContinuation = (token: TextToken) =>
     token.partOfSpeech.includes("接続助詞") &&
     ["て", "で", "じゃ"].includes(token.surface));
 
-function forms(base: string, pos: string): Form[] {
+function adjectiveForms(base: string): Form[] {
   const result: Form[] = [];
   const add = (
     surface: string,
@@ -45,97 +45,60 @@ function forms(base: string, pos: string): Form[] {
     steps: ConjugationStep[],
     note?: string,
   ) => result.push({ surface, label, steps, note });
-  const end = base.slice(-1),
-    prefix = base.slice(0, -1);
-  if (pos.startsWith("形容詞") && end === "い") {
-    // いい uses よい's stem. Other lexical exceptions stay outside this slice.
-    const stem = base === "いい" ? "よ" : prefix;
-    const negative = `${stem}くない`,
-      past = `${stem}かった`,
-      negativePast = `${stem}くなかった`;
-    const plain = [
-      {
-        surface: past,
-        label: "Adjective past",
-        steps: [
-          step(past, base, "かった marks the past form of an i-adjective."),
-        ],
-      },
-      {
-        surface: negative,
-        label: "Adjective negative",
-        steps: [step(negative, base, "くない makes an i-adjective negative.")],
-      },
-      {
-        surface: negativePast,
-        label: "Adjective negative past",
-        steps: [
-          step(negativePast, negative, "なかった is the past form of ない."),
-          step(negative, base, "くない makes an i-adjective negative."),
-        ],
-      },
-    ];
-    for (const form of plain) {
-      result.push(form);
-      add(`${form.surface}です`, `Polite ${form.label.toLowerCase()}`, [
-        step(
-          `${form.surface}です`,
-          form.surface,
-          "です adds politeness; the adjective carries the tense and negation.",
-        ),
-        ...form.steps,
-      ]);
-    }
-    add(`${base}です`, "Polite adjective", [
-      step(`${base}です`, base, "です adds politeness to the i-adjective."),
+  const prefix = base.slice(0, -1);
+  // いい uses よい's stem. Other lexical exceptions stay outside this slice.
+  const stem = base === "いい" ? "よ" : prefix;
+  const negative = `${stem}くない`,
+    past = `${stem}かった`,
+    negativePast = `${stem}くなかった`;
+  const plain = [
+    {
+      surface: past,
+      label: "Adjective past",
+      steps: [
+        step(past, base, "かった marks the past form of an i-adjective."),
+      ],
+    },
+    {
+      surface: negative,
+      label: "Adjective negative",
+      steps: [step(negative, base, "くない makes an i-adjective negative.")],
+    },
+    {
+      surface: negativePast,
+      label: "Adjective negative past",
+      steps: [
+        step(negativePast, negative, "なかった is the past form of ない."),
+        step(negative, base, "くない makes an i-adjective negative."),
+      ],
+    },
+  ];
+  for (const form of plain) {
+    result.push(form);
+    add(`${form.surface}です`, `Polite ${form.label.toLowerCase()}`, [
+      step(
+        `${form.surface}です`,
+        form.surface,
+        "です adds politeness; the adjective carries the tense and negation.",
+      ),
+      ...form.steps,
     ]);
-    return result;
   }
-  if (!pos.startsWith("動詞")) return result;
-  let stem: string, negative: string, past: string, te: string;
-  if (pos.includes("サ変") && base.endsWith("する")) {
-    const root = base.slice(0, -2);
-    stem = `${root}し`;
-    negative = `${root}しない`;
-    past = `${root}した`;
-    te = `${root}して`;
-  } else if (pos.includes("カ変") && ["来る", "くる"].includes(base)) {
-    stem = base === "来る" ? "来" : "き";
-    negative = base === "来る" ? "来ない" : "こない";
-    past = `${stem}た`;
-    te = `${stem}て`;
-  } else if (pos.includes("一段") && end === "る") {
-    stem = prefix;
-    negative = `${stem}ない`;
-    past = `${stem}た`;
-    te = `${stem}て`;
-  } else if (pos.includes("五段") && !pos.includes("特殊")) {
-    const endings: Record<string, [string, string, string]> = {
-      う: ["い", "わ", "った"],
-      く: ["き", "か", "いた"],
-      ぐ: ["ぎ", "が", "いだ"],
-      す: ["し", "さ", "した"],
-      つ: ["ち", "た", "った"],
-      ぬ: ["に", "な", "んだ"],
-      ぶ: ["び", "ば", "んだ"],
-      む: ["み", "ま", "んだ"],
-      る: ["り", "ら", "った"],
-    };
-    const ending = endings[end];
-    if (!ending) return result;
-    stem = prefix + ending[0];
-    negative = ["ある", "有る", "在る"].includes(base)
-      ? "ない"
-      : `${prefix}${ending[1]}ない`;
-    past =
-      prefix +
-      (end === "く" && pos.includes("促音便")
-        ? "った"
-        : end === "う" && pos.includes("ウ音便")
-          ? "うた"
-          : ending[2]);
-    te = past.slice(0, -1) + (past.endsWith("だ") ? "で" : "て");
-  } else return result;
+  add(`${base}です`, "Polite adjective", [
+    step(`${base}です`, base, "です adds politeness to the i-adjective."),
+  ]);
+  return result;
+}
+
+function verbForms(
+  base: string,
+  stem: string,
+  negative: string,
+  past: string,
+): Form[] {
+  const result: Form[] = [];
+  const add = (surface: string, label: string, steps: ConjugationStep[]) =>
+    result.push({ surface, label, steps });
   const polite = `${stem}ます`,
     politePast = `${stem}ました`,
     politeNegative = `${stem}ません`,
@@ -181,6 +144,122 @@ function forms(base: string, pos: string): Form[] {
     step(politeNegative, polite, "ません is the negative form of polite ます."),
     politeStep,
   ]);
+  return result;
+}
+
+function forms(base: string, pos: string): Form[] {
+  const end = base.slice(-1),
+    prefix = base.slice(0, -1);
+  if (pos.startsWith("形容詞") && end === "い") return adjectiveForms(base);
+  if (!pos.startsWith("動詞")) return [];
+  let stem: string, negative: string, past: string, te: string;
+  if (pos.includes("サ変") && base.endsWith("する")) {
+    const root = base.slice(0, -2);
+    stem = `${root}し`;
+    negative = `${root}しない`;
+    past = `${root}した`;
+    te = `${root}して`;
+  } else if (pos.includes("カ変") && ["来る", "くる"].includes(base)) {
+    stem = base === "来る" ? "来" : "き";
+    negative = base === "来る" ? "来ない" : "こない";
+    past = `${stem}た`;
+    te = `${stem}て`;
+  } else if (pos.includes("一段") && end === "る") {
+    stem = prefix;
+    negative = `${stem}ない`;
+    past = `${stem}た`;
+    te = `${stem}て`;
+  } else if (pos.includes("五段") && !pos.includes("特殊")) {
+    const endings: Record<string, [string, string, string]> = {
+      う: ["い", "わ", "った"],
+      く: ["き", "か", "いた"],
+      ぐ: ["ぎ", "が", "いだ"],
+      す: ["し", "さ", "した"],
+      つ: ["ち", "た", "った"],
+      ぬ: ["に", "な", "んだ"],
+      ぶ: ["び", "ば", "んだ"],
+      む: ["み", "ま", "んだ"],
+      る: ["り", "ら", "った"],
+    };
+    const ending = endings[end];
+    if (!ending) return [];
+    stem = prefix + ending[0];
+    negative = ["ある", "有る", "在る"].includes(base)
+      ? "ない"
+      : `${prefix}${ending[1]}ない`;
+    past =
+      prefix +
+      (end === "く" && pos.includes("促音便")
+        ? "った"
+        : end === "う" && pos.includes("ウ音便")
+          ? "うた"
+          : ending[2]);
+    te = past.slice(0, -1) + (past.endsWith("だ") ? "で" : "て");
+  } else return [];
+
+  const result = verbForms(base, stem, negative, past);
+  const add = (
+    surface: string,
+    label: string,
+    steps: ConjugationStep[],
+    note?: string,
+  ) => result.push({ surface, label, steps, note });
+
+  // Compose only these two auxiliary families, without recursively generating
+  // arbitrary auxiliary chains. The full source span must still match exactly.
+  const continuing = `${te}いる`;
+  const continuingStep = step(
+    continuing,
+    base,
+    "て／で + いる describes a continuing action or state using the verb's て-form.",
+  );
+  for (const form of [
+    { surface: continuing, label: "Plain non-past", steps: [] },
+    ...verbForms(continuing, `${te}い`, `${te}いない`, `${te}いた`),
+  ]) {
+    const steps = [...form.steps, continuingStep];
+    const note =
+      "An ongoing action, repeated activity or resulting state depends on context; this is not a sentence translation.";
+    add(
+      form.surface,
+      `Continuing action/state · ${form.label.toLowerCase()}`,
+      steps,
+      note,
+    );
+    const contracted = te + form.surface.slice(te.length + 1);
+    add(
+      contracted,
+      `Casual continuing action/state · ${form.label.toLowerCase()}`,
+      [
+        step(
+          contracted,
+          form.surface,
+          "Conversational てる／でる drops the い in ている／でいる, including in inflected forms.",
+        ),
+        ...steps,
+      ],
+      note,
+    );
+  }
+
+  const desire = `${stem}たい`;
+  const desireStep = step(
+    desire,
+    base,
+    "たい attaches to the verb's ます stem to express a wish to do the action; it conjugates like an i-adjective.",
+  );
+  for (const form of [
+    { surface: desire, label: "Desire", steps: [] },
+    ...adjectiveForms(desire),
+  ]) {
+    add(
+      form.surface,
+      form.label.replace(/adjective/i, "desire"),
+      [...form.steps, desireStep],
+      "Who wants the action depends on context; this is not a sentence translation.",
+    );
+  }
+
   const contracted = te.slice(0, -1) + (te.endsWith("で") ? "じゃ" : "ちゃ");
   const expanded = `${te}しまう`,
     expandedPast = `${te}しまった`;

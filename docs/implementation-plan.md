@@ -114,7 +114,9 @@ recorded in the [release checklist](desktop-release.md).
       [verification limits](ui-testing.md#learning-popup-modes).
 - [x] **JLPT vocabulary tags** — implemented.
 - [x] **Saved search and dictionary-style library** — implemented; UI approved.
-- [x] **Conjugation explanations (initial forms and contractions)** — implemented.
+- [x] **Conjugation explanations** — initial forms, ちゃう／じゃう contractions,
+      continuing-action/state ている／てる and desire たい families are implemented;
+      [supported forms](#conjugation-behavior-and-supported-forms).
 - [x] **Small-text and vertical OCR accuracy: initial selection recovery** — implemented;
       [scope and evidence](#small-text-and-vertical-ocr-accuracy).
 
@@ -272,11 +274,17 @@ For example:
 - 食べなかった → 食べない → 食べる: plain negative past.
 - 食べちゃった → 食べてしまった → 食べてしまう → 食べる:
   a casual contraction followed by past tense.
+- 読んでた → 読んでいた → 読んでいる → 読む:
+  a casual continuing-action/state contraction followed by past tense.
+- 食べたくなかった → 食べたくない → 食べたい → 食べる:
+  negative past of the desire form.
 
 The disclosure starts collapsed. Its explanations are possible grammatical
 analyses, not sentence translations; context still determines meaning. In
 particular, てしまう contractions can convey completion, regret or an unintended
-action. The app does not choose one of those meanings from the ending alone.
+action. Likewise, ている can describe an ongoing action, repeated activity or
+resulting state. The app does not choose a context-specific meaning or infer who
+wants an action from たい alone.
 
 ### Supported slice
 
@@ -286,6 +294,8 @@ action. The app does not choose one of those meanings from the ending alone.
 | Irregular verbs                 | する and 来る／くる; IPADIC-marked 行く-type past and 問う-type ウ音便; ある's negative when the analyzed base is ある |
 | I-adjectives                    | かった, くない, くなかった; those forms plus です, and dictionary form + です; standalone いい → よい stem             |
 | Casual contractions             | ちゃう／ちゃった and じゃう／じゃった, expanded through てしまう／でしまう                                             |
+| Continuing action/state         | ている／でいる and casual てる／でる; plain non-past, past, negative and negative past; polite ます, ました, ません and ませんでした, including forms with い omitted |
+| Desire                          | たい, たかった, たくない and たくなかった; each also with polite です |
 
 The current implementation relies on the pinned Lindera/IPADIC base form and
 verb/adjective class. It generates these small rule families and requires an
@@ -301,9 +311,11 @@ For 勉強しました, click the verb token し to explain しました; select
 whole multi-word predicate is outside this slice.
 
 Unsupported forms show **Conjugation · Not covered** with an explanation.
-Passive/potential ambiguity, causatives, progressive forms such as ている／てる,
-たい, conditionals, imperatives, copulas/na-adjectives, special honorific classes,
-arbitrary compound exceptions and other manga contractions remain future work.
+Passive/potential ambiguity, causatives, conditionals, imperatives,
+copulas/na-adjectives, special honorific classes, arbitrary compound exceptions
+and other manga contractions remain future work. Auxiliary chains such as
+ていたい and てしまっている, connecting ていて／たくて and alternative polite
+negative たくありません are outside this slice.
 Unsupported manual lookups retain the exact selected expression. Ordinary
 dictionary forms and nouns have no extra conjugation disclosure.
 
@@ -311,6 +323,13 @@ Token spans use the existing source code-point offsets. Automatic explanation
 does not cross whitespace, punctuation or another independent predicate. Rules
 account for the checked IPADIC split 読ん／じゃ／う as well as its ordinary
 auxiliary/non-independent verb splits.
+
+The continuing-action/state and desire additions reuse the existing verb and
+i-adjective inflection rules. They add no tokenizer, dictionary, dependency or
+service API changes. Regression coverage includes checked IPADIC auxiliary
+splits, voiced でる, irregular classes, code-point offsets, exact manual spans
+and popup lookup/save behavior. See the
+[verification record](ui-testing.md#continuing-actionstate-and-desire-conjugations).
 
 ### Grammar references
 
@@ -323,6 +342,8 @@ checked against the author's published explanations in Tae Kim's guide:
 - [Adjectives](https://guidetojapanese.org/learn/grammar/adjectives)
 - [Polite forms and stems](https://guidetojapanese.org/learn/grammar/polite)
 - [てしまう and casual contractions](https://guidetojapanese.org/learn/grammar/unintended)
+- [ている, enduring states and conversational contractions](https://guidetojapanese.org/learn/grammar/teform)
+- [たい and desire forms](https://guidetojapanese.org/learn/grammar/desire)
 
 Earlier implementation diaries and rollout attempts remain in
 [Git history](https://github.com/chonnakanch/yomimado/tree/a5f7ebc/docs).
