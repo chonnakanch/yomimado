@@ -10,6 +10,8 @@ from starlette.datastructures import Headers
 from starlette.responses import JSONResponse
 from starlette.types import ASGIApp, Receive, Scope, Send
 
+from app.backup import MAX_BACKUP_BYTES
+
 ALLOWED_ORIGINS = (
     "tauri://localhost",
     "http://tauri.localhost",
@@ -58,7 +60,12 @@ class LocalRequestMiddleware:
             )
             return
 
-        limit = MAX_OCR_REQUEST_BYTES if scope["path"] == "/api/v1/ocr" else MAX_JSON_REQUEST_BYTES
+        if scope["path"] == "/api/v1/ocr":
+            limit = MAX_OCR_REQUEST_BYTES
+        elif scope["path"] in ("/api/v1/backup/preview", "/api/v1/backup/restore"):
+            limit = MAX_BACKUP_BYTES
+        else:
+            limit = MAX_JSON_REQUEST_BYTES
         lengths = headers.getlist("content-length")
         try:
             declared_length = int(lengths[0]) if lengths else 0
@@ -102,6 +109,9 @@ class LocalRequestMiddleware:
 
     @staticmethod
     async def _too_large(scope: Scope, receive: Receive, send: Send) -> None:
-        await JSONResponse(
-            {"detail": "Request exceeds the size limit; select a smaller area"}, status_code=413
-        )(scope, receive, send)
+        message = (
+            "The backup exceeds the 16 MiB size limit"
+            if scope["path"].startswith("/api/v1/backup/")
+            else "Request exceeds the size limit; select a smaller area"
+        )
+        await JSONResponse({"detail": message}, status_code=413)(scope, receive, send)

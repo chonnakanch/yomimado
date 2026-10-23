@@ -14,12 +14,19 @@ import { SavedSearch, NoSearchResults, useSavedQuery } from "./SavedSearch";
 import { matchesSavedWord } from "./saved-search";
 import { SavedBookmark } from "./SavedBookmark";
 
-export function SavedWordsView({ active }: { active: boolean }) {
+export function SavedWordsView({
+  active,
+  revision = 0,
+}: {
+  active: boolean;
+  revision?: number;
+}) {
   const showJlpt = useJlptVisible();
   const collection = useSavedCollection(
     active,
     listVocabularyWords,
     deleteVocabularyWord,
+    revision,
   );
   const removeWithFocus = useRemovalFocus();
   const [query, setQuery] = useSavedQuery("words");

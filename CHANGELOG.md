@@ -14,6 +14,19 @@ The [feature roadmap](docs/implementation-plan.md#feature-checklist) tracks comp
 
 #### Added
 
+- Add local backup and restore in **Saved → Backup & restore**. Export all saved
+  words/sentences, readings, meanings, source text, translations and dates to
+  portable JSON with attribution. Preview new/duplicate counts, then atomically
+  add missing entries without replacing existing data. Use bounded, native file
+  dialogs and complete-file writes; preserve searches and refresh after restore.
+  Keep helper text and counts compact, with short Restore/Cancel controls.
+  No dependencies or database schema changes. All 392 frontend, 269 service and
+  83 native tests, formatting/lint, TypeScript/Vite, Clippy and the macOS debug build
+  pass. Native dialogs, Windows and exact installers remain unverified. See
+  [controls and limits](docs/usage.md#local-backup-and-restore) and
+  [verification](docs/ui-testing.md#local-backup-and-restore). A compatible reviewed
+  macOS runtime seed is needed before packaging the changed Python service.
+
 - Extend local conjugation explanations with ている／でいる and casual
   てる／でる, including plain/polite past and negative forms, plus たい desire
   forms with past/negative and polite です variants. Reuse the analyzed verb

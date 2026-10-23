@@ -11,11 +11,18 @@ import { useSavedCollection } from "./useSavedCollection";
 import { SavedSearch, NoSearchResults, useSavedQuery } from "./SavedSearch";
 import { matchesSavedSentence } from "./saved-search";
 
-export function SavedSentencesView({ active }: { active: boolean }) {
+export function SavedSentencesView({
+  active,
+  revision = 0,
+}: {
+  active: boolean;
+  revision?: number;
+}) {
   const collection = useSavedCollection(
     active,
     listSavedSentences,
     deleteSavedSentence,
+    revision,
   );
   const removeWithFocus = useRemovalFocus();
   const [query, setQuery] = useSavedQuery("sentences");

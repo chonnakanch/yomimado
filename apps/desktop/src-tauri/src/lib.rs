@@ -1,5 +1,6 @@
 mod capture;
 mod detector_model;
+mod learning_backup;
 mod overlay;
 mod shortcuts;
 mod toolbar;
@@ -1046,6 +1047,8 @@ pub fn run() {
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
+            learning_backup::choose_learning_backup,
+            learning_backup::save_learning_backup,
             shortcuts::capture_shortcuts,
             shortcuts::record_capture_shortcut,
             shortcuts::set_capture_shortcuts,

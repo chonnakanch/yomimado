@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { SavedTabs, type SavedTab } from "./features/library/SavedTabs";
 import { SavedWordsView } from "./features/library/SavedWordsView";
 import { SavedSentencesView } from "./features/library/SavedSentencesView";
+import { SavedBackup } from "./features/library/SavedBackup";
 import { SettingsWindow } from "./features/settings/SettingsWindow";
 import { AboutSettings } from "./features/settings/AboutSettings";
 import "./features/settings/settings.css";
@@ -15,6 +16,7 @@ export function App() {
   const [savedTab, setSavedTab] = useState<SavedTab>(
     initialView === "sentences" ? "sentences" : "words",
   );
+  const [savedRevision, setSavedRevision] = useState(0);
   useEffect(() => {
     if (showSaved) document.getElementById(`saved-tab-${savedTab}`)?.focus();
   }, [showSaved]);
@@ -40,8 +42,17 @@ export function App() {
             </div>
             <SavedTabs active={savedTab} onChange={setSavedTab} />
           </div>
-          <SavedWordsView active={savedTab === "words"} />
-          <SavedSentencesView active={savedTab === "sentences"} />
+          <SavedBackup
+            onRestored={() => setSavedRevision((value) => value + 1)}
+          />
+          <SavedWordsView
+            active={savedTab === "words"}
+            revision={savedRevision}
+          />
+          <SavedSentencesView
+            active={savedTab === "sentences"}
+            revision={savedRevision}
+          />
         </section>
       )}
       {showSources && (

@@ -287,6 +287,32 @@
 .library-live-status:empty {
   display: none;
 }
+.library-backup {
+  margin-bottom: var(--space-6);
+  overflow-wrap: anywhere;
+}
+.library-backup > p {
+  margin-top: var(--space-3);
+}
+.library-backup-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  margin-top: var(--space-3);
+}
+.library-backup-preview {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-card);
+  background: var(--color-surface-elevated);
+  padding: var(--space-4);
+  margin-top: var(--space-4);
+  font-size: var(--font-size-label);
+  line-height: 1.65;
+}
+.library-backup-preview h2 {
+  font-size: var(--font-size-definition);
+  margin: 0;
+}
 .library-error {
   color: var(--color-status-error);
   font-size: var(--font-size-label);

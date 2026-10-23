@@ -10,6 +10,7 @@ from datetime import datetime, timezone
 from os import environ
 from pathlib import Path
 
+from app.backup import BackupSentence, BackupWord, RestoreSummary, VocabularyBackup
 from app.models import SavedSentence, SavedWord, SaveSentenceRequest, SaveWordRequest
 
 
@@ -166,3 +167,71 @@ class VocabularyStore:
         with closing(self._connect()) as connection, connection:
             result = connection.execute("DELETE FROM saved_sentences WHERE id = ?", (sentence_id,))
             return result.rowcount > 0
+
+    def backup(self) -> VocabularyBackup:
+        with closing(self._connect()) as connection, connection:
+            # Both collections belong to one SQLite read snapshot.
+            connection.execute("BEGIN")
+            words = connection.execute(
+                "SELECT * FROM saved_words ORDER BY created_at, id"
+            ).fetchall()
+            sentences = connection.execute(
+                "SELECT * FROM saved_sentences ORDER BY created_at, id"
+            ).fetchall()
+            return VocabularyBackup(
+                createdAt=datetime.now(timezone.utc).isoformat(timespec="seconds"),
+                words=[BackupWord(**_saved_word(row).model_dump(exclude={"id"})) for row in words],
+                sentences=[
+                    BackupSentence(**_saved_sentence(row).model_dump(exclude={"id"}))
+                    for row in sentences
+                ],
+            )
+
+    def restore(self, backup: VocabularyBackup, *, preview: bool = False) -> RestoreSummary:
+        with closing(self._connect()) as connection, connection:
+            # Reserve the writer before duplicate detection: concurrent popup saves
+            # cannot change the plan during restore. Preview only takes a snapshot.
+            connection.execute("BEGIN" if preview else "BEGIN IMMEDIATE")
+            words = {
+                tuple(row)
+                for row in connection.execute(
+                    "SELECT surface, reading, source_text FROM saved_words"
+                )
+            }
+            sentences = {
+                row[0] for row in connection.execute("SELECT source_text FROM saved_sentences")
+            }
+            summary = RestoreSummary()
+            for word in backup.words:
+                identity = (word.surface, word.reading, word.sourceText)
+                if identity in words:
+                    summary.wordsSkipped += 1
+                    continue
+                words.add(identity)
+                summary.wordsAdded += 1
+                if not preview:
+                    connection.execute(
+                        """INSERT INTO saved_words
+                           (surface, reading, dictionary_form, meanings_json, source_text, created_at)
+                           VALUES (?, ?, ?, ?, ?, ?)""",
+                        (
+                            *identity[:2],
+                            word.dictionaryForm,
+                            json.dumps(word.meanings, ensure_ascii=False),
+                            word.sourceText,
+                            word.createdAt,
+                        ),
+                    )
+            for sentence in backup.sentences:
+                if sentence.sourceText in sentences:
+                    summary.sentencesSkipped += 1
+                    continue
+                sentences.add(sentence.sourceText)
+                summary.sentencesAdded += 1
+                if not preview:
+                    connection.execute(
+                        """INSERT INTO saved_sentences (source_text, translated_text, created_at)
+                           VALUES (?, ?, ?)""",
+                        (sentence.sourceText, sentence.translatedText, sentence.createdAt),
+                    )
+            return summary
