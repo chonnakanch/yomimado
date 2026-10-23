@@ -25,6 +25,23 @@ The [feature roadmap](docs/implementation-plan.md#feature-checklist) tracks comp
   [supported scope](docs/implementation-plan.md#conjugation-behavior-and-supported-forms)
   and [verification limits](docs/ui-testing.md#continuing-actionstate-and-desire-conjugations).
 
+#### Fixed
+
+- Require recognized-row ink coverage before suppressing overlapping OCR fragments.
+  Preserve uncovered full/tile/mask text while continuing to skip covered
+  duplicates; localized rows no longer trigger the legacy retry overlap filter.
+- Preserve non-Japanese warnings through whole-selection and expanded short
+  vertical recovery, including expanded-crop diagnostics.
+- Keep OCR correction drafts open when Escape belongs to Japanese IME composition,
+  including legacy IME key code `229`; ordinary Escape still cancels editing.
+  Add 14 model-free service and two popup regressions. All 326 frontend, 239 service
+  and 18 OCR/translation contract tests, Ruff, formatting, TypeScript/Vite and the
+  macOS debug build pass; 129 local documentation links/fragments were checked.
+  Native IME/Windows hardware and new exact installers remain unverified.
+  These Python source changes require
+  a compatible replacement reviewed macOS runtime seed before packaging; existing
+  seed approvals and installer evidence retain their original source identities.
+
 ### 2026-10-22
 
 #### Build
