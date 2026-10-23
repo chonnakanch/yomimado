@@ -93,6 +93,31 @@ focus/pass-through or Windows hardware acceptance. Follow the native overlay
 matrix below and verify Words/Select/Edit, cancellation, correction, copy/save,
 translation retry and a long sentence in the real app.
 
+## Continuing action/state and desire conjugations
+
+Development check — 2026-10-23: conjugation regressions cover ている／でいる,
+casual てる／でる, their plain/polite tense and negative forms, plus たい,
+たかった, たくない and たくなかった with optional です. Representative
+auxiliary splits were checked using the local pinned Lindera 6.0.0/IPADIC
+provider, including the merged てる／でる tokens and dropped-い polite forms.
+Tests retain irregular verb classes, exact manual spans, source code-point
+offsets, context notes and explicit unsupported auxiliary chains.
+
+The 141 focused conjugation/popup tests pass. Popup regressions verify the
+collapsed explanation, the complete 食べてなかった breakdown and dictionary
+lookup/save for manually selected 食べたくなかったです, preserving Japanese
+source text and making no translation request. All 377 frontend tests,
+frontend formatting, TypeScript/Vite and the macOS Apple Silicon debug build
+pass. On the local Node 26 runtime, the full suite uses
+`NODE_OPTIONS=--no-experimental-webstorage npm test` to let jsdom supply storage;
+an initial run without this flag failed in existing storage-dependent tests.
+CI pins Node 22.23.2.
+
+These are source/debug checks. Native popup interaction on macOS/Windows,
+Windows compilation and exact-installer acceptance were not performed for this
+change. The existing disclosure layout and native capture/overlay behavior are
+unchanged. Follow the native popup checks above when recording hardware acceptance.
+
 ## Capture shortcut verification
 
 For configurable bindings, test **Settings → Scan & OCR → Scan shortcuts**:

@@ -746,6 +746,140 @@ it("keeps unsupported grammar explicit without guessing a manual lookup base", a
   expect(button("Save without meaning")).toBeDefined();
 });
 
+it("shows the full casual continuing-state chain when clicking the verb stem", async () => {
+  const source = "食べてなかった。";
+  const tokens: TextToken[] = [
+    inflectedTokens[0],
+    {
+      surface: "て",
+      reading: "テ",
+      dictionaryForm: "てる",
+      start: 2,
+      end: 3,
+      partOfSpeech: "動詞 / 非自立 / 一段 / 未然形",
+    },
+    {
+      surface: "なかっ",
+      reading: "ナカッ",
+      dictionaryForm: "ない",
+      start: 3,
+      end: 6,
+      partOfSpeech: "助動詞 / 特殊・ナイ / 連用タ接続",
+    },
+    {
+      surface: "た",
+      reading: "タ",
+      dictionaryForm: "た",
+      start: 6,
+      end: 7,
+      partOfSpeech: "助動詞 / 特殊・タ / 基本形",
+    },
+  ];
+  const fetch = serviceMock((path) => {
+    if (path.endsWith("/tokenize"))
+      return response({ sourceText: source, tokens });
+    if (path.endsWith("/word")) return response({ entries: [eatEntry] });
+  });
+  await openPopup(source);
+  await click("食べ");
+  const disclosure = container.querySelector<HTMLDetailsElement>(
+    ".conjugation-explanation",
+  )!;
+  expect(disclosure.open).toBe(false);
+  expect(disclosure.textContent).toContain(
+    "Casual continuing action/state · plain negative past",
+  );
+  expect(disclosure.textContent).toContain("食べてなかった → 食べていなかった");
+  expect(disclosure.textContent).toContain("食べていなかった → 食べていない");
+  expect(disclosure.textContent).toContain("食べていない → 食べている");
+  expect(disclosure.textContent).toContain("食べている → 食べる");
+  expect(disclosure.textContent).toContain("depends on context");
+  expect(fetch).toHaveBeenCalledTimes(2);
+  expect(fetch.mock.calls.some(([url]) => url.endsWith("/translate"))).toBe(
+    false,
+  );
+});
+
+it("looks up and saves a manually selected desire form without changing the source", async () => {
+  const source = "食べたくなかったです。";
+  const tokens: TextToken[] = [
+    inflectedTokens[0],
+    {
+      surface: "たく",
+      reading: "タク",
+      dictionaryForm: "たい",
+      start: 2,
+      end: 4,
+      partOfSpeech: "助動詞 / 特殊・タイ / 連用テ接続",
+    },
+    {
+      surface: "なかっ",
+      reading: "ナカッ",
+      dictionaryForm: "ない",
+      start: 4,
+      end: 7,
+      partOfSpeech: "助動詞 / 特殊・ナイ / 連用タ接続",
+    },
+    {
+      surface: "た",
+      reading: "タ",
+      dictionaryForm: "た",
+      start: 7,
+      end: 8,
+      partOfSpeech: "助動詞 / 特殊・タ / 基本形",
+    },
+    {
+      surface: "です",
+      reading: "デス",
+      dictionaryForm: "です",
+      start: 8,
+      end: 10,
+      partOfSpeech: "助動詞 / 特殊・デス / 基本形",
+    },
+  ];
+  const fetch = serviceMock((path) => {
+    if (path.endsWith("/tokenize"))
+      return response({ sourceText: source, tokens });
+    if (path.endsWith("/word")) return response({ entries: [eatEntry] });
+  });
+  await openPopup(source);
+  await click("Select");
+  const input = await selectText(0, 10);
+  await click("Look up selection");
+  expect(
+    JSON.parse(
+      fetch.mock.calls.find(([url]) => url.endsWith("/word"))![1]!
+        .body as string,
+    ),
+  ).toEqual({
+    surface: "食べたくなかったです",
+    dictionaryForm: "食べる",
+    reading: "",
+  });
+  const explanation = container.querySelector(
+    ".conjugation-explanation",
+  )?.textContent;
+  expect(explanation).toContain("Polite desire negative past");
+  expect(explanation).toContain("食べたくなかったです → 食べたくなかった");
+  expect(explanation).toContain("食べたい → 食べる");
+  await click("Save word");
+  expect(
+    JSON.parse(
+      fetch.mock.calls.find(([url]) => url.endsWith("/vocabulary"))![1]!
+        .body as string,
+    ),
+  ).toMatchObject({
+    surface: "食べたくなかったです",
+    dictionaryForm: "食べる",
+    reading: "たべる",
+    sourceText: source,
+  });
+  expect(input.value).toBe(source);
+  expect(fetch.mock.calls.some(([url]) => url.endsWith("/translate"))).toBe(
+    false,
+  );
+});
+
 function serviceMock(
   handler?: (
     path: string,

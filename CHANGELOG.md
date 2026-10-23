@@ -10,6 +10,21 @@ The [feature roadmap](docs/implementation-plan.md#feature-checklist) tracks comp
 
 ## Unreleased
 
+### 2026-10-23
+
+#### Added
+
+- Extend local conjugation explanations with ている／でいる and casual
+  てる／でる, including plain/polite past and negative forms, plus たい desire
+  forms with past/negative and polite です variants. Reuse the analyzed verb
+  class and exact source spans; show context-dependent meanings explicitly.
+  Complete manual selections use the analyzed dictionary form while saving
+  preserves the selected Japanese and source sentence. No dependencies, resources
+  or service APIs change. All 377 frontend tests, formatting, TypeScript/Vite
+  and the macOS debug build pass; see the
+  [supported scope](docs/implementation-plan.md#conjugation-behavior-and-supported-forms)
+  and [verification limits](docs/ui-testing.md#continuing-actionstate-and-desire-conjugations).
+
 ### 2026-10-22
 
 #### Build

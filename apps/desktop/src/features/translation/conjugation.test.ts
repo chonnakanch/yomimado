@@ -58,6 +58,123 @@ it.each([
   ["高いです", "高い", adjective, ["高い"]],
   ["よかった", "いい", adjective, ["いい"]],
   ["可愛かった", "可愛い", adjective, ["可愛い"]],
+  ["食べている", "食べる", ichidan, ["食べる"]],
+  ["食べていた", "食べる", ichidan, ["食べている", "食べる"]],
+  ["食べていない", "食べる", ichidan, ["食べている", "食べる"]],
+  [
+    "食べていなかった",
+    "食べる",
+    ichidan,
+    ["食べていない", "食べている", "食べる"],
+  ],
+  ["食べています", "食べる", ichidan, ["食べている", "食べる"]],
+  [
+    "食べていました",
+    "食べる",
+    ichidan,
+    ["食べています", "食べている", "食べる"],
+  ],
+  [
+    "食べていません",
+    "食べる",
+    ichidan,
+    ["食べています", "食べている", "食べる"],
+  ],
+  [
+    "食べていませんでした",
+    "食べる",
+    ichidan,
+    ["食べていません", "食べています", "食べている", "食べる"],
+  ],
+  ["食べてる", "食べる", ichidan, ["食べている", "食べる"]],
+  ["食べてた", "食べる", ichidan, ["食べていた", "食べている", "食べる"]],
+  ["食べてない", "食べる", ichidan, ["食べていない", "食べている", "食べる"]],
+  [
+    "食べてなかった",
+    "食べる",
+    ichidan,
+    ["食べていなかった", "食べていない", "食べている", "食べる"],
+  ],
+  ["食べてます", "食べる", ichidan, ["食べています", "食べている", "食べる"]],
+  [
+    "食べてました",
+    "食べる",
+    ichidan,
+    ["食べていました", "食べています", "食べている", "食べる"],
+  ],
+  [
+    "食べてません",
+    "食べる",
+    ichidan,
+    ["食べていません", "食べています", "食べている", "食べる"],
+  ],
+  [
+    "食べてませんでした",
+    "食べる",
+    ichidan,
+    [
+      "食べていませんでした",
+      "食べていません",
+      "食べています",
+      "食べている",
+      "食べる",
+    ],
+  ],
+  ["読んでる", "読む", "動詞 / 自立 / 五段・マ行", ["読んでいる", "読む"]],
+  [
+    "泳いでた",
+    "泳ぐ",
+    "動詞 / 自立 / 五段・ガ行",
+    ["泳いでいた", "泳いでいる", "泳ぐ"],
+  ],
+  [
+    "行ってる",
+    "行く",
+    "動詞 / 自立 / 五段・カ行促音便",
+    ["行っている", "行く"],
+  ],
+  [
+    "問うてる",
+    "問う",
+    "動詞 / 自立 / 五段・ワ行ウ音便",
+    ["問うている", "問う"],
+  ],
+  ["来てる", "来る", "動詞 / 自立 / カ変・来ル", ["来ている", "来る"]],
+  ["きてる", "くる", "動詞 / 自立 / カ変・クル", ["きている", "くる"]],
+  ["してる", "する", "動詞 / 自立 / サ変・スル", ["している", "する"]],
+  ["食べたい", "食べる", ichidan, ["食べる"]],
+  ["食べたかった", "食べる", ichidan, ["食べたい", "食べる"]],
+  ["食べたくない", "食べる", ichidan, ["食べたい", "食べる"]],
+  [
+    "食べたくなかった",
+    "食べる",
+    ichidan,
+    ["食べたくない", "食べたい", "食べる"],
+  ],
+  ["食べたいです", "食べる", ichidan, ["食べたい", "食べる"]],
+  [
+    "食べたかったです",
+    "食べる",
+    ichidan,
+    ["食べたかった", "食べたい", "食べる"],
+  ],
+  [
+    "食べたくないです",
+    "食べる",
+    ichidan,
+    ["食べたくない", "食べたい", "食べる"],
+  ],
+  [
+    "食べたくなかったです",
+    "食べる",
+    ichidan,
+    ["食べたくなかった", "食べたくない", "食べたい", "食べる"],
+  ],
+  ["買いたい", "買う", "動詞 / 自立 / 五段・ワ行促音便", ["買う"]],
+  ["帰りたい", "帰る", godan, ["帰る"]],
+  ["したい", "する", "動詞 / 自立 / サ変・スル", ["する"]],
+  ["来たかった", "来る", "動詞 / 自立 / カ変・来ル", ["来たい", "来る"]],
+  ["きたくない", "くる", "動詞 / 自立 / カ変・クル", ["きたい", "くる"]],
   ["食べちゃう", "食べる", ichidan, ["食べてしまう", "食べる"]],
   [
     "食べちゃった",
@@ -163,6 +280,156 @@ it("handles IPADIC's separate interjection token in 読んじゃう", () => {
     dictionaryForm: "読む",
   });
 });
+
+// Representative suffix splits checked with pinned Lindera 6.0.0/IPADIC.
+const particle = "助詞 / 接続助詞";
+const auxiliaryVerb = "動詞 / 非自立 / 一段";
+const auxiliary = "助動詞";
+it.each([
+  [
+    "食べている",
+    [
+      ["て", "て", particle],
+      ["いる", "いる", auxiliaryVerb],
+    ],
+  ],
+  ["食べてる", [["てる", "てる", auxiliaryVerb]]],
+  [
+    "食べてた",
+    [
+      ["て", "てる", auxiliaryVerb],
+      ["た", "た", auxiliary],
+    ],
+  ],
+  [
+    "食べてない",
+    [
+      ["て", "てる", auxiliaryVerb],
+      ["ない", "ない", auxiliary],
+    ],
+  ],
+  [
+    "食べてなかった",
+    [
+      ["て", "てる", auxiliaryVerb],
+      ["なかっ", "ない", auxiliary],
+      ["た", "た", auxiliary],
+    ],
+  ],
+  [
+    "食べていました",
+    [
+      ["て", "て", particle],
+      ["い", "いる", auxiliaryVerb],
+      ["まし", "ます", auxiliary],
+      ["た", "た", auxiliary],
+    ],
+  ],
+  [
+    "食べてませんでした",
+    [
+      ["て", "て", particle],
+      ["ませ", "ます", auxiliary],
+      ["ん", "ん", auxiliary],
+      ["でし", "です", auxiliary],
+      ["た", "た", auxiliary],
+    ],
+  ],
+  ["食べたい", [["たい", "たい", auxiliary]]],
+  [
+    "食べたかった",
+    [
+      ["たかっ", "たい", auxiliary],
+      ["た", "た", auxiliary],
+    ],
+  ],
+  [
+    "食べたくない",
+    [
+      ["たく", "たい", auxiliary],
+      ["ない", "ない", auxiliary],
+    ],
+  ],
+  [
+    "食べたくなかったです",
+    [
+      ["たく", "たい", auxiliary],
+      ["なかっ", "ない", auxiliary],
+      ["た", "た", auxiliary],
+      ["です", "です", auxiliary],
+    ],
+  ],
+] as const)(
+  "explains the real auxiliary splits of %s on click and manual selection",
+  (surface, suffixes) => {
+    const tokens = [token("食べ", "食べる", ichidan)];
+    for (const [part, base, pos] of suffixes) {
+      tokens.push(token(part, base, pos, tokens[tokens.length - 1].end));
+    }
+    // A supplementary-plane character before the phrase exercises code-point spans.
+    const source = `𠮷、${surface}よ。`;
+    const offsetTokens = tokens.map((part) => ({
+      ...part,
+      start: part.start + 2,
+      end: part.end + 2,
+    }));
+    offsetTokens.push(
+      token("よ", "よ", "助詞 / 終助詞", 2 + Array.from(surface).length),
+    );
+    const manual = token(surface, surface, "", 2);
+    const automatic = explainConjugation(
+      source,
+      offsetTokens,
+      offsetTokens[0],
+      false,
+    );
+    expect(automatic).toMatchObject({
+      status: "supported",
+      surface,
+      dictionaryForm: "食べる",
+    });
+    expect(explainConjugation(source, offsetTokens, manual, true)).toEqual(
+      automatic,
+    );
+    if (automatic?.status === "supported")
+      expect(automatic.note).toContain("depends on context");
+    expect(
+      explainConjugation(
+        source,
+        offsetTokens,
+        { ...manual, surface: surface.slice(1), start: 3 },
+        true,
+      )?.status,
+    ).toBe("unsupported");
+    expect(
+      explainConjugation(
+        source.replace("食べ", "食へ"),
+        offsetTokens,
+        manual,
+        true,
+      )?.status,
+    ).toBe("unsupported");
+  },
+);
+
+it("expands the voiced でる contraction and stops at an independent next predicate", () => {
+  const tokens = [
+    token("読ん", "読む", "動詞 / 自立 / 五段・マ行 / 連用タ接続"),
+    token("でる", "でる", auxiliaryVerb, 2),
+    token("見る", "見る", ichidan, 4),
+  ];
+  expect(
+    explainConjugation("読んでる見る", tokens, tokens[0], false),
+  ).toMatchObject({
+    status: "supported",
+    surface: "読んでる",
+    dictionaryForm: "読む",
+    steps: [
+      { from: "読んでる", to: "読んでいる" },
+      { from: "読んでいる", to: "読む" },
+    ],
+  });
+});
 it("keeps multi-word manual predicates outside the supported slice", () => {
   const tokens = [
     token("勉強", "勉強", "名詞 / サ変接続"),
@@ -180,12 +447,15 @@ it("keeps multi-word manual predicates outside the supported slice", () => {
 it.each([
   "食べられた",
   "食べさせられました",
-  "食べたい",
   "食べれば",
   "食べろ",
-  "食べてる",
-  "食べていました",
   "食べちゃいました",
+  "食べていて",
+  "食べていたい",
+  "食べてしまっている",
+  "食べたがっている",
+  "食べたくて",
+  "食べたくありません",
 ])("does not mislabel unsupported %s as a simpler ending", (surface) => {
   const tokens = [
     token("食べ", "食べる", ichidan),
@@ -206,8 +476,16 @@ it("does not guess a verb class from る or explain nouns as adjectives", () => 
   expect(explainConjugation(noun.surface, [noun], noun, false)).toBeNull();
 });
 it("does not cross whitespace, punctuation or an independent next verb", () => {
-  for (const source of ["食べ ました", "食べ、ました"]) {
-    const tokens = [politeTokens[0], token("ました", "ます", "助動詞", 3)];
+  for (const source of [
+    "食べ ました",
+    "食べ、ました",
+    "食べ てる",
+    "食べ、たい",
+  ]) {
+    const tokens = [
+      politeTokens[0],
+      token(source.slice(3), "ます", "助動詞", 3),
+    ];
     expect(explainConjugation(source, tokens, tokens[0], false)).toMatchObject({
       status: "unsupported",
       surface: "食べ",

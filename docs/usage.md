@@ -213,11 +213,17 @@ confidence underlines because the OCR engine does not supply character confidenc
 For an inflected verb or i-adjective, expand **Conjugation** in its word details.
 The app includes adjacent analyzed endings and shows steps such as
 食べました → 食べます → 食べる. Complete manual selections can also use their
-analyzed base for local dictionary lookup. Common past/negative/polite forms and
-ちゃう／じゃう contractions are supported; **Not covered** marks unsupported
-forms. Explanations do not start translation or infer a context-specific meaning.
-Passive/potential forms, causatives, progressive forms and other unsupported
-expressions remain **Not covered**.
+analyzed base for local dictionary lookup. Common past/negative/polite forms,
+ちゃう／じゃう contractions, ている／てる continuing-action/state forms and
+たい desire forms are supported. For example, 読んでた expands through
+読んでいた → 読んでいる → 読む; 食べたくなかった expands through
+食べたくない → 食べたい → 食べる. The ている／てる family includes plain and
+polite tense/negative forms; the たい family includes past/negative forms and
+their polite です variants.
+
+Explanations do not start translation or infer a context-specific meaning.
+**Not covered** marks unsupported expressions, including passive/potential forms,
+causatives and combined endings such as ていたい or てしまっている.
 
 The sentence and its actions stay above scrollable details as the popup grows
 to fit the available screen space. Long sentences have their own scroll area.
