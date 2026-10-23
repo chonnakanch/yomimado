@@ -45,11 +45,13 @@ export async function postServiceJson(
   path: string,
   service: string,
   body: unknown,
+  signal?: AbortSignal,
 ): Promise<unknown> {
   const response = await requestService(path, service, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(body),
+    ...(signal ? { signal } : {}),
   });
   return response.json();
 }

@@ -8,6 +8,7 @@ export interface TranslationResult {
 
 export async function requestTranslation(
   text: string,
+  signal?: AbortSignal,
 ): Promise<TranslationResult> {
   const source = text.trim();
   if (!source) throw new Error("Enter Japanese text before translating.");
@@ -16,6 +17,7 @@ export async function requestTranslation(
     "/api/v1/translate",
     "Translation service",
     { text: source },
+    signal,
   );
   if (
     typeof result !== "object" ||

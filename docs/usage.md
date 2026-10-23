@@ -100,6 +100,28 @@ Saved, Settings and Sources & licenses each open their own native window from
 More actions. They can remain open together; opening another menu entry does
 not replace an existing window's content.
 
+### Translate in bubbles
+
+After scanning, turn on **Translate bubbles** in the OCR overlay's control strip
+to display English translations over the detected text. Configure a local Marian
+or Ollama model in **Settings → Local translation** first. Translation starts only
+when you turn the toggle on, runs one region at a time, and never saves sentences
+automatically. Repeated text uses the selected provider's local cache.
+
+Turn it off to reveal the original Japanese immediately. Hiding the overlay or
+starting another scan also turns it off and stops queued requests; each restored
+or new result starts off. A request already running in the local model may finish.
+An error stops the queue and offers **Retry**; untranslated regions keep their
+Japanese visible.
+
+White translation panels stay inside the detected text's rectangular bounds,
+which can differ from the speech bubble's interior. Text wraps and fits down to
+11 px. An ellipsis means the translation cannot fit legibly: click that region
+to open the full requested translation in the learning popup, with Japanese and
+OCR review details. Known sound effects and demo boundaries are excluded; OCR
+currently leaves many region types unknown, so this is not speech-bubble detection.
+Panels are temporary overlays; the manga image is never changed.
+
 ### Saved words and sentences
 
 Choose **More actions → Saved** to open the shared library. Use **Words** and

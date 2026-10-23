@@ -31,6 +31,7 @@ interface PopupState {
   demo: boolean;
   reviewReason?: string;
   approximate?: boolean;
+  translateOnOpen?: boolean;
   placement?: {
     screen: { x: number; y: number; width: number; height: number };
     anchorLeft: number;
@@ -104,6 +105,33 @@ export function TranslationPopup() {
   const [exampleError, setExampleError] = useState<string | null>(null);
   const [exampleLoading, setExampleLoading] = useState(false);
   const [examplesOpen, setExamplesOpen] = useState(false);
+
+  useEffect(() => {
+    if (!state?.translateOnOpen || state.demo || !state.text.trim()) return;
+    let active = true;
+    const requestId = ++translationRequestId.current;
+    const controller = new AbortController();
+    setLoading(true);
+    // The user already requested bubble translations, then explicitly opened
+    // this region. The service cache keeps the full result/provider identity.
+    void requestTranslation(state.text, controller.signal)
+      .then((translation) => {
+        if (active && requestId === translationRequestId.current)
+          setResult(translation);
+      })
+      .catch((reason) => {
+        if (active && requestId === translationRequestId.current)
+          setError(String(reason).replace(/^Error: /, ""));
+      })
+      .finally(() => {
+        if (active && requestId === translationRequestId.current)
+          setLoading(false);
+      });
+    return () => {
+      active = false;
+      controller.abort();
+    };
+  }, [state]);
 
   const resetWordSelection = () => {
     setSelectedTokenIndex(null);

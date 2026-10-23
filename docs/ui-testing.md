@@ -11,6 +11,7 @@ Exact installer tests remain in [macOS](macos-clean-mac-test.md),
 - [Capture shortcut verification](#capture-shortcut-verification)
 - [Detector release link verification](#detector-release-link-verification)
 - [Completed-overlay hide controls](#completed-overlay-hide-controls)
+- [Bubble translation toggle](#bubble-translation-toggle)
 - [Horizontal OCR geometry recovery](#horizontal-ocr-geometry-recovery)
 - [Native overlay checks](#native-overlay-checks)
 - [Windows acceptance checklist](#windows-acceptance-checklist)
@@ -236,6 +237,39 @@ passes reader input. Reopen a popup/menu/Settings and check its ordinary Escape
 behavior. Start/cancel/rescan, then ensure a delayed hide request cannot hide the
 new result. Windows interaction, registration-conflict behavior and exact
 installers remain unverified.
+
+## Bubble translation toggle
+
+Source verification — 2026-10-23: **Translate bubbles** starts off on a completed
+scan. Regression coverage checks explicit activation, sequential local requests,
+duplicate-text reuse, sound-effect/demo exclusion, review labels, Retina text
+bounds, immediate return to Japanese, abort/late-response handling, native
+hide/scan cancellation, missing-model error/Retry and provider re-selection.
+Fitting stops at 11 px and uses an ellipsis when a complete translation cannot
+fit. Popup coverage checks opening the full requested translation without saving
+and rejecting late results after editing Japanese. Native tests cover bounded
+panel counts and rectangle conversion/clipping at 100%, 125%, 150% and 200%.
+
+Synthetic Chromium and WebKit browser checks use mocked Tauri and translation replies, with ordinary,
+narrow/overflowing and narration regions plus an excluded sound effect. They
+verify no translation before toggling, three sequential requests/panels, one
+overflow marker, five reported native rectangles, full-popup activation and
+toggle-off restoration. They establish UI behavior, not model inference quality
+or native click-through acceptance.
+
+All 403 frontend and 85 native tests, frontend formatting, TypeScript/Vite,
+Rust formatting/Clippy and the macOS debug build pass. The frontend tests use
+`NODE_OPTIONS=--no-experimental-webstorage` with the local Node 26 runtime.
+No service source, dependencies or model resources change.
+
+Native macOS/Windows interaction and actual model inference in this mode remain
+unverified. Check both supported systems with a configured local model: toggle
+while translation is pending, hide/restore and rescan, missing-model Retry,
+long/tiny/angled/review regions, keyboard navigation and popup return. Verify
+panel corners remain visible/clickable on Windows, surrounding artwork remains
+click-through, and mixed-DPI/negative-origin monitors preserve alignment. OCR
+text bounds may not fill the bubble interior; this feature does not segment
+bubbles or accept a new installer.
 
 ## Horizontal OCR geometry recovery
 

@@ -61,6 +61,102 @@
   stroke: var(--color-region-hover);
   stroke-width: 2px;
 }
+.ocr-region.translated,
+.ocr-region.translated:hover,
+.ocr-region.translated.active,
+.ocr-region.translated:focus-visible {
+  fill: transparent;
+}
+.bubble-translation {
+  overflow: hidden;
+  pointer-events: none;
+}
+.bubble-translation-text {
+  align-items: center;
+  background: #fff;
+  box-sizing: border-box;
+  color: #111;
+  display: flex;
+  font-family: var(--font-ui);
+  font-weight: 500;
+  height: 100%;
+  justify-content: center;
+  line-height: 1.25;
+  overflow: hidden;
+  padding: 4px;
+  position: relative;
+  text-align: center;
+  width: 100%;
+}
+.bubble-translation-text span {
+  flex: none;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+  width: 100%;
+}
+.bubble-translation-text.is-overflowing span {
+  visibility: hidden;
+}
+.bubble-translation-text.is-overflowing::after {
+  content: "…";
+  font-size: 11px;
+  position: absolute;
+}
+.bubble-translation-hit {
+  cursor: pointer;
+  fill: transparent;
+  pointer-events: all;
+}
+.overlay-translation-controls {
+  align-items: center;
+  background: var(--color-surface);
+  border-radius: var(--radius-control);
+  box-sizing: border-box;
+  color: var(--color-text-primary);
+  display: flex;
+  flex-wrap: wrap;
+  font-size: 12px;
+  gap: 4px;
+  left: 2px;
+  max-height: calc(100vh - 4px);
+  max-width: calc(100vw - 36px);
+  overflow: auto;
+  padding: 2px;
+  pointer-events: auto;
+  position: absolute;
+}
+.overlay-translation-controls button {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-control);
+  color: var(--color-text-primary);
+  cursor: pointer;
+  font: inherit;
+  min-height: 24px;
+  max-width: 100%;
+  min-width: 0;
+  overflow-wrap: anywhere;
+  padding: 2px 6px;
+}
+.overlay-translation-controls button:hover:not(:disabled) {
+  background: var(--color-surface-elevated);
+  border-color: var(--color-accent);
+}
+.overlay-translation-controls button:focus-visible {
+  outline-offset: -2px;
+}
+.overlay-translation-controls button[aria-pressed="true"],
+.overlay-translation-controls button[aria-pressed="true"]:hover:not(:disabled) {
+  background: var(--color-accent-tint);
+  border-color: var(--color-accent);
+}
+.overlay-translation-status {
+  max-width: 260px;
+  overflow-wrap: anywhere;
+}
+.overlay-translation-status[role="alert"] {
+  color: var(--color-status-error);
+}
 .ocr-region.active,
 .ocr-region:focus-visible {
   fill: var(--color-region-selected-fill);

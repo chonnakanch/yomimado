@@ -6,7 +6,7 @@ use std::sync::{
     atomic::{AtomicBool, Ordering},
     Arc, Mutex,
 };
-use tauri::{AppHandle, Manager};
+use tauri::{AppHandle, Emitter, Manager};
 
 use super::OverlayLayout;
 use crate::capture::{CaptureMetadata, Rectangle};
@@ -104,6 +104,52 @@ fn physical_polygons(
     Ok(polygons)
 }
 
+fn physical_controls(
+    rectangles: Vec<Rectangle>,
+    viewport_width: f64,
+    viewport_height: f64,
+    width: u32,
+    height: u32,
+    region_count: usize,
+) -> Result<Vec<Vec<Point>>, String> {
+    if !viewport_width.is_finite()
+        || !viewport_height.is_finite()
+        || viewport_width <= 0.0
+        || viewport_height <= 0.0
+        // Hide, translation controls, and at most one text panel per OCR region.
+        || rectangles.len() > region_count.saturating_add(2)
+    {
+        return Err("Invalid overlay control bounds".into());
+    }
+    let mut controls = Vec::new();
+    for rect in rectangles {
+        if [rect.x, rect.y, rect.width, rect.height]
+            .iter()
+            .any(|v| !v.is_finite())
+            || rect.width <= 0.0
+            || rect.height <= 0.0
+        {
+            return Err("Invalid overlay control rectangle".into());
+        }
+        let sx = f64::from(width) / viewport_width;
+        let sy = f64::from(height) / viewport_height;
+        let l = (rect.x * sx).clamp(0.0, width.into());
+        let t = (rect.y * sy).clamp(0.0, height.into());
+        let r = ((rect.x + rect.width) * sx).clamp(0.0, width.into());
+        let b = ((rect.y + rect.height) * sy).clamp(0.0, height.into());
+        if r <= l || b <= t {
+            continue;
+        }
+        controls.push(vec![
+            Point { x: l, y: t },
+            Point { x: r, y: t },
+            Point { x: r, y: b },
+            Point { x: l, y: b },
+        ]);
+    }
+    Ok(controls)
+}
+
 impl InputRouter {
     pub(super) fn install(
         &self,
@@ -163,6 +209,10 @@ impl InputRouter {
             window
                 .set_ignore_cursor_events(true)
                 .map_err(|e| e.to_string())?;
+            // Hidden/replaced captures must not keep issuing translation work.
+            if let Err(error) = window.emit("stop-bubble-translations", ()) {
+                eprintln!("YomiMado: could not stop bubble translations: {error}");
+            }
         }
         Ok(())
     }
@@ -176,42 +226,18 @@ impl InputRouter {
         viewport_width: f64,
         viewport_height: f64,
     ) -> Result<(), String> {
-        if !viewport_width.is_finite()
-            || !viewport_height.is_finite()
-            || viewport_width <= 0.0
-            || viewport_height <= 0.0
-            || rectangles.len() > 2
-        {
-            return Err("Invalid region navigator bounds".into());
-        }
         let mut route = self.route.lock().map_err(|e| e.to_string())?;
         if !route.active || route.session_id != session_id || revision <= route.control_revision {
             return Ok(());
         }
-        let mut controls = Vec::new();
-        for rect in rectangles {
-            if [rect.x, rect.y, rect.width, rect.height]
-                .iter()
-                .any(|v| !v.is_finite())
-                || rect.width <= 0.0
-                || rect.height <= 0.0
-            {
-                return Err("Invalid navigator rectangle".into());
-            }
-            let sx = f64::from(route.width) / viewport_width;
-            let sy = f64::from(route.height) / viewport_height;
-            let l = (rect.x * sx).clamp(0.0, route.width.into());
-            let t = (rect.y * sy).clamp(0.0, route.height.into());
-            let r = ((rect.x + rect.width) * sx).clamp(0.0, route.width.into());
-            let b = ((rect.y + rect.height) * sy).clamp(0.0, route.height.into());
-            controls.push(vec![
-                Point { x: l, y: t },
-                Point { x: r, y: t },
-                Point { x: r, y: b },
-                Point { x: l, y: b },
-            ]);
-        }
-        route.controls = controls;
+        route.controls = physical_controls(
+            rectangles,
+            viewport_width,
+            viewport_height,
+            route.width,
+            route.height,
+            route.polygons.len(),
+        )?;
         route.control_revision = revision;
         #[cfg(target_os = "windows")]
         windows::apply(app, &route)?;
@@ -432,6 +458,54 @@ mod windows {
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn translated_panels_share_the_control_transform_and_capture_clipping() {
+        for scale in [1., 1.25, 1.5, 2.] {
+            let rectangles = vec![
+                Rectangle {
+                    x: -10. / scale,
+                    y: 20. / scale,
+                    width: 80. / scale,
+                    height: 100. / scale,
+                };
+                5
+            ];
+            // Three region panels plus the translation strip and hide control.
+            let controls =
+                physical_controls(rectangles, 640. / scale, 480. / scale, 640, 480, 3).unwrap();
+            assert_eq!(controls.len(), 5);
+            assert_eq!(controls[0][0], Point { x: 0., y: 20. });
+            assert_eq!(controls[0][2], Point { x: 70., y: 120. });
+        }
+    }
+
+    #[test]
+    fn control_bounds_reject_extra_panels_and_invalid_geometry() {
+        let rect = Rectangle {
+            x: 0.,
+            y: 0.,
+            width: 20.,
+            height: 20.,
+        };
+        assert!(physical_controls(vec![rect; 4], 100., 100., 100, 100, 1).is_err());
+        assert!(physical_controls(vec![rect], f64::NAN, 100., 100, 100, 1).is_err());
+        assert!(physical_controls(vec![rect], 100., 0., 100, 100, 1).is_err());
+        for value in [f64::NAN, f64::INFINITY, 0., -1.] {
+            assert!(physical_controls(
+                vec![Rectangle {
+                    width: value,
+                    ..rect
+                }],
+                100.,
+                100.,
+                100,
+                100,
+                1
+            )
+            .is_err());
+        }
+    }
+
     #[test]
     fn browser_drags_keep_their_mouse_up_when_crossing_a_region() {
         assert!(ignore_after_pointer(true, false, true));

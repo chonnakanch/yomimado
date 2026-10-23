@@ -20,6 +20,7 @@ export function OCRBoundingBox({
   onFocus,
   onNavigate,
   elementRef,
+  translation,
 }: {
   region: TextRegion;
   points: string;
@@ -31,12 +32,16 @@ export function OCRBoundingBox({
   onFocus: () => void;
   onNavigate: (key: string) => void;
   elementRef: (element: SVGPolygonElement | null) => void;
+  translation?: string;
 }) {
-  const label = regionLabel(region, demo, number);
+  const originalLabel = regionLabel(region, demo, number);
+  const label = translation
+    ? `Machine translation: ${translation}. Japanese: ${originalLabel}`
+    : originalLabel;
   const stateClasses = `${demo ? " demo" : ""}${region.geometrySource ? " approximate" : ""}${region.needsReview ? " needs-review" : ""}${selected ? " active" : ""}`;
   return (
     <polygon
-      className={`ocr-region${stateClasses}`}
+      className={`ocr-region${stateClasses}${translation ? " translated" : ""}`}
       points={points}
       role="button"
       aria-label={label}
@@ -64,7 +69,13 @@ export function OCRBoundingBox({
         }
       }}
     >
-      {captureDebugEnabled() && <title>{label}</title>}
+      {(captureDebugEnabled() || translation) && (
+        <title>
+          {translation
+            ? `${label}. Click to read in the learning popup.`
+            : label}
+        </title>
+      )}
     </polygon>
   );
 }

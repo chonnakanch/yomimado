@@ -15,9 +15,11 @@ tables, example sentences and related-word features remain future scope. The
 implemented limited conjugation disclosure is documented in the feature plan.
 
 Keep the original manga visible. Opaque surfaces belong to the toolbar, popup
-and secondary window. The OCR layer remains transparent except for outlines and
-very light hover/selection fill. No manga image, full-screen dimmer, translation
-replacement, loud status banner or decorative motion in the reading view.
+and secondary window. The default OCR layer remains transparent except for
+outlines and very light hover/selection fill. The explicit **Translate bubbles**
+toggle temporarily covers detected text bounds with white translation panels;
+turning it off reveals the Japanese. Do not modify the manga image or add a
+full-screen dimmer, loud status banner or decorative motion in the reading view.
 
 Jisho-inspired means a readable headword, reading, base form, POS and numbered
 definitions. It does not mean copying Jisho assets or implying the existing
@@ -240,6 +242,21 @@ gutter. Report only its measured hit rectangle through the existing native
 control route; the surrounding manga stays transparent and click-through.
 Hiding retains results and Rescan state; the toolbar visibility toggle restores
 the result. Late hide requests must not dismiss a newer result or active scan.
+
+Place **Translate bubbles** at the left of the control strip when recognized,
+non-sound-effect text exists. It starts off for every scan/restoration, exposes
+`aria-pressed`, and stays available while translating so it can stop the queue.
+Show compact local progress, machine-translation disclosure or error with Retry
+next to it. Preserve original polygons, dashed review outlines and region keyboard
+navigation. Report the whole measured control group and each translated panel
+through the native route as well as the hide button.
+
+Translation panels use white with near-black text for reading against light/dark
+pages, within captured text bounds only. Wrap English horizontally, fitting from
+18 down to 11 CSS px. If the full text still cannot fit, show an ellipsis instead
+of an incomplete sentence; clicking opens the full translation and Japanese in
+the learning popup. Known sound effects remain untouched. No persistent manga
+replacement, automatic saving or assumed bubble segmentation is introduced.
 
 Native hit routing is covered by the [overlay checks](ui-testing.md#native-overlay-checks).
 `pointer-events` only selects DOM targets; visual transparency alone is not proof

@@ -24,6 +24,8 @@ in [implementation status and roadmap](implementation-plan.md).
   refer to source Unicode code points; preserve readings and dictionary forms.
 - Use transparent always-on-top OCR regions and anchored popups. Preserve text
   type metadata; sound effects need not use dialogue learning behavior.
+- The explicit **Translate bubbles** toggle adds removable white panels at text
+  bounds. It does not modify captured pixels or infer speech-bubble interiors.
 - Keep providers replaceable behind small interfaces. Current translation is
   local Marian or Ollama; a provider boundary is not permission to add cloud OCR
   or automatically upload screenshots.
@@ -129,6 +131,25 @@ both polygon and control hit routing while retaining the stored result.
 `update_overlay_controls`; the existing viewport-to-physical conversion serves
 macOS mouse routing and Windows window regions. No new coordinate transform,
 input-monitoring grant or dependency is added.
+
+**Translate bubbles** starts off for every new/restored overlay. Its hook makes
+sequential, abortable requests through the existing local translation endpoint,
+deduplicating identical source text for the run. Re-enabling/Retry consults the
+provider-aware service cache again. Toggle-off, unmount and native input-router
+disable stop queued work and ignore late replies; server-side inference already
+running may complete. A failure stops the queue and leaves unprocessed Japanese
+visible. Demo boundaries and known sound effects are excluded; unknown region
+types remain eligible without changing their OCR metadata.
+
+`BubbleTranslation` renders fitted text in SVG foreign objects at clipped text
+bounding rectangles using `ocrPolygonToOverlay`. It never expands to an inferred
+bubble interior. Measured panel rectangles and the translation strip use the
+existing native control route, bounded to one panel per region plus two control
+areas. This also extends Windows' visible window region to the rectangular
+panels. Original polygons continue to own keyboard navigation/review outlines.
+Text that cannot fit at 11 px shows an ellipsis. Opening a translated region passes
+an explicit `translateOnOpen` popup option; the popup requests its full translation
+through the same provider/cache, with normal errors and stale-source guards.
 
 The tray's **Show OCR results** action calls the existing overlay visibility path
 on a worker thread. Tray refresh reads scan/result availability under the scan

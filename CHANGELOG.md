@@ -14,6 +14,19 @@ The [feature roadmap](docs/implementation-plan.md#feature-checklist) tracks comp
 
 #### Added
 
+- Add an optional **Translate bubbles** toggle to completed OCR overlays. Render
+  requested local English translations over detected text bounds, fit legible
+  text or show an ellipsis with full-popup access, and reveal Japanese immediately
+  when switched off. Keep review outlines, skip known sound effects/demo regions,
+  stop queued requests on hide/new scans and expose errors with Retry. Reuse the
+  provider-aware service cache and existing coordinate/native input route; do not
+  modify manga pixels or save automatically. All 403 frontend and 85 native tests,
+  formatting, TypeScript/Vite, Clippy and the macOS debug build pass. Synthetic
+  browser checks use mocked translation/native replies; native interaction,
+  model inference in this mode, Windows hardware and exact installers remain
+  unverified. See [controls](docs/usage.md#translate-in-bubbles) and
+  [verification](docs/ui-testing.md#bubble-translation-toggle).
+
 - Add local backup and restore in **Saved → Backup & restore**. Export all saved
   words/sentences, readings, meanings, source text, translations and dates to
   portable JSON with attribution. Preview new/duplicate counts, then atomically

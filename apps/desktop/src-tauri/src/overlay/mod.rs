@@ -244,19 +244,28 @@ fn popup_position(placement: PopupPlacement, logical_height: f64) -> Result<Popu
     })
 }
 
+pub struct PopupContext<'a> {
+    pub demo: bool,
+    pub review_reason: Option<&'a str>,
+    pub approximate: bool,
+    pub translate_on_open: bool,
+}
+
 fn translation_popup_query(
     text: &str,
-    demo: bool,
     placement: PopupPlacement,
-    review_reason: Option<&str>,
-    approximate: bool,
+    context: PopupContext<'_>,
 ) -> String {
-    let mut state = serde_json::json!({ "text": text, "demo": demo, "placement": placement });
-    if let Some(reason) = review_reason {
+    let mut state =
+        serde_json::json!({ "text": text, "demo": context.demo, "placement": placement });
+    if let Some(reason) = context.review_reason {
         state["reviewReason"] = reason.into();
     }
-    if approximate {
+    if context.approximate {
         state["approximate"] = true.into();
+    }
+    if context.translate_on_open && !context.demo {
+        state["translateOnOpen"] = true.into();
     }
     let serialized = state.to_string();
     let encoded = urlencoding::encode(&serialized);
@@ -432,9 +441,7 @@ pub fn show_translation_popup(
     metadata: &CaptureMetadata,
     text: &str,
     polygon: &[OcrPoint],
-    demo: bool,
-    review_reason: Option<&str>,
-    approximate: bool,
+    context: PopupContext<'_>,
 ) -> Result<(), String> {
     let screen = app
         .get_webview_window("ocr-overlay")
@@ -451,7 +458,7 @@ pub fn show_translation_popup(
         .unwrap_or(metadata.screen_physical_bounds);
     let placement = popup_placement(metadata, polygon, screen)?;
     let position = popup_position(placement, INITIAL_POPUP_LOGICAL_HEIGHT)?;
-    let query = translation_popup_query(text, demo, placement, review_reason, approximate);
+    let query = translation_popup_query(text, placement, context);
     if let Some(window) = app.get_webview_window("translation-popup") {
         // Reuse the existing webview: close() can return before its label is
         // removed, so immediately rebuilding with the same label can fail.
@@ -750,10 +757,13 @@ mod tests {
             .expect("valid app URL");
         url.set_query(Some(&translation_popup_query(
             "たまにはいいでしょ",
-            false,
             placement,
-            Some("Check short text"),
-            true,
+            PopupContext {
+                demo: false,
+                review_reason: Some("Check short text"),
+                approximate: true,
+                translate_on_open: true,
+            },
         )));
 
         let state = url
@@ -766,6 +776,7 @@ mod tests {
         assert_eq!(state["demo"], false);
         assert_eq!(state["reviewReason"], "Check short text");
         assert_eq!(state["approximate"], true);
+        assert_eq!(state["translateOnOpen"], true);
         assert_eq!(state["placement"]["anchorLeft"], 100.0);
     }
 

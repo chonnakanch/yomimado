@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { Fragment, useEffect, useMemo, useRef, useState } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import { listen, type UnlistenFn } from "@tauri-apps/api/event";
 import { OCRBoundingBox, regionLabel } from "./OCRBoundingBox";
@@ -7,6 +7,11 @@ import "./overlay.css";
 import type { CaptureMetadata } from "../../lib/coordinates";
 import { ocrPolygonToOverlay } from "../../lib/coordinates";
 import type { TextRegion } from "../../lib/ocr-types";
+import { BubbleTranslation } from "./BubbleTranslation";
+import {
+  bubbleTranslationRegions,
+  useBubbleTranslations,
+} from "./useBubbleTranslations";
 
 interface OverlayState {
   sessionId?: number;
@@ -44,6 +49,24 @@ export function OcrOverlay() {
   const [revealed, setRevealed] = useState(false);
   const [hiding, setHiding] = useState(false);
   const hideButton = useRef<HTMLButtonElement>(null);
+  const translationControls = useRef<HTMLDivElement>(null);
+  const translationElements = useRef(new Map<string, HTMLDivElement>());
+  const [translationEnabled, setTranslationEnabled] = useState(false);
+  const [translationAttempt, setTranslationAttempt] = useState(0);
+  const translatable = useMemo(
+    () =>
+      state?.engine === "manga" ? bubbleTranslationRegions(state.regions) : [],
+    [state?.regions, state?.engine],
+  );
+  const {
+    translations,
+    pending,
+    error: translationError,
+  } = useBubbleTranslations(
+    translatable,
+    translationEnabled,
+    translationAttempt,
+  );
   const controlRevision = useRef(0);
   const hidePending = useRef(false);
   const navigatorRef = useRef<HTMLDivElement>(null);
@@ -72,6 +95,7 @@ export function OcrOverlay() {
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
         event.preventDefault();
+        setTranslationEnabled(false);
         void invoke("hide_focused_overlay").catch((error) =>
           setPopupError(String(error)),
         );
@@ -116,25 +140,35 @@ export function OcrOverlay() {
     if (!button) return;
     let mounted = true;
     const report = () => {
-      const rect = button.getBoundingClientRect();
-      if (!rect.width || !rect.height) return;
+      const elements = [
+        button,
+        translationControls.current,
+        ...translationElements.current.values(),
+      ].filter((element) => element !== null);
+      const rectangles = elements
+        .map((element) => element.getBoundingClientRect())
+        .filter((rect) => rect.width > 0 && rect.height > 0)
+        .map(({ x, y, width, height }) => ({ x, y, width, height }));
+      if (!rectangles.length) return;
       void invoke("update_overlay_controls", {
         sessionId: state.sessionId,
         revision: ++controlRevision.current,
-        rectangles: [
-          { x: rect.x, y: rect.y, width: rect.width, height: rect.height },
-        ],
+        rectangles,
         viewportWidth: window.innerWidth,
         viewportHeight: window.innerHeight,
         viewQuery: window.location.search.slice(1),
       }).catch((error) => {
         if (mounted)
-          setPopupError(`Could not enable the hide control: ${String(error)}`);
+          setPopupError(`Could not enable overlay controls: ${String(error)}`);
       });
     };
     const observer =
       typeof ResizeObserver === "undefined" ? null : new ResizeObserver(report);
     observer?.observe(button);
+    if (translationControls.current)
+      observer?.observe(translationControls.current);
+    for (const element of translationElements.current.values())
+      observer?.observe(element);
     report();
     return () => {
       mounted = false;
@@ -146,6 +180,10 @@ export function OcrOverlay() {
     revealed,
     viewport.width,
     viewport.height,
+    translationEnabled,
+    translations,
+    pending,
+    translationError,
   ]);
 
   useEffect(() => {
@@ -166,6 +204,28 @@ export function OcrOverlay() {
         if (mounted)
           setPopupError(
             `Keyboard region access is unavailable: ${String(error)}`,
+          );
+      });
+    return () => {
+      mounted = false;
+      unlisten?.();
+    };
+  }, []);
+
+  useEffect(() => {
+    let mounted = true;
+    let unlisten: UnlistenFn | undefined;
+    void listen("stop-bubble-translations", () => {
+      if (mounted) setTranslationEnabled(false);
+    })
+      .then((stop) => {
+        if (mounted) unlisten = stop;
+        else stop();
+      })
+      .catch((error) => {
+        if (mounted)
+          setPopupError(
+            `Translation lifecycle events unavailable: ${String(error)}`,
           );
       });
     return () => {
@@ -225,6 +285,10 @@ export function OcrOverlay() {
   const selectedRegion = state.regions.find(
     (region) => region.id === activeRegionId,
   );
+  const controlsTop = Math.max(
+    0,
+    Math.min(viewport.height - 28, state.layout.toolbarTop * scaleY + 2),
+  );
 
   const handleRegionClick = async (region: TextRegion, keyboard = false) => {
     setActiveRegionId(region.id);
@@ -239,6 +303,9 @@ export function OcrOverlay() {
           ? { sessionId: state.sessionId }
           : {}),
         keyboard,
+        ...(translationEnabled && translations.has(region.id)
+          ? { translateOnOpen: true }
+          : {}),
       });
     } catch (error) {
       setPopupError(String(error));
@@ -301,10 +368,56 @@ export function OcrOverlay() {
         aria-label="OCR regions"
         aria-describedby="region-navigation-help"
       >
+        {state.regions.map((region) => {
+          const translation = translationEnabled && translations.get(region.id);
+          if (!translation) return null;
+          const points = ocrPolygonToOverlay(region.polygon, state.metadata, {
+            width: contentWidth,
+            height: contentHeight,
+          });
+          // Stay within the capture and reuse its one coordinate transform.
+          // These are text bounds, not inferred speech-bubble boundaries.
+          const x = Math.max(0, Math.min(...points.map((point) => point.x)));
+          const y = Math.max(0, Math.min(...points.map((point) => point.y)));
+          const right = Math.min(
+            contentWidth,
+            Math.max(...points.map((point) => point.x)),
+          );
+          const bottom = Math.min(
+            contentHeight,
+            Math.max(...points.map((point) => point.y)),
+          );
+          const bounds = { x, y, width: right - x, height: bottom - y };
+          if (bounds.width <= 0 || bounds.height <= 0) return null;
+          return (
+            <Fragment key={region.id}>
+              <BubbleTranslation
+                text={translation}
+                bounds={bounds}
+                elementRef={(element) => {
+                  if (element)
+                    translationElements.current.set(region.id, element);
+                  else translationElements.current.delete(region.id);
+                }}
+              />
+              <rect
+                {...bounds}
+                className="bubble-translation-hit"
+                aria-hidden="true"
+                onClick={(event) =>
+                  void handleRegionClick(region, event.detail === 0)
+                }
+              />
+            </Fragment>
+          );
+        })}
         {state.regions.map((region, index) => (
           <OCRBoundingBox
             region={region}
             demo={state.engine === "demo"}
+            translation={
+              translationEnabled ? translations.get(region.id) : undefined
+            }
             selected={selectedRegionId === region.id}
             tabIndex={index === activeRegionIndex ? 0 : -1}
             elementRef={(element) => {
@@ -322,6 +435,54 @@ export function OcrOverlay() {
           />
         ))}
       </svg>
+      {state.sessionId !== undefined && revealed && translatable.length > 0 && (
+        <div
+          ref={translationControls}
+          className="overlay-translation-controls"
+          style={
+            controlsTop > viewport.height / 2
+              ? { bottom: viewport.height - controlsTop - 28 }
+              : { top: controlsTop }
+          }
+        >
+          <button
+            type="button"
+            className="overlay-translation-toggle"
+            aria-pressed={translationEnabled}
+            title={
+              translationEnabled
+                ? "Show original Japanese"
+                : "Translate detected text with the selected local model"
+            }
+            onClick={() => setTranslationEnabled((enabled) => !enabled)}
+          >
+            Translate bubbles
+          </button>
+          {translationEnabled && (
+            <>
+              <span
+                className="overlay-translation-status"
+                role={translationError ? "alert" : "status"}
+              >
+                {translationError ??
+                  (pending
+                    ? `Translating locally ${translations.size}/${translatable.length}…`
+                    : "Machine translation · Click a region for details")}
+              </span>
+              {translationError && (
+                <button
+                  type="button"
+                  onClick={() =>
+                    setTranslationAttempt((attempt) => attempt + 1)
+                  }
+                >
+                  Retry
+                </button>
+              )}
+            </>
+          )}
+        </div>
+      )}
       {state.sessionId !== undefined && revealed && (
         <button
           ref={hideButton}
@@ -331,17 +492,12 @@ export function OcrOverlay() {
           title="Hide OCR overlays (Esc)"
           disabled={hiding}
           style={{
-            top: Math.max(
-              0,
-              Math.min(
-                viewport.height - 28,
-                state.layout.toolbarTop * scaleY + 2,
-              ),
-            ),
+            top: controlsTop,
           }}
           onClick={() => {
             if (hidePending.current) return;
             hidePending.current = true;
+            setTranslationEnabled(false);
             setHiding(true);
             setPopupError(null);
             void invoke("hide_completed_ocr_overlay", {

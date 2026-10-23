@@ -87,6 +87,13 @@ recorded in the [release checklist](desktop-release.md).
 
 ### Implemented in source
 
+- [x] **Toggle translated text over bubbles** — explicit local translation panels
+      at detected text bounds, immediate return to Japanese, sequential requests,
+      error/retry and a full-popup fallback for text that cannot fit. Starts off
+      for each scan/restoration; no image modification or bubble segmentation.
+      [Controls](usage.md#translate-in-bubbles) and
+      [verification limits](ui-testing.md#bubble-translation-toggle).
+
 - [x] **Show OCR results from the tray** — restore the latest hidden completed
       outlines without rescanning or focusing the toolbar; scan/no-result/visible
       guards remain active. [Controls](usage.md#tray--menu-bar) and
@@ -292,14 +299,14 @@ wants an action from たい alone.
 
 ### Supported slice
 
-| Category                        | Supported forms                                                                                                        |
-| ------------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
-| Ichidan and regular godan verbs | Plain past, negative, negative past; polite non-past, past, negative and negative past                                 |
-| Irregular verbs                 | する and 来る／くる; IPADIC-marked 行く-type past and 問う-type ウ音便; ある's negative when the analyzed base is ある |
-| I-adjectives                    | かった, くない, くなかった; those forms plus です, and dictionary form + です; standalone いい → よい stem             |
-| Casual contractions             | ちゃう／ちゃった and じゃう／じゃった, expanded through てしまう／でしまう                                             |
+| Category                        | Supported forms                                                                                                                                                       |
+| ------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Ichidan and regular godan verbs | Plain past, negative, negative past; polite non-past, past, negative and negative past                                                                                |
+| Irregular verbs                 | する and 来る／くる; IPADIC-marked 行く-type past and 問う-type ウ音便; ある's negative when the analyzed base is ある                                                |
+| I-adjectives                    | かった, くない, くなかった; those forms plus です, and dictionary form + です; standalone いい → よい stem                                                            |
+| Casual contractions             | ちゃう／ちゃった and じゃう／じゃった, expanded through てしまう／でしまう                                                                                            |
 | Continuing action/state         | ている／でいる and casual てる／でる; plain non-past, past, negative and negative past; polite ます, ました, ません and ませんでした, including forms with い omitted |
-| Desire                          | たい, たかった, たくない and たくなかった; each also with polite です |
+| Desire                          | たい, たかった, たくない and たくなかった; each also with polite です                                                                                                 |
 
 The current implementation relies on the pinned Lindera/IPADIC base form and
 verb/adjective class. It generates these small rule families and requires an
