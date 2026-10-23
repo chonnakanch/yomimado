@@ -62,8 +62,7 @@ export function SavedBackup({ onRestored }: { onRestored: () => void }) {
     <details className="library-backup library-context">
       <summary>Backup &amp; restore</summary>
       <p className="library-metadata">
-        Export all saved words and sentences, including saved translations and
-        dates, to a local file. Search filters do not limit the backup.
+        Back up your saved words and sentences.
       </p>
       <div className="library-backup-actions">
         <button
@@ -105,21 +104,16 @@ export function SavedBackup({ onRestored }: { onRestored: () => void }) {
         >
           <h2>Restore preview</h2>
           <p>{preview.file.name}</p>
-          <ul>
-            <li>
-              {countLabel(preview.summary.wordsAdded, "new word")} ·{" "}
-              {countLabel(preview.summary.wordsSkipped, "duplicate")} skipped
-            </li>
-            <li>
-              {countLabel(preview.summary.sentencesAdded, "new sentence")} ·{" "}
-              {countLabel(preview.summary.sentencesSkipped, "duplicate")}{" "}
-              skipped
-            </li>
-          </ul>
+          <p>
+            {countLabel(preview.summary.wordsAdded, "new word")} ·{" "}
+            {countLabel(preview.summary.sentencesAdded, "new sentence")}
+          </p>
           <p className="library-metadata">
-            Only missing entries will be added. Existing meanings, translations
-            and dates stay unchanged. Duplicate counts may change if you save or
-            remove entries before restoring.
+            {countLabel(
+              preview.summary.wordsSkipped + preview.summary.sentencesSkipped,
+              "duplicate",
+            )}{" "}
+            skipped. Existing entries stay unchanged.
           </p>
           <div className="library-backup-actions">
             <button
@@ -136,7 +130,7 @@ export function SavedBackup({ onRestored }: { onRestored: () => void }) {
                   if (mounted.current) {
                     setPreview(null);
                     setStatus(
-                      `Restored ${countLabel(result.wordsAdded, "word")} and ${countLabel(result.sentencesAdded, "sentence")}; skipped ${countLabel(result.wordsSkipped + result.sentencesSkipped, "duplicate")}.`,
+                      `Restored ${countLabel(result.wordsAdded, "word")} and ${countLabel(result.sentencesAdded, "sentence")}.`,
                     );
                     onRestored();
                     setFocusRestore(true);
@@ -144,14 +138,14 @@ export function SavedBackup({ onRestored }: { onRestored: () => void }) {
                 })
               }
             >
-              Restore missing entries
+              Restore
             </button>
             <button
               className="utility-button"
               disabled={busy !== null}
               onClick={cancel}
             >
-              Cancel restore
+              Cancel
             </button>
           </div>
           {preview.summary.wordsAdded + preview.summary.sentencesAdded ===
@@ -166,11 +160,6 @@ export function SavedBackup({ onRestored }: { onRestored: () => void }) {
           {error} Try again.
         </p>
       )}
-      <p className="library-metadata">
-        Backups contain your saved text in plain JSON. Screenshots, models,
-        settings and translation caches are excluded. Dictionary meanings retain
-        their JMdict (EDRDG) · CC BY-SA 4.0 attribution.
-      </p>
     </details>
   );
 }

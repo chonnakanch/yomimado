@@ -366,6 +366,9 @@ refresh/error/empty states and confirmed Remove actions. Lists remain readable
 with larger text and narrow windows.
 
 Keep **Backup & restore** as a collapsed disclosure above the collection search.
+Use one short helper sentence, a compact count preview and **Restore / Cancel**
+controls. Keep format/resource details in the reading guide and attribution in
+backup files and existing Sources/entry views.
 Use native file dialogs and explicit Export/Restore labels. Restore first shows
 the selected file name and new/duplicate counts, explaining that existing entries
 stay unchanged. Focus its confirmation button (or the preview when nothing is new)

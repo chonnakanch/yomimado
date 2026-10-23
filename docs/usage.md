@@ -140,7 +140,7 @@ or reinstalling YomiMado.
 
 Choose **Restore backup**, select a YomiMado JSON backup and review the numbers
 of new words, new sentences and duplicates. Nothing is imported until you choose
-**Restore missing entries**. **Cancel restore** leaves your library unchanged.
+**Restore**. **Cancel** leaves your library unchanged.
 Restore adds missing entries and skips duplicates, keeping existing meanings,
 translations and dates. A word with the same spelling and reading but a different
 source sentence is a separate entry. Reimporting the same file adds no duplicates.

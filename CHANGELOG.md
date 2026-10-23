@@ -19,6 +19,7 @@ The [feature roadmap](docs/implementation-plan.md#feature-checklist) tracks comp
   portable JSON with attribution. Preview new/duplicate counts, then atomically
   add missing entries without replacing existing data. Use bounded, native file
   dialogs and complete-file writes; preserve searches and refresh after restore.
+  Keep helper text and counts compact, with short Restore/Cancel controls.
   No dependencies or database schema changes. All 392 frontend, 269 service and
   83 native tests, formatting/lint, TypeScript/Vite, Clippy and the macOS debug build
   pass. Native dialogs, Windows and exact installers remain unverified. See

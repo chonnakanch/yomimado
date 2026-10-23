@@ -143,14 +143,12 @@ it.each(["Export backup", "Restore backup"])(
 it("previews duplicate counts before any writes, and cancel restores keyboard focus", async () => {
   await open();
   await click("Restore backup");
-  expect(container.textContent).toContain("1 new word · 2 duplicates skipped");
-  expect(container.textContent).toContain(
-    "1 new sentence · 3 duplicates skipped",
-  );
+  expect(container.textContent).toContain("1 new word · 1 new sentence");
+  expect(container.textContent).toContain("5 duplicates skipped.");
   expect(container.textContent).toContain(file.name);
-  expect(document.activeElement).toBe(button("Restore missing entries"));
+  expect(document.activeElement).toBe(button("Restore"));
   expect(requests("/restore")).toHaveLength(0);
-  await click("Cancel restore");
+  await click("Cancel");
   expect(document.activeElement).toBe(button("Restore backup"));
   expect(requests("/restore")).toHaveLength(0);
 });
@@ -169,8 +167,8 @@ it("restores only on confirmation, refreshes both collections and preserves the 
   });
   await click("Restore backup");
   await act(async () => {
-    button("Restore missing entries").click();
-    button("Restore missing entries").click();
+    button("Restore").click();
+    button("Restore").click();
   });
   expect(requests("/restore")).toHaveLength(1);
   expect(requests("/restore")[0][1]).toMatchObject({
@@ -181,9 +179,7 @@ it("restores only on confirmation, refreshes both collections and preserves the 
       "content-type": "application/json",
     },
   });
-  expect(container.textContent).toContain(
-    "Restored 1 word and 1 sentence; skipped 5 duplicates.",
-  );
+  expect(container.textContent).toContain("Restored 1 word and 1 sentence.");
   expect(container.querySelector(".library-word strong")?.textContent).toBe(
     "学校",
   );
@@ -222,7 +218,7 @@ it("refreshes restored entries after an already pending removal finishes", async
   await open();
   await click("Remove");
   await click("Restore backup");
-  await click("Restore missing entries");
+  await click("Restore");
   expect(requests("/api/v1/vocabulary")).toHaveLength(1);
   await act(async () => {
     deleted = true;
@@ -238,7 +234,7 @@ it("retains the preview after storage failure and allows retry without rereading
   restoreFailure = true;
   await open();
   await click("Restore backup");
-  await click("Restore missing entries");
+  await click("Restore");
   expect(container.querySelector('[role="alert"]')?.textContent).toContain(
     "Storage unavailable",
   );
@@ -247,7 +243,7 @@ it("retains the preview after storage failure and allows retry without rereading
   ).not.toBeNull();
   expect(restored).toBe(false);
   restoreFailure = false;
-  await click("Restore missing entries");
+  await click("Restore");
   expect(requests("/restore")).toHaveLength(2);
   expect(invoke).toHaveBeenCalledTimes(1);
   expect(container.querySelector('[role="alert"]')).toBeNull();
@@ -262,12 +258,12 @@ it("keeps an all-duplicate preview readable without offering another restore", a
   };
   await open();
   await click("Restore backup");
-  expect(button("Restore missing entries").disabled).toBe(true);
+  expect(button("Restore").disabled).toBe(true);
   expect(container.textContent).toContain("Nothing new to restore.");
   expect(document.activeElement).toBe(
     container.querySelector('[aria-label="Restore preview"]'),
   );
-  await click("Cancel restore");
+  await click("Cancel");
   expect(requests("/restore")).toHaveLength(0);
 });
 

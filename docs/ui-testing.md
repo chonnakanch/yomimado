@@ -125,6 +125,11 @@ unchanged. Follow the native popup checks above when recording hardware acceptan
 
 ## Local backup and restore
 
+Copy follow-up — 2026-10-23: reduce the panel to one helper sentence, compact
+new/duplicate counts and Restore/Cancel controls. Remove the technical footer
+and shorten completion feedback. The 13 backup UI tests, frontend formatting and
+TypeScript/Vite build pass; browser review uses synthetic data and mocked dialogs.
+
 Development check — 2026-10-23: the Saved disclosure and restore preview were
 reviewed in the browser with synthetic saved text and mocked native dialogs/service.
 The preview shows new/duplicate counts before confirmation; completion returns
