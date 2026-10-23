@@ -191,3 +191,81 @@ def test_refined_non_japanese_crop_keeps_both_review_reasons(monkeypatch):
         and r.confidence == 0
         for r in response.regions
     )
+
+
+@pytest.mark.parametrize("dark", [False, True])
+@pytest.mark.parametrize("stage", ["full", "tile", "mask"])
+@pytest.mark.parametrize("uncovered", [False, True])
+def test_overlapping_fragment_is_suppressed_only_when_its_ink_is_covered(
+    monkeypatch, dark, stage, uncovered
+):
+    image = np.full((240, 500, 3), 0 if dark else 255, dtype=np.uint8)
+    ink = 255 if dark else 0
+    for left in range(60, 340, 40):
+        image[50:90, left : left + 28] = ink
+    if uncovered:
+        # A separate short run lies below the horizontal block's search bounds.
+        for left in (205, 245, 285):
+            image[96:105, left : left + 20] = ink
+    paragraph = block((40, 30, 370, 92), font=40)
+    fragment = block((200, 45, 330, 106), font=0, vertical=stage == "mask")
+    monkeypatch.setattr(
+        real_ocr,
+        "_detected_blocks",
+        lambda *_: [(paragraph, 0, 0, "full"), (fragment, 0, 0, stage)],
+    )
+    calls = []
+
+    def recognize(crop):
+        calls.append(crop.size)
+        return "これは主な文章です" if crop.width > 200 else "別の字"
+
+    response = run_pipeline(monkeypatch, image, [], recognize)
+    row = (59, 49, 329, 91)
+    assert real_ocr._overlap_over_smaller(fragment.xyxy, row) > 0.6
+    assert ink_covered_by_rows(image, fragment.xyxy, [row], cv2, np) == (not uncovered)
+    assert [r.text for r in response.regions] == ["これは主な文章です"] + (
+        ["別の字"] if uncovered else []
+    )
+    assert calls == [(270, 42)] + ([(130, 61)] if uncovered else [])
+    assert response.regions[0].polygon == rectangle(row)
+    if uncovered:
+        assert response.regions[1].polygon == rectangle(fragment.xyxy)
+    assert response.debug.detections[-1].status == ("recognized" if uncovered else "filtered")
+
+
+@pytest.mark.parametrize("recovery", ["selection", "expandedCrop"])
+def test_text_recovery_preserves_non_japanese_warning(monkeypatch, recovery):
+    dimensions = (150, 150) if recovery == "selection" else (200, 900)
+    box = (20, 20, 100, 70) if recovery == "selection" else (40, 120, 60, 180)
+    image = np.full((dimensions[1], dimensions[0], 3), 255, dtype=np.uint8)
+    left, top, right, bottom = box
+    image[top + 2 : bottom - 2, left + 2 : right - 2] = 0
+    monkeypatch.setattr(real_ocr, "_content_retry_tiles", lambda _: [])
+    calls = []
+
+    def recognize(crop):
+        calls.append(crop.size)
+        return "学校" if crop.size == (right - left, bottom - top) else "学校へ"
+
+    response = run_pipeline(
+        monkeypatch,
+        image,
+        [block(box, font=0, vertical=recovery == "expandedCrop", language="eng")],
+        recognize,
+    )
+    assert len(calls) == 2
+    assert len(response.regions) == 1
+    region = response.regions[0]
+    assert region.text == "学校へ"
+    assert region.geometrySource == recovery
+    assert region.needsReview and region.confidence == 0
+    assert real_ocr.LANGUAGE_REVIEW_REASON in region.reviewReason
+    reason = (
+        real_ocr.SELECTION_REVIEW_REASON
+        if recovery == "selection"
+        else real_ocr.EXPANDED_REVIEW_REASON
+    )
+    assert reason in region.reviewReason
+    assert response.debug.detections[0].text == "学校"
+    assert real_ocr.LANGUAGE_REVIEW_REASON in response.debug.detections[0].decisionReason

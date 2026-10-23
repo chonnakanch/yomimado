@@ -1,6 +1,6 @@
 # Implementation status and feature roadmap
 
-Last reviewed: **2026-10-22**. This is the current plan, not a chronological work
+Last reviewed: **2026-10-23**. This is the current plan, not a chronological work
 log. [CHANGELOG.md](../CHANGELOG.md) records dated changes; the
 [release checklist](desktop-release.md) records publication and exact installers.
 Source completion, UI approval and installer acceptance are separate states.
@@ -20,7 +20,8 @@ at the owner's request.
 - Horizontal OCR geometry recovery localizes loose titles and plain light/dark
   paragraphs into bounded text rows, retaining review metadata. Mixed-content
   recovery reconciles fragmented rows and suppresses false vertical runs using
-  combined ink coverage; non-Japanese detector classifications receive a warning.
+  combined ink coverage. Box overlap alone cannot suppress uncovered full/tile/mask
+  text; non-Japanese warnings survive selection and expanded-crop recovery.
   Source checks and
   [synthetic measurements](ocr-geometry-results.json) pass; native Windows
   extended-monitor acceptance remains unrecorded.
@@ -31,6 +32,9 @@ at the owner's request.
   drags. All app windows suppress the browser right-click context menu. Drag
   regression coverage passes; native macOS/Windows interaction checks remain unrecorded in
   [UI testing](ui-testing.md#check-the-native-interaction).
+- OCR correction preserves the draft when Escape belongs to Japanese IME
+  composition; ordinary Escape still cancels editing. Regression coverage is
+  recorded with [popup verification](ui-testing.md#learning-popup-modes).
 - The latest public release is **v0.5.0**, source
   `8ff3be2621096a9804cc23ba33902f5aab34da55`, with nine uploaded assets.
   It includes custom capture shortcuts and initial OCR recovery using reviewed
@@ -55,6 +59,8 @@ input hashes and the owner-uploaded activation manifest are retained in the
 [seed record](macos-runtime-seed.md#v060-replacement-seed--2026-10-22).
 Mounted source/signature and frozen offline smoke checks pass; this does not
 change published installers or establish new exact-installer acceptance.
+Later Python service fixes require a compatible replacement reviewed runtime seed
+before packaging; the recorded approval applies only to its bound source.
 
 ## Maintenance priorities
 

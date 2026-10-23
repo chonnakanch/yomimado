@@ -88,6 +88,11 @@ hover and expand/collapse with synthetic data.
 All 324 frontend tests, frontend formatting and the TypeScript/Vite build pass;
 73 local links/fragments in the affected guides were checked.
 
+IME regression check — 2026-10-23: Escape with `isComposing` or the legacy IME
+key code `229` leaves the correction editor, focus and draft intact without
+preventing the composition event. The draft can then be applied; ordinary Escape
+continues to cancel it. These are DOM event regressions, not native IME acceptance.
+
 This does not establish native WebKit/WebView2 caret/IME, anchored resizing,
 focus/pass-through or Windows hardware acceptance. Follow the native overlay
 matrix below and verify Words/Select/Edit, cancellation, correction, copy/save,
@@ -192,6 +197,12 @@ macOS. The Japanese row outlines agree across the clean header controls; Thai
 recognition remains unsupported and carries a warning when the detector classifies
 it as non-Japanese. [Mixed-content measurements](ocr-mixed-text-results.json)
 record the geometry outcomes, older fixture comparison and limits.
+
+Coverage/warning regression check — 2026-10-23: model-free tests retain a fragment
+with extra visible glyphs despite more than 60% box overlap, across full/tile/mask
+passes and light/dark backgrounds. Covered duplicates still skip recognition.
+Whole-selection and expanded short vertical recovery retain the detector's
+non-Japanese warning alongside the recovery reason and original diagnostics.
 
 For native acceptance, repeat Selected Area and Whole Screen on the Windows laptop
 and extended monitor, including differing display scales and reversed monitor

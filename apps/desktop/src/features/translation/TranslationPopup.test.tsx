@@ -1519,6 +1519,37 @@ it("navigates mode tabs with arrows without starting a lookup or discarding a dr
   expect(fetch).toHaveBeenCalledTimes(1);
 });
 
+it.each([{ isComposing: true }, { keyCode: 229 }])(
+  "preserves the OCR draft when Escape belongs to IME composition: %j",
+  async (composition) => {
+    const fetch = serviceMock();
+    await openPopup();
+    await click("Edit");
+    await editDraft("学校に行きます");
+    const editor = container.querySelector("textarea")!;
+    const escape = new KeyboardEvent("keydown", {
+      key: "Escape",
+      bubbles: true,
+      cancelable: true,
+      ...composition,
+    });
+    await act(async () => editor.dispatchEvent(escape));
+    expect(escape.defaultPrevented).toBe(false);
+    expect(container.querySelector("textarea")).toBe(editor);
+    expect(editor.value).toBe("学校に行きます");
+    expect(document.activeElement).toBe(editor);
+    expect(invokeMock).not.toHaveBeenCalledWith(
+      "close_translation_popup",
+      expect.anything(),
+    );
+    expect(fetch).toHaveBeenCalledTimes(1);
+    await click("Apply");
+    expect(container.querySelector(".tokenization-text")!.textContent).toBe(
+      "学校に行きます",
+    );
+  },
+);
+
 it("shows Copied briefly then returns to Copy without another clipboard request", async () => {
   serviceMock();
   const writeText = vi.fn().mockResolvedValue(undefined);

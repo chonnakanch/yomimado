@@ -542,7 +542,11 @@ def _apply_selection_fallback(
         tokens=[],
         geometrySource="selection",
         needsReview=True,
-        reviewReason=SELECTION_REVIEW_REASON,
+        reviewReason=(
+            f"{regions[0].reviewReason}; {SELECTION_REVIEW_REASON}"
+            if regions and regions[0].reviewReason
+            else SELECTION_REVIEW_REASON
+        ),
     )
     return [fallback], True
 
@@ -616,13 +620,7 @@ def recognize_with_models(image_bytes: bytes, *, debug: bool = False) -> OcrResp
                 )
             continue
         box = (x1, y1, x2, y2)
-        covered_by_rows = ink_covered_by_rows(bgr, box, refined_boxes, cv2, np)
-        if covered_by_rows or any(
-            _overlap_over_smaller(box, previous) >= 0.6
-            and previous[0] <= (x1 + x2) / 2 <= previous[2]
-            and previous[1] <= (y1 + y2) / 2 <= previous[3]
-            for previous in refined_boxes
-        ):
+        if ink_covered_by_rows(bgr, box, refined_boxes, cv2, np):
             if debug:
                 detections.append(
                     OcrDebugDetection(
@@ -651,7 +649,11 @@ def recognize_with_models(image_bytes: bytes, *, debug: bool = False) -> OcrResp
             ):
                 index -= 1
                 continue
-        seen_boxes.append(box)
+        # Successful localized rows suppress fragments through ink coverage
+        # above. Area overlap must not discard their uncovered tile/mask text,
+        # and failed row recognition must leave those fallback crops available.
+        if not refined_line:
+            seen_boxes.append(box)
         polygon = [Point(x=point.x + offset_x, y=point.y + offset_y) for point in _polygon(block)]
         geometry_adjusted = refined_line
         if detection_pass != "mask" and not refined_line:
@@ -815,12 +817,17 @@ def recognize_with_models(image_bytes: bytes, *, debug: bool = False) -> OcrResp
             region.polygon = _box_polygon(expanded_box)
             region.geometrySource = "expandedCrop"
             region.needsReview = True
-            region.reviewReason = EXPANDED_REVIEW_REASON
+            region.reviewReason = (
+                f"{region.reviewReason}; {EXPANDED_REVIEW_REASON}"
+                if region.reviewReason
+                else EXPANDED_REVIEW_REASON
+            )
             region_boxes[region_index] = expanded_box
             debug_index = region_debug_indices[region_index]
             if debug_index is not None:
                 debug_detection = detections[debug_index]
                 debug_detection.decisionReason = (
+                    f"{debug_detection.decisionReason}; "
                     f"Expanded short vertical crop recognized {expanded_text}; area approximate"
                 )
 
