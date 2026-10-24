@@ -361,6 +361,16 @@ restored after verification. The rebuilt app is open on the new control. Native
 Windows and a fresh native OCR pass remain unverified; the earlier macOS Screen
 Recording permission failure was not rechecked in this follow-up. No Rust/Python changes.
 
+Popup alignment follow-up — 2026-10-24: align the translation and Japanese card
+edges, center the title/Local/cached metadata and keep Copy/collapse controls
+together on the right. Remove the “Machine translation” prefix while preserving
+saved/unsaved status. All 416 frontend tests, formatting, TypeScript/Vite and the
+macOS debug bundle pass. Browser checks of the actual frontend with synthetic
+service/native replies at 420×550 and 320×550 confirm aligned cards, readable
+metadata, Copy confirmation and collapse/expand. The updated native macOS debug
+app was relaunched; this follow-up does not establish native popup or Windows
+interaction acceptance.
+
 ## Horizontal OCR geometry recovery
 
 Development source — 2026-10-22: model-free regressions cover light/dark paragraph

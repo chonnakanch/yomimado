@@ -386,6 +386,11 @@ can be retained with it. A secondary Translate locally control reveals the
 existing English output and cached state only after a request. Both the Japanese
 and English remain accessible; changing source clears stale output.
 
+Align the translation card with the Japanese sentence card. Center the title,
+Local badge and cached state together; keep Copy and collapse controls grouped at
+the right, allowing metadata to wrap at narrow widths. Show the sentence's save
+status below the result without a “Machine translation” label.
+
 ### Saved collections and SettingsWindow
 
 Toolbar navigation has separate **Saved**, **Settings**, and **Sources & licenses**

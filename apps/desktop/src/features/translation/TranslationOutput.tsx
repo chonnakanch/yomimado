@@ -50,9 +50,11 @@ export function TranslationOutput({
       aria-live="polite"
     >
       <div className="translation-output-heading">
-        <h3>Translation</h3>
-        <span className="popup-badge">Local</span>
-        {result?.cached && <span className="popup-metadata">cached</span>}
+        <div className="translation-output-labels">
+          <h3>Translation</h3>
+          <span className="popup-badge">Local</span>
+          {result?.cached && <span className="popup-metadata">cached</span>}
+        </div>
         {result && (
           <div className="translation-output-actions">
             <button
@@ -99,8 +101,7 @@ export function TranslationOutput({
       {result && (
         <div id="translation-result-text" hidden={collapsed}>
           <p lang="en">{result.translatedText}</p>
-          <p className="popup-metadata translation-disclaimer">
-            Machine translation.{" "}
+          <p className="popup-metadata translation-save-status">
             {saved ? "Saved locally with sentence." : "Not saved."}
           </p>
         </div>

@@ -1783,7 +1783,8 @@ it("shows translation failure, explicit retry, loading and saved sentence states
     ),
   );
   expect(container.textContent).not.toContain("Open Ollama and retry.");
-  expect(container.textContent).toContain("Machine translation. Not saved.");
+  expect(container.textContent).toContain("Not saved.");
+  expect(container.textContent).not.toContain("Machine translation.");
   await click("Hide translation");
   expect(
     container.querySelector<HTMLElement>("#translation-result-text")!.hidden,

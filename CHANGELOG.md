@@ -34,6 +34,12 @@ The [feature roadmap](docs/implementation-plan.md#feature-checklist) tracks comp
 
 #### Fixed
 
+- Align the popup's translation card with the Japanese card and center its
+  header metadata beside the Copy/collapse controls. Remove the “Machine
+  translation” label while keeping save status. All 416 frontend tests,
+  formatting, TypeScript/Vite and the macOS debug bundle pass; browser checks
+  cover 420/320 px widths, Copy and collapse. Native Windows remains unverified.
+
 - Repair leaked control tokens and invented dialogue from HY-MT2 imports carrying
   an incompatible legacy Hunyuan template. Select the publisher's matching raw
   prompt from vocabulary metadata, reject malformed/truncated output before
