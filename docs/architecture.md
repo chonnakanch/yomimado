@@ -145,9 +145,13 @@ server may complete. A failure stops the queue and leaves unprocessed Japanese
 visible. Demo boundaries and known sound effects are excluded; unknown region
 types remain eligible without changing their OCR metadata.
 
-`BubbleTranslation` renders fitted text in SVG foreign objects using
-`ocrPolygonToOverlay`. Panels first use available width and height at 18 CSS px, then reduce
-the font down to 11 px. Growth is bounded to 240 × 220 CSS px unless the original
+`BubbleTranslation` renders text in SVG foreign objects using
+`ocrPolygonToOverlay`. A separate font-size preference uses the same localStorage
+subscription path. Automatic is the default: panels first use available width and
+height at 18 CSS px, then reduce the font down to 11 px. Fixed choices (12–32 px)
+retain that size, growing within the same geometry limits and scrolling on
+overflow. A font change only refits the rendered panels; it does not restart the
+translation queue. Growth is bounded to 240 × 220 CSS px unless the original
 region is larger, and uses only the space the measured text needs. Each pair of
 regions shares a horizontal or vertical gap at its midpoint, including diagonal
 neighbors, with a 4 px separation when space permits. Overlapping source regions
@@ -156,8 +160,8 @@ existing native control route, bounded to one panel per region plus two control
 areas. This also extends Windows' visible window region to the rectangular
 panels. Original polygons continue to own keyboard navigation; translated panels
 mirror their review/selection borders and accept pointer input and scrolling.
-Text that cannot fit at 11 px stays visible from its first line with vertical
-scrolling instead of an ellipsis. Opening a translated region passes
+Text that cannot fit at the selected fixed size or the 11 px automatic minimum
+stays visible from its first line with vertical scrolling instead of an ellipsis. Opening a translated region passes
 an explicit `translateOnOpen` popup option; the popup requests its full translation
 through the same provider/cache, with normal errors and stale-source guards.
 

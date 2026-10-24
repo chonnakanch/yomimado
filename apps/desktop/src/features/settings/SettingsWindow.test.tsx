@@ -4,7 +4,10 @@ import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
 import { invoke } from "@tauri-apps/api/core";
 import { App } from "../../App";
-import { bubbleTranslationPreferenceKey } from "../overlay/bubble-translation-preference";
+import {
+  bubbleTranslationFontSizeKey,
+  bubbleTranslationPreferenceKey,
+} from "../overlay/bubble-translation-preference";
 
 const detectorInvoke = vi.hoisted(() => vi.fn());
 vi.mock("@tauri-apps/api/core", () => ({ invoke: vi.fn() }));
@@ -272,5 +275,60 @@ it("reports a bubble preference save failure without claiming automatic translat
   expect(bubbleSetting().checked).toBe(false);
   expect(container.querySelector('[role="alert"]')?.textContent).toContain(
     "Could not save the bubble translation preference",
+  );
+});
+
+const fontSetting = () =>
+  container.querySelector<HTMLSelectElement>(
+    'select[aria-describedby="bubble-font-size-help"]',
+  )!;
+const chooseFont = (value: string) =>
+  act(async () => {
+    fontSetting().value = value;
+    fontSetting().dispatchEvent(new Event("change", { bubbles: true }));
+  });
+
+it("persists a fixed translation size and updates its preview and other windows", async () => {
+  window.history.replaceState({}, "", "/?view=reading");
+  await mount();
+  expect(fontSetting().value).toBe("auto");
+  await chooseFont("24");
+  expect(window.localStorage.getItem(bubbleTranslationFontSizeKey)).toBe("24");
+  expect(
+    container.querySelector<HTMLElement>(
+      '[aria-label="Translation font size preview"]',
+    )!.style.fontSize,
+  ).toBe("24px");
+  expect(bubbleSetting().checked).toBe(false);
+  await act(async () => root.unmount());
+  root = createRoot(container);
+  await mount();
+  expect(fontSetting().value).toBe("24");
+  await act(async () => {
+    window.localStorage.setItem(bubbleTranslationFontSizeKey, "32");
+    window.dispatchEvent(
+      new StorageEvent("storage", { key: bubbleTranslationFontSizeKey }),
+    );
+  });
+  expect(fontSetting().value).toBe("32");
+  expect(
+    container.querySelector<HTMLElement>(
+      '[aria-label="Translation font size preview"]',
+    )!.style.fontSize,
+  ).toBe("32px");
+});
+
+it("falls back to automatic for invalid stored sizes and preserves the selection on save failure", async () => {
+  window.history.replaceState({}, "", "/?view=reading");
+  window.localStorage.setItem(bubbleTranslationFontSizeKey, "1000");
+  await mount();
+  expect(fontSetting().value).toBe("auto");
+  vi.spyOn(Storage.prototype, "setItem").mockImplementation(() => {
+    throw new Error("Storage unavailable");
+  });
+  await chooseFont("20");
+  expect(fontSetting().value).toBe("auto");
+  expect(container.querySelector('[role="alert"]')?.textContent).toContain(
+    "Could not save the translation font size",
   );
 });

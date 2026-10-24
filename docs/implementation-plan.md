@@ -93,8 +93,8 @@ recorded in the [release checklist](desktop-release.md).
       Settings → Reading starts local translations after each completed scan;
       disabling it immediately reveals Japanese. Sequential requests,
       error/retry, word wrapping without added hyphens, panels that grow in width and
-      height, and scrollable long text with full-popup
-      access. Defaults off; enabling persists across scans/restoration/restarts.
+      height, saved font-size choices (Automatic or fixed 12–32 px), and scrollable
+      long text with full-popup access. Defaults off; enabling persists across scans/restoration/restarts.
       No image modification or bubble segmentation.
       [Controls](usage.md#translate-in-bubbles) and
       [verification limits](ui-testing.md#bubble-translation-toggle).

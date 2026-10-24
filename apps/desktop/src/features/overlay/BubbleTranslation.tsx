@@ -1,12 +1,14 @@
 import { useLayoutEffect, useRef, useState } from "react";
 import type { Rectangle } from "../../lib/coordinates";
 import { anchorTranslationBounds } from "./translation-layout";
+import type { BubbleTranslationFontSize } from "./bubble-translation-preference";
 
 /** Region polygons retain keyboard navigation; this surface also accepts scrolling. */
 export function BubbleTranslation({
   text,
   bounds,
   availableBounds = bounds,
+  fontSize = "auto",
   elementRef,
   onActivate,
   needsReview = false,
@@ -15,6 +17,7 @@ export function BubbleTranslation({
   text: string;
   bounds: Rectangle;
   availableBounds?: Rectangle;
+  fontSize?: BubbleTranslationFontSize;
   elementRef: (element: HTMLDivElement | null) => void;
   onActivate: () => void;
   needsReview?: boolean;
@@ -31,9 +34,12 @@ export function BubbleTranslation({
     let width = bounds.width;
     let height = bounds.height;
     let overflow = false;
-    // Use space at 18px before reducing the font. Measure real wrapping with
+    // Use space before reducing an automatic font. Fixed sizes stay at the
+    // reader's chosen size and scroll instead. Measure real wrapping with
     // the scrollbar gutter reserved, and retain every word when space runs out.
-    for (let size = 18; size >= 11; size--) {
+    const maximum = fontSize === "auto" ? 18 : Number(fontSize);
+    const minimum = fontSize === "auto" ? 11 : maximum;
+    for (let size = maximum; size >= minimum; size--) {
       span.style.fontSize = `${size}px`;
       width = bounds.width;
       while (true) {
@@ -63,6 +69,7 @@ export function BubbleTranslation({
     parent.scrollTop = 0;
   }, [
     text,
+    fontSize,
     bounds.x,
     bounds.y,
     bounds.width,

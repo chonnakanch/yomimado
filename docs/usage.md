@@ -117,10 +117,16 @@ A request already running in the local model may finish. An error stops the queu
 and offers **Retry** on the overlay; untranslated regions keep their Japanese
 visible.
 
+Choose **Translation font size** in the same Bubble translation settings.
+**Automatic (fit text)** is the default and fits text from 18 down to 11 px.
+Fixed sizes from **12 to 32 px** keep the chosen size and let long text scroll.
+The preview updates immediately. Your size is saved across app restarts and also
+updates visible bubble translations without translating again.
+
 Translation panels can widen and grow taller into the space between neighboring
 text regions, within the captured area. These text-based panels can differ from the
 speech bubble's interior. Text wraps at word boundaries without added
-hyphens. Panels use available space before fitting down to 11 px. Longer translations
+hyphens. Panels use available space before automatic fitting or scrolling at a fixed size. Longer translations
 stay visible and scroll inside the panel; point at the text and scroll to read
 the rest. Click a region to open its full translation in the learning popup,
 with Japanese and OCR review details. Known sound effects and demo boundaries are excluded; OCR

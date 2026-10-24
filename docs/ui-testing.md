@@ -343,6 +343,24 @@ permission check in this rebuilt debug app, so fresh native OCR-to-translation
 handoff is not claimed. Native Windows and exact installers remain unverified.
 No Rust or Python source changes in this follow-up.
 
+Font-size follow-up — 2026-10-24: add a persisted **Translation font size**
+select and live preview in Reading's Bubble translation card. Default Automatic
+keeps 18→11 px fitting; fixed 12, 14, 16, 18, 20, 24, 28 and 32 px sizes never
+shrink and retain overflow scrolling. Invalid stored values fall back to
+Automatic; failed writes preserve the selection. Cross-window changes refit
+visible translations without restarting inference or changing automatic mode.
+
+All 416 frontend tests, formatting, TypeScript/Vite and the macOS debug app bundle
+pass. Regressions cover persistence, invalid storage, failed writes, fixed-size
+overflow, size changes and no extra translation requests. A browser check of the
+actual frontend with mocked native/service replies confirmed all five synthetic
+panels at 24 px, then 32 px after a setting change in another tab. A long panel
+retained 32 px and reached its visible final line at 3832 px scroll offset.
+Native macOS Settings saved 24 px across a full app restart; Automatic was
+restored after verification. The rebuilt app is open on the new control. Native
+Windows and a fresh native OCR pass remain unverified; the earlier macOS Screen
+Recording permission failure was not rechecked in this follow-up. No Rust/Python changes.
+
 ## Horizontal OCR geometry recovery
 
 Development source — 2026-10-22: model-free regressions cover light/dark paragraph

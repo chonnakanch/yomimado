@@ -257,7 +257,14 @@ route as well as the hide button.
 Translation panels use white with near-black text for reading against light/dark
 pages. Panels grow only as needed within the capture and shared gaps to
 neighboring text, up to 240 × 220 CSS px unless the original region is larger.
-Use available width and height at 18 px before reducing the font down to 11 px.
+Add a labeled **Translation font size** select and live text preview in the
+Bubble translation card. Default to **Automatic (fit text)**, using available
+width and height at 18 px before reducing to 11 px. Fixed choices are 12, 14, 16,
+18, 20, 24, 28 and 32 px: grow panels as needed, keep the selected size and allow
+overflow scrolling instead of shrinking it. Persist the choice and update visible
+panels across windows without new translation requests. Invalid/unavailable
+storage falls back to Automatic; failed writes preserve the selection and report
+an error.
 Wrap English at spaces, collapse source line breaks into spaces, and disable
 automatic hyphenation and forced word splitting. If the full text still cannot fit, keep its first line
 visible and allow vertical scrolling; never hide it behind an ellipsis. Panels

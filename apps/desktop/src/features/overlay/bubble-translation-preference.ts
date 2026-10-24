@@ -2,6 +2,20 @@ import { useSyncExternalStore } from "react";
 
 export const bubbleTranslationPreferenceKey =
   "yomimado.bubble-translation.enabled.v1";
+export const bubbleTranslationFontSizeKey =
+  "yomimado.bubble-translation.font-size.v1";
+export const bubbleTranslationFontSizes = [
+  "12",
+  "14",
+  "16",
+  "18",
+  "20",
+  "24",
+  "28",
+  "32",
+] as const;
+export type BubbleTranslationFontSize =
+  "auto" | (typeof bubbleTranslationFontSizes)[number];
 const changed = "yomimado-bubble-translation-changed";
 
 function enabled(): boolean {
@@ -16,7 +30,11 @@ function enabled(): boolean {
 
 function subscribe(update: () => void) {
   const onStorage = (event: StorageEvent) => {
-    if (event.key === bubbleTranslationPreferenceKey || event.key === null)
+    if (
+      event.key === bubbleTranslationPreferenceKey ||
+      event.key === bubbleTranslationFontSizeKey ||
+      event.key === null
+    )
       update();
   };
   window.addEventListener("storage", onStorage);
@@ -33,5 +51,27 @@ export function useBubbleTranslationEnabled(): boolean {
 
 export function setBubbleTranslationEnabled(next: boolean): void {
   window.localStorage.setItem(bubbleTranslationPreferenceKey, String(next));
+  window.dispatchEvent(new Event(changed));
+}
+
+function fontSize(): BubbleTranslationFontSize {
+  try {
+    const stored = window.localStorage.getItem(bubbleTranslationFontSizeKey);
+    return bubbleTranslationFontSizes.find((size) => size === stored) ?? "auto";
+  } catch {
+    return "auto";
+  }
+}
+
+export function useBubbleTranslationFontSize(): BubbleTranslationFontSize {
+  return useSyncExternalStore(subscribe, fontSize);
+}
+
+export function setBubbleTranslationFontSize(
+  next: BubbleTranslationFontSize,
+): void {
+  if (next !== "auto" && !bubbleTranslationFontSizes.includes(next))
+    throw new Error("Choose an available translation font size");
+  window.localStorage.setItem(bubbleTranslationFontSizeKey, next);
   window.dispatchEvent(new Event(changed));
 }

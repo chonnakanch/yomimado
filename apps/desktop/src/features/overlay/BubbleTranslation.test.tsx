@@ -96,3 +96,39 @@ it("uses available width and height before shrinking the font, and keeps short t
   expect(panel.getAttribute("height")).toBe("40");
   await act(async () => root.unmount());
 });
+
+it("respects fixed sizes on overflow and refits immediately when the size changes", async () => {
+  Object.assign(globalThis, { IS_REACT_ACT_ENVIRONMENT: true });
+  vi.spyOn(HTMLElement.prototype, "clientWidth", "get").mockReturnValue(60);
+  vi.spyOn(HTMLElement.prototype, "scrollWidth", "get").mockReturnValue(52);
+  vi.spyOn(HTMLElement.prototype, "scrollHeight", "get").mockReturnValue(500);
+  const container = document.createElement("div");
+  const root = createRoot(container);
+  const render = (fontSize: "24" | "12" | "auto") =>
+    root.render(
+      <svg>
+        <BubbleTranslation
+          text="The complete translation remains available to scroll."
+          bounds={{ x: 0, y: 0, width: 60, height: 40 }}
+          availableBounds={{ x: 0, y: 0, width: 120, height: 80 }}
+          fontSize={fontSize}
+          elementRef={() => {}}
+          onActivate={() => {}}
+        />
+      </svg>,
+    );
+  await act(async () => render("24"));
+  expect(container.querySelector("span")!.style.fontSize).toBe("24px");
+  expect(container.querySelector(".is-overflowing")).not.toBeNull();
+  expect(container.querySelector("foreignObject")!.getAttribute("height")).toBe(
+    "80",
+  );
+  await act(async () => render("12"));
+  expect(container.querySelector("span")!.style.fontSize).toBe("12px");
+  expect(container.querySelector("span")!.textContent).toBe(
+    "The complete translation remains available to scroll.",
+  );
+  await act(async () => render("auto"));
+  expect(container.querySelector("span")!.style.fontSize).toBe("11px");
+  await act(async () => root.unmount());
+});

@@ -14,6 +14,14 @@ The [feature roadmap](docs/implementation-plan.md#feature-checklist) tracks comp
 
 #### Changed
 
+- Add **Translation font size** to Reading's Bubble translation settings, with
+  Automatic fitting and fixed 12–32 px choices plus a live preview. Save the size
+  across windows/restarts and refit visible panels without translating again.
+  Fixed sizes keep the chosen size and scroll long text instead of shrinking.
+  All 416 frontend tests, formatting, TypeScript/Vite and the macOS debug bundle
+  pass. Native 24 px persistence and browser 24→32 px updates/final-line scrolling
+  were verified; native Windows and fresh native OCR remain unverified.
+
 - Move bubble translation into **Settings → Reading** as **Translate bubbles
   automatically**. Save the opt-in choice across scans, restored results and app
   restarts; start translation after each completed overlay is revealed. Remove

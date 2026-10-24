@@ -9,7 +9,10 @@ import { ocrPolygonToOverlay } from "../../lib/coordinates";
 import type { TextRegion } from "../../lib/ocr-types";
 import { BubbleTranslation } from "./BubbleTranslation";
 import { availableTranslationBounds } from "./translation-layout";
-import { useBubbleTranslationEnabled } from "./bubble-translation-preference";
+import {
+  useBubbleTranslationEnabled,
+  useBubbleTranslationFontSize,
+} from "./bubble-translation-preference";
 import {
   bubbleTranslationRegions,
   useBubbleTranslations,
@@ -54,6 +57,7 @@ export function OcrOverlay() {
   const translationControls = useRef<HTMLDivElement>(null);
   const translationElements = useRef(new Map<string, HTMLDivElement>());
   const automaticTranslation = useBubbleTranslationEnabled();
+  const translationFontSize = useBubbleTranslationFontSize();
   const [translationStopped, setTranslationStopped] = useState(false);
   const translationEnabled =
     automaticTranslation && revealed && !translationStopped;
@@ -419,6 +423,7 @@ export function OcrOverlay() {
                 text={translation}
                 bounds={bounds}
                 availableBounds={availableBounds}
+                fontSize={translationFontSize}
                 needsReview={Boolean(
                   region.needsReview || region.geometrySource,
                 )}

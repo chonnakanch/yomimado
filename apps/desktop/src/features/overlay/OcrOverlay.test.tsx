@@ -5,6 +5,7 @@ import { invoke } from "@tauri-apps/api/core";
 import {
   bubbleTranslationPreferenceKey,
   setBubbleTranslationEnabled,
+  setBubbleTranslationFontSize,
 } from "./bubble-translation-preference";
 import { listen } from "@tauri-apps/api/event";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
@@ -802,4 +803,28 @@ it("waits for the completed overlay to be revealed and follows setting changes f
   });
   expect(container.querySelector("foreignObject")).toBeNull();
   expect(container.querySelector(".overlay-translation-controls")).toBeNull();
+});
+
+it("updates visible translation size without translating again or changing automatic mode", async () => {
+  setBubbleTranslationEnabled(true);
+  setBubbleTranslationFontSize("24");
+  const fetch = vi
+    .fn()
+    .mockImplementation(async (_url, options) =>
+      translatedResponse(JSON.parse(options.body).text),
+    );
+  vi.stubGlobal("fetch", fetch);
+  await mountTranslationOverlay();
+  expect(fetch).toHaveBeenCalledTimes(2);
+  expect(
+    container.querySelector("foreignObject span")?.getAttribute("style"),
+  ).toContain("24px");
+  await act(async () => setBubbleTranslationFontSize("32"));
+  expect(
+    container.querySelector("foreignObject span")?.getAttribute("style"),
+  ).toContain("32px");
+  expect(fetch).toHaveBeenCalledTimes(2);
+  expect(window.localStorage.getItem(bubbleTranslationPreferenceKey)).toBe(
+    "true",
+  );
 });
