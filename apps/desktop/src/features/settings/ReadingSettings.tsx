@@ -2,12 +2,47 @@ import { TranslationModels } from "./TranslationModels";
 import { useState } from "react";
 import { setJlptVisible, useJlptVisible } from "../jlpt/preference";
 import { jlptSource } from "../jlpt/jlpt";
+import {
+  setBubbleTranslationEnabled,
+  useBubbleTranslationEnabled,
+} from "../overlay/bubble-translation-preference";
 
 export function ReadingSettings({ active = false }: { active?: boolean }) {
   const showJlpt = useJlptVisible();
   const [jlptError, setJlptError] = useState<string | null>(null);
+  const translateBubbles = useBubbleTranslationEnabled();
+  const [translationError, setTranslationError] = useState<string | null>(null);
   return (
     <>
+      <div className="settings-card">
+        <h2>Bubble translation</h2>
+        <label className="settings-option">
+          <input
+            type="checkbox"
+            checked={translateBubbles}
+            onChange={(event) => {
+              try {
+                setBubbleTranslationEnabled(event.currentTarget.checked);
+                setTranslationError(null);
+              } catch {
+                setTranslationError(
+                  "Could not save the bubble translation preference. Try again.",
+                );
+              }
+            }}
+          />
+          Translate bubbles automatically
+        </label>
+        <p className="settings-note">
+          Show English over detected text after each scan using your selected
+          local model. Turn off to show the original Japanese.
+        </p>
+        {translationError && (
+          <p className="settings-error" role="alert">
+            {translationError}
+          </p>
+        )}
+      </div>
       <TranslationModels active={active} />
       <div className="settings-card">
         <h2>JLPT vocabulary</h2>

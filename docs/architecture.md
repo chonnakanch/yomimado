@@ -24,7 +24,7 @@ in [implementation status and roadmap](implementation-plan.md).
   refer to source Unicode code points; preserve readings and dictionary forms.
 - Use transparent always-on-top OCR regions and anchored popups. Preserve text
   type metadata; sound effects need not use dialogue learning behavior.
-- The explicit **Translate bubbles** toggle adds removable white panels at text
+- The opt-in **Translate bubbles automatically** setting adds removable white panels at text
   bounds. It does not modify captured pixels or infer speech-bubble interiors.
 - Keep providers replaceable behind small interfaces. Current translation is
   local Marian or Ollama; a provider boundary is not permission to add cloud OCR
@@ -132,12 +132,16 @@ both polygon and control hit routing while retaining the stored result.
 macOS mouse routing and Windows window regions. No new coordinate transform,
 input-monitoring grant or dependency is added.
 
-**Translate bubbles** starts off for every new/restored overlay. Its hook makes
-sequential, abortable requests through the existing local translation endpoint,
-deduplicating identical source text for the run. Re-enabling/Retry consults the
-provider-aware service cache again. Toggle-off, unmount and native input-router
-disable stop queued work and ignore late replies; server-side inference already
-running may complete. A failure stops the queue and leaves unprocessed Japanese
+**Translate bubbles automatically** is a persisted, default-off Reading setting.
+The overlay reads it through `useSyncExternalStore`, using the existing localStorage
+preference pattern with storage events for other windows and an event for the
+current window. After OCR state loads and the native overlay is revealed, its hook
+makes sequential, abortable translation requests. Fresh/restored overlays read the
+saved choice instead of resetting it. Disabling the preference removes panels
+immediately; re-enabling/Retry consults the provider-aware service cache again.
+Hide, unmount and native input-router disable stop queued work and ignore late
+replies without changing the saved preference. Inference already running on the
+server may complete. A failure stops the queue and leaves unprocessed Japanese
 visible. Demo boundaries and known sound effects are excluded; unknown region
 types remain eligible without changing their OCR metadata.
 

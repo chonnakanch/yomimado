@@ -9,6 +9,7 @@ import { ocrPolygonToOverlay } from "../../lib/coordinates";
 import type { TextRegion } from "../../lib/ocr-types";
 import { BubbleTranslation } from "./BubbleTranslation";
 import { availableTranslationBounds } from "./translation-layout";
+import { useBubbleTranslationEnabled } from "./bubble-translation-preference";
 import {
   bubbleTranslationRegions,
   useBubbleTranslations,
@@ -52,7 +53,10 @@ export function OcrOverlay() {
   const hideButton = useRef<HTMLButtonElement>(null);
   const translationControls = useRef<HTMLDivElement>(null);
   const translationElements = useRef(new Map<string, HTMLDivElement>());
-  const [translationEnabled, setTranslationEnabled] = useState(false);
+  const automaticTranslation = useBubbleTranslationEnabled();
+  const [translationStopped, setTranslationStopped] = useState(false);
+  const translationEnabled =
+    automaticTranslation && revealed && !translationStopped;
   const [translationAttempt, setTranslationAttempt] = useState(0);
   const translatable = useMemo(
     () =>
@@ -96,10 +100,11 @@ export function OcrOverlay() {
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
         event.preventDefault();
-        setTranslationEnabled(false);
-        void invoke("hide_focused_overlay").catch((error) =>
-          setPopupError(String(error)),
-        );
+        setTranslationStopped(true);
+        void invoke("hide_focused_overlay").catch((error) => {
+          setTranslationStopped(false);
+          setPopupError(String(error));
+        });
       }
     };
     window.addEventListener("keydown", handleKeyDown);
@@ -217,7 +222,7 @@ export function OcrOverlay() {
     let mounted = true;
     let unlisten: UnlistenFn | undefined;
     void listen("stop-bubble-translations", () => {
-      if (mounted) setTranslationEnabled(false);
+      if (mounted) setTranslationStopped(true);
     })
       .then((stop) => {
         if (mounted) unlisten = stop;
@@ -452,54 +457,37 @@ export function OcrOverlay() {
           />
         ))}
       </svg>
-      {state.sessionId !== undefined && revealed && translatable.length > 0 && (
-        <div
-          ref={translationControls}
-          className="overlay-translation-controls"
-          style={
-            controlsTop > viewport.height / 2
-              ? { bottom: viewport.height - controlsTop - 28 }
-              : { top: controlsTop }
-          }
-        >
-          <button
-            type="button"
-            className="overlay-translation-toggle"
-            aria-pressed={translationEnabled}
-            title={
-              translationEnabled
-                ? "Show original Japanese"
-                : "Translate detected text with the selected local model"
+      {state.sessionId !== undefined &&
+        translationEnabled &&
+        translatable.length > 0 && (
+          <div
+            ref={translationControls}
+            className="overlay-translation-controls"
+            style={
+              controlsTop > viewport.height / 2
+                ? { bottom: viewport.height - controlsTop - 28 }
+                : { top: controlsTop }
             }
-            onClick={() => setTranslationEnabled((enabled) => !enabled)}
           >
-            Translate bubbles
-          </button>
-          {translationEnabled && (
-            <>
-              <span
-                className="overlay-translation-status"
-                role={translationError ? "alert" : "status"}
+            <span
+              className="overlay-translation-status"
+              role={translationError ? "alert" : "status"}
+            >
+              {translationError ??
+                (pending
+                  ? `Translating locally ${translations.size}/${translatable.length}…`
+                  : "Machine translation · Click a region for details")}
+            </span>
+            {translationError && (
+              <button
+                type="button"
+                onClick={() => setTranslationAttempt((attempt) => attempt + 1)}
               >
-                {translationError ??
-                  (pending
-                    ? `Translating locally ${translations.size}/${translatable.length}…`
-                    : "Machine translation · Click a region for details")}
-              </span>
-              {translationError && (
-                <button
-                  type="button"
-                  onClick={() =>
-                    setTranslationAttempt((attempt) => attempt + 1)
-                  }
-                >
-                  Retry
-                </button>
-              )}
-            </>
-          )}
-        </div>
-      )}
+                Retry
+              </button>
+            )}
+          </div>
+        )}
       {state.sessionId !== undefined && revealed && (
         <button
           ref={hideButton}
@@ -514,15 +502,16 @@ export function OcrOverlay() {
           onClick={() => {
             if (hidePending.current) return;
             hidePending.current = true;
-            setTranslationEnabled(false);
+            setTranslationStopped(true);
             setHiding(true);
             setPopupError(null);
             void invoke("hide_completed_ocr_overlay", {
               sessionId: state.sessionId,
             })
-              .catch((error) =>
-                setPopupError(`Could not hide OCR overlays: ${String(error)}`),
-              )
+              .catch((error) => {
+                setTranslationStopped(false);
+                setPopupError(`Could not hide OCR overlays: ${String(error)}`);
+              })
               .finally(() => {
                 hidePending.current = false;
                 setHiding(false);

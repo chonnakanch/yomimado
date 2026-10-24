@@ -102,17 +102,20 @@ not replace an existing window's content.
 
 ### Translate in bubbles
 
-After scanning, turn on **Translate bubbles** in the OCR overlay's control strip
-to display English translations over the detected text. Configure a local Marian
-or Ollama model in **Settings → Local translation** first. Translation starts only
-when you turn the toggle on, runs one region at a time, and never saves sentences
-automatically. Repeated text uses the selected provider's local cache.
+Open **Settings → Reading → Bubble translation** and enable **Translate bubbles
+automatically**. Configure a local Marian or Ollama model in the same Reading
+settings first. Once enabled, each completed scan automatically translates detected
+text and displays English over it. The preference stays on across scans, restored
+results and app restarts. It is off by default. There is no translation toggle on
+the OCR overlay.
 
-Turn it off to reveal the original Japanese immediately. Hiding the overlay or
-starting another scan also turns it off and stops queued requests; each restored
-or new result starts off. A request already running in the local model may finish.
-An error stops the queue and offers **Retry**; untranslated regions keep their
-Japanese visible.
+Turn the setting off to reveal the original Japanese immediately. Hiding the
+overlay or starting another scan stops the current translation queue without
+changing the saved setting. Translation runs one region at a time and never saves
+sentences automatically. Repeated text uses the selected provider's local cache.
+A request already running in the local model may finish. An error stops the queue
+and offers **Retry** on the overlay; untranslated regions keep their Japanese
+visible.
 
 Translation panels can widen and grow taller into the space between neighboring
 text regions, within the captured area. These text-based panels can differ from the

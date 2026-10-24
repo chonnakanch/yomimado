@@ -89,12 +89,13 @@ recorded in the [release checklist](desktop-release.md).
 
 ### Implemented in source
 
-- [x] **Toggle translated text over bubbles** — explicit local translation panels
-      at detected text bounds, immediate return to Japanese, sequential requests,
+- [x] **Automatic translated text over bubbles** — a persisted opt-in setting in
+      Settings → Reading starts local translations after each completed scan;
+      disabling it immediately reveals Japanese. Sequential requests,
       error/retry, word wrapping without added hyphens, panels that grow in width and
       height, and scrollable long text with full-popup
-      access. Starts off
-      for each scan/restoration; no image modification or bubble segmentation.
+      access. Defaults off; enabling persists across scans/restoration/restarts.
+      No image modification or bubble segmentation.
       [Controls](usage.md#translate-in-bubbles) and
       [verification limits](ui-testing.md#bubble-translation-toggle).
 

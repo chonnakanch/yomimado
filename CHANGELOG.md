@@ -12,6 +12,18 @@ The [feature roadmap](docs/implementation-plan.md#feature-checklist) tracks comp
 
 ### 2026-10-24
 
+#### Changed
+
+- Move bubble translation into **Settings → Reading** as **Translate bubbles
+  automatically**. Save the opt-in choice across scans, restored results and app
+  restarts; start translation after each completed overlay is revealed. Remove
+  the per-overlay toggle while preserving status/Retry and cancellation when
+  hidden or replaced. Turning the setting off reveals Japanese immediately.
+  All 412 frontend tests, formatting, TypeScript/Vite and the macOS debug bundle
+  pass. Native Settings persistence was verified across restart; a fresh native
+  scan hit macOS's Screen Recording permission check. Windows and exact installers
+  remain unverified. No Rust/Python changes in this follow-up.
+
 #### Fixed
 
 - Repair leaked control tokens and invented dialogue from HY-MT2 imports carrying

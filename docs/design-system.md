@@ -16,8 +16,8 @@ implemented limited conjugation disclosure is documented in the feature plan.
 
 Keep the original manga visible. Opaque surfaces belong to the toolbar, popup
 and secondary window. The default OCR layer remains transparent except for
-outlines and very light hover/selection fill. The explicit **Translate bubbles**
-toggle temporarily covers detected text bounds with white translation panels;
+outlines and very light hover/selection fill. The opt-in **Translate bubbles automatically**
+setting temporarily covers detected text bounds with white translation panels;
 turning it off reveals the Japanese. Do not modify the manga image or add a
 full-screen dimmer, loud status banner or decorative motion in the reading view.
 
@@ -243,13 +243,16 @@ control route; the surrounding manga stays transparent and click-through.
 Hiding retains results and Rescan state; the toolbar visibility toggle restores
 the result. Late hide requests must not dismiss a newer result or active scan.
 
-Place **Translate bubbles** at the left of the control strip when recognized,
-non-sound-effect text exists. It starts off for every scan/restoration, exposes
-`aria-pressed`, and stays available while translating so it can stop the queue.
-Show compact local progress, machine-translation disclosure or error with Retry
-next to it. Preserve original polygons, dashed review outlines and region keyboard
-navigation. Report the whole measured control group and each translated panel
-through the native route as well as the hide button.
+Place **Translate bubbles automatically** in **Settings → Reading → Bubble
+translation**, above model selection. It is off by default and persists across
+scans, restored results and app restarts. Report a failed preference write without
+changing the checkbox's state. Remove the translation toggle from the overlay;
+show only compact progress, machine-translation disclosure or error with Retry
+when automatic translation is enabled. Disabling the setting reveals Japanese and
+stops queued work. Hiding an overlay stops that run without disabling the setting.
+Preserve original polygons, dashed review outlines and region keyboard navigation.
+Report the measured status group and each translated panel through the native
+route as well as the hide button.
 
 Translation panels use white with near-black text for reading against light/dark
 pages. Panels grow only as needed within the capture and shared gaps to

@@ -324,6 +324,25 @@ page-context understanding: isolated bubbles can still have wrong senses/names.
 Native Windows interaction and exact installers remain unverified; packaging
 the Python change needs a compatible reviewed macOS runtime seed.
 
+Settings follow-up — 2026-10-24: move the toggle to **Settings → Reading →
+Bubble translation → Translate bubbles automatically**. The default-off
+localStorage preference persists across app windows/restarts. Once enabled, every
+completed/revealed OCR overlay, including restored results, starts translation;
+there is no per-overlay toggle. Status and Retry remain on the overlay. Hiding,
+Escape, new scans and native stop events abort the current run without clearing
+the saved choice. A failed preference write leaves the checkbox unchanged and
+shows an error.
+
+All 412 frontend tests, frontend/document formatting, TypeScript/Vite and the
+macOS debug app bundle pass. Regressions cover persistence/reopening, cross-window
+storage changes, failed writes, no inference before reveal, automatic new/restored
+results, stop/late replies, preference-off restoration, provider-safe retry and
+sound-effect/demo exclusion. Native macOS Settings shows the option enabled after
+a full app restart. A fresh scan was blocked by the macOS Screen Recording
+permission check in this rebuilt debug app, so fresh native OCR-to-translation
+handoff is not claimed. Native Windows and exact installers remain unverified.
+No Rust or Python source changes in this follow-up.
+
 ## Horizontal OCR geometry recovery
 
 Development source — 2026-10-22: model-free regressions cover light/dark paragraph

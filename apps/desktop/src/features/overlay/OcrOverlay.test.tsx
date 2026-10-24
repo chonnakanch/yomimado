@@ -2,6 +2,10 @@
 import { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { invoke } from "@tauri-apps/api/core";
+import {
+  bubbleTranslationPreferenceKey,
+  setBubbleTranslationEnabled,
+} from "./bubble-translation-preference";
 import { listen } from "@tauri-apps/api/event";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
 import { OcrOverlay } from "./OcrOverlay";
@@ -502,9 +506,6 @@ async function mountTranslationOverlay(overlay = translationOverlay()) {
     return undefined;
   });
   await act(async () => root.render(<OcrOverlay />));
-  return container.querySelector<HTMLButtonElement>(
-    ".overlay-translation-toggle",
-  )!;
 }
 
 function translatedResponse(
@@ -521,18 +522,17 @@ function translatedResponse(
   );
 }
 
-it("requires the toggle, shows translated text at Retina text bounds, preserves review and click behavior, and restores Japanese", async () => {
+it("requires the saved preference, shows translated text at Retina bounds, preserves review and click behavior, and restores Japanese", async () => {
   const fetch = vi
     .fn()
     .mockImplementation(async (_url, options) =>
       translatedResponse(JSON.parse(options.body).text),
     );
   vi.stubGlobal("fetch", fetch);
-  const toggle = await mountTranslationOverlay();
-  expect(toggle.getAttribute("aria-pressed")).toBe("false");
+  await mountTranslationOverlay();
+  expect(container.querySelector(".overlay-translation-toggle")).toBeNull();
   expect(fetch).not.toHaveBeenCalled();
-  await act(async () => toggle.click());
-  expect(toggle.getAttribute("aria-pressed")).toBe("true");
+  await act(async () => setBubbleTranslationEnabled(true));
   expect(fetch).toHaveBeenCalledTimes(2);
   const panel = container.querySelector("foreignObject")!;
   expect(panel.getAttribute("x")).toBe("10");
@@ -557,7 +557,7 @@ it("requires the toggle, shows translated text at Retina text bounds, preserves 
       translateOnOpen: true,
     }),
   );
-  await act(async () => toggle.click());
+  await act(async () => setBubbleTranslationEnabled(false));
   expect(container.querySelector("foreignObject")).toBeNull();
   expect(container.querySelector("polygon.translated")).toBeNull();
   expect(fetch).toHaveBeenCalledTimes(2);
@@ -574,8 +574,8 @@ it("deduplicates identical text, skips known sound effects/blank text, and repor
   } as DOMRect);
   const fetch = vi.fn().mockResolvedValue(translatedResponse("学校", "School"));
   vi.stubGlobal("fetch", fetch);
-  const toggle = await mountTranslationOverlay(overlay);
-  await act(async () => toggle.click());
+  await mountTranslationOverlay(overlay);
+  await act(async () => setBubbleTranslationEnabled(true));
   expect(fetch).toHaveBeenCalledOnce();
   expect(container.querySelectorAll("foreignObject")).toHaveLength(2);
   const reports = vi
@@ -601,8 +601,8 @@ it("stops on failure, keeps Japanese visible, and retries through the current pr
     ),
   );
   vi.stubGlobal("fetch", fetch);
-  const toggle = await mountTranslationOverlay();
-  await act(async () => toggle.click());
+  await mountTranslationOverlay();
+  await act(async () => setBubbleTranslationEnabled(true));
   expect(fetch).toHaveBeenCalledOnce();
   expect(container.querySelector("foreignObject")).toBeNull();
   expect(container.querySelector('[role="alert"]')?.textContent).toContain(
@@ -620,7 +620,7 @@ it("stops on failure, keeps Japanese visible, and retries through the current pr
   expect(container.querySelectorAll("foreignObject")).toHaveLength(2);
 });
 
-it("aborts pending work on toggle off and ignores late results instead of translating the next region", async () => {
+it("aborts pending work when the setting is disabled and ignores late results instead of translating the next region", async () => {
   let finish!: (value: Response) => void;
   const fetch = vi.fn().mockImplementation(
     () =>
@@ -629,10 +629,10 @@ it("aborts pending work on toggle off and ignores late results instead of transl
       }),
   );
   vi.stubGlobal("fetch", fetch);
-  const toggle = await mountTranslationOverlay();
-  await act(async () => toggle.click());
+  await mountTranslationOverlay();
+  await act(async () => setBubbleTranslationEnabled(true));
   const signal = fetch.mock.calls[0][1].signal as AbortSignal;
-  await act(async () => toggle.click());
+  await act(async () => setBubbleTranslationEnabled(false));
   expect(signal.aborted).toBe(true);
   await act(async () => finish(translatedResponse("今日はいい天気です")));
   expect(fetch).toHaveBeenCalledOnce();
@@ -651,10 +651,12 @@ it("cancels translations on native hide/scan replacement and removes its listene
   });
   const fetch = vi.fn().mockImplementation(() => new Promise(() => {}));
   vi.stubGlobal("fetch", fetch);
-  const toggle = await mountTranslationOverlay();
-  await act(async () => toggle.click());
+  await mountTranslationOverlay();
+  await act(async () => setBubbleTranslationEnabled(true));
   await act(async () => stop());
-  expect(toggle.getAttribute("aria-pressed")).toBe("false");
+  expect(window.localStorage.getItem(bubbleTranslationPreferenceKey)).toBe(
+    "true",
+  );
   expect(fetch.mock.calls[0][1].signal.aborted).toBe(true);
   await act(async () => root.unmount());
   expect(unlisten).toHaveBeenCalledOnce();
@@ -668,10 +670,10 @@ it("re-enabling asks the service again so a changed provider cannot reuse stale 
     .mockResolvedValueOnce(translatedResponse("学校", "School"))
     .mockResolvedValueOnce(translatedResponse("学校", "The school"));
   vi.stubGlobal("fetch", fetch);
-  const toggle = await mountTranslationOverlay(translationOverlay(["学校"]));
-  await act(async () => toggle.click());
-  await act(async () => toggle.click());
-  await act(async () => toggle.click());
+  await mountTranslationOverlay(translationOverlay(["学校"]));
+  await act(async () => setBubbleTranslationEnabled(true));
+  await act(async () => setBubbleTranslationEnabled(false));
+  await act(async () => setBubbleTranslationEnabled(true));
   expect(fetch).toHaveBeenCalledTimes(2);
   expect(container.querySelector("foreignObject")?.textContent).toBe(
     "The school",
@@ -684,7 +686,12 @@ it.each(["demo", "manga"])(
     const overlay = translationOverlay(["ドン"]);
     overlay.engine = engine;
     overlay.regions[0].type = engine === "demo" ? "other" : "soundEffect";
-    expect(await mountTranslationOverlay(overlay)).toBeNull();
+    setBubbleTranslationEnabled(true);
+    const fetch = vi.fn();
+    vi.stubGlobal("fetch", fetch);
+    await mountTranslationOverlay(overlay);
+    expect(container.querySelector(".overlay-translation-controls")).toBeNull();
+    expect(fetch).not.toHaveBeenCalled();
   },
 );
 
@@ -743,4 +750,56 @@ it("uses explicit demo labels and Space activation without inventing recognized 
     "show_translation_popup",
     expect.objectContaining({ keyboard: true }),
   );
+});
+
+it("automatically translates every fresh or restored overlay with the persisted preference", async () => {
+  setBubbleTranslationEnabled(true);
+  const fetch = vi
+    .fn()
+    .mockImplementation(async (_url, options) =>
+      translatedResponse(JSON.parse(options.body).text),
+    );
+  vi.stubGlobal("fetch", fetch);
+  await mountTranslationOverlay();
+  expect(fetch).toHaveBeenCalledTimes(2);
+  expect(container.querySelectorAll("foreignObject")).toHaveLength(2);
+  await act(async () => root.unmount());
+  root = createRoot(container);
+  await mountTranslationOverlay();
+  expect(fetch).toHaveBeenCalledTimes(4);
+  expect(container.querySelectorAll("foreignObject")).toHaveLength(2);
+  expect(window.localStorage.getItem(bubbleTranslationPreferenceKey)).toBe(
+    "true",
+  );
+});
+
+it("waits for the completed overlay to be revealed and follows setting changes from another window", async () => {
+  setBubbleTranslationEnabled(true);
+  let reveal!: (value: typeof completedOverlay.layout) => void;
+  const fetch = vi
+    .fn()
+    .mockImplementation(async (_url, options) =>
+      translatedResponse(JSON.parse(options.body).text),
+    );
+  vi.stubGlobal("fetch", fetch);
+  vi.mocked(invoke).mockImplementation(async (command) => {
+    if (command === "get_overlay_state") return translationOverlay();
+    if (command === "reveal_ocr_overlay")
+      return new Promise((resolve) => {
+        reveal = resolve;
+      });
+    return undefined;
+  });
+  await act(async () => root.render(<OcrOverlay />));
+  expect(fetch).not.toHaveBeenCalled();
+  await act(async () => reveal(completedOverlay.layout));
+  expect(fetch).toHaveBeenCalledTimes(2);
+  await act(async () => {
+    window.localStorage.setItem(bubbleTranslationPreferenceKey, "false");
+    window.dispatchEvent(
+      new StorageEvent("storage", { key: bubbleTranslationPreferenceKey }),
+    );
+  });
+  expect(container.querySelector("foreignObject")).toBeNull();
+  expect(container.querySelector(".overlay-translation-controls")).toBeNull();
 });

@@ -6,6 +6,9 @@ starts unconfigured; install and select a model before using it. Browsing a sour
 does not activate it. **Using** names the current selection;
 selecting another provider takes effect on the next translation without restarting.
 OCR, tokenization and dictionary lookup remain independent of this choice.
+Enable **Translate bubbles automatically** at the top of Reading settings to
+translate each completed scan; the saved choice also applies to restored results.
+Turn it off to keep the Japanese visible. See [bubble controls](usage.md#translate-in-bubbles).
 
 ## Import a local model
 
