@@ -12,6 +12,7 @@ MODEL_NAME = re.compile(
     r"[A-Za-z0-9][A-Za-z0-9_.-]*(?:/[A-Za-z0-9][A-Za-z0-9_.-]*)?(?::[A-Za-z0-9_.-]+)?"
 )
 MAX_RESPONSE = 1024 * 1024
+CONTROL_TOKEN = re.compile(r"<\s*[|｜]+|<\s*(?:[|｜\ufffd]\s*)*hy[_-]", re.IGNORECASE)
 
 
 def model_name(value: str) -> str:
@@ -91,7 +92,17 @@ def local_model(name: str) -> dict:
     if not isinstance(capabilities, list) or "completion" not in capabilities:
         raise ValueError("Choose an Ollama model that supports text generation")
     template = info.get("template")
-    return model | {"template": template if isinstance(template, str) else ""}
+    metadata = info.get("model_info")
+    metadata = metadata if isinstance(metadata, dict) else {}
+    # HY-MT2's vocabulary differs from older Hunyuan models. Some Ollama
+    # imports carry a legacy template despite having the new token IDs.
+    hy_mt2 = (
+        metadata.get("general.architecture") == "hunyuan-dense"
+        and metadata.get("tokenizer.ggml.bos_token_id") == 127958
+        and metadata.get("tokenizer.ggml.eot_token_id") == 127960
+        and metadata.get("tokenizer.ggml.seperator_token_id") == 127962
+    )
+    return model | {"template": template if isinstance(template, str) else "", "hy_mt2": hy_mt2}
 
 
 class OllamaProvider:
@@ -101,12 +112,52 @@ class OllamaProvider:
     @property
     def identity(self) -> str:
         # Prompt changes must not reuse answers cached under the old contract.
-        return "ollama-ja-en-v2:" + self.name + ":" + local_model(self.name)["digest"]
+        return "ollama-ja-en-v3:" + self.name + ":" + local_model(self.name)["digest"]
 
     def translate(self, text: str) -> str:
         # Check again immediately before sending text, including renamed cloud aliases.
         model = local_model(self.name)
         options = {"temperature": 0, "num_predict": 512}
+        instruction = (
+            "Translate the following segment into English, without additional explanation.\n\n"
+            + text
+        )
+        if model["hy_mt2"]:
+            # Render the publisher's single-user format directly, bypassing a
+            # stale Ollama template. Keep stop strings in this vocabulary too.
+            options["stop"] = ["<|eos|>", "<|extra_5|>", "<|startoftext|>"]
+            value = request_json(
+                "generate",
+                {
+                    "model": self.name,
+                    "raw": True,
+                    "stream": False,
+                    "prompt": "<|startoftext|>" + instruction + "<|extra_0|>",
+                    "options": options,
+                },
+                timeout=120,
+            )
+            output = value.get("response")
+        else:
+            value = self._chat(model, instruction, options)
+            message = value.get("message")
+            output = message.get("content") if isinstance(message, dict) else None
+        if (
+            value.get("done") is not True
+            or value.get("done_reason") == "length"
+            or not isinstance(output, str)
+            or not output.strip()
+        ):
+            raise RuntimeError("Ollama returned no complete translation. Try another text model.")
+        if "\ufffd" in output or CONTROL_TOKEN.search(output):
+            # Reject rather than trim an uncertain prefix and cache it as a
+            # translation. The API error leaves the original Japanese visible.
+            raise RuntimeError(
+                "Ollama returned malformed translation text. Check the model template or choose another local text model."
+            )
+        return output.strip()
+
+    def _chat(self, model: dict, instruction: str, options: dict) -> dict:
         if "<｜hy_User｜>" in model["template"]:
             # Some Hunyuan Ollama templates only stop at no-8. The model can
             # instead begin an invented next turn, even after a good translation.
@@ -116,7 +167,7 @@ class OllamaProvider:
                 "<｜hy_place▁holder▁no▁2｜>",
                 "<｜hy_place▁holder▁no▁8｜>",
             ]
-        value = request_json(
+        return request_json(
             "chat",
             {
                 "model": self.name,
@@ -126,19 +177,13 @@ class OllamaProvider:
                         # Translation models such as HY-MT expect the task in the
                         # user turn. A bare question can otherwise get answered.
                         "role": "user",
-                        "content": "Translate the following segment into English, without additional explanation.\n\n"
-                        + text,
+                        "content": instruction,
                     },
                 ],
                 "options": options,
             },
             timeout=120,
         )
-        message = value.get("message")
-        output = message.get("content") if isinstance(message, dict) else None
-        if value.get("done") is not True or not isinstance(output, str) or not output.strip():
-            raise RuntimeError("Ollama returned no complete translation. Try another text model.")
-        return output.strip()
 
 
 class OllamaDownloads:

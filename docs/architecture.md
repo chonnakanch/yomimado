@@ -482,6 +482,23 @@ use `models/translation` in app data. `preferences.json` records the explicit
 provider selection. Imported files live under `custom/<content-hash>/model`, with
 sibling ONNX files where applicable. Every request snapshots its provider;
 imported content hashes or Ollama model names/digests keep cache entries separate.
+Ollama identities also include the request-format revision, so v3 excludes earlier
+malformed v1/v2 results without deleting cache rows or saved data. HY-MT2 is
+recognized by `hunyuan-dense` metadata with BOS 127958, EOT 127960 and separator
+127962, independently of model/alias names. Its single-user request uses raw
+`/api/generate` with `<|startoftext|>` before the translation task and source,
+then `<|extra_0|>`, stopping at `<|eos|>`, `<|extra_5|>` or a new
+`<|startoftext|>`. This bypasses incompatible older Hunyuan templates in some
+Ollama imports. Other vocabularies retain the chat path. The protocol is checked
+against the publisher's
+[template](https://huggingface.co/tencent/Hy-MT2-7B/blob/9b0eb4e8f001def3e5ff6469a0ac96fdb39ec223/chat_template.jinja)
+and generation/tokenizer metadata, rather than guessed from the model tag.
+
+The Ollama adapter rejects Unicode replacement characters, leaked control tokens,
+empty/incomplete output and token-budget truncation before returning to the cache
+service. An error preserves Japanese for the untranslated region and stops the
+bubble queue; it does not silently trim an uncertain translation prefix.
+
 An unconfigured selection returns setup guidance instead of using an environment
 path or default-model fallback. Historical component archives/APIs remain part of
 release verification, while the settings UI offers local import and Ollama.

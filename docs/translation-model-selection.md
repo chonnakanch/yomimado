@@ -55,9 +55,11 @@ Custom server or registry endpoints are not supported.
 Translation sends only the selected Japanese text and a Japanese-to-English
 translation instruction to the local Ollama process. It sends no screenshot,
 reading history or saved vocabulary. The translation instruction and source text
-share one user message so translation-focused models receive the task alongside
-the passage, rather than a bare question to answer. Hunyuan templates also receive explicit
-turn-boundary stops so a generated follow-up conversation is not included.
+share one user turn so translation-focused models receive the task alongside
+the passage, rather than a bare question to answer. Recognized HY-MT2 vocabulary
+uses its matching prompt format even when an Ollama import contains an older
+Hunyuan template. Damaged output, leaked control tokens and incomplete responses
+report an error instead of being displayed or cached.
 
 ## Saved selection and cache
 
@@ -73,5 +75,5 @@ older conversational answers; existing cache rows and saved sentences remain.
 The prompt follows the translation-in-user-turn pattern in the
 [HY-MT guidance](https://github.com/Tencent-Hunyuan/Hy-MT#prompts) and
 [HY-MT2 examples](https://huggingface.co/tencent/Hy-MT2-7B/blob/main/README.md#hy-mt2-translation-task-instruction-examples-chinese-english-comparison).
-Other Ollama templates retain their own stop settings. Translation quality still
+Other model vocabularies keep their chat request format. Translation quality still
 depends on the selected model and source text; isolated bubbles lack page context.

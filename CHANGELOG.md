@@ -14,6 +14,15 @@ The [feature roadmap](docs/implementation-plan.md#feature-checklist) tracks comp
 
 #### Fixed
 
+- Repair leaked control tokens and invented dialogue from HY-MT2 imports carrying
+  an incompatible legacy Hunyuan template. Select the publisher's matching raw
+  prompt from vocabulary metadata, reject malformed/truncated output before
+  caching, and use v3 identities to bypass damaged v1/v2 entries. Verify ten varied
+  synthetic cases and all 27 previously requested page inputs with the selected
+  local model. The earlier three-question check did not cover the template
+  mismatch. All 292 service regressions and Ruff lint/format pass; frontend/native
+  source is unchanged. Packaging still needs a compatible reviewed runtime seed.
+
 - Wrap bubble translations at whole-word boundaries without automatic hyphens.
   Grow panels in width and height using available capture space before reducing
   the font, while separating neighboring panels and retaining overflow scrolling.

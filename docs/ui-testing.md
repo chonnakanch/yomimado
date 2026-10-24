@@ -297,19 +297,32 @@ its first line to a visible final line (315 px scroll range).
 The selected local `maternion/hy-mt2:7b` model, digest
 `d86c4ddbd9f72dccc2b8e3a4b515ee0f39331059b0b09ea332780f492e3e9ac3`,
 reproduced the reported customer-support answer with the old system-only
-instruction. Moving the translation task into the user turn produced a translated
-question, but repeated inference also exposed invented follow-up dialogue. The
-Hunyuan template now receives conversation-boundary stops. Three final provider
-runs returned only the translated question; the restarted development API
-returned a fresh v2 result followed by a cache hit. Model-free regressions verify
-the prompt contract, template-specific stops and exclusion of v1 cache rows.
-This sample does not establish general model accuracy. See
-[model and cache behavior](translation-model-selection.md).
+instruction. Moving the task into the user turn and adding legacy turn stops
+passed three question checks but failed the owner's full-page scan: malformed
+Unicode/control tokens and invented conversation remained. That narrow check did
+not establish compatibility.
 
-All 408 frontend and 272 service tests, formatting/lint, TypeScript/Vite and the
-macOS debug app bundle pass. The rebuilt app and development service were
-restarted. Native Windows interaction and exact installers remain unverified;
-packaging the Python change needs a compatible reviewed macOS runtime seed.
+The installed vocabulary has `<|startoftext|>`, `<|extra_0|>` and `<|eos|>` at
+127958, 127962 and 127960, while its Ollama template uses old `<｜hy_User｜>`
+markers. Raw generation with the matching publisher protocol fixes the mismatch;
+see [the request contract](architecture.md#translation-selection-and-cache).
+Ten varied synthetic dialogue cases and all 27 previously requested page inputs
+passed the new output guard. After restarting the development service, the API
+returned a fresh v3 question translation followed by a cache hit. Restoring the
+retained scan and enabling Translate bubbles in the native macOS app completed
+all 27 panels; accessibility labels and a native overlay screenshot show clean
+translation text without leaked control tokens. The screenshot contains only the
+overlay, not manga pixels, and remains a private local fixture.
+
+All 292 service tests and Ruff lint/format pass. Regressions cover vocabulary
+metadata/aliases, matching raw requests, isolation of other model formats,
+malformed Unicode/control tokens, token-budget truncation and exclusion of both
+v1 and v2 cache rows; rejected output creates no translation cache row. The
+frontend/native source is unchanged from the 408-test/macOS debug bundle check.
+This establishes the tested output format, not general translation accuracy or
+page-context understanding: isolated bubbles can still have wrong senses/names.
+Native Windows interaction and exact installers remain unverified; packaging
+the Python change needs a compatible reviewed macOS runtime seed.
 
 ## Horizontal OCR geometry recovery
 

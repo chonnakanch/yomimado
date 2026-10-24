@@ -77,7 +77,9 @@ before packaging; the recorded approval applies only to its bound source.
       hardware and results. Browser/CI coverage does not establish a hardware pass.
 - [ ] **Verify real Ollama inference and downloads.** Exercise model download,
       explicit selection, translation and failure recovery against a running local
-      Ollama instance. Retain results with the
+      Ollama instance. HY-MT2 inference and a 27-region native macOS overlay were
+      checked on 2026-10-24; download/selection/failure-recovery acceptance remains
+      open. Retain results with the
       [translation verification record](ui-testing.md#translation-model-verification--2026-10-18).
 
 Exact-installer acceptance, source-only rebuild limits and hardware waivers are
