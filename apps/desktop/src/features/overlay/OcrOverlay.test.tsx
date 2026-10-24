@@ -545,6 +545,9 @@ it("requires the saved preference, shows translated text at Retina bounds, prese
   expect(polygon.getAttribute("aria-label")).toContain("Nice weather today.");
   expect(polygon.getAttribute("aria-label")).toContain("今日はいい天気です");
   expect(polygon.getAttribute("aria-label")).toContain("verify Japanese");
+  expect(polygon.querySelector("title")).toBeNull();
+  expect(container.querySelector(".bubble-translation-text[title]")).toBeNull();
+  expect(container.querySelector(".overlay-translation-controls")).toBeNull();
   await act(async () =>
     container
       .querySelector(".bubble-translation-text")!
@@ -583,7 +586,7 @@ it("deduplicates identical text, skips known sound effects/blank text, and repor
     .mocked(invoke)
     .mock.calls.filter(([command]) => command === "update_overlay_controls");
   expect(reports.at(-1)?.[1]).toMatchObject({
-    rectangles: Array.from({ length: 4 }, () => ({
+    rectangles: Array.from({ length: 3 }, () => ({
       x: 10,
       y: 20,
       width: 70,

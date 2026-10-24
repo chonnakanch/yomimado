@@ -34,6 +34,13 @@ The [feature roadmap](docs/implementation-plan.md#feature-checklist) tracks comp
 
 #### Fixed
 
+- Remove the popup header's cached label, the completed-translation status banner
+  and hover tooltips from both translated panels and their OCR outlines. Keep
+  temporary progress, error/Retry, accessible region labels and local caching.
+  All 416 frontend tests, formatting, TypeScript/Vite and the macOS debug bundle
+  pass. Browser checks confirm five completed panels with no status banner or
+  tooltip sources and a popup header without cached text. Windows is unverified.
+
 - Align the popup's translation card with the Japanese card and center its
   header metadata beside the Copy/collapse controls. Remove the “Machine
   translation” label while keeping save status. All 416 frontend tests,

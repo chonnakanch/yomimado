@@ -247,8 +247,9 @@ Place **Translate bubbles automatically** in **Settings → Reading → Bubble
 translation**, above model selection. It is off by default and persists across
 scans, restored results and app restarts. Report a failed preference write without
 changing the checkbox's state. Remove the translation toggle from the overlay;
-show only compact progress, machine-translation disclosure or error with Retry
-when automatic translation is enabled. Disabling the setting reveals Japanese and
+show only temporary progress or an error with Retry when automatic translation
+is enabled. Remove the status group after completion. Translated text and its
+underlying polygon must not show hover tooltips. Disabling the setting reveals Japanese and
 stops queued work. Hiding an overlay stops that run without disabling the setting.
 Preserve original polygons, dashed review outlines and region keyboard navigation.
 Report the measured status group and each translated panel through the native
@@ -383,11 +384,11 @@ upsert rules. The success color accompanies text, not a color-only icon.
 Copy confirms “Copied” after success and reports failure without claiming success.
 Save sentence is available before translation; a matching requested translation
 can be retained with it. A secondary Translate locally control reveals the
-existing English output and cached state only after a request. Both the Japanese
+existing English output only after a request. Cache reuse stays internal. Both the Japanese
 and English remain accessible; changing source clears stale output.
 
 Align the translation card with the Japanese sentence card. Center the title,
-Local badge and cached state together; keep Copy and collapse controls grouped at
+and Local badge together; keep Copy and collapse controls grouped at
 the right, allowing metadata to wrap at narrow widths. Show the sentence's save
 status below the result without a “Machine translation” label.
 

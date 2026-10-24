@@ -371,6 +371,15 @@ metadata, Copy confirmation and collapse/expand. The updated native macOS debug
 app was relaunched; this follow-up does not establish native popup or Windows
 interaction acceptance.
 
+Label/hover follow-up — 2026-10-24: remove the popup's cached label, the completed
+overlay banner and both translated-panel/polygon hover titles. Keep temporary
+progress, error/Retry, accessible region names and cache behavior. All 416 frontend
+tests, formatting, TypeScript/Vite and the macOS debug bundle pass. Regressions
+also verify completed controls leave the native hit-rectangle report. The actual
+frontend with synthetic replies shows five completed panels without the banner
+or tooltip sources and a popup header without cached text. The native debug app
+was rebuilt/relaunched; native popup/hover and Windows interaction remain unverified.
+
 ## Horizontal OCR geometry recovery
 
 Development source — 2026-10-22: model-free regressions cover light/dark paragraph

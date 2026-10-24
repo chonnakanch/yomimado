@@ -53,7 +53,6 @@ export function TranslationOutput({
         <div className="translation-output-labels">
           <h3>Translation</h3>
           <span className="popup-badge">Local</span>
-          {result?.cached && <span className="popup-metadata">cached</span>}
         </div>
         {result && (
           <div className="translation-output-actions">

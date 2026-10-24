@@ -69,13 +69,7 @@ export function OCRBoundingBox({
         }
       }}
     >
-      {(captureDebugEnabled() || translation) && (
-        <title>
-          {translation
-            ? `${label}. Click to read in the learning popup.`
-            : label}
-        </title>
-      )}
+      {captureDebugEnabled() && !translation && <title>{label}</title>}
     </polygon>
   );
 }

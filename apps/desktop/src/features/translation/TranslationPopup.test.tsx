@@ -255,7 +255,7 @@ it("shows local word analysis while translating only after a click", async () =>
   expect(fetch).toHaveBeenCalledTimes(5);
   expect(fetch.mock.calls[4][0]).toContain("/translate");
   expect(container.textContent).toContain("School");
-  expect(container.textContent).toContain("cached");
+  expect(container.textContent).not.toContain("cached");
   expect(container.textContent).toContain("Save word");
   expect(fetch).toHaveBeenCalledTimes(5);
   await act(async () => {
@@ -1721,7 +1721,7 @@ it("opens the full requested bubble translation without saving or another transl
   expect(
     container.querySelector("#translation-result-text")?.textContent,
   ).toContain("School");
-  expect(container.textContent).toContain("cached");
+  expect(container.textContent).not.toContain("cached");
   expect(
     fetch.mock.calls.filter(([url]) => url.endsWith("/translate")),
   ).toHaveLength(1);

@@ -464,7 +464,8 @@ export function OcrOverlay() {
       </svg>
       {state.sessionId !== undefined &&
         translationEnabled &&
-        translatable.length > 0 && (
+        translatable.length > 0 &&
+        (pending || translationError) && (
           <div
             ref={translationControls}
             className="overlay-translation-controls"
@@ -479,9 +480,7 @@ export function OcrOverlay() {
               role={translationError ? "alert" : "status"}
             >
               {translationError ??
-                (pending
-                  ? `Translating locally ${translations.size}/${translatable.length}…`
-                  : "Machine translation · Click a region for details")}
+                `Translating locally ${translations.size}/${translatable.length}…`}
             </span>
             {translationError && (
               <button

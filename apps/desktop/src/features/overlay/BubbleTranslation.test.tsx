@@ -35,14 +35,14 @@ it("keeps overflowing translations available to scroll at a readable minimum", a
   await act(async () => render("School tomorrow."));
   expect(container.querySelector("span")?.style.fontSize).toBe("13px");
   expect(container.querySelector(".is-overflowing")).toBeNull();
+  expect(container.querySelector("[title]")).toBeNull();
   vi.spyOn(HTMLElement.prototype, "scrollHeight", "get").mockReturnValue(500);
   await act(async () =>
     render("A much longer sentence that cannot possibly fit."),
   );
   expect(container.querySelector("span")?.style.fontSize).toBe("11px");
-  expect(
-    container.querySelector(".is-overflowing")?.getAttribute("title"),
-  ).toContain("Scroll to read more");
+  expect(container.querySelector(".is-overflowing")).not.toBeNull();
+  expect(container.querySelector("[title]")).toBeNull();
   expect(container.querySelector("span")?.textContent).toBe(
     "A much longer sentence that cannot possibly fit.",
   );

@@ -117,6 +117,9 @@ A request already running in the local model may finish. An error stops the queu
 and offers **Retry** on the overlay; untranslated regions keep their Japanese
 visible.
 
+The progress message disappears after translation finishes. Translated boxes have
+no hover tooltip; click one to open the learning popup.
+
 Choose **Translation font size** in the same Bubble translation settings.
 **Automatic (fit text)** is the default and fits text from 18 down to 11 px.
 Fixed sizes from **12 to 32 px** keep the chosen size and let long text scroll.

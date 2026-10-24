@@ -89,7 +89,6 @@ export function BubbleTranslation({
       <div
         ref={elementRef}
         className={`bubble-translation-text${overflowing ? " is-overflowing" : ""}${needsReview ? " needs-review" : ""}${selected ? " active" : ""}`}
-        title={`Machine translation: ${text}${overflowing ? " — Scroll to read more, or click to open the learning popup." : ""}`}
         lang="en"
         onClick={onActivate}
       >
