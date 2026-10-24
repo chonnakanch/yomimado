@@ -809,6 +809,8 @@ fn close_translation_popup(
 }
 
 #[tauri::command(async)]
+// Flat IPC arguments preserve existing popup callers; internal options are typed.
+#[allow(clippy::too_many_arguments)]
 fn show_translation_popup(
     app: AppHandle,
     metadata: CaptureMetadata,
@@ -817,6 +819,7 @@ fn show_translation_popup(
     region_id: Option<String>,
     session_id: Option<u64>,
     keyboard: Option<bool>,
+    translate_on_open: Option<bool>,
 ) -> Result<(), String> {
     let state = app.state::<AppState>();
     let session = state.scans.lock()?;
@@ -847,9 +850,12 @@ fn show_translation_popup(
         &metadata,
         &text,
         &polygon,
-        demo,
-        review,
-        approximate,
+        overlay::PopupContext {
+            demo,
+            review_reason: review,
+            approximate,
+            translate_on_open: translate_on_open.unwrap_or(false),
+        },
     );
     if result.is_ok() {
         state

@@ -15,9 +15,11 @@ tables, example sentences and related-word features remain future scope. The
 implemented limited conjugation disclosure is documented in the feature plan.
 
 Keep the original manga visible. Opaque surfaces belong to the toolbar, popup
-and secondary window. The OCR layer remains transparent except for outlines and
-very light hover/selection fill. No manga image, full-screen dimmer, translation
-replacement, loud status banner or decorative motion in the reading view.
+and secondary window. The default OCR layer remains transparent except for
+outlines and very light hover/selection fill. The opt-in **Translate bubbles automatically**
+setting temporarily covers detected text bounds with white translation panels;
+turning it off reveals the Japanese. Do not modify the manga image or add a
+full-screen dimmer, loud status banner or decorative motion in the reading view.
 
 Jisho-inspired means a readable headword, reading, base form, POS and numbered
 definitions. It does not mean copying Jisho assets or implying the existing
@@ -241,6 +243,37 @@ control route; the surrounding manga stays transparent and click-through.
 Hiding retains results and Rescan state; the toolbar visibility toggle restores
 the result. Late hide requests must not dismiss a newer result or active scan.
 
+Place **Translate bubbles automatically** in **Settings → Reading → Bubble
+translation**, above model selection. It is off by default and persists across
+scans, restored results and app restarts. Report a failed preference write without
+changing the checkbox's state. Remove the translation toggle from the overlay;
+show only temporary progress or an error with Retry when automatic translation
+is enabled. Remove the status group after completion. Translated text and its
+underlying polygon must not show hover tooltips. Disabling the setting reveals
+Japanese and stops queued work. Hiding an overlay stops that run without disabling the setting.
+Preserve original polygons, dashed review outlines and region keyboard navigation.
+Report the measured status group and each translated panel through the native
+route as well as the hide button.
+
+Translation panels use white with near-black text for reading against light/dark
+pages. Panels grow only as needed within the capture and shared gaps to
+neighboring text, up to 240 × 220 CSS px unless the original region is larger.
+Add a labeled **Translation font size** select and live text preview in the
+Bubble translation card. Default to **Automatic (fit text)**, using available
+width and height at 18 px before reducing to 11 px. Fixed choices are 12, 14, 16,
+18, 20, 24, 28 and 32 px: grow panels as needed, keep the selected size and allow
+overflow scrolling instead of shrinking it. Persist the choice and update visible
+panels across windows without new translation requests. Invalid/unavailable
+storage falls back to Automatic; failed writes preserve the selection and report
+an error.
+Wrap English at spaces, collapse source line breaks into spaces, and disable
+automatic hyphenation and forced word splitting. If the full text still cannot fit, keep its first line
+visible and allow vertical scrolling; never hide it behind an ellipsis. Panels
+accept scrolling and clicks, while retaining dashed review/selected borders.
+Clicking opens the full translation and Japanese in the learning popup. Known
+sound effects remain untouched. No persistent manga
+replacement, automatic saving or assumed bubble segmentation is introduced.
+
 Native hit routing is covered by the [overlay checks](ui-testing.md#native-overlay-checks).
 `pointer-events` only selects DOM targets; visual transparency alone is not proof
 that underlying applications receive input.
@@ -351,8 +384,13 @@ upsert rules. The success color accompanies text, not a color-only icon.
 Copy confirms “Copied” after success and reports failure without claiming success.
 Save sentence is available before translation; a matching requested translation
 can be retained with it. A secondary Translate locally control reveals the
-existing English output and cached state only after a request. Both the Japanese
-and English remain accessible; changing source clears stale output.
+existing English output only after a request. Cache reuse stays internal. Both
+the Japanese and English remain accessible; changing source clears stale output.
+
+Align the translation card with the Japanese sentence card. Center the title
+and Local badge together; keep Copy and collapse controls grouped at
+the right, allowing metadata to wrap at narrow widths. Show the sentence's save
+status below the result without a “Machine translation” label.
 
 ### Saved collections and SettingsWindow
 

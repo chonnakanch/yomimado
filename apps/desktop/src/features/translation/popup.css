@@ -152,13 +152,15 @@
   min-height: 0;
   overflow-y: auto;
   overflow-x: hidden;
-  scrollbar-gutter: stable;
+}
+.popup-details :focus-visible {
+  outline-offset: -2px;
 }
 .popup-details-content {
   display: flex;
   flex-direction: column;
   gap: var(--space-4);
-  padding: var(--space-1);
+  padding: var(--space-1) 0;
   overflow-wrap: anywhere;
 }
 .tokenization-status,
@@ -481,25 +483,32 @@
   font-size: var(--font-size-label);
   padding: 0 var(--space-2);
 }
-.translation-popup .popup-details-content > .translation-output {
-  margin-bottom: var(--space-2);
-}
 .translation-output-heading {
+  align-items: center;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: var(--space-2);
+}
+.translation-output-labels {
   align-items: center;
   display: flex;
   flex-wrap: wrap;
-  gap: var(--space-2);
+  gap: var(--space-1) var(--space-2);
+  min-width: 0;
+}
+.translation-output-labels .popup-badge {
+  align-self: center;
 }
 .translation-output-actions {
+  align-items: center;
   display: flex;
   gap: var(--space-1);
-  margin-left: auto;
 }
 .translation-expand-icon {
   display: flex;
   transform: rotate(180deg);
 }
-.translation-popup .translation-disclaimer {
+.translation-popup .translation-save-status {
   margin-top: var(--space-3);
 }
 .translation-popup .selection-help {

@@ -24,6 +24,8 @@ in [implementation status and roadmap](implementation-plan.md).
   refer to source Unicode code points; preserve readings and dictionary forms.
 - Use transparent always-on-top OCR regions and anchored popups. Preserve text
   type metadata; sound effects need not use dialogue learning behavior.
+- The opt-in **Translate bubbles automatically** setting adds removable white panels at text
+  bounds. It does not modify captured pixels or infer speech-bubble interiors.
 - Keep providers replaceable behind small interfaces. Current translation is
   local Marian or Ollama; a provider boundary is not permission to add cloud OCR
   or automatically upload screenshots.
@@ -129,6 +131,39 @@ both polygon and control hit routing while retaining the stored result.
 `update_overlay_controls`; the existing viewport-to-physical conversion serves
 macOS mouse routing and Windows window regions. No new coordinate transform,
 input-monitoring grant or dependency is added.
+
+**Translate bubbles automatically** is a persisted, default-off Reading setting.
+The overlay reads it through `useSyncExternalStore`, using the existing localStorage
+preference pattern with storage events for other windows and an event for the
+current window. After OCR state loads and the native overlay is revealed, its hook
+makes sequential, abortable translation requests. Fresh/restored overlays read the
+saved choice instead of resetting it. Disabling the preference removes panels
+immediately; re-enabling/Retry consults the provider-aware service cache again.
+Hide, unmount and native input-router disable stop queued work and ignore late
+replies without changing the saved preference. Inference already running on the
+server may complete. A failure stops the queue and leaves unprocessed Japanese
+visible. Demo boundaries and known sound effects are excluded; unknown region
+types remain eligible without changing their OCR metadata.
+
+`BubbleTranslation` renders text in SVG foreign objects using
+`ocrPolygonToOverlay`. A separate font-size preference uses the same localStorage
+subscription path. Automatic is the default: panels first use available width and
+height at 18 CSS px, then reduce the font down to 11 px. Fixed choices (12–32 px)
+retain that size, growing within the same geometry limits and scrolling on
+overflow. A font change only refits the rendered panels; it does not restart the
+translation queue. Growth is bounded to 240 × 220 CSS px unless the original
+region is larger, and uses only the space the measured text needs. Each pair of
+regions shares a horizontal or vertical gap at its midpoint, including diagonal
+neighbors, with a 4 px separation when space permits. Overlapping source regions
+are not enlarged. The captured area bounds the panels. This is not inferred bubble segmentation. Measured panel rectangles and the translation strip use the
+existing native control route, bounded to one panel per region plus two control
+areas. This also extends Windows' visible window region to the rectangular
+panels. Original polygons continue to own keyboard navigation; translated panels
+mirror their review/selection borders and accept pointer input and scrolling.
+Text that cannot fit at the selected fixed size or the 11 px automatic minimum
+stays visible from its first line with vertical scrolling instead of an ellipsis. Opening a translated region passes
+an explicit `translateOnOpen` popup option; the popup requests its full translation
+through the same provider/cache, with normal errors and stale-source guards.
 
 The tray's **Show OCR results** action calls the existing overlay visibility path
 on a worker thread. Tray refresh reads scan/result availability under the scan
@@ -455,6 +490,23 @@ use `models/translation` in app data. `preferences.json` records the explicit
 provider selection. Imported files live under `custom/<content-hash>/model`, with
 sibling ONNX files where applicable. Every request snapshots its provider;
 imported content hashes or Ollama model names/digests keep cache entries separate.
+Ollama identities also include the request-format revision, so v3 excludes earlier
+malformed v1/v2 results without deleting cache rows or saved data. HY-MT2 is
+recognized by `hunyuan-dense` metadata with BOS 127958, EOT 127960 and separator
+127962, independently of model/alias names. Its single-user request uses raw
+`/api/generate` with `<|startoftext|>` before the translation task and source,
+then `<|extra_0|>`, stopping at `<|eos|>`, `<|extra_5|>` or a new
+`<|startoftext|>`. This bypasses incompatible older Hunyuan templates in some
+Ollama imports. Other vocabularies retain the chat path. The protocol is checked
+against the publisher's
+[template](https://huggingface.co/tencent/Hy-MT2-7B/blob/9b0eb4e8f001def3e5ff6469a0ac96fdb39ec223/chat_template.jinja)
+and generation/tokenizer metadata, rather than guessed from the model tag.
+
+The Ollama adapter rejects Unicode replacement characters, leaked control tokens,
+empty/incomplete output and token-budget truncation before returning to the cache
+service. An error preserves Japanese for the untranslated region and stops the
+bubble queue; it does not silently trim an uncertain translation prefix.
+
 An unconfigured selection returns setup guidance instead of using an environment
 path or default-model fallback. Historical component archives/APIs remain part of
 release verification, while the settings UI offers local import and Ollama.

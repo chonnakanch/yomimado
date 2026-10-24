@@ -199,7 +199,8 @@ export function TranslationModels({ active }: { active: boolean }) {
         <p>
           Install a model to translate Japanese into English offline. Import a
           compatible model folder or download a local model through Ollama.
-          Translation runs only when you request it.
+          Translation runs when requested or after scanning if automatic bubble
+          translation is enabled.
         </p>
         {settings && (
           <p role="status">

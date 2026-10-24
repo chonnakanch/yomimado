@@ -10,9 +10,91 @@ The [feature roadmap](docs/implementation-plan.md#feature-checklist) tracks comp
 
 ## Unreleased
 
+### 2026-10-24
+
+#### Changed
+
+- Add **Translation font size** to Reading's Bubble translation settings, with
+  Automatic fitting and fixed 12–32 px choices plus a live preview. Save the size
+  across windows/restarts and refit visible panels without translating again.
+  Fixed sizes keep the chosen size and scroll long text instead of shrinking.
+  All 416 frontend tests, formatting, TypeScript/Vite and the macOS debug bundle
+  pass. Native 24 px persistence and browser 24→32 px updates/final-line scrolling
+  were verified; native Windows and fresh native OCR remain unverified.
+
+- Move bubble translation into **Settings → Reading** as **Translate bubbles
+  automatically**. Save the opt-in choice across scans, restored results and app
+  restarts; start translation after each completed overlay is revealed. Remove
+  the per-overlay toggle while preserving status/Retry and cancellation when
+  hidden or replaced. Turning the setting off reveals Japanese immediately.
+  All 412 frontend tests, formatting, TypeScript/Vite and the macOS debug bundle
+  pass. Native Settings persistence was verified across restart; a fresh native
+  scan hit macOS's Screen Recording permission check. Windows and exact installers
+  remain unverified. No Rust/Python changes in this follow-up.
+
+#### Fixed
+
+- Remove the popup header's cached label, the completed-translation status banner
+  and hover tooltips from both translated panels and their OCR outlines. Keep
+  temporary progress, error/Retry, accessible region labels and local caching.
+  All 416 frontend tests, formatting, TypeScript/Vite and the macOS debug bundle
+  pass. Browser checks confirm five completed panels with no status banner or
+  tooltip sources and a popup header without cached text. Windows is unverified.
+
+- Align the popup's translation card with the Japanese card and center its
+  header metadata beside the Copy/collapse controls. Remove the “Machine
+  translation” label while keeping save status. All 416 frontend tests,
+  formatting, TypeScript/Vite and the macOS debug bundle pass; browser checks
+  cover 420/320 px widths, Copy and collapse. Native Windows remains unverified.
+
+- Repair leaked control tokens and invented dialogue from HY-MT2 imports carrying
+  an incompatible legacy Hunyuan template. Select the publisher's matching raw
+  prompt from vocabulary metadata, reject malformed/truncated output before
+  caching, and use v3 identities to bypass damaged v1/v2 entries. Verify ten varied
+  synthetic cases and all 27 previously requested page inputs with the selected
+  local model. The earlier three-question check did not cover the template
+  mismatch. All 292 service regressions and Ruff lint/format pass; frontend/native
+  source is unchanged. Packaging still needs a compatible reviewed runtime seed.
+
+- Wrap bubble translations at whole-word boundaries without automatic hyphens.
+  Grow panels in width and height using available capture space before reducing
+  the font, while separating neighboring panels and retaining overflow scrolling.
+  Correct the Ollama translation prompt so the Japanese question is translated
+  instead of answered, stop Hunyuan output at conversation boundaries, and revise
+  the cache identity to avoid reusing old conversational answers. The reported
+  sentence reproduces the old failure and returns a question through the revised
+  local HY-MT2 provider/API, including a fresh result followed by a cache hit.
+  All 408 frontend and 272 service tests, formatting/lint, TypeScript/Vite and the
+  macOS debug app bundle pass. Browser checks verify whole words, panel growth,
+  neighbor separation and scrolling to the final line. Windows interaction and
+  exact installers remain unverified. A compatible reviewed macOS runtime seed
+  is required before packaging the changed Python service.
+
+- Keep long bubble translations readable instead of replacing the entire sentence
+  with an ellipsis. Widen narrow panels within captured space and neighboring-text
+  limits, improve English wrapping, and allow overflow to scroll from its first
+  line through its last. Preserve popup access and review/selection borders.
+  All 407 frontend tests, formatting, TypeScript/Vite, the macOS debug app bundle
+  and 216 documentation links pass. Synthetic browser checks verify visible first
+  lines and scrolling to the last line; native Windows interaction and exact
+  installers remain unverified.
+
 ### 2026-10-23
 
 #### Added
+
+- Add an optional **Translate bubbles** toggle to completed OCR overlays. Render
+  requested local English translations over detected text bounds, fit legible
+  text or show an ellipsis with full-popup access, and reveal Japanese immediately
+  when switched off. Keep review outlines, skip known sound effects/demo regions,
+  stop queued requests on hide/new scans and expose errors with Retry. Reuse the
+  provider-aware service cache and existing coordinate/native input route; do not
+  modify manga pixels or save automatically. All 403 frontend and 85 native tests,
+  formatting, TypeScript/Vite, Clippy and the macOS debug build pass. Synthetic
+  browser checks use mocked translation/native replies; native interaction,
+  model inference in this mode, Windows hardware and exact installers remain
+  unverified. See [controls](docs/usage.md#translate-in-bubbles) and
+  [verification](docs/ui-testing.md#bubble-translation-toggle).
 
 - Add local backup and restore in **Saved → Backup & restore**. Export all saved
   words/sentences, readings, meanings, source text, translations and dates to

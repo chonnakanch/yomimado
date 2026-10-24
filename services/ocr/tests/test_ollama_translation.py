@@ -66,11 +66,16 @@ def test_translation_is_explicit_text_only_and_uses_local_model_digest(monkeypat
     monkeypatch.setattr(ollama, "request_json", request)
     provider = ollama.OllamaProvider("my-model")
     assert calls == []
-    assert provider.identity == "ollama-ja-en-v1:my-model:latest:" + DIGEST
+    assert provider.identity == "ollama-ja-en-v3:my-model:latest:" + DIGEST
     assert not any(path == "chat" for path, _ in calls)
     assert provider.translate("学校。") == "School."
     chat = next(body for path, body in calls if path == "chat")
-    assert chat["messages"][1] == {"role": "user", "content": "学校。"}
+    assert chat["messages"] == [
+        {
+            "role": "user",
+            "content": "Translate the following segment into English, without additional explanation.\n\n学校。",
+        }
+    ]
     assert chat["stream"] is False
     assert set(chat) == {"model", "messages", "stream", "options"}
 
@@ -187,3 +192,170 @@ def test_failed_or_interrupted_pull_is_retryable(monkeypatch, payload):
     monkeypatch.setattr(ollama, "open_request", lambda *args, **kwargs: io.BytesIO(payload))
     manager._pull("my-model:latest")
     assert manager.status()["state"] == "error"
+
+
+@pytest.mark.parametrize("revision", ["v1", "v2"])
+def test_prompt_revision_does_not_reuse_old_conversational_answers(tmp_path, monkeypatch, revision):
+    import sqlite3
+
+    from app.translation import TranslationService
+
+    source = "どういう役割の人が欲しいとかあるの？"
+    calls = []
+
+    def request(path, body=None, timeout=5):
+        if path == "chat":
+            calls.append(body)
+            assert body["messages"][0]["content"].endswith("\n\n" + source)
+            return {
+                "done": True,
+                "message": {"content": "What kind of role do you need someone for?"},
+            }
+        return model_responses(path, body, timeout)
+
+    monkeypatch.setattr(ollama, "request_json", request)
+    cache = tmp_path / "translations.sqlite3"
+    with sqlite3.connect(cache) as db:
+        db.execute(
+            "CREATE TABLE translations (provider TEXT, source_text TEXT, translated_text TEXT, PRIMARY KEY(provider, source_text))"
+        )
+        db.execute(
+            "INSERT INTO translations VALUES (?, ?, ?)",
+            (
+                "ollama-ja-en-" + revision + ":my-model:latest:" + DIGEST,
+                source,
+                "Yes, we need customer support.<�|hy_User｜>",
+            ),
+        )
+    service = TranslationService(ollama.OllamaProvider("my-model"), cache)
+    first = service.translate(source)
+    assert first.cached is False
+    assert first.translatedText == "What kind of role do you need someone for?"
+    assert service.translate(source).cached is True
+    assert len(calls) == 1
+
+
+@pytest.mark.parametrize(
+    "template", ["<｜hy_User｜>{{ .Content }}<｜hy_Assistant｜>", "{{ .Prompt }}"]
+)
+def test_hunyuan_turn_stops_prevent_invented_followup_without_overriding_other_models(
+    monkeypatch, template
+):
+    chats = []
+
+    def request(path, body=None, timeout=5):
+        if path == "show":
+            return {"capabilities": ["completion"], "template": template}
+        if path == "chat":
+            chats.append(body)
+        return model_responses(path, body, timeout)
+
+    monkeypatch.setattr(ollama, "request_json", request)
+    ollama.OllamaProvider("my-model").translate("学校。")
+    options = chats[0]["options"]
+    if "<｜hy_User｜>" in template:
+        assert options["stop"] == [
+            "<｜hy_User｜>",
+            "<｜hy_Assistant｜>",
+            "<｜hy_place▁holder▁no▁2｜>",
+            "<｜hy_place▁holder▁no▁8｜>",
+        ]
+    else:
+        assert "stop" not in options
+
+
+HY_MT2_METADATA = {
+    "general.architecture": "hunyuan-dense",
+    "tokenizer.ggml.bos_token_id": 127958,
+    "tokenizer.ggml.eot_token_id": 127960,
+    "tokenizer.ggml.seperator_token_id": 127962,
+}
+
+
+@pytest.mark.parametrize(
+    "template", ["<｜hy_User｜>{{ .Content }}<｜hy_Assistant｜>", "custom", None]
+)
+def test_hy_mt2_uses_vocabulary_matched_raw_prompt_even_for_aliases(monkeypatch, template):
+    calls = []
+
+    def request(path, body=None, timeout=5):
+        calls.append((path, body))
+        if path == "show":
+            return {
+                "capabilities": ["completion"],
+                "template": template,
+                "model_info": HY_MT2_METADATA,
+            }
+        if path == "generate":
+            return {"done": True, "done_reason": "stop", "response": "School."}
+        assert path != "chat"
+        return model_responses(path, body, timeout)
+
+    monkeypatch.setattr(ollama, "request_json", request)
+    assert ollama.OllamaProvider("my-model").translate("学校。") == "School."
+    payload = next(body for path, body in calls if path == "generate")
+    assert payload == {
+        "model": "my-model:latest",
+        "raw": True,
+        "stream": False,
+        "prompt": "<|startoftext|>Translate the following segment into English, without additional explanation.\n\n学校。<|extra_0|>",
+        "options": {
+            "temperature": 0,
+            "num_predict": 512,
+            "stop": ["<|eos|>", "<|extra_5|>", "<|startoftext|>"],
+        },
+    }
+
+
+@pytest.mark.parametrize("key", list(HY_MT2_METADATA))
+def test_other_vocabularies_do_not_receive_hy_mt2_prompt(monkeypatch, key):
+    metadata = HY_MT2_METADATA | {key: "different"}
+
+    def request(path, body=None, timeout=5):
+        if path == "show":
+            return {"capabilities": ["completion"], "model_info": metadata}
+        assert path != "generate"
+        return model_responses(path, body, timeout)
+
+    monkeypatch.setattr(ollama, "request_json", request)
+    assert ollama.OllamaProvider("my-model").translate("学校。") == "School."
+
+
+@pytest.mark.parametrize("raw", [False, True])
+@pytest.mark.parametrize(
+    "output,reason",
+    [
+        ("School.<｜hy_User｜>Another turn", "stop"),
+        ("School.<�|hy_User｜>Another turn", "stop"),
+        ("School.< | hy_Assistant|>Repeat", "stop"),
+        ("School.<|eos|>", "stop"),
+        ("School.�", "stop"),
+        ("School", "length"),
+    ],
+)
+def test_malformed_or_truncated_output_is_not_returned_or_cached(
+    tmp_path, monkeypatch, raw, output, reason
+):
+    import sqlite3
+
+    from app.translation import TranslationService
+
+    def request(path, body=None, timeout=5):
+        if path == "show" and raw:
+            return {"capabilities": ["completion"], "model_info": HY_MT2_METADATA}
+        if path in ("generate", "chat"):
+            return {
+                "done": True,
+                "done_reason": reason,
+                "response": output,
+                "message": {"content": output},
+            }
+        return model_responses(path, body, timeout)
+
+    monkeypatch.setattr(ollama, "request_json", request)
+    cache = tmp_path / "cache.sqlite3"
+    service = TranslationService(ollama.OllamaProvider("my-model"), cache)
+    with pytest.raises(RuntimeError, match="complete translation|malformed translation"):
+        service.translate("学校。")
+    with sqlite3.connect(cache) as db:
+        assert db.execute("SELECT COUNT(*) FROM translations").fetchone()[0] == 0

@@ -255,7 +255,7 @@ it("shows local word analysis while translating only after a click", async () =>
   expect(fetch).toHaveBeenCalledTimes(5);
   expect(fetch.mock.calls[4][0]).toContain("/translate");
   expect(container.textContent).toContain("School");
-  expect(container.textContent).toContain("cached");
+  expect(container.textContent).not.toContain("cached");
   expect(container.textContent).toContain("Save word");
   expect(fetch).toHaveBeenCalledTimes(5);
   await act(async () => {
@@ -604,11 +604,11 @@ function deferred() {
   });
   return { promise, resolve };
 }
-async function openPopup(text = "学校") {
+async function openPopup(text = "学校", translateOnOpen = false) {
   window.history.replaceState(
     {},
     "",
-    `/?mode=translation&state=${encodeURIComponent(JSON.stringify({ text, demo: false }))}`,
+    `/?mode=translation&state=${encodeURIComponent(JSON.stringify({ text, demo: false, translateOnOpen }))}`,
   );
   await act(async () => root.render(<TranslationPopup />));
 }
@@ -1706,6 +1706,53 @@ it("shows Copied briefly then returns to Copy without another clipboard request"
   }
 });
 
+it("opens the full requested bubble translation without saving or another translation click", async () => {
+  const fetch = serviceMock((path, body) =>
+    path.endsWith("/translate")
+      ? response({
+          sourceText: body.text,
+          translatedText: "School",
+          provider: "test-local",
+          cached: true,
+        })
+      : undefined,
+  );
+  await openPopup("学校", true);
+  expect(
+    container.querySelector("#translation-result-text")?.textContent,
+  ).toContain("School");
+  expect(container.textContent).not.toContain("cached");
+  expect(
+    fetch.mock.calls.filter(([url]) => url.endsWith("/translate")),
+  ).toHaveLength(1);
+  expect(
+    fetch.mock.calls.some(([url]) => /sentences|vocabulary/.test(url)),
+  ).toBe(false);
+});
+
+it("discards a late bubble translation after editing its Japanese source", async () => {
+  const pending = deferred();
+  serviceMock((path) =>
+    path.endsWith("/translate") ? pending.promise : undefined,
+  );
+  await openPopup("学校", true);
+  await click("Edit");
+  await editDraft("猫");
+  await click("Apply");
+  await act(async () =>
+    pending.resolve(
+      response({
+        sourceText: "学校",
+        translatedText: "School",
+        provider: "test-local",
+        cached: true,
+      }),
+    ),
+  );
+  expect(container.querySelector("#translation-result-text")).toBeNull();
+  expect(container.querySelector(".tokenization-text")?.textContent).toBe("猫");
+});
+
 it("shows translation failure, explicit retry, loading and saved sentence states", async () => {
   const next = deferred();
   let translations = 0;
@@ -1736,7 +1783,8 @@ it("shows translation failure, explicit retry, loading and saved sentence states
     ),
   );
   expect(container.textContent).not.toContain("Open Ollama and retry.");
-  expect(container.textContent).toContain("Machine translation. Not saved.");
+  expect(container.textContent).toContain("Not saved.");
+  expect(container.textContent).not.toContain("Machine translation.");
   await click("Hide translation");
   expect(
     container.querySelector<HTMLElement>("#translation-result-text")!.hidden,

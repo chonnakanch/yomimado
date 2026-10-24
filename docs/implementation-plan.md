@@ -1,6 +1,6 @@
 # Implementation status and feature roadmap
 
-Last reviewed: **2026-10-23**. This is the current plan, not a chronological work
+Last reviewed: **2026-10-24**. This is the current plan, not a chronological work
 log. [CHANGELOG.md](../CHANGELOG.md) records dated changes; the
 [release checklist](desktop-release.md) records publication and exact installers.
 Source completion, UI approval and installer acceptance are separate states.
@@ -77,7 +77,9 @@ before packaging; the recorded approval applies only to its bound source.
       hardware and results. Browser/CI coverage does not establish a hardware pass.
 - [ ] **Verify real Ollama inference and downloads.** Exercise model download,
       explicit selection, translation and failure recovery against a running local
-      Ollama instance. Retain results with the
+      Ollama instance. HY-MT2 inference and a 27-region native macOS overlay were
+      checked on 2026-10-24; download/selection/failure-recovery acceptance remains
+      open. Retain results with the
       [translation verification record](ui-testing.md#translation-model-verification--2026-10-18).
 
 Exact-installer acceptance, source-only rebuild limits and hardware waivers are
@@ -86,6 +88,16 @@ recorded in the [release checklist](desktop-release.md).
 ## Feature checklist
 
 ### Implemented in source
+
+- [x] **Automatic translated text over bubbles** — a persisted opt-in setting in
+      Settings → Reading starts local translations after each completed scan;
+      disabling it immediately reveals Japanese. Sequential requests,
+      error/retry, word wrapping without added hyphens, panels that grow in width and
+      height, saved font-size choices (Automatic or fixed 12–32 px), and scrollable
+      long text with full-popup access. Defaults off; enabling persists across scans/restoration/restarts.
+      No image modification or bubble segmentation.
+      [Controls](usage.md#translate-in-bubbles) and
+      [verification limits](ui-testing.md#bubble-translation-toggle).
 
 - [x] **Show OCR results from the tray** — restore the latest hidden completed
       outlines without rescanning or focusing the toolbar; scan/no-result/visible
@@ -292,14 +304,14 @@ wants an action from たい alone.
 
 ### Supported slice
 
-| Category                        | Supported forms                                                                                                        |
-| ------------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
-| Ichidan and regular godan verbs | Plain past, negative, negative past; polite non-past, past, negative and negative past                                 |
-| Irregular verbs                 | する and 来る／くる; IPADIC-marked 行く-type past and 問う-type ウ音便; ある's negative when the analyzed base is ある |
-| I-adjectives                    | かった, くない, くなかった; those forms plus です, and dictionary form + です; standalone いい → よい stem             |
-| Casual contractions             | ちゃう／ちゃった and じゃう／じゃった, expanded through てしまう／でしまう                                             |
+| Category                        | Supported forms                                                                                                                                                       |
+| ------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Ichidan and regular godan verbs | Plain past, negative, negative past; polite non-past, past, negative and negative past                                                                                |
+| Irregular verbs                 | する and 来る／くる; IPADIC-marked 行く-type past and 問う-type ウ音便; ある's negative when the analyzed base is ある                                                |
+| I-adjectives                    | かった, くない, くなかった; those forms plus です, and dictionary form + です; standalone いい → よい stem                                                            |
+| Casual contractions             | ちゃう／ちゃった and じゃう／じゃった, expanded through てしまう／でしまう                                                                                            |
 | Continuing action/state         | ている／でいる and casual てる／でる; plain non-past, past, negative and negative past; polite ます, ました, ません and ませんでした, including forms with い omitted |
-| Desire                          | たい, たかった, たくない and たくなかった; each also with polite です |
+| Desire                          | たい, たかった, たくない and たくなかった; each also with polite です                                                                                                 |
 
 The current implementation relies on the pinned Lindera/IPADIC base form and
 verb/adjective class. It generates these small rule families and requires an

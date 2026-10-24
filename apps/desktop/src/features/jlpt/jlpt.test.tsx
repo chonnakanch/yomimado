@@ -121,11 +121,16 @@ it("uses the same offline badge for a dictionary match and an existing inflected
   expect(fetch.mock.calls[0][0]).toContain("/vocabulary");
 });
 
+const jlptCheckbox = () =>
+  Array.from(
+    container.querySelectorAll<HTMLInputElement>('input[type="checkbox"]'),
+  ).find((input) =>
+    input.parentElement?.textContent?.includes("Show estimated JLPT levels"),
+  )!;
+
 it("hides badges immediately, persists the preference and responds to other windows", async () => {
   await mountLearningViews();
-  const checkbox = container.querySelector<HTMLInputElement>(
-    'input[type="checkbox"]',
-  )!;
+  const checkbox = jlptCheckbox();
   expect(checkbox.checked).toBe(true);
   await act(async () => checkbox.click());
   expect(window.localStorage.getItem(jlptPreferenceKey)).toBe("false");
@@ -143,10 +148,7 @@ it("hides badges immediately, persists the preference and responds to other wind
   root = createRoot(container);
   // Reopening reads the stored preference rather than a component default.
   await act(async () => root.render(<ReadingSettings active={false} />));
-  expect(
-    container.querySelector<HTMLInputElement>('input[type="checkbox"]')!
-      .checked,
-  ).toBe(false);
+  expect(jlptCheckbox().checked).toBe(false);
 });
 
 it("reports unavailable preference storage without pretending badges were hidden", async () => {
@@ -154,19 +156,12 @@ it("reports unavailable preference storage without pretending badges were hidden
   vi.spyOn(Storage.prototype, "setItem").mockImplementation(() => {
     throw new Error("Storage unavailable");
   });
-  await act(async () =>
-    container
-      .querySelector<HTMLInputElement>('input[type="checkbox"]')!
-      .click(),
-  );
+  await act(async () => jlptCheckbox().click());
   expect(container.querySelector('[role="alert"]')?.textContent).toContain(
     "Could not save",
   );
   expect(container.querySelectorAll(".jlpt-badge")).toHaveLength(2);
-  expect(
-    container.querySelector<HTMLInputElement>('input[type="checkbox"]')!
-      .checked,
-  ).toBe(true);
+  expect(jlptCheckbox().checked).toBe(true);
 });
 
 it("bundles full license text and credits with the Sources view", async () => {

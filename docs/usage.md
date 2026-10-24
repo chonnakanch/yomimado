@@ -100,6 +100,42 @@ Saved, Settings and Sources & licenses each open their own native window from
 More actions. They can remain open together; opening another menu entry does
 not replace an existing window's content.
 
+### Translate in bubbles
+
+Open **Settings → Reading → Bubble translation** and enable **Translate bubbles
+automatically**. Configure a local Marian or Ollama model in the same Reading
+settings first. Once enabled, each completed scan automatically translates detected
+text and displays English over it. The preference stays on across scans, restored
+results and app restarts. It is off by default. There is no translation toggle on
+the OCR overlay.
+
+Turn the setting off to reveal the original Japanese immediately. Hiding the
+overlay or starting another scan stops the current translation queue without
+changing the saved setting. Translation runs one region at a time and never saves
+sentences automatically. Repeated text uses the selected provider's local cache.
+A request already running in the local model may finish. An error stops the queue
+and offers **Retry** on the overlay; untranslated regions keep their Japanese
+visible.
+
+The progress message disappears after translation finishes. Translated boxes have
+no hover tooltip; click one to open the learning popup.
+
+Choose **Translation font size** in the same Bubble translation settings.
+**Automatic (fit text)** is the default and fits text from 18 down to 11 px.
+Fixed sizes from **12 to 32 px** keep the chosen size and let long text scroll.
+The preview updates immediately. Your size is saved across app restarts and also
+updates visible bubble translations without translating again.
+
+Translation panels can widen and grow taller into the space between neighboring
+text regions, within the captured area. These text-based panels can differ from the
+speech bubble's interior. Text wraps at word boundaries without added
+hyphens. Panels use available space before automatic fitting or scrolling at a fixed size. Longer translations
+stay visible and scroll inside the panel; point at the text and scroll to read
+the rest. Click a region to open its full translation in the learning popup,
+with Japanese and OCR review details. Known sound effects and demo boundaries are excluded; OCR
+currently leaves many region types unknown, so this is not speech-bubble detection.
+Panels are temporary overlays; the manga image is never changed.
+
 ### Saved words and sentences
 
 Choose **More actions → Saved** to open the shared library. Use **Words** and

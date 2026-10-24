@@ -30,6 +30,10 @@ For horizontal drag-selection outlines, see the
 For portable saved-library files, see [local backup and restore](usage.md#local-backup-and-restore)
 and its [verification limits](ui-testing.md#local-backup-and-restore).
 
+For optional translated text over detected bubbles, see
+[Translate in bubbles](usage.md#translate-in-bubbles) and its
+[verification limits](ui-testing.md#bubble-translation-toggle).
+
 ## Releases and exact acceptance
 
 The [shared checklist](desktop-release.md) is the authority for recorded release

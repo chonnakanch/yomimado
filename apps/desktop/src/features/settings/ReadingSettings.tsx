@@ -2,12 +2,91 @@ import { TranslationModels } from "./TranslationModels";
 import { useState } from "react";
 import { setJlptVisible, useJlptVisible } from "../jlpt/preference";
 import { jlptSource } from "../jlpt/jlpt";
+import {
+  setBubbleTranslationEnabled,
+  useBubbleTranslationEnabled,
+  bubbleTranslationFontSizes,
+  setBubbleTranslationFontSize,
+  useBubbleTranslationFontSize,
+  type BubbleTranslationFontSize,
+} from "../overlay/bubble-translation-preference";
 
 export function ReadingSettings({ active = false }: { active?: boolean }) {
   const showJlpt = useJlptVisible();
   const [jlptError, setJlptError] = useState<string | null>(null);
+  const translateBubbles = useBubbleTranslationEnabled();
+  const translationFontSize = useBubbleTranslationFontSize();
+  const [translationError, setTranslationError] = useState<string | null>(null);
   return (
     <>
+      <div className="settings-card">
+        <h2>Bubble translation</h2>
+        <label className="settings-option">
+          <input
+            type="checkbox"
+            checked={translateBubbles}
+            onChange={(event) => {
+              try {
+                setBubbleTranslationEnabled(event.currentTarget.checked);
+                setTranslationError(null);
+              } catch {
+                setTranslationError(
+                  "Could not save the bubble translation preference. Try again.",
+                );
+              }
+            }}
+          />
+          Translate bubbles automatically
+        </label>
+        <p className="settings-note">
+          Show English over detected text after each scan using your selected
+          local model. Turn off to show the original Japanese.
+        </p>
+        <label className="settings-model-field">
+          Translation font size
+          <select
+            value={translationFontSize}
+            aria-describedby="bubble-font-size-help"
+            onChange={(event) => {
+              try {
+                setBubbleTranslationFontSize(
+                  event.currentTarget.value as BubbleTranslationFontSize,
+                );
+                setTranslationError(null);
+              } catch {
+                setTranslationError(
+                  "Could not save the translation font size. Try again.",
+                );
+              }
+            }}
+          >
+            <option value="auto">Automatic (fit text)</option>
+            {bubbleTranslationFontSizes.map((size) => (
+              <option key={size} value={size}>
+                {size} px
+              </option>
+            ))}
+          </select>
+        </label>
+        <p className="settings-note" id="bubble-font-size-help">
+          Fixed sizes keep text at your chosen size; scroll long translations.
+          Automatic fits text to the available space.
+        </p>
+        <p
+          aria-label="Translation font size preview"
+          style={{
+            fontSize:
+              translationFontSize === "auto" ? 18 : Number(translationFontSize),
+          }}
+        >
+          Translated text looks like this.
+        </p>
+        {translationError && (
+          <p className="settings-error" role="alert">
+            {translationError}
+          </p>
+        )}
+      </div>
       <TranslationModels active={active} />
       <div className="settings-card">
         <h2>JLPT vocabulary</h2>

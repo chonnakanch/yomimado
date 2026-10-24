@@ -6,6 +6,9 @@ starts unconfigured; install and select a model before using it. Browsing a sour
 does not activate it. **Using** names the current selection;
 selecting another provider takes effect on the next translation without restarting.
 OCR, tokenization and dictionary lookup remain independent of this choice.
+Enable **Translate bubbles automatically** at the top of Reading settings to
+translate each completed scan; the saved choice also applies to restored results.
+Turn it off to keep the Japanese visible. See [bubble controls](usage.md#translate-in-bubbles).
 
 ## Import a local model
 
@@ -54,7 +57,12 @@ Custom server or registry endpoints are not supported.
 
 Translation sends only the selected Japanese text and a Japanese-to-English
 translation instruction to the local Ollama process. It sends no screenshot,
-reading history or saved vocabulary.
+reading history or saved vocabulary. The translation instruction and source text
+share one user turn so translation-focused models receive the task alongside
+the passage, rather than a bare question to answer. Recognized HY-MT2 vocabulary
+uses its matching prompt format even when an Ollama import contains an older
+Hunyuan template. Damaged output, leaked control tokens and incomplete responses
+report an error instead of being displayed or cached.
 
 ## Saved selection and cache
 
@@ -62,3 +70,13 @@ Your model choice persists across restarts. Imported model copies are checked
 again when the service restarts. Switching providers keeps separate translation
 caches; switching back can reuse that provider's previous results. Changing the
 model does not delete original files, Ollama models or saved learning data.
+
+Ollama cache identities include the installed model digest and translation prompt
+revision. Updating the prompt can therefore recompute results without reusing
+older conversational answers; existing cache rows and saved sentences remain.
+
+The prompt follows the translation-in-user-turn pattern in the
+[HY-MT guidance](https://github.com/Tencent-Hunyuan/Hy-MT#prompts) and
+[HY-MT2 examples](https://huggingface.co/tencent/Hy-MT2-7B/blob/main/README.md#hy-mt2-translation-task-instruction-examples-chinese-english-comparison).
+Other model vocabularies keep their chat request format. Translation quality still
+depends on the selected model and source text; isolated bubbles lack page context.

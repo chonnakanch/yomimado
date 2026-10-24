@@ -4,6 +4,10 @@ import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
 import { invoke } from "@tauri-apps/api/core";
 import { App } from "../../App";
+import {
+  bubbleTranslationFontSizeKey,
+  bubbleTranslationPreferenceKey,
+} from "../overlay/bubble-translation-preference";
 
 const detectorInvoke = vi.hoisted(() => vi.fn());
 vi.mock("@tauri-apps/api/core", () => ({ invoke: vi.fn() }));
@@ -87,10 +91,7 @@ it("replaces the reading-order toggle with current keyboard-reading instructions
   window.history.replaceState({}, "", "/?view=reading");
   window.localStorage.setItem("yomimado.reading-order.enabled.v1", "true");
   await mount();
-  expect(
-    container.querySelector('input[type="checkbox"]')?.parentElement
-      ?.textContent,
-  ).toContain("Show estimated JLPT levels");
+  expect(container.textContent).toContain("Show estimated JLPT levels");
   expect(container.textContent).toContain("More actions → Read with keyboard");
   expect(container.textContent).toContain("Arrow keys move between regions");
   expect(container.textContent).not.toContain("Focus regions");
@@ -230,5 +231,104 @@ it("keeps development model setup distinct from packaged installation", async ()
   expect(button("Select detector model file")).toBeUndefined();
   expect(container.textContent).toContain(
     "does not check whether that service is ready",
+  );
+});
+
+const bubbleSetting = () =>
+  Array.from(
+    container.querySelectorAll<HTMLInputElement>('input[type="checkbox"]'),
+  ).find((input) =>
+    input.parentElement?.textContent?.includes(
+      "Translate bubbles automatically",
+    ),
+  )!;
+
+it("persists automatic bubble translation across settings reopen and tracks other windows", async () => {
+  window.history.replaceState({}, "", "/?view=reading");
+  await mount();
+  expect(bubbleSetting().checked).toBe(false);
+  await act(async () => bubbleSetting().click());
+  expect(bubbleSetting().checked).toBe(true);
+  expect(window.localStorage.getItem(bubbleTranslationPreferenceKey)).toBe(
+    "true",
+  );
+  await act(async () => root.unmount());
+  root = createRoot(container);
+  await mount();
+  expect(bubbleSetting().checked).toBe(true);
+  await act(async () => {
+    window.localStorage.setItem(bubbleTranslationPreferenceKey, "false");
+    window.dispatchEvent(
+      new StorageEvent("storage", { key: bubbleTranslationPreferenceKey }),
+    );
+  });
+  expect(bubbleSetting().checked).toBe(false);
+});
+
+it("reports a bubble preference save failure without claiming automatic translation is enabled", async () => {
+  window.history.replaceState({}, "", "/?view=reading");
+  await mount();
+  vi.spyOn(Storage.prototype, "setItem").mockImplementation(() => {
+    throw new Error("Storage unavailable");
+  });
+  await act(async () => bubbleSetting().click());
+  expect(bubbleSetting().checked).toBe(false);
+  expect(container.querySelector('[role="alert"]')?.textContent).toContain(
+    "Could not save the bubble translation preference",
+  );
+});
+
+const fontSetting = () =>
+  container.querySelector<HTMLSelectElement>(
+    'select[aria-describedby="bubble-font-size-help"]',
+  )!;
+const chooseFont = (value: string) =>
+  act(async () => {
+    fontSetting().value = value;
+    fontSetting().dispatchEvent(new Event("change", { bubbles: true }));
+  });
+
+it("persists a fixed translation size and updates its preview and other windows", async () => {
+  window.history.replaceState({}, "", "/?view=reading");
+  await mount();
+  expect(fontSetting().value).toBe("auto");
+  await chooseFont("24");
+  expect(window.localStorage.getItem(bubbleTranslationFontSizeKey)).toBe("24");
+  expect(
+    container.querySelector<HTMLElement>(
+      '[aria-label="Translation font size preview"]',
+    )!.style.fontSize,
+  ).toBe("24px");
+  expect(bubbleSetting().checked).toBe(false);
+  await act(async () => root.unmount());
+  root = createRoot(container);
+  await mount();
+  expect(fontSetting().value).toBe("24");
+  await act(async () => {
+    window.localStorage.setItem(bubbleTranslationFontSizeKey, "32");
+    window.dispatchEvent(
+      new StorageEvent("storage", { key: bubbleTranslationFontSizeKey }),
+    );
+  });
+  expect(fontSetting().value).toBe("32");
+  expect(
+    container.querySelector<HTMLElement>(
+      '[aria-label="Translation font size preview"]',
+    )!.style.fontSize,
+  ).toBe("32px");
+});
+
+it("falls back to automatic for invalid stored sizes and preserves the selection on save failure", async () => {
+  window.history.replaceState({}, "", "/?view=reading");
+  window.localStorage.setItem(bubbleTranslationFontSizeKey, "1000");
+  await mount();
+  expect(fontSetting().value).toBe("auto");
+  vi.spyOn(Storage.prototype, "setItem").mockImplementation(() => {
+    throw new Error("Storage unavailable");
+  });
+  await chooseFont("20");
+  expect(fontSetting().value).toBe("auto");
+  expect(container.querySelector('[role="alert"]')?.textContent).toContain(
+    "Could not save the translation font size",
   );
 });

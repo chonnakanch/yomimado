@@ -7,8 +7,8 @@ export function AboutSettings() {
     <div className="settings-card settings-sources">
       <h2>About / Sources</h2>
       <p>
-        OCR and dictionary lookup stay local. Translation runs only when you
-        request it.
+        OCR and dictionary lookup stay local. Translation runs on request or
+        when automatic bubble translation is enabled.
       </p>
       <h3>Sources and licenses</h3>
       <p>

@@ -11,6 +11,7 @@ Exact installer tests remain in [macOS](macos-clean-mac-test.md),
 - [Capture shortcut verification](#capture-shortcut-verification)
 - [Detector release link verification](#detector-release-link-verification)
 - [Completed-overlay hide controls](#completed-overlay-hide-controls)
+- [Bubble translation toggle](#bubble-translation-toggle)
 - [Horizontal OCR geometry recovery](#horizontal-ocr-geometry-recovery)
 - [Native overlay checks](#native-overlay-checks)
 - [Windows acceptance checklist](#windows-acceptance-checklist)
@@ -236,6 +237,148 @@ passes reader input. Reopen a popup/menu/Settings and check its ordinary Escape
 behavior. Start/cancel/rescan, then ensure a delayed hide request cannot hide the
 new result. Windows interaction, registration-conflict behavior and exact
 installers remain unverified.
+
+## Bubble translation toggle
+
+Source verification — 2026-10-23: **Translate bubbles** starts off on a completed
+scan. Regression coverage checks explicit activation, sequential local requests,
+duplicate-text reuse, sound-effect/demo exclusion, review labels, Retina text
+bounds, immediate return to Japanese, abort/late-response handling, native
+hide/scan cancellation, missing-model error/Retry and provider re-selection.
+Fitting stops at 11 px and uses an ellipsis when a complete translation cannot
+fit. Popup coverage checks opening the full requested translation without saving
+and rejecting late results after editing Japanese. Native tests cover bounded
+panel counts and rectangle conversion/clipping at 100%, 125%, 150% and 200%.
+
+Synthetic Chromium and WebKit browser checks use mocked Tauri and translation replies, with ordinary,
+narrow/overflowing and narration regions plus an excluded sound effect. They
+verify no translation before toggling, three sequential requests/panels, one
+overflow marker, five reported native rectangles, full-popup activation and
+toggle-off restoration. They establish UI behavior, not model inference quality
+or native click-through acceptance.
+
+All 403 frontend and 85 native tests, frontend formatting, TypeScript/Vite,
+Rust formatting/Clippy and the macOS debug build pass. The frontend tests use
+`NODE_OPTIONS=--no-experimental-webstorage` with the local Node 26 runtime.
+No service source, dependencies or model resources change.
+
+Native macOS/Windows interaction and actual model inference in this mode remain
+unverified. Check both supported systems with a configured local model: toggle
+while translation is pending, hide/restore and rescan, missing-model Retry,
+long/tiny/angled/review regions, keyboard navigation and popup return. Verify
+panel corners remain visible/clickable on Windows, surrounding artwork remains
+click-through, and mixed-DPI/negative-origin monitors preserve alignment. OCR
+text bounds may not fill the bubble interior; this feature does not segment
+bubbles or accept a new installer.
+
+Overflow follow-up — 2026-10-24: an owner screenshot showed many complete
+translations hidden behind ellipses. Long translations now retain visible text
+and scroll from the first line, with space reserved for the scrollbar. Narrow
+panels widen within capture/neighbor limits; English uses word wrapping and
+hyphenation. The HTML text surface accepts scrolling and clicks, and mirrors
+review/selection borders while original polygons retain keyboard navigation.
+Four layout regressions cover edge bounds, neighboring-panel separation, existing
+overlaps and separate rows. The component regression keeps full overflow text
+visible at 11 px and checks popup activation. A browser check of the actual
+frontend with five synthetic regions and mocked native/translation replies
+confirms visible first lines and scrolling to the final line of a long paragraph.
+All 407 frontend tests, frontend/document formatting, TypeScript/Vite and the
+macOS debug app bundle build pass; 216 local documentation links/fragments pass.
+This does not establish native Windows scrolling or a new installer pass.
+
+Wrapping and translation follow-up — 2026-10-24: disable automatic hyphenation
+and forced word splitting; use measured whole-word wrapping. Panels grow in width
+and height before reducing the font, within capture bounds and pairwise shared
+gaps (including diagonal and stacked neighbors). Short text keeps its original
+size. Synthetic browser DOM ranges show zero words split across lines, no panel
+overlaps, an expanded narrow panel, and a 220 px tall long panel scrolling from
+its first line to a visible final line (315 px scroll range).
+
+The selected local `maternion/hy-mt2:7b` model, digest
+`d86c4ddbd9f72dccc2b8e3a4b515ee0f39331059b0b09ea332780f492e3e9ac3`,
+reproduced the reported customer-support answer with the old system-only
+instruction. Moving the task into the user turn and adding legacy turn stops
+passed three question checks but failed the owner's full-page scan: malformed
+Unicode/control tokens and invented conversation remained. That narrow check did
+not establish compatibility.
+
+The installed vocabulary has `<|startoftext|>`, `<|extra_0|>` and `<|eos|>` at
+127958, 127962 and 127960, while its Ollama template uses old `<｜hy_User｜>`
+markers. Raw generation with the matching publisher protocol fixes the mismatch;
+see [the request contract](architecture.md#translation-selection-and-cache).
+Ten varied synthetic dialogue cases and all 27 previously requested page inputs
+passed the new output guard. After restarting the development service, the API
+returned a fresh v3 question translation followed by a cache hit. Restoring the
+retained scan and enabling Translate bubbles in the native macOS app completed
+all 27 panels; accessibility labels and a native overlay screenshot show clean
+translation text without leaked control tokens. The screenshot contains only the
+overlay, not manga pixels, and remains a private local fixture.
+
+All 292 service tests and Ruff lint/format pass. Regressions cover vocabulary
+metadata/aliases, matching raw requests, isolation of other model formats,
+malformed Unicode/control tokens, token-budget truncation and exclusion of both
+v1 and v2 cache rows; rejected output creates no translation cache row. The
+frontend/native source is unchanged from the 408-test/macOS debug bundle check.
+This establishes the tested output format, not general translation accuracy or
+page-context understanding: isolated bubbles can still have wrong senses/names.
+Native Windows interaction and exact installers remain unverified; packaging
+the Python change needs a compatible reviewed macOS runtime seed.
+
+Settings follow-up — 2026-10-24: move the toggle to **Settings → Reading →
+Bubble translation → Translate bubbles automatically**. The default-off
+localStorage preference persists across app windows/restarts. Once enabled, every
+completed/revealed OCR overlay, including restored results, starts translation;
+there is no per-overlay toggle. Status and Retry remain on the overlay. Hiding,
+Escape, new scans and native stop events abort the current run without clearing
+the saved choice. A failed preference write leaves the checkbox unchanged and
+shows an error.
+
+All 412 frontend tests, frontend/document formatting, TypeScript/Vite and the
+macOS debug app bundle pass. Regressions cover persistence/reopening, cross-window
+storage changes, failed writes, no inference before reveal, automatic new/restored
+results, stop/late replies, preference-off restoration, provider-safe retry and
+sound-effect/demo exclusion. Native macOS Settings shows the option enabled after
+a full app restart. A fresh scan was blocked by the macOS Screen Recording
+permission check in this rebuilt debug app, so fresh native OCR-to-translation
+handoff is not claimed. Native Windows and exact installers remain unverified.
+No Rust or Python source changes in this follow-up.
+
+Font-size follow-up — 2026-10-24: add a persisted **Translation font size**
+select and live preview in Reading's Bubble translation card. Default Automatic
+keeps 18→11 px fitting; fixed 12, 14, 16, 18, 20, 24, 28 and 32 px sizes never
+shrink and retain overflow scrolling. Invalid stored values fall back to
+Automatic; failed writes preserve the selection. Cross-window changes refit
+visible translations without restarting inference or changing automatic mode.
+
+All 416 frontend tests, formatting, TypeScript/Vite and the macOS debug app bundle
+pass. Regressions cover persistence, invalid storage, failed writes, fixed-size
+overflow, size changes and no extra translation requests. A browser check of the
+actual frontend with mocked native/service replies confirmed all five synthetic
+panels at 24 px, then 32 px after a setting change in another tab. A long panel
+retained 32 px and reached its visible final line at 3832 px scroll offset.
+Native macOS Settings saved 24 px across a full app restart; Automatic was
+restored after verification. The rebuilt app is open on the new control. Native
+Windows and a fresh native OCR pass remain unverified; the earlier macOS Screen
+Recording permission failure was not rechecked in this follow-up. No Rust/Python changes.
+
+Popup alignment follow-up — 2026-10-24: align the translation and Japanese card
+edges, center the title/Local/cached metadata and keep Copy/collapse controls
+together on the right. Remove the “Machine translation” prefix while preserving
+saved/unsaved status. All 416 frontend tests, formatting, TypeScript/Vite and the
+macOS debug bundle pass. Browser checks of the actual frontend with synthetic
+service/native replies at 420×550 and 320×550 confirm aligned cards, readable
+metadata, Copy confirmation and collapse/expand. The updated native macOS debug
+app was relaunched; this follow-up does not establish native popup or Windows
+interaction acceptance.
+
+Label/hover follow-up — 2026-10-24: remove the popup's cached label, the completed
+overlay banner and both translated-panel/polygon hover titles. Keep temporary
+progress, error/Retry, accessible region names and cache behavior. All 416 frontend
+tests, formatting, TypeScript/Vite and the macOS debug bundle pass. Regressions
+also verify completed controls leave the native hit-rectangle report. The actual
+frontend with synthetic replies shows five completed panels without the banner
+or tooltip sources and a popup header without cached text. The native debug app
+was rebuilt/relaunched; native popup/hover and Windows interaction remain unverified.
 
 ## Horizontal OCR geometry recovery
 
