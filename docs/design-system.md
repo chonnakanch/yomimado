@@ -252,10 +252,11 @@ navigation. Report the whole measured control group and each translated panel
 through the native route as well as the hide button.
 
 Translation panels use white with near-black text for reading against light/dark
-pages. Narrow panels can widen within the capture and the midpoint of gaps to
-neighboring text, by up to 60% and at most 140 CSS px unless originally wider.
-Wrap English horizontally, with normal word boundaries and hyphenation, fitting
-from 18 down to 11 CSS px. If the full text still cannot fit, keep its first line
+pages. Panels grow only as needed within the capture and shared gaps to
+neighboring text, up to 240 × 220 CSS px unless the original region is larger.
+Use available width and height at 18 px before reducing the font down to 11 px.
+Wrap English at spaces, collapse source line breaks into spaces, and disable
+automatic hyphenation and forced word splitting. If the full text still cannot fit, keep its first line
 visible and allow vertical scrolling; never hide it behind an ellipsis. Panels
 accept scrolling and clicks, while retaining dashed review/selected borders.
 Clicking opens the full translation and Japanese in the learning popup. Known

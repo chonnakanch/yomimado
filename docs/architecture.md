@@ -142,10 +142,12 @@ visible. Demo boundaries and known sound effects are excluded; unknown region
 types remain eligible without changing their OCR metadata.
 
 `BubbleTranslation` renders fitted text in SVG foreign objects using
-`ocrPolygonToOverlay`. Narrow panels can widen by up to 60%, capped at 140 CSS px
-unless the original region is wider. Horizontal gaps are shared at their midpoint,
-with a 4 px separation; overlapping source regions are not enlarged. The captured
-area bounds the panels. This is not inferred bubble segmentation. Measured panel rectangles and the translation strip use the
+`ocrPolygonToOverlay`. Panels first use available width and height at 18 CSS px, then reduce
+the font down to 11 px. Growth is bounded to 240 × 220 CSS px unless the original
+region is larger, and uses only the space the measured text needs. Each pair of
+regions shares a horizontal or vertical gap at its midpoint, including diagonal
+neighbors, with a 4 px separation when space permits. Overlapping source regions
+are not enlarged. The captured area bounds the panels. This is not inferred bubble segmentation. Measured panel rectangles and the translation strip use the
 existing native control route, bounded to one panel per region plus two control
 areas. This also extends Windows' visible window region to the rectangular
 panels. Original polygons continue to own keyboard navigation; translated panels

@@ -14,6 +14,20 @@ The [feature roadmap](docs/implementation-plan.md#feature-checklist) tracks comp
 
 #### Fixed
 
+- Wrap bubble translations at whole-word boundaries without automatic hyphens.
+  Grow panels in width and height using available capture space before reducing
+  the font, while separating neighboring panels and retaining overflow scrolling.
+  Correct the Ollama translation prompt so the Japanese question is translated
+  instead of answered, stop Hunyuan output at conversation boundaries, and revise
+  the cache identity to avoid reusing old conversational answers. The reported
+  sentence reproduces the old failure and returns a question through the revised
+  local HY-MT2 provider/API, including a fresh result followed by a cache hit.
+  All 408 frontend and 272 service tests, formatting/lint, TypeScript/Vite and the
+  macOS debug app bundle pass. Browser checks verify whole words, panel growth,
+  neighbor separation and scrolling to the final line. Windows interaction and
+  exact installers remain unverified. A compatible reviewed macOS runtime seed
+  is required before packaging the changed Python service.
+
 - Keep long bubble translations readable instead of replacing the entire sentence
   with an ellipsis. Widen narrow panels within captured space and neighboring-text
   limits, improve English wrapping, and allow overflow to scroll from its first

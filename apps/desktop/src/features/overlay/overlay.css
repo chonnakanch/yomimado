@@ -97,9 +97,9 @@
 }
 .bubble-translation-text span {
   flex: none;
-  overflow-wrap: break-word;
-  hyphens: auto;
-  white-space: pre-wrap;
+  overflow-wrap: normal;
+  hyphens: none;
+  white-space: normal;
   width: 100%;
 }
 .bubble-translation-text.is-overflowing {

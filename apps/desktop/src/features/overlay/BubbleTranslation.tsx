@@ -1,10 +1,12 @@
 import { useLayoutEffect, useRef, useState } from "react";
 import type { Rectangle } from "../../lib/coordinates";
+import { anchorTranslationBounds } from "./translation-layout";
 
 /** Region polygons retain keyboard navigation; this surface also accepts scrolling. */
 export function BubbleTranslation({
   text,
   bounds,
+  availableBounds = bounds,
   elementRef,
   onActivate,
   needsReview = false,
@@ -12,6 +14,7 @@ export function BubbleTranslation({
 }: {
   text: string;
   bounds: Rectangle;
+  availableBounds?: Rectangle;
   elementRef: (element: HTMLDivElement | null) => void;
   onActivate: () => void;
   needsReview?: boolean;
@@ -19,37 +22,60 @@ export function BubbleTranslation({
 }) {
   const content = useRef<HTMLSpanElement>(null);
   const [overflowing, setOverflowing] = useState(false);
+  const [fittedBounds, setFittedBounds] = useState(bounds);
 
   useLayoutEffect(() => {
     const span = content.current;
     if (!span) return;
-    const fit = () => {
-      const parent = span.parentElement!;
-      // Measure with the scrollbar gutter reserved, so overflow cannot create
-      // another wrapping change after fitting. Keep the full text in the DOM.
-      const width = parent.clientWidth - 8;
-      const height = parent.clientHeight - 8;
-      let size = 18;
+    const parent = span.parentElement!;
+    let width = bounds.width;
+    let height = bounds.height;
+    let overflow = false;
+    // Use space at 18px before reducing the font. Measure real wrapping with
+    // the scrollbar gutter reserved, and retain every word when space runs out.
+    for (let size = 18; size >= 11; size--) {
       span.style.fontSize = `${size}px`;
-      while (
-        size > 11 &&
-        (span.scrollHeight > height || span.scrollWidth > width)
-      ) {
-        span.style.fontSize = `${--size}px`;
+      width = bounds.width;
+      while (true) {
+        parent.style.width = `${width}px`;
+        if (
+          (span.scrollHeight <= bounds.height - 12 &&
+            span.scrollWidth <= parent.clientWidth - 8) ||
+          width >= availableBounds.width
+        )
+          break;
+        width = Math.min(availableBounds.width, width + 12);
       }
-      setOverflowing(span.scrollHeight > height || span.scrollWidth > width);
-      parent.scrollTop = 0;
-    };
-    fit();
-    const observer =
-      typeof ResizeObserver === "undefined" ? null : new ResizeObserver(fit);
-    observer?.observe(span.parentElement!);
-    return () => observer?.disconnect();
-  }, [text, bounds.width, bounds.height]);
+      height = Math.min(
+        availableBounds.height,
+        Math.max(bounds.height, span.scrollHeight + 12),
+      );
+      overflow =
+        span.scrollHeight > height - 12 ||
+        span.scrollWidth > parent.clientWidth - 8;
+      if (!overflow) break;
+    }
+    parent.style.width = "100%";
+    setFittedBounds(
+      anchorTranslationBounds(bounds, availableBounds, width, height),
+    );
+    setOverflowing(overflow);
+    parent.scrollTop = 0;
+  }, [
+    text,
+    bounds.x,
+    bounds.y,
+    bounds.width,
+    bounds.height,
+    availableBounds.x,
+    availableBounds.y,
+    availableBounds.width,
+    availableBounds.height,
+  ]);
 
   return (
     <foreignObject
-      {...bounds}
+      {...fittedBounds}
       aria-hidden="true"
       className="bubble-translation"
     >

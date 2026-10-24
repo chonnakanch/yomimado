@@ -8,7 +8,7 @@ import type { CaptureMetadata } from "../../lib/coordinates";
 import { ocrPolygonToOverlay } from "../../lib/coordinates";
 import type { TextRegion } from "../../lib/ocr-types";
 import { BubbleTranslation } from "./BubbleTranslation";
-import { widenTranslationBounds } from "./translation-layout";
+import { availableTranslationBounds } from "./translation-layout";
 import {
   bubbleTranslationRegions,
   useBubbleTranslations,
@@ -400,10 +400,12 @@ export function OcrOverlay() {
         {state.regions.map((region) => {
           const translation = translationEnabled && translations.get(region.id);
           if (!translation) return null;
-          const bounds = widenTranslationBounds(
-            textBounds.get(region.id)!,
+          const bounds = textBounds.get(region.id)!;
+          const availableBounds = availableTranslationBounds(
+            bounds,
             neighbours,
             contentWidth,
+            contentHeight,
           );
           if (bounds.width <= 0 || bounds.height <= 0) return null;
           return (
@@ -411,6 +413,7 @@ export function OcrOverlay() {
               <BubbleTranslation
                 text={translation}
                 bounds={bounds}
+                availableBounds={availableBounds}
                 needsReview={Boolean(
                   region.needsReview || region.geometrySource,
                 )}

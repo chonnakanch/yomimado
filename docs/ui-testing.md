@@ -286,6 +286,31 @@ All 407 frontend tests, frontend/document formatting, TypeScript/Vite and the
 macOS debug app bundle build pass; 216 local documentation links/fragments pass.
 This does not establish native Windows scrolling or a new installer pass.
 
+Wrapping and translation follow-up — 2026-10-24: disable automatic hyphenation
+and forced word splitting; use measured whole-word wrapping. Panels grow in width
+and height before reducing the font, within capture bounds and pairwise shared
+gaps (including diagonal and stacked neighbors). Short text keeps its original
+size. Synthetic browser DOM ranges show zero words split across lines, no panel
+overlaps, an expanded narrow panel, and a 220 px tall long panel scrolling from
+its first line to a visible final line (315 px scroll range).
+
+The selected local `maternion/hy-mt2:7b` model, digest
+`d86c4ddbd9f72dccc2b8e3a4b515ee0f39331059b0b09ea332780f492e3e9ac3`,
+reproduced the reported customer-support answer with the old system-only
+instruction. Moving the translation task into the user turn produced a translated
+question, but repeated inference also exposed invented follow-up dialogue. The
+Hunyuan template now receives conversation-boundary stops. Three final provider
+runs returned only the translated question; the restarted development API
+returned a fresh v2 result followed by a cache hit. Model-free regressions verify
+the prompt contract, template-specific stops and exclusion of v1 cache rows.
+This sample does not establish general model accuracy. See
+[model and cache behavior](translation-model-selection.md).
+
+All 408 frontend and 272 service tests, formatting/lint, TypeScript/Vite and the
+macOS debug app bundle pass. The rebuilt app and development service were
+restarted. Native Windows interaction and exact installers remain unverified;
+packaging the Python change needs a compatible reviewed macOS runtime seed.
+
 ## Horizontal OCR geometry recovery
 
 Development source — 2026-10-22: model-free regressions cover light/dark paragraph

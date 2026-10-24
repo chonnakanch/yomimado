@@ -89,7 +89,8 @@ recorded in the [release checklist](desktop-release.md).
 
 - [x] **Toggle translated text over bubbles** — explicit local translation panels
       at detected text bounds, immediate return to Japanese, sequential requests,
-      error/retry, wider narrow panels and scrollable long text with full-popup
+      error/retry, word wrapping without added hyphens, panels that grow in width and
+      height, and scrollable long text with full-popup
       access. Starts off
       for each scan/restoration; no image modification or bubble segmentation.
       [Controls](usage.md#translate-in-bubbles) and
