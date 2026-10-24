@@ -8,6 +8,7 @@ import type { CaptureMetadata } from "../../lib/coordinates";
 import { ocrPolygonToOverlay } from "../../lib/coordinates";
 import type { TextRegion } from "../../lib/ocr-types";
 import { BubbleTranslation } from "./BubbleTranslation";
+import { widenTranslationBounds } from "./translation-layout";
 import {
   bubbleTranslationRegions,
   useBubbleTranslations,
@@ -289,6 +290,34 @@ export function OcrOverlay() {
     0,
     Math.min(viewport.height - 28, state.layout.toolbarTop * scaleY + 2),
   );
+  const textBounds = new Map(
+    state.regions.map((region) => {
+      const points = ocrPolygonToOverlay(region.polygon, state.metadata, {
+        width: contentWidth,
+        height: contentHeight,
+      });
+      const x = Math.max(0, Math.min(...points.map((point) => point.x)));
+      const y = Math.max(0, Math.min(...points.map((point) => point.y)));
+      const right = Math.min(
+        contentWidth,
+        Math.max(...points.map((point) => point.x)),
+      );
+      const bottom = Math.min(
+        contentHeight,
+        Math.max(...points.map((point) => point.y)),
+      );
+      return [
+        region.id,
+        {
+          x,
+          y,
+          width: Math.max(0, right - x),
+          height: Math.max(0, bottom - y),
+        },
+      ];
+    }),
+  );
+  const neighbours = [...textBounds.values()];
 
   const handleRegionClick = async (region: TextRegion, keyboard = false) => {
     setActiveRegionId(region.id);
@@ -371,42 +400,27 @@ export function OcrOverlay() {
         {state.regions.map((region) => {
           const translation = translationEnabled && translations.get(region.id);
           if (!translation) return null;
-          const points = ocrPolygonToOverlay(region.polygon, state.metadata, {
-            width: contentWidth,
-            height: contentHeight,
-          });
-          // Stay within the capture and reuse its one coordinate transform.
-          // These are text bounds, not inferred speech-bubble boundaries.
-          const x = Math.max(0, Math.min(...points.map((point) => point.x)));
-          const y = Math.max(0, Math.min(...points.map((point) => point.y)));
-          const right = Math.min(
+          const bounds = widenTranslationBounds(
+            textBounds.get(region.id)!,
+            neighbours,
             contentWidth,
-            Math.max(...points.map((point) => point.x)),
           );
-          const bottom = Math.min(
-            contentHeight,
-            Math.max(...points.map((point) => point.y)),
-          );
-          const bounds = { x, y, width: right - x, height: bottom - y };
           if (bounds.width <= 0 || bounds.height <= 0) return null;
           return (
             <Fragment key={region.id}>
               <BubbleTranslation
                 text={translation}
                 bounds={bounds}
+                needsReview={Boolean(
+                  region.needsReview || region.geometrySource,
+                )}
+                selected={selectedRegionId === region.id}
+                onActivate={() => void handleRegionClick(region)}
                 elementRef={(element) => {
                   if (element)
                     translationElements.current.set(region.id, element);
                   else translationElements.current.delete(region.id);
                 }}
-              />
-              <rect
-                {...bounds}
-                className="bubble-translation-hit"
-                aria-hidden="true"
-                onClick={(event) =>
-                  void handleRegionClick(region, event.detail === 0)
-                }
               />
             </Fragment>
           );

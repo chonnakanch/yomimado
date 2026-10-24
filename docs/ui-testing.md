@@ -271,6 +271,21 @@ click-through, and mixed-DPI/negative-origin monitors preserve alignment. OCR
 text bounds may not fill the bubble interior; this feature does not segment
 bubbles or accept a new installer.
 
+Overflow follow-up — 2026-10-24: an owner screenshot showed many complete
+translations hidden behind ellipses. Long translations now retain visible text
+and scroll from the first line, with space reserved for the scrollbar. Narrow
+panels widen within capture/neighbor limits; English uses word wrapping and
+hyphenation. The HTML text surface accepts scrolling and clicks, and mirrors
+review/selection borders while original polygons retain keyboard navigation.
+Four layout regressions cover edge bounds, neighboring-panel separation, existing
+overlaps and separate rows. The component regression keeps full overflow text
+visible at 11 px and checks popup activation. A browser check of the actual
+frontend with five synthetic regions and mocked native/translation replies
+confirms visible first lines and scrolling to the final line of a long paragraph.
+All 407 frontend tests, frontend/document formatting, TypeScript/Vite and the
+macOS debug app bundle build pass; 216 local documentation links/fragments pass.
+This does not establish native Windows scrolling or a new installer pass.
+
 ## Horizontal OCR geometry recovery
 
 Development source — 2026-10-22: model-free regressions cover light/dark paragraph

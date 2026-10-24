@@ -141,13 +141,17 @@ running may complete. A failure stops the queue and leaves unprocessed Japanese
 visible. Demo boundaries and known sound effects are excluded; unknown region
 types remain eligible without changing their OCR metadata.
 
-`BubbleTranslation` renders fitted text in SVG foreign objects at clipped text
-bounding rectangles using `ocrPolygonToOverlay`. It never expands to an inferred
-bubble interior. Measured panel rectangles and the translation strip use the
+`BubbleTranslation` renders fitted text in SVG foreign objects using
+`ocrPolygonToOverlay`. Narrow panels can widen by up to 60%, capped at 140 CSS px
+unless the original region is wider. Horizontal gaps are shared at their midpoint,
+with a 4 px separation; overlapping source regions are not enlarged. The captured
+area bounds the panels. This is not inferred bubble segmentation. Measured panel rectangles and the translation strip use the
 existing native control route, bounded to one panel per region plus two control
 areas. This also extends Windows' visible window region to the rectangular
-panels. Original polygons continue to own keyboard navigation/review outlines.
-Text that cannot fit at 11 px shows an ellipsis. Opening a translated region passes
+panels. Original polygons continue to own keyboard navigation; translated panels
+mirror their review/selection borders and accept pointer input and scrolling.
+Text that cannot fit at 11 px stays visible from its first line with vertical
+scrolling instead of an ellipsis. Opening a translated region passes
 an explicit `translateOnOpen` popup option; the popup requests its full translation
 through the same provider/cache, with normal errors and stale-source guards.
 

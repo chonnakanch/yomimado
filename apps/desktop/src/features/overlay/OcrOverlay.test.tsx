@@ -529,9 +529,9 @@ it("requires the toggle, shows translated text at Retina text bounds, preserves 
   expect(toggle.getAttribute("aria-pressed")).toBe("true");
   expect(fetch).toHaveBeenCalledTimes(2);
   const panel = container.querySelector("foreignObject")!;
-  expect(panel.getAttribute("x")).toBe("10");
+  expect(panel.getAttribute("x")).toBe("0");
   expect(panel.getAttribute("y")).toBe("20");
-  expect(panel.getAttribute("width")).toBe("70");
+  expect(panel.getAttribute("width")).toBe("93");
   expect(panel.getAttribute("height")).toBe("140");
   expect(panel.textContent).toBe("Nice weather today.");
   const polygon = container.querySelector("polygon.translated.needs-review")!;
@@ -540,7 +540,7 @@ it("requires the toggle, shows translated text at Retina text bounds, preserves 
   expect(polygon.getAttribute("aria-label")).toContain("verify Japanese");
   await act(async () =>
     container
-      .querySelector(".bubble-translation-hit")!
+      .querySelector(".bubble-translation-text")!
       .dispatchEvent(new MouseEvent("click", { bubbles: true })),
   );
   expect(invoke).toHaveBeenCalledWith(

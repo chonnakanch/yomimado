@@ -114,11 +114,12 @@ or new result starts off. A request already running in the local model may finis
 An error stops the queue and offers **Retry**; untranslated regions keep their
 Japanese visible.
 
-White translation panels stay inside the detected text's rectangular bounds,
-which can differ from the speech bubble's interior. Text wraps and fits down to
-11 px. An ellipsis means the translation cannot fit legibly: click that region
-to open the full requested translation in the learning popup, with Japanese and
-OCR review details. Known sound effects and demo boundaries are excluded; OCR
+Narrow translation panels can widen into the space between neighboring text
+regions, within the captured area. These text-based panels can differ from the
+speech bubble's interior. Text wraps and fits down to 11 px. Longer translations
+stay visible and scroll inside the panel; point at the text and scroll to read
+the rest. Click a region to open its full translation in the learning popup,
+with Japanese and OCR review details. Known sound effects and demo boundaries are excluded; OCR
 currently leaves many region types unknown, so this is not speech-bubble detection.
 Panels are temporary overlays; the manga image is never changed.
 

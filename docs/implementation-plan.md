@@ -1,6 +1,6 @@
 # Implementation status and feature roadmap
 
-Last reviewed: **2026-10-23**. This is the current plan, not a chronological work
+Last reviewed: **2026-10-24**. This is the current plan, not a chronological work
 log. [CHANGELOG.md](../CHANGELOG.md) records dated changes; the
 [release checklist](desktop-release.md) records publication and exact installers.
 Source completion, UI approval and installer acceptance are separate states.
@@ -89,7 +89,8 @@ recorded in the [release checklist](desktop-release.md).
 
 - [x] **Toggle translated text over bubbles** — explicit local translation panels
       at detected text bounds, immediate return to Japanese, sequential requests,
-      error/retry and a full-popup fallback for text that cannot fit. Starts off
+      error/retry, wider narrow panels and scrollable long text with full-popup
+      access. Starts off
       for each scan/restoration; no image modification or bubble segmentation.
       [Controls](usage.md#translate-in-bubbles) and
       [verification limits](ui-testing.md#bubble-translation-toggle).

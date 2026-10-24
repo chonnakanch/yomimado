@@ -252,10 +252,14 @@ navigation. Report the whole measured control group and each translated panel
 through the native route as well as the hide button.
 
 Translation panels use white with near-black text for reading against light/dark
-pages, within captured text bounds only. Wrap English horizontally, fitting from
-18 down to 11 CSS px. If the full text still cannot fit, show an ellipsis instead
-of an incomplete sentence; clicking opens the full translation and Japanese in
-the learning popup. Known sound effects remain untouched. No persistent manga
+pages. Narrow panels can widen within the capture and the midpoint of gaps to
+neighboring text, by up to 60% and at most 140 CSS px unless originally wider.
+Wrap English horizontally, with normal word boundaries and hyphenation, fitting
+from 18 down to 11 CSS px. If the full text still cannot fit, keep its first line
+visible and allow vertical scrolling; never hide it behind an ellipsis. Panels
+accept scrolling and clicks, while retaining dashed review/selected borders.
+Clicking opens the full translation and Japanese in the learning popup. Known
+sound effects remain untouched. No persistent manga
 replacement, automatic saving or assumed bubble segmentation is introduced.
 
 Native hit routing is covered by the [overlay checks](ui-testing.md#native-overlay-checks).

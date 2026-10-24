@@ -6,7 +6,7 @@ import { BubbleTranslation } from "./BubbleTranslation";
 
 afterEach(() => vi.restoreAllMocks());
 
-it("shrinks text only to a readable minimum and uses an explicit overflow marker instead of truncating the sentence", async () => {
+it("keeps overflowing translations available to scroll at a readable minimum", async () => {
   Object.assign(globalThis, { IS_REACT_ACT_ENVIRONMENT: true });
   vi.spyOn(HTMLElement.prototype, "clientWidth", "get").mockReturnValue(60);
   vi.spyOn(HTMLElement.prototype, "clientHeight", "get").mockReturnValue(40);
@@ -18,6 +18,7 @@ it("shrinks text only to a readable minimum and uses an explicit overflow marker
   );
   const container = document.createElement("div");
   const root = createRoot(container);
+  const activate = vi.fn();
   const render = (text: string) =>
     root.render(
       <svg>
@@ -25,6 +26,9 @@ it("shrinks text only to a readable minimum and uses an explicit overflow marker
           text={text}
           bounds={{ x: 0, y: 0, width: 60, height: 40 }}
           elementRef={() => {}}
+          onActivate={activate}
+          needsReview
+          selected
         />
       </svg>,
     );
@@ -38,9 +42,13 @@ it("shrinks text only to a readable minimum and uses an explicit overflow marker
   expect(container.querySelector("span")?.style.fontSize).toBe("11px");
   expect(
     container.querySelector(".is-overflowing")?.getAttribute("title"),
-  ).toContain("Click to read in the learning popup");
+  ).toContain("Scroll to read more");
   expect(container.querySelector("span")?.textContent).toBe(
     "A much longer sentence that cannot possibly fit.",
   );
+  expect(container.querySelector("span")?.hidden).toBe(false);
+  expect(container.querySelector(".needs-review.active")).not.toBeNull();
+  container.querySelector<HTMLElement>(".bubble-translation-text")!.click();
+  expect(activate).toHaveBeenCalledOnce();
   await act(async () => root.unmount());
 });

@@ -10,6 +10,19 @@ The [feature roadmap](docs/implementation-plan.md#feature-checklist) tracks comp
 
 ## Unreleased
 
+### 2026-10-24
+
+#### Fixed
+
+- Keep long bubble translations readable instead of replacing the entire sentence
+  with an ellipsis. Widen narrow panels within captured space and neighboring-text
+  limits, improve English wrapping, and allow overflow to scroll from its first
+  line through its last. Preserve popup access and review/selection borders.
+  All 407 frontend tests, formatting, TypeScript/Vite, the macOS debug app bundle
+  and 216 documentation links pass. Synthetic browser checks verify visible first
+  lines and scrolling to the last line; native Windows interaction and exact
+  installers remain unverified.
+
 ### 2026-10-23
 
 #### Added
