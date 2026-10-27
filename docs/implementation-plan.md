@@ -136,7 +136,9 @@ recorded in the [release checklist](desktop-release.md).
       [controls and limits](usage.md#local-backup-and-restore) and
       [verification](ui-testing.md#local-backup-and-restore).
 - [x] **Conjugation explanations** — initial forms, ちゃう／じゃう contractions,
-      continuing-action/state ている／てる and desire たい families are implemented;
+      continuing-action/state ている／てる, desire たい, ambiguous
+      potential/passive/honorific forms, causatives, ば／たら conditionals and
+      analyzed commands are implemented;
       [supported forms](#conjugation-behavior-and-supported-forms).
 - [x] **Small-text and vertical OCR accuracy: initial selection recovery** — implemented;
       [scope and evidence](#small-text-and-vertical-ocr-accuracy).
@@ -290,6 +292,11 @@ For example:
   a casual continuing-action/state contraction followed by past tense.
 - 食べたくなかった → 食べたくない → 食べたい → 食べる:
   negative past of the desire form.
+- 食べられた → 食べられる → 食べる: past of a shared
+  potential/passive/honorific form; the app does not choose a meaning.
+- 読ませました → 読ませます → 読ませる → 読む: polite past causative.
+- 行けば → 行く; 読んだら → 読んだ → 読む: conditional forms.
+- 待て → 待つ: a command confirmed by the analyzed imperative feature.
 
 The disclosure starts collapsed. Its explanations are possible grammatical
 analyses, not sentence translations; context still determines meaning. In
@@ -297,6 +304,12 @@ particular, てしまう contractions can convey completion, regret or an uninte
 action. Likewise, ている can describe an ongoing action, repeated activity or
 resulting state. The app does not choose a context-specific meaning or infer who
 wants an action from たい alone.
+Likewise, causatives can mean making or letting someone act. The shared
+られる form can express ability, passive voice or respectful speech; godan
+れる forms can express passive voice or respectful speech. These interpretations
+stay explicit rather than being resolved from the suffix alone. Conditional
+たら／だら uses a past-form construction but does not by itself place the
+condition in the past.
 
 ### Supported slice
 
@@ -308,11 +321,20 @@ wants an action from たい alone.
 | Casual contractions             | ちゃう／ちゃった and じゃう／じゃった, expanded through てしまう／でしまう                                                                                            |
 | Continuing action/state         | ている／でいる and casual てる／でる; plain non-past, past, negative and negative past; polite ます, ました, ません and ませんでした, including forms with い omitted |
 | Desire                          | たい, たかった, たくない and たくなかった; each also with polite です                                                                                                 |
+| Potential/passive/honorific     | Ichidan and analyzed カ変 られる forms retain all three interpretations; godan and する passive/honorific forms retain both. Plain non-past, past, negative, negative past and polite variants |
+| Causative                      | せる／させる families for the supported analyzed classes, with plain non-past, past, negative, negative past and polite variants; make/let remains contextual |
+| Conditionals                   | Positive and negative ば and たら／だら for verbs and i-adjectives; the same adjective rules also cover たい conditionals |
+| Commands                       | Godan e-row, ichidan ろ／よ, する → しろ／せよ and 来る／くる → 来い／こい when IPADIC supplies an imperative feature; くれる's exception is not treated as regular ろ／よ |
 
 The current implementation relies on the pinned Lindera/IPADIC base form and
 verb/adjective class. It generates these small rule families and requires an
 exact match to the original expression. It does not infer a class just because
 a word ends in る, or infer a dictionary form merely by stripping a suffix.
+For example, real IPADIC output gives 読める its own ichidan dictionary form,
+so the app does not reconstruct 読む or する from 読める or できる. A bare
+書け can likewise be analyzed as a stem of 書ける, without an imperative
+feature, and remains **Not covered**. The supplied lexical analysis is retained;
+the frontend does not silently substitute a more convenient root or class.
 
 **Select text → Look up selection** also supports complete, token-aligned
 expressions starting with a verb or i-adjective. A recognized expression uses
@@ -323,11 +345,14 @@ For 勉強しました, click the verb token し to explain しました; select
 whole multi-word predicate is outside this slice.
 
 Unsupported forms show **Conjugation · Not covered** with an explanation.
-Passive/potential ambiguity, causatives, conditionals, imperatives,
-copulas/na-adjectives, special honorific classes, arbitrary compound exceptions
+Copulas/na-adjectives, special honorific classes, arbitrary compound exceptions
 and other manga contractions remain future work. Auxiliary chains such as
-ていたい and てしまっている, connecting ていて／たくて and alternative polite
-negative たくありません are outside this slice.
+causative-passive させられる, passive + ている, ていたい and てしまっている,
+connecting ていて／たくて and alternative polite negative たくありません are
+outside this slice. Passive/causative conditional combinations, shortened causatives,
+ら-dropped potential forms, と／なら conditions and negative commands are also
+outside this slice; ordinary dictionary forms followed by an unsupported particle
+can have no conjugation disclosure.
 Unsupported manual lookups retain the exact selected expression. Ordinary
 dictionary forms and nouns have no extra conjugation disclosure.
 
@@ -342,6 +367,10 @@ service API changes. Regression coverage includes checked IPADIC auxiliary
 splits, voiced でる, irregular classes, code-point offsets, exact manual spans
 and popup lookup/save behavior. See the
 [verification record](ui-testing.md#continuing-actionstate-and-desire-conjugations).
+The additional voice/conditional/command rules use the same exact-span checks.
+Real tokenizer snapshots and their pinned input-manifest identity are retained in
+[`conjugation-fixtures.json`](../apps/desktop/src/features/translation/conjugation-fixtures.json);
+see [expanded conjugation verification](ui-testing.md#expanded-conjugation-explanations).
 
 ### Grammar references
 
@@ -356,6 +385,10 @@ checked against the author's published explanations in Tae Kim's guide:
 - [てしまう and casual contractions](https://guidetojapanese.org/learn/grammar/unintended)
 - [ている, enduring states and conversational contractions](https://guidetojapanese.org/learn/grammar/teform)
 - [たい and desire forms](https://guidetojapanese.org/learn/grammar/desire)
+- [Potential forms](https://guidetojapanese.org/learn/grammar/potential)
+- [Causative, passive and respectful uses](https://guidetojapanese.org/learn/grammar/causepass)
+- [ば and たら conditionals](https://guidetojapanese.org/learn/grammar/conditionals)
+- [Command forms](https://guidetojapanese.org/learn/grammar/requests)
 
 Earlier implementation diaries and rollout attempts remain in
 [Git history](https://github.com/chonnakanch/yomimado/tree/a5f7ebc/docs).

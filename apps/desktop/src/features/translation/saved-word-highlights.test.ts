@@ -2,6 +2,20 @@ import { expect, it } from "vitest";
 import type { TextToken } from "../../lib/ocr-types";
 import type { SavedWord } from "../../lib/vocabulary-client";
 import { savedWordTokenIndexes } from "./saved-word-highlights";
+import conjugationFixtures from "./conjugation-fixtures.json";
+
+it("highlights complete newly supported voice and conditional forms from saved bases", () => {
+  for (const text of ["食べられた", "読ませました", "行けば"]) {
+    const fixture = conjugationFixtures.cases.find(
+      (item) => item.text === text,
+    )!;
+    expect([
+      ...savedWordTokenIndexes(text, fixture.tokens, [
+        saved(fixture.dictionaryForm),
+      ]),
+    ]).toEqual(fixture.tokens.map((_, index) => index));
+  }
+});
 
 const saved = (dictionaryForm: string): SavedWord => ({
   id: 1,
@@ -89,10 +103,10 @@ it("matches dictionary spelling rather than readings or arbitrary kana variants"
 });
 
 it("does not extend a saved verb marker into unsupported auxiliary chains", () => {
-  const source = "食べられる";
+  const source = "食べさせられる";
   const analyzed = tokens([
     ["食べ", "食べる", "動詞 / 自立 / 一段"],
-    ["られる", "られる", "動詞 / 接尾 / 一段"],
+    ["させられる", "させられる", "動詞 / 接尾 / 一段"],
   ]);
   expect([
     ...savedWordTokenIndexes(source, analyzed, [saved("食べる")]),

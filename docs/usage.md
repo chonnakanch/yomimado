@@ -298,9 +298,23 @@ analyzed base for local dictionary lookup. Common past/negative/polite forms,
 polite tense/negative forms; the たい family includes past/negative forms and
 their polite です variants.
 
+The same disclosure explains ば and たら／だら conditions, including negatives
+and i-adjectives, and analyzed commands such as 待て → 待つ. Causatives such as
+読ませました expand back to 読む, with **making / letting** left to context.
+For 食べられた, it shows 食べられる → 食べる and lists the possible
+potential, passive and respectful uses instead of choosing one. Supported
+passive/causative forms include their plain/polite tense and negative variants.
+
+Word analysis can supply a form such as 読める as its own dictionary word;
+the app keeps that base rather than guessing 読む. A command explanation also
+requires analysis that identifies it as a command, so ambiguous stems such as
+書け may remain **Not covered**.
+
 Explanations do not start translation or infer a context-specific meaning.
-**Not covered** marks unsupported expressions, including passive/potential forms,
-causatives and combined endings such as ていたい or てしまっている.
+**Not covered** marks unsupported expressions, including causative-passive forms,
+passive + ている and combined endings such as ていたい or てしまっている.
+と／なら conditions, negative commands and shortened causative/potential forms
+are outside this slice; some have no extra disclosure.
 
 The sentence and its actions stay above scrollable details as the popup grows
 to fit the available screen space. Long sentences have their own scroll area.

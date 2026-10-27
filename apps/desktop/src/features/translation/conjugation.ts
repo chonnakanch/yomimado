@@ -35,7 +35,7 @@ const isContinuation = (token: TextToken) =>
     /非自立|接尾/.test(token.partOfSpeech)) ||
   (/^助詞\s*\//.test(token.partOfSpeech) &&
     token.partOfSpeech.includes("接続助詞") &&
-    ["て", "で", "じゃ"].includes(token.surface));
+    ["て", "で", "じゃ", "ば"].includes(token.surface));
 
 function adjectiveForms(base: string): Form[] {
   const result: Form[] = [];
@@ -86,6 +86,37 @@ function adjectiveForms(base: string): Form[] {
   }
   add(`${base}です`, "Polite adjective", [
     step(`${base}です`, base, "です adds politeness to the i-adjective."),
+  ]);
+  add(`${stem}ければ`, "Adjective conditional · ば", [
+    step(
+      `${stem}ければ`,
+      base,
+      "ければ gives an i-adjective an if-condition form.",
+    ),
+  ]);
+  add(`${stem}くなければ`, "Adjective negative conditional · ば", [
+    step(
+      `${stem}くなければ`,
+      negative,
+      "なければ makes the negative an if-condition.",
+    ),
+    ...plain[1].steps,
+  ]);
+  add(`${past}ら`, "Adjective conditional · たら", [
+    step(
+      `${past}ら`,
+      past,
+      "ら after the past form creates a condition; this does not by itself place the sentence in the past.",
+    ),
+    ...plain[0].steps,
+  ]);
+  add(`${negativePast}ら`, "Adjective negative conditional · たら", [
+    step(
+      `${negativePast}ら`,
+      negativePast,
+      "ら after the negative past form creates a negative condition.",
+    ),
+    ...plain[2].steps,
   ]);
   return result;
 }
@@ -153,33 +184,54 @@ function forms(base: string, pos: string): Form[] {
   if (pos.startsWith("形容詞") && end === "い") return adjectiveForms(base);
   if (!pos.startsWith("動詞")) return [];
   let stem: string, negative: string, past: string, te: string;
+  let conditional: string,
+    commands: string[],
+    passive: string,
+    causative: string;
+  let passiveLabel = "Passive / honorific";
   if (pos.includes("サ変") && base.endsWith("する")) {
     const root = base.slice(0, -2);
     stem = `${root}し`;
     negative = `${root}しない`;
     past = `${root}した`;
     te = `${root}して`;
+    conditional = `${root}すれば`;
+    commands = [`${root}しろ`, `${root}せよ`];
+    passive = `${root}される`;
+    causative = `${root}させる`;
   } else if (pos.includes("カ変") && ["来る", "くる"].includes(base)) {
     stem = base === "来る" ? "来" : "き";
     negative = base === "来る" ? "来ない" : "こない";
     past = `${stem}た`;
     te = `${stem}て`;
+    conditional = base === "来る" ? "来れば" : "くれば";
+    commands = [base === "来る" ? "来い" : "こい"];
+    passive = base === "来る" ? "来られる" : "こられる";
+    causative = base === "来る" ? "来させる" : "こさせる";
+    passiveLabel = "Potential / passive / honorific";
   } else if (pos.includes("一段") && end === "る") {
     stem = prefix;
     negative = `${stem}ない`;
     past = `${stem}た`;
     te = `${stem}て`;
+    conditional = `${prefix}れば`;
+    commands = ["くれる", "呉れる"].includes(base)
+      ? [prefix]
+      : [`${prefix}ろ`, `${prefix}よ`];
+    passive = `${prefix}られる`;
+    causative = `${prefix}させる`;
+    passiveLabel = "Potential / passive / honorific";
   } else if (pos.includes("五段") && !pos.includes("特殊")) {
-    const endings: Record<string, [string, string, string]> = {
-      う: ["い", "わ", "った"],
-      く: ["き", "か", "いた"],
-      ぐ: ["ぎ", "が", "いだ"],
-      す: ["し", "さ", "した"],
-      つ: ["ち", "た", "った"],
-      ぬ: ["に", "な", "んだ"],
-      ぶ: ["び", "ば", "んだ"],
-      む: ["み", "ま", "んだ"],
-      る: ["り", "ら", "った"],
+    const endings: Record<string, [string, string, string, string]> = {
+      う: ["い", "わ", "った", "え"],
+      く: ["き", "か", "いた", "け"],
+      ぐ: ["ぎ", "が", "いだ", "げ"],
+      す: ["し", "さ", "した", "せ"],
+      つ: ["ち", "た", "った", "て"],
+      ぬ: ["に", "な", "んだ", "ね"],
+      ぶ: ["び", "ば", "んだ", "べ"],
+      む: ["み", "ま", "んだ", "め"],
+      る: ["り", "ら", "った", "れ"],
     };
     const ending = endings[end];
     if (!ending) return [];
@@ -195,6 +247,10 @@ function forms(base: string, pos: string): Form[] {
           ? "うた"
           : ending[2]);
     te = past.slice(0, -1) + (past.endsWith("だ") ? "で" : "て");
+    conditional = `${prefix}${ending[3]}ば`;
+    commands = [`${prefix}${ending[3]}`];
+    passive = `${prefix}${ending[1]}れる`;
+    causative = `${prefix}${ending[1]}せる`;
   } else return [];
 
   const result = verbForms(base, stem, negative, past);
@@ -205,7 +261,112 @@ function forms(base: string, pos: string): Form[] {
     note?: string,
   ) => result.push({ surface, label, steps, note });
 
-  // Compose only these two auxiliary families, without recursively generating
+  const conditionalNote =
+    "This describes the condition's form, not a translation of the sentence or its result.";
+  add(
+    conditional,
+    "Conditional · ば",
+    [
+      step(
+        conditional,
+        base,
+        "ば attaches to the verb's conditional stem to express an if-condition.",
+      ),
+    ],
+    conditionalNote,
+  );
+  add(
+    `${past}ら`,
+    "Conditional · たら",
+    [
+      step(
+        `${past}ら`,
+        past,
+        "ら after the past form expresses if or when; the condition need not describe a past event.",
+      ),
+      ...result[0].steps,
+    ],
+    conditionalNote,
+  );
+  const negativePast = `${negative.slice(0, -1)}かった`;
+  add(
+    `${negative.slice(0, -1)}ければ`,
+    "Negative conditional · ば",
+    [
+      step(
+        `${negative.slice(0, -1)}ければ`,
+        negative,
+        "なければ makes the negative an if-condition.",
+      ),
+      ...result[1].steps,
+    ],
+    conditionalNote,
+  );
+  add(
+    `${negativePast}ら`,
+    "Negative conditional · たら",
+    [
+      step(
+        `${negativePast}ら`,
+        negativePast,
+        "ら after the negative past form creates a negative condition.",
+      ),
+      ...result[2].steps,
+    ],
+    conditionalNote,
+  );
+  // A bare e-row surface can also be a conditional stem. Require IPADIC's
+  // imperative feature before presenting it as a command.
+  if (pos.includes("命令"))
+    for (const command of commands)
+      add(
+        command,
+        "Command",
+        [
+          step(
+            command,
+            base,
+            "The analyzed imperative form gives a direct command.",
+          ),
+        ],
+        "Direct commands can sound forceful. Tone and context determine their effect.",
+      );
+
+  const derived = (
+    form: string,
+    label: string,
+    explanation: string,
+    note: string,
+  ) => {
+    const stem = form.slice(0, -1);
+    const derivation = step(form, base, explanation);
+    for (const variant of [
+      { surface: form, label: "", steps: [] },
+      ...verbForms(form, stem, `${stem}ない`, `${stem}た`),
+    ])
+      add(
+        variant.surface,
+        variant.label ? `${label} · ${variant.label.toLowerCase()}` : label,
+        [...variant.steps, derivation],
+        note,
+      );
+  };
+  derived(
+    passive,
+    passiveLabel,
+    passiveLabel.startsWith("Potential")
+      ? "られる can express ability, passive voice or respectful speech with this analyzed verb class."
+      : "れる can express passive voice or respectful speech with this analyzed verb class.",
+    "The form alone cannot choose between these interpretations; the intended meaning depends on context.",
+  );
+  derived(
+    causative,
+    "Causative",
+    "せる／させる expresses causing or allowing someone to perform the action.",
+    "Making and letting share this form; who causes or allows the action depends on context.",
+  );
+
+  // Compose only the explicitly supported auxiliary families, without generating
   // arbitrary auxiliary chains. The full source span must still match exactly.
   const continuing = `${te}いる`;
   const continuingStep = step(

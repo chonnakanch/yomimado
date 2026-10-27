@@ -394,6 +394,13 @@ the UI can preserve punctuation and highlight the selected span.
 The OCR vocabulary is not the dictionary queried by the word popup. IPADIC does not supply
 English word definitions, and JMdict does not perform sentence segmentation.
 
+Conjugation explanations use frontend rules in
+[`conjugation.ts`](../apps/desktop/src/features/translation/conjugation.ts), driven
+by those analyzed bases, classes and exact source spans. Their English text is
+written for YomiMado and checked against the [grammar references](implementation-plan.md#grammar-references).
+They make no translation/model request and do not replace an ambiguous lexical
+analysis with a guessed root. Coverage belongs in the [supported-form contract](implementation-plan.md#conjugation-behavior-and-supported-forms).
+
 ## Where the displayed readings and meanings come from
 
 | UI information                                        | Resource and behavior                                                                                                  |

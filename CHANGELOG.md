@@ -14,6 +14,16 @@ The [feature roadmap](docs/implementation-plan.md#feature-checklist) tracks comp
 
 #### Added
 
+- Extend the existing conjugation disclosure with potential/passive/honorific
+  alternatives, causatives, positive/negative ば and たら／だら conditions and
+  commands confirmed by word analysis. Preserve source text, explicit lookup/save
+  behavior and ambiguous meanings without adding popup controls. Retain 33 real
+  Lindera/IPADIC token snapshots from synthetic expressions, including tokenizer
+  limits. All 472 frontend tests, formatting, TypeScript/Vite and the macOS debug
+  build pass. Browser checks cover expanded ambiguity notes and long summaries
+  at 420/320 px; native popup behavior, Windows and exact installers remain
+  unverified. [Supported forms and limits](docs/implementation-plan.md#conjugation-behavior-and-supported-forms).
+
 - Highlight saved vocabulary directly in the learning popup's Japanese sentence,
   using subtle green cues while preserving blue selection and existing controls.
   Match saved dictionary spellings across sentences and supported conjugations,

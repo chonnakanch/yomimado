@@ -5,6 +5,7 @@ import { afterEach, beforeEach, expect, it, vi } from "vitest";
 import { TranslationPopup } from "./TranslationPopup";
 import type { TextToken } from "../../lib/ocr-types";
 import { hiraganaReading } from "./ClickableSentence";
+import conjugationFixtures from "./conjugation-fixtures.json";
 
 const invokeMock = vi.hoisted(() => vi.fn(() => Promise.resolve()));
 
@@ -721,16 +722,17 @@ it("looks up and saves the analyzed base for a complete manually selected inflec
 });
 
 it("keeps unsupported grammar explicit without guessing a manual lookup base", async () => {
-  const source = "食べられた";
+  const source = "食べさせられた";
   const tokens = [
     inflectedTokens[0],
     {
       ...inflectedTokens[1],
-      surface: "られ",
-      dictionaryForm: "られる",
+      surface: "させられ",
+      dictionaryForm: "させられる",
       partOfSpeech: "動詞 / 接尾 / 一段",
+      end: 6,
     },
-    inflectedTokens[2],
+    { ...inflectedTokens[2], start: 6, end: 7 },
   ];
   const fetch = serviceMock((path) => {
     if (path.endsWith("/tokenize"))
@@ -739,7 +741,7 @@ it("keeps unsupported grammar explicit without guessing a manual lookup base", a
   });
   await openPopup(source);
   await click("Select");
-  await selectText(0, 5);
+  await selectText(0, 7);
   await click("Look up selection");
   expect(
     container.querySelector(".conjugation-explanation")?.textContent,
@@ -752,6 +754,67 @@ it("keeps unsupported grammar explicit without guessing a manual lookup base", a
   ).toBe(source);
   expect(button("Save without meaning")).toBeDefined();
 });
+
+it.each([
+  ["食べられた", "たべる"],
+  ["読ませました", "よむ"],
+  ["行けば", "いく"],
+  ["待て", "まつ"],
+])(
+  "explains %s and preserves source context through manual lookup and save",
+  async (source, reading) => {
+    const fixture = conjugationFixtures.cases.find(
+      (item) => item.text === source,
+    )!;
+    const entry = { ...eatEntry, expression: fixture.dictionaryForm, reading };
+    const fetch = serviceMock((path) => {
+      if (path.endsWith("/tokenize"))
+        return response({ sourceText: source, tokens: fixture.tokens });
+      if (path.endsWith("/word")) return response({ entries: [entry] });
+    });
+    await openPopup(source);
+    await click(fixture.tokens[0].surface);
+    const disclosure = container.querySelector<HTMLDetailsElement>(
+      ".conjugation-explanation",
+    )!;
+    expect(disclosure.open).toBe(false);
+    expect(disclosure.querySelector("summary")?.textContent).toContain(
+      fixture.label,
+    );
+    expect(disclosure.textContent).toContain(`→ ${fixture.dictionaryForm}`);
+    if (source === "食べられた") {
+      expect(disclosure.textContent).toContain(
+        "Potential / passive / honorific",
+      );
+      expect(disclosure.textContent).toContain("depends on context");
+    }
+    await click("Select");
+    const input = await selectText(0, source.length);
+    await click("Look up selection");
+    const lookups = fetch.mock.calls.filter(([url]) => url.endsWith("/word"));
+    expect(JSON.parse(lookups.at(-1)![1]!.body as string)).toEqual({
+      surface: source,
+      dictionaryForm: fixture.dictionaryForm,
+      reading: "",
+    });
+    await click("Save word");
+    expect(
+      JSON.parse(
+        fetch.mock.calls.find(([url]) => url.endsWith("/vocabulary"))![1]!
+          .body as string,
+      ),
+    ).toMatchObject({
+      surface: source,
+      dictionaryForm: fixture.dictionaryForm,
+      reading,
+      sourceText: source,
+    });
+    expect(input.value).toBe(source);
+    expect(fetch.mock.calls.some(([url]) => url.endsWith("/translate"))).toBe(
+      false,
+    );
+  },
+);
 
 it("shows the full casual continuing-state chain when clicking the verb stem", async () => {
   const source = "食べてなかった。";
