@@ -10,6 +10,13 @@ const invokeMock = vi.hoisted(() => vi.fn(() => Promise.resolve()));
 
 vi.mock("@tauri-apps/api/core", () => ({ invoke: invokeMock }));
 
+// Saved highlighting has its own lifecycle/integration coverage. Keep these
+// learning-action request assertions focused on their original service calls.
+vi.mock("../../lib/vocabulary-client", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("../../lib/vocabulary-client")>()),
+  listVocabularyWords: vi.fn(async () => []),
+}));
+
 vi.mock("@tauri-apps/api/window", () => ({
   getCurrentWindow: () => ({ close: vi.fn() }),
 }));

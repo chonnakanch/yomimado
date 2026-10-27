@@ -8,6 +8,7 @@ Exact installer tests remain in [macOS](macos-clean-mac-test.md),
 
 - [Charcoal and blue theme](#charcoal-and-blue-theme)
 - [Learning popup modes](#learning-popup-modes)
+- [Saved vocabulary highlights](#saved-vocabulary-highlights)
 - [Capture shortcut verification](#capture-shortcut-verification)
 - [Detector release link verification](#detector-release-link-verification)
 - [Completed-overlay hide controls](#completed-overlay-hide-controls)
@@ -98,6 +99,32 @@ This does not establish native WebKit/WebView2 caret/IME, anchored resizing,
 focus/pass-through or Windows hardware acceptance. Follow the native overlay
 matrix below and verify Words/Select/Edit, cancellation, correction, copy/save,
 translation retry and a long sentence in the real app.
+
+## Saved vocabulary highlights
+
+Development check — 2026-10-27: Words mode highlights vocabulary from the
+existing Saved collection without adding status buttons. Ten new regressions
+cover base forms and complete supported conjugations, exact manual expressions
+across token boundaries, source gaps and Unicode code-point offsets, spelling
+limits, unsupported auxiliary chains, initial loading, unchanged lookup, successful
+save/delete/restore invalidation, cross-window storage/focus refresh, failed
+reads/recovery and stale response suppression. Sentence saving stays separate.
+
+Synthetic browser review of the actual popup at 420 px and 320 px confirms green
+saved highlights, ordinary unmarked text, immediate highlighting after saving,
+accessible saved-word names and blue selection taking precedence. No extra
+sentence controls appear; Japanese and Copy/Save/Translate remain readable.
+The browser fixture uses an isolated in-memory vocabulary service, leaving the
+user's database untouched.
+
+All 426 frontend tests, frontend formatting, TypeScript/Vite production build and
+the macOS Apple Silicon debug build pass. The local Node 26 test run uses
+`NODE_OPTIONS=--no-experimental-webstorage` so jsdom supplies storage, as above.
+Native popup interaction, cross-window WebKit/WebView2 storage delivery, Windows
+compilation/hardware and exact installers remain unverified. For native checks,
+save a word, reopen another sentence containing its inflection, remove its final
+saved entry in Saved, and return to the popup; verify highlights refresh without
+affecting lookup, sentence saving or keyboard selection.
 
 ## Continuing action/state and desire conjugations
 

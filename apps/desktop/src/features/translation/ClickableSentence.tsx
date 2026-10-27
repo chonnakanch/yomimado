@@ -1,4 +1,7 @@
+import { useMemo } from "react";
 import type { TextToken } from "../../lib/ocr-types";
+import type { SavedWord } from "../../lib/vocabulary-client";
+import { savedWordTokenIndexes } from "./saved-word-highlights";
 
 export function isWord(token: TextToken): boolean {
   return /[\p{L}\p{N}]/u.test(token.surface);
@@ -31,12 +34,18 @@ export function ClickableSentence({
   tokens,
   selectedTokenIndex,
   onSelect,
+  savedWords,
 }: {
   source: string;
   tokens: TextToken[] | null;
   selectedTokenIndex: number | null;
   onSelect: (index: number) => void;
+  savedWords: SavedWord[];
 }) {
+  const savedIndexes = useMemo(
+    () => savedWordTokenIndexes(source, tokens ?? [], savedWords),
+    [source, tokens, savedWords],
+  );
   return (
     <div
       className="tokenization-text"
@@ -50,7 +59,12 @@ export function ClickableSentence({
             isWord(tokens[piece.tokenIndex]) ? (
               <button
                 type="button"
-                className="tokenization-word"
+                className={`tokenization-word${savedIndexes.has(piece.tokenIndex) ? " is-saved-word" : ""}`}
+                aria-label={
+                  savedIndexes.has(piece.tokenIndex)
+                    ? `${piece.text} (saved word)`
+                    : undefined
+                }
                 aria-pressed={selectedTokenIndex === piece.tokenIndex}
                 onClick={() => onSelect(piece.tokenIndex!)}
                 key={`${tokens[piece.tokenIndex].start}-${index}`}

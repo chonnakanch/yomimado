@@ -1,5 +1,6 @@
 import { invoke } from "@tauri-apps/api/core";
 import { requestService } from "./service-client";
+import { notifyVocabularyChanged } from "./vocabulary-events";
 
 export interface BackupFile {
   name: string;
@@ -76,5 +77,7 @@ export async function restoreSavedBackup(
       body: file.contents,
     },
   );
-  return readSummary(response);
+  const summary = await readSummary(response);
+  if (summary.wordsAdded > 0) notifyVocabularyChanged();
+  return summary;
 }
