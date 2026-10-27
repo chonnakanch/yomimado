@@ -30,6 +30,9 @@ For horizontal drag-selection outlines, see the
 For portable saved-library files, see [local backup and restore](usage.md#local-backup-and-restore)
 and its [verification limits](ui-testing.md#local-backup-and-restore).
 
+For conjugation explanations, see the [supported forms and grammar sources](implementation-plan.md#conjugation-behavior-and-supported-forms)
+and [expanded-form verification](ui-testing.md#expanded-conjugation-explanations).
+
 For optional translated text over detected bubbles, see
 [Translate in bubbles](usage.md#translate-in-bubbles) and its
 [verification limits](ui-testing.md#bubble-translation-toggle).

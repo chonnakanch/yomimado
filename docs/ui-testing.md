@@ -8,6 +8,7 @@ Exact installer tests remain in [macOS](macos-clean-mac-test.md),
 
 - [Charcoal and blue theme](#charcoal-and-blue-theme)
 - [Learning popup modes](#learning-popup-modes)
+- [Expanded conjugation explanations](#expanded-conjugation-explanations)
 - [Saved vocabulary highlights](#saved-vocabulary-highlights)
 - [Capture shortcut verification](#capture-shortcut-verification)
 - [Detector release link verification](#detector-release-link-verification)
@@ -150,6 +151,44 @@ These are source/debug checks. Native popup interaction on macOS/Windows,
 Windows compilation and exact-installer acceptance were not performed for this
 change. The existing disclosure layout and native capture/overlay behavior are
 unchanged. Follow the native popup checks above when recording hardware acceptance.
+
+## Expanded conjugation explanations
+
+Development check — 2026-10-27: extend the existing collapsed disclosure with
+potential/passive/honorific alternatives, causatives, positive/negative ば and
+たら／だら conditions and analyzed commands. The ambiguity note leaves meaning
+to context. No new popup controls, dependencies, service APIs or runtime assets
+are added; the existing analyzed base/class and exact-source checks still gate
+each explanation.
+
+The retained frontend [token snapshots](../apps/desktop/src/features/translation/conjugation-fixtures.json)
+cover 33 synthetic expressions, generated and rechecked against Lindera 6.0.0
+and the hash-verified IPADIC resource. They bind the tokenizer input-manifest
+SHA-256 and preserve the actual readings, bases, POS and source code-point spans.
+The 44 extended-rule cases also exercise all nine godan endings, ambiguity notes
+and the imperative-feature requirement. Four popup regressions cover stem clicks,
+collapsed summaries, complete manual lookup and saving original context without
+translation. Saved-highlighting coverage includes the newly supported endings.
+
+The snapshots retain important limits: 読める／できる keep their supplied
+independent bases; 書け can lack an imperative feature; くれ can be tagged as a
+continuative. Those analyses are not replaced with guessed roots/classes.
+Causative-passive and passive + ている chains remain unsupported. See the
+[current supported forms](implementation-plan.md#conjugation-behavior-and-supported-forms)
+and their primary grammar references.
+
+Browser review uses the actual popup with synthetic dictionary replies and the
+real tokenizer snapshots. At 420 px, the expanded 食べられた breakdown and its
+ambiguity note are readable. At 320 px, the longer polite-negative-past summary
+wraps, details scroll through the final note, and Japanese/Copy/Save/Translate
+stay pinned. Native popup resizing/focus, Windows interaction and exact
+installers remain unverified.
+
+All 472 frontend regressions, frontend formatting, TypeScript/Vite production
+build and the macOS Apple Silicon debug build pass. Local Node 26 tests use
+`NODE_OPTIONS=--no-experimental-webstorage` for jsdom storage. Python and Rust
+source are unchanged; the existing prepared Python regression environment was
+used only to verify the tokenizer snapshots.
 
 ## Local backup and restore
 

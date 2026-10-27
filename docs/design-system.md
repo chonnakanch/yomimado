@@ -332,6 +332,9 @@ and explicit unsaved/saved-with-sentence text. No translation or saving happens
 on mode changes, word selection or card expansion. Conjugation summaries and
 Example compounds use blue labels without a filled hover/pressed background.
 Conjugation is present only when the selected analyzed form needs an explanation.
+Keep shared potential/passive/honorific interpretations together in that existing
+disclosure, with a short context note; do not add meaning-choice controls or pick
+one meaning from the suffix alone. Long summaries wrap within the details column.
 
 ### CaptureDebugPreview
 

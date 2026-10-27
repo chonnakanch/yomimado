@@ -445,10 +445,7 @@ it("keeps multi-word manual predicates outside the supported slice", () => {
   ).toBe("unsupported");
 });
 it.each([
-  "食べられた",
   "食べさせられました",
-  "食べれば",
-  "食べろ",
   "食べちゃいました",
   "食べていて",
   "食べていたい",
