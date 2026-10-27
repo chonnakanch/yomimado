@@ -100,6 +100,10 @@
   padding: 0 2px;
   white-space: pre-wrap;
 }
+.translation-popup .tokenization-word.is-saved-word {
+  background: var(--color-success-tint);
+  border-bottom-color: var(--color-success);
+}
 .translation-popup .tokenization-word:hover {
   background: var(--color-accent-tint);
   border-bottom-color: var(--color-accent);

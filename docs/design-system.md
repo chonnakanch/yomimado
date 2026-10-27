@@ -45,7 +45,7 @@ styles consume roles, never repeat hex values. The table matches the shared toke
 | `--color-text-primary`                             | `#F2F4F8`                   | Japanese and primary UI text.                         |
 | `--color-text-secondary / --color-text-muted`      | `#8B93A3`                   | Readings, metadata and supporting text.               |
 | `--color-border`                                   | `#3A4150`                   | Surface borders and dividers.                         |
-| `--color-success / --color-success-tint`           | `#2DD4A0 / 14% tint`        | Explicit successful-action feedback.                  |
+| `--color-success / --color-success-tint`           | `#2DD4A0 / 14% tint`        | Successful-action feedback and saved-word highlights.  |
 | `--color-on-accent`                                | `#FFFFFF`                   | Text/icon on filled blue actions and selections.      |
 | `--color-focus`                                    | `var(--color-accent)`       | Keyboard focus outline.                               |
 | `--color-status-error / --color-error-tint`        | `#FF5C5C / 14% tint`        | Error and destructive feedback.                       |
@@ -294,6 +294,13 @@ buttons or equivalent keyboard semantics with visible focus and selected state;
 do not nest character buttons within token buttons. A selected token receives a
 blue cue; normal hover uses a quiet accent cue. Keep ordinary text selection and
 explicit sentence copying usable.
+
+Saved dictionary spellings use `--color-success-tint` with a
+`--color-success` underline in Words mode. Keep primary Japanese text unchanged;
+hover and selected blue cues take precedence. Include “saved word” in the
+accessible token name, without adding icons, badges or status buttons to the
+sentence. Select/Edit retain their original text controls. Saved membership is
+the only vocabulary marker; there are no separate known/learning states.
 
 Use a three-part **Words / Select / Edit** mode bar. Words retains the original
 token split; Select uses native caret/range selection without modifying the

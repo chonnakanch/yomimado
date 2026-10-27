@@ -234,6 +234,23 @@ Alternative dictionary matches are collapsed; each has its own Save this word
 action. Display readings use hiragana, while saved/lookup readings retain the
 original dictionary data. Missing dictionaries still allow Save without meaning.
 
+In **Words** mode, vocabulary already in Saved has a subtle green highlight in
+the Japanese sentence. Click it for the usual word details; the selected word
+still turns blue. Saving a word updates its highlights immediately, with no
+separate known/learning buttons. Saving a sentence alone does not mark its words.
+
+Highlights match the saved dictionary spelling across source sentences, including
+analyzed conjugations such as 行く → 行った／行きます. Supported conjugations
+include their analyzed endings; unsupported chains mark only the matched base
+token. Exact saved expressions spanning several complete tokens also match.
+Different readings or senses of the same dictionary spelling share a marker;
+the highlight means **saved**, not proof that you have mastered every meaning.
+It does not infer kana/kanji spelling variants or partial-token matches.
+Removing the last saved entry for a spelling removes its highlight. Saves,
+removals and restored backups refresh open popups; returning focus also refreshes
+the local vocabulary. If it cannot load, ordinary lookup remains available and
+a brief message appears instead of stale highlights.
+
 If a word boundary is wrong, choose **Select** above the sentence.
 Drag over any continuous part of the Japanese sentence, or click to place the
 visible cursor. Arrow keys move the cursor; Shift + arrow keys extend the

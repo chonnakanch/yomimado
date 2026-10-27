@@ -17,6 +17,7 @@ import { saveSentence } from "../../lib/sentence-client";
 import type { TextToken } from "../../lib/ocr-types";
 import { debugTooltip } from "../../lib/debug-mode";
 import { ClickableSentence, isWord } from "./ClickableSentence";
+import { useSavedVocabulary } from "./useSavedVocabulary";
 import { ManualWordSelection } from "./ManualWordSelection";
 import { WordDefinition } from "./WordDefinition";
 import { KanjiDetail } from "./KanjiDetail";
@@ -63,6 +64,7 @@ export function TranslationPopup() {
   const copyRequestId = useRef(0);
   const viewQuery = useRef(window.location.search.slice(1)).current;
   const [source, setSource] = useState(state?.demo ? "" : (state?.text ?? ""));
+  const savedVocabulary = useSavedVocabulary(!!source.trim());
   const [result, setResult] = useState<TranslationResult | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [popupError, setPopupError] = useState<string | null>(null);
@@ -605,12 +607,19 @@ export function TranslationPopup() {
                   source={source}
                   tokens={tokens}
                   selectedTokenIndex={selectedTokenIndex}
+                  savedWords={savedVocabulary.words}
                   onSelect={(index) => {
                     detailsRef.current?.scrollTo?.({ top: 0 });
                     selectWord(index);
                   }}
                 />
               </div>
+              {savedVocabulary.unavailable && (
+                <p className="popup-metadata" role="status">
+                  Saved-word highlights unavailable. Return to this window to
+                  retry.
+                </p>
+              )}
             </div>
             <div
               role="tabpanel"

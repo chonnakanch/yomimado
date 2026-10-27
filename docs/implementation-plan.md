@@ -1,6 +1,6 @@
 # Implementation status and feature roadmap
 
-Last reviewed: **2026-10-24**. This is the current plan, not a chronological work
+Last reviewed: **2026-10-27**. This is the current plan, not a chronological work
 log. [CHANGELOG.md](../CHANGELOG.md) records dated changes; the
 [release checklist](desktop-release.md) records publication and exact installers.
 Source completion, UI approval and installer acceptance are separate states.
@@ -119,6 +119,11 @@ recorded in the [release checklist](desktop-release.md).
       and Restore defaults; [controls](usage.md#customize-capture-shortcuts).
 
 - [x] **Manual word selection** — implemented.
+- [x] **Saved vocabulary highlights** — Words mode marks saved dictionary
+      spellings directly in the Japanese sentence, including analyzed inflections
+      and exact complete-token expressions. Reuses Saved without status controls;
+      updates after saving, removing and restoring words. [Behavior and limits](usage.md#learning-popup)
+      and [verification](ui-testing.md#saved-vocabulary-highlights).
 - [x] **Popup reading modes and action states** — Words, Select and Edit share
       explicit copy/save/translation controls; correction reset, transient copy
       feedback, saved/busy/retry states and a collapsible local translation card.
@@ -139,7 +144,6 @@ recorded in the [release checklist](desktop-release.md).
 ### Planned
 
 - [ ] **Saved tags and organization** — proposed.
-- [ ] **Known / learning word states** — proposed.
 - [ ] **Personal manga glossary** — proposed.
 - [ ] **Local pronunciation playback** — proposed.
 - [ ] **OCR accuracy follow-ups** — page-scale small text, low-contrast dialogue and
@@ -237,14 +241,6 @@ level remains proposed. User-created tags are separate from those derived levels
 Completion: tags persist locally, existing saved databases remain
 readable, and organizing entries never triggers translation or changes their
 stored dictionary meanings.
-
-### Known / learning word states
-
-Let users explicitly mark vocabulary as new, learning or known. Show the state
-in the popup and Saved, with optional subtle indicators and filters.
-
-Completion: state changes persist locally against a consistent word identity,
-can be reversed, and are never inferred merely from scanning or clicking a word.
 
 ### Personal manga glossary
 

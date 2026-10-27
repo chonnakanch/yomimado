@@ -1,4 +1,5 @@
 import { postServiceJson, requestService } from "./service-client";
+import { notifyVocabularyChanged } from "./vocabulary-events";
 export interface SaveWordInput {
   surface: string;
   reading: string;
@@ -39,6 +40,7 @@ export async function saveVocabularyWord(
   );
   if (!isSavedWord(result))
     throw new Error("Vocabulary service returned invalid data");
+  notifyVocabularyChanged();
   return result;
 }
 
@@ -66,4 +68,5 @@ export async function deleteVocabularyWord(id: number): Promise<void> {
   await requestService(`/api/v1/vocabulary/${id}`, "Vocabulary service", {
     method: "DELETE",
   });
+  notifyVocabularyChanged();
 }

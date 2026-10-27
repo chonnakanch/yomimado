@@ -10,6 +10,21 @@ The [feature roadmap](docs/implementation-plan.md#feature-checklist) tracks comp
 
 ## Unreleased
 
+### 2026-10-27
+
+#### Added
+
+- Highlight saved vocabulary directly in the learning popup's Japanese sentence,
+  using subtle green cues while preserving blue selection and existing controls.
+  Match saved dictionary spellings across sentences and supported conjugations,
+  plus exact complete-token expressions. Refresh after word saves, removals and
+  backup restores, with guarded background reads and focus recovery. Reuse the
+  existing local collection without new learning states or storage changes.
+  All 426 frontend tests, formatting, TypeScript/Vite and the macOS debug build
+  pass. Synthetic browser checks cover 420/320 px layouts and immediate saving;
+  native popup/cross-window interaction, Windows and exact installers remain
+  unverified. [Behavior and limits](docs/usage.md#learning-popup).
+
 ### 2026-10-24
 
 #### Changed
