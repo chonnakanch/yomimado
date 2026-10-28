@@ -30,7 +30,7 @@ in [implementation status and roadmap](implementation-plan.md).
   local Marian or Ollama; a provider boundary is not permission to add cloud OCR
   or automatically upload screenshots.
 - macOS Apple Silicon and Windows 11 x64 are the supported release targets.
-  Linux/mobile, continuous OCR, image replacement, accounts/cloud sync and full
+  Linux/mobile, unattended continuous OCR, image replacement, accounts/cloud sync and full
   panel reading-order reconstruction remain outside the current scope.
 
 Capture shortcuts use the existing Tauri global-shortcut plugin. Native commands
@@ -196,6 +196,35 @@ Retina/scaled displays. Token offsets use Unicode code points, not JavaScript
 UTF-16 indices. Recognition confidence `0` means unknown, and approximate regions
 carry review metadata. See [resources and data flow](#resources-and-data-flow) for the
 model, dictionary and storage details.
+
+### Opt-in page-change detection
+
+Native `auto_detect.rs` owns an in-memory, default-off monitor enabled only from
+`toolbar` after successful manga OCR. It retains a 128 × 128 RGB baseline from the
+clean capture, watches the same recorded physical area, and polls at 750 ms plus
+capture/processing time. `ScreenCapture::sample` stays behind the xcap adapter:
+it captures/crops through the same measured image-to-physical mapping, then reduces
+the crop without PNG encoding, disk writes or OCR requests. No dependency, provider
+or service contract is added.
+
+A channel difference over 24 counts as a changed sample cell. At least 4% of usable
+cells must differ from the last scanned baseline; two successive samples must
+differ by less than 0.5% before one repeat scan starts. The native input router
+supplies screen-physical masks for OCR polygons and measured controls/translation
+panels. Toolbar bounds are also masked; cell footprints and paint margins prevent
+self-triggering. Comparisons exclude masks from both frames and pause below 30%
+usable area. Visible learning/secondary windows and the toolbar menu pause samples.
+After a pause, two fresh samples must settle; the scanned baseline is retained.
+
+Admission, popup opening, Stop and result publication share the scan lock.
+An enablement epoch rejects stale samples and failures; existing scan ids reject
+late OCR. Automatic rescans preserve the crop, display validation and estimated
+reading order and use the existing hidden-selector/clean-capture OCR path. Only
+one OCR request runs per scan session. A completed scan resets the baseline.
+Automatic blank-page results discard old regions, reset the baseline and continue
+watching; errors stop monitoring. Manual capture, cancel, hide results/toolbar and
+app exit stop it. No setting persists or enables capture on launch. Windows and
+macOS keep the same physical/logical transform and monitor checks as Rescan.
 
 ## Local service usage
 

@@ -246,6 +246,38 @@ impl InputRouter {
         Ok(())
     }
 
+    /// Screen-physical bounds of visible overlay paint. Use the same measured
+    /// geometry as native hit routing, including translated panels and controls.
+    pub fn capture_masks(&self, x: f64, y: f64) -> Result<Vec<Rectangle>, String> {
+        let route = self.route.lock().map_err(|e| e.to_string())?;
+        if !route.active {
+            return Err("Wait for OCR overlays to finish opening.".into());
+        }
+        Ok(route
+            .polygons
+            .iter()
+            .chain(&route.controls)
+            .map(|polygon| {
+                let left = polygon.iter().map(|p| p.x).fold(f64::INFINITY, f64::min);
+                let top = polygon.iter().map(|p| p.y).fold(f64::INFINITY, f64::min);
+                let right = polygon
+                    .iter()
+                    .map(|p| p.x)
+                    .fold(f64::NEG_INFINITY, f64::max);
+                let bottom = polygon
+                    .iter()
+                    .map(|p| p.y)
+                    .fold(f64::NEG_INFINITY, f64::max);
+                Rectangle {
+                    x: x + left - 8.0,
+                    y: y + top - 8.0,
+                    width: right - left + 16.0,
+                    height: bottom - top + 16.0,
+                }
+            })
+            .collect())
+    }
+
     pub fn remember_popup(&self, region: Option<String>) {
         if let Ok(mut route) = self.route.lock() {
             route.popup_return = region;

@@ -964,3 +964,37 @@ Ollama is not running on the development machine: API behavior uses controlled
 test responses, and the UI's missing-service guidance is checked live. Actual
 Ollama model inference/download and native Windows installed acceptance remain
 unverified. These are source changes; no installer or model component is published.
+
+## Auto detect page changes
+
+The 2026-10-28 source checks cover 13 new native tests: unchanged pages and small
+cursor changes, motion/stability gating, rescan-loop prevention, pause/resume,
+epoch invalidation, physical occlusion masks at negative origins, two-frame mask
+unions, heavy coverage, pixel noise, clean PNG/raw baseline agreement, blank-page
+continuation, stop/error stale-result rejection and estimated reading-order
+preservation. Existing scan exclusivity and display/fractional-scaling regressions
+remain applicable. All 98 local macOS Rust tests and all 477 frontend tests pass.
+Rust formatting/Clippy, frontend formatting, TypeScript/Vite and the macOS debug
+build pass. The build retains its existing large-JavaScript-chunk advisory.
+
+Browser review uses the actual toolbar component with a temporary synthetic native
+bridge. Expanded 580 px and compact 288 px controls fit one 56 px row. Enable/Stop
+updates pressed state and native-command arguments; the enabled Auto action remains
+available during recognition in both sizes. This validates the frontend, not the
+native polling/capture integration. Native computer access to the isolated debug
+test app was not approved, so no live page-turn capture pass is claimed. Windows
+compilation/interaction, mixed-DPI hardware, actual OCR quality and exact-installer
+acceptance are unverified for this change.
+
+For native verification, use the original
+[`auto-detect-reader.html`](../apps/desktop/src/features/overlay/fixtures/auto-detect-reader.html)
+fixture through the development server. Select its complete page rectangle and
+scan with local OCR (or a clearly labeled synthetic local response service).
+Enable Auto, turn Page 1 → Page 2, and verify one settled rescan without repeated
+requests. Move the pointer and hover regions without turning pages; no new scan
+should start. Open a learning popup, change the page, then close it; OCR should
+wait and resume only after fresh stable samples. Repeat with Saved/Settings and
+translated panels. Verify Stop during a delayed response ignores its result,
+manual scans/hiding/quit stop watching, blank OCR removes old regions but continues
+watching, failures stop with useful details, and monitor/layout changes require a
+new selection. Record actual platform/source and results separately.

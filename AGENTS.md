@@ -72,7 +72,8 @@ See architecture for platform inference differences and current API/type files.
 
 Maintain word readings, meanings, dictionary forms and POS; sentence Japanese with
 explicit translation; kanji readings, meanings and example compounds. Capture stays
-an explicit shortcut/selection/page-scan flow. Continuous OCR, browser extensions,
+an explicit shortcut/selection/page-scan flow. The opt-in Auto detect mode watches
+only an explicitly scanned fixed area. Other continuous OCR, browser extensions,
 full panel reading-order reconstruction, image replacement/inpainting, cloud OCR,
 accounts, cloud sync, advanced Anki and pitch-accent data require new scope.
 

@@ -45,7 +45,7 @@ styles consume roles, never repeat hex values. The table matches the shared toke
 | `--color-text-primary`                             | `#F2F4F8`                   | Japanese and primary UI text.                         |
 | `--color-text-secondary / --color-text-muted`      | `#8B93A3`                   | Readings, metadata and supporting text.               |
 | `--color-border`                                   | `#3A4150`                   | Surface borders and dividers.                         |
-| `--color-success / --color-success-tint`           | `#2DD4A0 / 14% tint`        | Successful-action feedback and saved-word highlights.  |
+| `--color-success / --color-success-tint`           | `#2DD4A0 / 14% tint`        | Successful-action feedback and saved-word highlights. |
 | `--color-on-accent`                                | `#FFFFFF`                   | Text/icon on filled blue actions and selections.      |
 | `--color-focus`                                    | `var(--color-accent)`       | Keyboard focus outline.                               |
 | `--color-status-error / --color-error-tint`        | `#FF5C5C / 14% tint`        | Error and destructive feedback.                       |
@@ -128,7 +128,7 @@ dimensions using the actual display scale; do not multiply CSS values by DPI.
 | `--focus-width`       | 3 px             | Visible focus outline, 2 px offset.            |
 | `--motion-fast`       | 120 ms           | Color/fill feedback only.                      |
 
-Toolbar starts around 536 × 56 logical px, compact around 244 × 56. Compact mode retains both scan icons, Rescan,
+Toolbar starts around 580 × 56 logical px, compact around 288 × 56. Compact mode retains both scan icons, Rescan, Auto,
 overlay visibility/status and expand on one row. These are
 layout targets, not fixed minimums that can clip labels. Popups grow naturally
 until their work-area cap (roughly 70% height), then scroll the details. At narrow
@@ -177,6 +177,15 @@ Whole Screen searches its target monitor for manga pages and crops the detected
 page/spread before OCR. An uncertain boundary uses a saved/drawn manga area;
 Selected Area scans the exact manual rectangle. Explain this in the debug scan tooltip
 and Scan & OCR help. Rescan reuses the last successful crop/area.
+
+**Auto** is one 36 px toolbar toggle beside Rescan, retained in compact mode.
+Its accessible name changes between **Enable Auto detect** and **Stop Auto detect**,
+with `aria-pressed` and the existing primary blue treatment when enabled. It stays
+operable during OCR so Stop remains available. Enabling requires a completed manga
+scan with visible overlays; its accessible description explains the prerequisite,
+watching and paused states. It adds no popup controls. Hiding results or the toolbar
+stops detection. The preferred toolbar widths increase by one control and gap;
+height, native anchoring, work-area clamping and the two explicit scan modes remain.
 
 An uncertain manga boundary uses the **Edge hint**: a compact bottom-centred
 pill reading “Drag around pages · Esc cancel,” approximately 30 logical px high.

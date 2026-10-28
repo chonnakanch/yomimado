@@ -9,7 +9,7 @@
   color: var(--color-text-primary);
   font-family: var(--font-ui);
   position: relative;
-  width: 536px;
+  width: 580px;
   display: flex;
   flex-direction: column;
 }
@@ -46,7 +46,7 @@
   width: 20px;
 }
 .floating-toolbar.compact {
-  width: 244px;
+  width: 288px;
 }
 .toolbar-feedback {
   align-items: center;
@@ -190,4 +190,14 @@
   .toolbar-loading-icon {
     animation: none;
   }
+}
+
+.floating-toolbar .toolbar-auto-detect {
+  font-size: var(--font-size-label);
+  padding: 0;
+}
+.floating-toolbar .toolbar-auto-detect[aria-pressed="true"] {
+  background: var(--color-accent);
+  border-color: var(--color-accent);
+  color: var(--color-on-accent);
 }
