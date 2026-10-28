@@ -103,12 +103,13 @@ not replace an existing window's content.
 ### Auto detect page changes
 
 Scan a page or spread with **Selected Area** (or use Whole Screen's detected crop),
-then click **Auto** in the toolbar. The blue pressed button means Auto detect is
+then click the **Auto detect** icon (scan corners with a circular arrow) beside
+Rescan in the toolbar. The blue pressed button means Auto detect is
 on. Turn pages normally within the same area: after the image changes and settles,
 YomiMado captures that area again and refreshes its clickable OCR text. Saved-word
 highlights continue to work in the learning popup.
 
-Click **Auto** again to stop, including while recognition is running. Canceling
+Click the same icon again to stop, including while recognition is running. Canceling
 the scan, hiding OCR overlays with Escape/the hide control, hiding the toolbar,
 or starting a manual scan also stops Auto detect. It starts off each launch.
 Stopping ignores late OCR results; local inference that already started may finish.

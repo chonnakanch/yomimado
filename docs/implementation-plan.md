@@ -89,7 +89,7 @@ recorded in the [release checklist](desktop-release.md).
 
 ### Implemented in source
 
-- [x] **Auto detect page changes** — explicit, default-off toolbar toggle watches
+- [x] **Auto detect page changes** — explicit, default-off scan-and-repeat icon watches
       the last successful manga area and uses settled image changes to start local
       Rescan. Popup/secondary-window pauses, self-overlay masks, single-scan
       admission, Stop/late-result guards, blank-page continuation and display/error

@@ -501,7 +501,12 @@ it("exposes paused detection without adding learning-popup controls", async () =
   expect(button("Stop Auto detect").getAttribute("aria-description")).toContain(
     "paused",
   );
-  expect(button("Stop Auto detect").textContent).toBe("Auto");
+  expect(button("Stop Auto detect").textContent).toBe("");
+  expect(
+    button("Stop Auto detect")
+      .querySelector("svg")
+      ?.getAttribute("aria-hidden"),
+  ).toBe("true");
 });
 
 it("shows actionable status when overlay panels obscure the watched area", async () => {

@@ -178,7 +178,9 @@ page/spread before OCR. An uncertain boundary uses a saved/drawn manga area;
 Selected Area scans the exact manual rectangle. Explain this in the debug scan tooltip
 and Scan & OCR help. Rescan reuses the last successful crop/area.
 
-**Auto** is one 36 px toolbar toggle beside Rescan, retained in compact mode.
+**Auto detect** is one 36 px icon toggle beside Rescan, retained in compact mode.
+Use scan corners with a small circular arrow inside, composed from the existing
+application-owned scan and Rescan paths. Keep the same icon when off or enabled.
 Its accessible name changes between **Enable Auto detect** and **Stop Auto detect**,
 with `aria-pressed` and the existing primary blue treatment when enabled. It stays
 operable during OCR so Stop remains available. Enabling requires a completed manga

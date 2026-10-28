@@ -986,6 +986,13 @@ test app was not approved, so no live page-turn capture pass is claimed. Windows
 compilation/interaction, mixed-DPI hardware, actual OCR quality and exact-installer
 acceptance are unverified for this change.
 
+The owner selected the scan-corners/circular-arrow icon from the rendered options.
+The actual toolbar now composes that icon from existing application-owned paths,
+with the same blue pressed state, accessible Enable/Stop names and 36 px control.
+Browser checks verify off/on interaction and expanded/compact placement; all 477
+frontend tests, formatting, TypeScript/Vite and the macOS debug build pass for
+this icon follow-up. Native capture and Windows hardware limits above still apply.
+
 For native verification, use the original
 [`auto-detect-reader.html`](../apps/desktop/src/features/overlay/fixtures/auto-detect-reader.html)
 fixture through the development server. Select its complete page rectangle and

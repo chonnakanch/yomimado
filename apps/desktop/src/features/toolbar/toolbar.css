@@ -192,10 +192,6 @@
   }
 }
 
-.floating-toolbar .toolbar-auto-detect {
-  font-size: var(--font-size-label);
-  padding: 0;
-}
 .floating-toolbar .toolbar-auto-detect[aria-pressed="true"] {
   background: var(--color-accent);
   border-color: var(--color-accent);

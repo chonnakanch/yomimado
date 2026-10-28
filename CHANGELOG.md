@@ -14,7 +14,8 @@ The [feature roadmap](docs/implementation-plan.md#feature-checklist) tracks comp
 
 #### Added
 
-- Add a default-off **Auto** toolbar toggle to rescan the same manga area after a
+- Add a default-off **Auto detect** icon toggle (scan corners with a circular arrow)
+  to rescan the same manga area after a
   visible page change settles. Keep screenshots local and reuse clean Rescan,
   with popup/secondary-window pauses, overlay/control masks, single-scan admission,
   stop/stale-result guards, blank-page continuation and display/error shutdown.

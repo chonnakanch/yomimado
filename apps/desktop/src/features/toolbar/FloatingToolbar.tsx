@@ -446,7 +446,7 @@ export function FloatingToolbar() {
             void run("set_auto_detect", { enabled: !state?.autoDetect })
           }
         >
-          Auto
+          <ToolbarIcon name="autoDetect" />
         </button>
         <button
           className={`utility-button utility-icon-button toolbar-overlay-status${state?.overlayVisible ? " is-visible" : ""}${attention ? " needs-attention" : ""}`}
