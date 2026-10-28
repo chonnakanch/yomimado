@@ -6,8 +6,10 @@ All 477 frontend, 310 service/contracts, 98 local macOS native and 166 release-t
 tests pass, with formatting/lint, TypeScript, native/frontend builds and workflow
 syntax checks. The `194dd57` seed is incompatible with changed runtime inputs.
 A private replacement candidate passes mounted bundle/platform/signature,
-offline smoke and all 30 frozen-module/entrypoint source comparisons. Its unsigned
-source/licence delivery awaits owner review; no new seed is activated. Main merge,
+offline smoke and all 30 frozen-module/entrypoint source comparisons. The owner
+approved the exact source/licence delivery and private seed activation. The
+[new seed](macos-runtime-seed.md#v070-replacement-seed--2026-10-28) has five verified
+owner uploads, with the activation manifest uploaded last. Main merge,
 exact CI installer acceptance and protected publication remain unapproved. See the
 [preparation record](release-preparation-0.7.0.md).
 

@@ -47,18 +47,18 @@ at the owner's request.
   PR Checks do not block on seed availability.
 - **v0.7.0 is prepared on `release/0.7.0`**, including merged PRs #39–#45.
   Local application/release checks pass. The changed Python service requires a
-  replacement runtime seed; its private candidate and unsigned source delivery
-  are prepared for owner review. Source approval, private activation, main
-  integration and exact-installer publication remain separate. See the
+  replacement runtime seed; its exact source/licence delivery is owner-approved
+  and its verified private inputs are activated. Main integration and
+  exact-installer publication remain separate. See the
   [preparation record](release-preparation-0.7.0.md).
 
-The current private macOS runtime seed binds reviewed source `194dd57`, including
-horizontal/mixed-content geometry recovery. Actual source approval, four uploaded
+The current private macOS runtime seed binds reviewed source `2059ccb`, including
+the v0.7.0 Python backup, translation and OCR fixes. Actual source approval, four uploaded
 input hashes and the owner-uploaded activation manifest are retained in the
-[seed record](macos-runtime-seed.md#v060-replacement-seed--2026-10-22).
+[seed record](macos-runtime-seed.md#v070-replacement-seed--2026-10-28).
 Mounted source/signature and frozen offline smoke checks pass; this does not
 change published installers or establish new exact-installer acceptance.
-Later Python service fixes require a compatible replacement reviewed runtime seed
+Later Python service changes require a compatible replacement reviewed runtime seed
 before packaging; the recorded approval applies only to its bound source.
 
 ## Maintenance priorities

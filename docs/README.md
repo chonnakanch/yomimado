@@ -53,7 +53,7 @@ a different installer.
 - [Shared release checklist](desktop-release.md): exact releases, workflow gates,
   complete delivery, source/notices and protected publication.
 - [v0.7.0 preparation](release-preparation-0.7.0.md): current version, checks,
-  replacement runtime candidate, pending source review and remaining release gates.
+  approved private runtime seed and remaining release gates.
 - [v0.6.0 preparation](release-preparation-0.6.0.md): retained version, source review
   and private seed evidence; publication metadata is in the shared checklist.
 - [v0.5.0 publication recovery](release-recovery-0.5.0.md): original verified

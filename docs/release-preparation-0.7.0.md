@@ -26,15 +26,15 @@ link. The local JSON/Markdown preview is retained under
 `services/ocr/build/release-0.7.0/`; CI generates its final exact-main preview after
 authorized integration. Installation and verification remain outside the public body.
 
-## Runtime reuse and replacement candidate
+## Runtime reuse and reviewed replacement
 
 The existing approved `194dd57` seed cannot be reused. The strict comparison rejects
 the changed toolbar configuration; the Python API, backup, vocabulary, security,
 Ollama translation and OCR service sources also changed. Dependency versions,
 model/data pins and build recipes are unchanged. No reuse guard was widened.
 
-A new **private, unapproved** candidate was built from `2059ccb`. Its unsigned
-source/licence delivery covers 476 component/native records and 76 archives;
+A new **source-approved, privately activated** seed was built from `2059ccb`.
+Its source/licence delivery covers 476 component/native records and 76 archives;
 all 75 reused original dependency archives were hash-verified. Generated dependency
 and native inventories match the previously reviewed inputs.
 Independent comparison verifies 163,833 retained files across 107 containers,
@@ -45,15 +45,24 @@ The local review package is
 `services/ocr/build/runtime-seed-2059ccb/REVIEW.md`, with delivery
 `source-delivery-2059ccb/`. Unsigned worksheet SHA-256:
 `4a56ed7ee44d790d7239fdbf5fad69478ba4b1ccb7715ddf3261aaf1c2023fd2`.
-The worksheet has no reviewer/date and no approved `source-delivery.json` exists.
-No new seed has been staged or activated.
+The original unsigned worksheet retains blank reviewer/date fields. The owner
+explicitly answered **“Approve source delivery and private seed activation”** for
+this exact source and worksheet hash. Actual approval is recorded separately in
+`source-approval.json` and `source-delivery.json`; the approved JSON SHA-256 is
+`f276d3c8176cc9bfd580158c23ee36ef7f0b04ef644c6d45cf0fce60a3f09f65`.
 
-Private candidate DMG SHA-256:
+Earlier private test DMG SHA-256:
 `dbebfe403f3a95ef1c363511ee12b86f6f096a3ef6bdae5b43dd28858d1815dd`.
 Disk-image, mounted bundle/platform, ad-hoc signature and frozen offline smoke
 checks pass. All **30 frozen application modules** and the entrypoint in the
 mounted DMG match the exact committed source. This private DMG is not acceptance
-of a future CI installer.
+of a future CI installer. The subsequent source-approved DMG is a separate build,
+SHA-256 `447d20f623627ac97640e86a93feb2a25bd47a5d313a69652e1939c0e843f8ee`.
+It passes mounted source/platform/signature, offline smoke and all 30 frozen-module
+plus entrypoint comparisons. The four matching private inputs and owner activation
+manifest were uploaded and independently checked against exact GitHub owner,
+asset IDs, uploaded states, names, sizes and SHA-256 values. See the
+[seed record](macos-runtime-seed.md#v070-replacement-seed--2026-10-28) for all hashes.
 
 ## Checks
 
@@ -73,12 +82,13 @@ separate from these local macOS checks.
 
 ## Remaining gates
 
-The owner must review and approve the exact source/licence delivery before a
-source-approved seed is built, verified and privately activated. The previous
-seed approval does not extend to `2059ccb`. Follow the
-[seed procedure](release-runbook.md#build-a-replacement-macos-seed), keeping the
-unsigned worksheet and actual approval separate. Merge only when authorized,
-with current PR Checks passing and the reviewed source history preserved.
+The owner-approved source/licence delivery, verified source-approved build and
+private activation are complete for `2059ccb`. The unsigned worksheet and actual
+approval remain separate, following the
+[seed procedure](release-runbook.md#build-a-replacement-macos-seed).
+Merge only when authorized, with current PR Checks passing and the reviewed source
+history preserved. Runtime reuse passes from the preparation's documentation
+commits back to `2059ccb`; no guard or Windows input pin was changed.
 
 Release waits for successful Checks on the exact main merge, selects the compatible
 reviewed seed, builds both installers and verifies the complete delivery. Both
