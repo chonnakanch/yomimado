@@ -73,6 +73,8 @@ pub struct ActiveScan {
     pub repeat: Option<ScanSpec>,
     pub restore: Vec<String>,
     pub captured: Option<CaptureMetadata>,
+    pub frame: Option<crate::auto_detect::Frame>,
+    pub auto_epoch: Option<u64>,
 }
 
 #[derive(Clone, Default)]
@@ -82,6 +84,9 @@ pub struct Session {
     pub last_scan: Option<ScanSpec>,
     pub completed_id: Option<u64>,
     pub overlay_visible: bool,
+    pub auto_detect: crate::auto_detect::AutoDetect,
+    pub last_frame: Option<crate::auto_detect::Frame>,
+    pub last_manga: bool,
     pub phase: &'static str,
     pub message: String,
 }
@@ -110,6 +115,8 @@ impl Session {
             repeat,
             restore,
             captured: None,
+            frame: None,
+            auto_epoch: None,
         });
         self.phase = "selecting";
         self.message = "Drag to select Japanese text. Escape cancels.".into();
@@ -147,6 +154,7 @@ impl Session {
     ) -> Result<ActiveScan, String> {
         let scan = self.active(Some(id))?;
         let metadata = scan.captured.as_ref().ok_or("No capture is available")?;
+        let frame = scan.frame.clone();
         self.last_scan = Some(ScanSpec {
             mode: scan.mode,
             display: scan.display.clone(),
@@ -154,6 +162,12 @@ impl Session {
             estimated_reading_order,
         });
         self.revision += 1;
+        self.last_frame = frame;
+        if self.auto_detect.enabled {
+            if let Some(frame) = self.last_frame.clone() {
+                self.auto_detect.reset(frame);
+            }
+        }
         self.phase = "ready";
         self.message = "Click a text region to learn.".into();
         self.overlay_visible = true;
@@ -181,7 +195,17 @@ impl Session {
         } else {
             message.into()
         };
-        Ok(self.active.take().unwrap())
+        let stopped = self.active.take().unwrap();
+        if stopped.auto_epoch.is_some() && no_text && self.auto_detect.enabled {
+            if let Some(frame) = stopped.frame.clone() {
+                self.last_frame = Some(frame.clone());
+                self.auto_detect.reset(frame);
+            }
+            self.message = "No text on this page. Auto detect is waiting for a page change.".into();
+        } else {
+            self.auto_detect.stop();
+        }
+        Ok(stopped)
     }
 }
 
@@ -332,6 +356,9 @@ pub struct ToolbarState {
     detector_model: crate::detector_model::DetectorModelStatus,
     tray_available: bool,
     tray_error: Option<String>,
+    auto_detect: bool,
+    auto_detect_status: &'static str,
+    can_auto_detect: bool,
 }
 
 #[tauri::command(async)]
@@ -348,7 +375,7 @@ pub fn get_toolbar_state(app: AppHandle) -> Result<ToolbarState, String> {
                 - 2.0 * SCREEN_INSET)
                 .max(112.0)
         })
-        .unwrap_or(536.0);
+        .unwrap_or(580.0);
     let display_name = session
         .active
         .as_ref()
@@ -381,6 +408,11 @@ pub fn get_toolbar_state(app: AppHandle) -> Result<ToolbarState, String> {
         detector_model: crate::detector_model::detector_model_status(app.clone())?,
         tray_available: state.tray.available(),
         tray_error: state.tray.error(),
+        auto_detect: session.auto_detect.enabled,
+        auto_detect_status: session.auto_detect.status,
+        can_auto_detect: session.last_manga
+            && session.last_frame.is_some()
+            && session.overlay_visible,
     })
 }
 
@@ -448,24 +480,33 @@ pub fn stop_scan(
     no_text: bool,
 ) -> Result<(), String> {
     let state = app.state::<crate::AppState>();
-    let restored = {
-        let mut session = state.scans.lock()?;
-        if session.active(id).is_err() {
-            return Ok(());
-        }
-        let stopped = session.stop(id, message, no_text)?;
-        if let Some(selector) = app.get_webview_window("capture-selector") {
-            selector.hide().map_err(|error| error.to_string())?;
-        }
-        // Keep restoration in the same transaction as cancellation so a new
-        // scan cannot start between clearing state and restoring old windows.
-        let restored = restore_windows(app, &stopped, true);
-        session.overlay_visible = app
-            .get_webview_window("ocr-overlay")
-            .is_some_and(|window| window.is_visible().unwrap_or(false));
-        restored
-    };
+    let mut session = state.scans.lock()?;
+    let restored = stop_scan_in_session(app, &mut session, id, message, no_text);
+    drop(session);
     emit_state(app);
+    restored
+}
+
+pub fn stop_scan_in_session(
+    app: &AppHandle,
+    session: &mut Session,
+    id: Option<u64>,
+    message: &str,
+    no_text: bool,
+) -> Result<(), String> {
+    if session.active(id).is_err() {
+        return Ok(());
+    }
+    let stopped = session.stop(id, message, no_text)?;
+    if let Some(selector) = app.get_webview_window("capture-selector") {
+        selector.hide().map_err(|error| error.to_string())?;
+    }
+    // Restoration and cancellation share one transaction. Changed pages must
+    // never restore the previous page's regions after failure, blank OCR or Stop.
+    let restored = restore_windows(app, &stopped, stopped.auto_epoch.is_none());
+    session.overlay_visible = app
+        .get_webview_window("ocr-overlay")
+        .is_some_and(|window| window.is_visible().unwrap_or(false));
     restored
 }
 
@@ -531,7 +572,7 @@ pub fn start_toolbar_scan(app: AppHandle, mode: ScanMode) -> Result<(), String> 
     } else {
         ""
     };
-    crate::show_capture_window_on(app, query, display, mode, None)
+    crate::show_capture_window_on(app, query, display, mode, None, None)
 }
 
 #[tauri::command(async)]
@@ -550,7 +591,7 @@ pub fn rescan(app: AppHandle) -> Result<(), String> {
     } else {
         "scan=repeat"
     };
-    crate::show_capture_window_on(app, query, display, spec.mode, Some(spec))
+    crate::show_capture_window_on(app, query, display, spec.mode, Some(spec), None)
 }
 
 #[tauri::command(async)]
@@ -609,6 +650,7 @@ fn change_overlay_visibility(
         )));
         window.navigate(url).map_err(|e| e.to_string())?;
     } else {
+        session.auto_detect.stop();
         state.overlay_input.disable(app)?;
         window.hide().map_err(|error| error.to_string())?;
         if let Some(popup) = app.get_webview_window("translation-popup") {
@@ -990,6 +1032,7 @@ pub fn set_toolbar_visible(app: &AppHandle, visible: bool) -> Result<(), String>
         window.show().map_err(|e| e.to_string())?;
         window.set_focus().map_err(|e| e.to_string())?;
     } else {
+        session.auto_detect.stop();
         window.hide().map_err(|e| e.to_string())?;
     }
     session.revision += 1;
@@ -1211,7 +1254,7 @@ pub fn setup(app: &AppHandle) -> Result<(), String> {
         width: f64::from(work.size.width),
         height: f64::from(work.size.height),
     };
-    let width = (536.0 * scale).ceil().min(area.width);
+    let width = (580.0 * scale).ceil().min(area.width);
     let height = (56.0 * scale).ceil().min(area.height);
     let (x, y) = startup_toolbar_position(width, height, area, scale);
     // Position while hidden to avoid flashing at the OS's default location.

@@ -92,7 +92,24 @@ pub enum CaptureError {
     Encode(String),
 }
 
+pub fn thumbnail(image: &image::RgbaImage) -> image::RgbImage {
+    image::DynamicImage::ImageRgba8(image::imageops::resize(
+        image,
+        128,
+        128,
+        image::imageops::FilterType::Triangle,
+    ))
+    .to_rgb8()
+}
+
 pub trait ScreenCapture: Send + Sync {
+    /// In-memory comparison only: never encoded, persisted or sent to OCR.
+    fn sample(
+        &self,
+        display: &DisplayInfo,
+        selection_logical: Rectangle,
+    ) -> Result<image::RgbImage, CaptureError>;
+
     fn capture(
         &self,
         display: &DisplayInfo,

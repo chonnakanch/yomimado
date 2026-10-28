@@ -1,3 +1,4 @@
+mod auto_detect;
 mod capture;
 mod detector_model;
 mod learning_backup;
@@ -52,6 +53,7 @@ struct AppState {
     overlay: overlay::OverlayStore,
     overlay_input: overlay::input::InputRouter,
     scans: toolbar::ScanStore,
+    auto_worker: auto_detect::Worker,
     toolbar_layout: Mutex<toolbar::ToolbarLayout>,
     toolbar_menu: toolbar::ToolbarMenuStore,
     tray: tray::TrayState,
@@ -137,7 +139,7 @@ fn dispatch_capture_shortcut(app: AppHandle, scan_query: &'static str) {
             } else {
                 toolbar::ScanMode::SelectedArea
             };
-            show_capture_window_on(app.clone(), scan_query, display, mode, None)
+            show_capture_window_on(app.clone(), scan_query, display, mode, None, None)
         });
         if let Err(error) = result {
             let state = app.state::<AppState>();
@@ -203,6 +205,7 @@ fn show_capture_window(app: AppHandle, scan_query: &str) -> Result<(), String> {
         display,
         toolbar::ScanMode::SelectedArea,
         None,
+        None,
     )
 }
 
@@ -212,18 +215,32 @@ fn show_capture_window_on(
     display: DisplayInfo,
     mode: toolbar::ScanMode,
     repeat: Option<toolbar::ScanSpec>,
+    auto_epoch: Option<u64>,
 ) -> Result<(), String> {
     detector_model::ensure_available(&app)?;
     #[cfg(target_os = "macos")]
     {
         let access = core_graphics::access::ScreenCaptureAccess;
         if !access.preflight() {
-            access.request();
+            if auto_epoch.is_none() {
+                access.request();
+            }
             return Err("Screen Recording access is required. Enable YomiMado (or your terminal when running `tauri dev`) in System Settings > Privacy & Security > Screen & System Audio Recording, then restart the app.".into());
         }
     }
     let state = app.state::<AppState>();
     let mut session = state.scans.lock()?;
+    if let Some(epoch) = auto_epoch {
+        if !session.auto_detect.enabled
+            || session.auto_detect.epoch != epoch
+            || session.active.is_some()
+            || auto_detect::blocked(&app)
+        {
+            return Ok(());
+        }
+    } else {
+        session.auto_detect.stop();
+    }
     toolbar::require_idle(&session)?;
     toolbar::close_toolbar_menu(app.clone(), None)?;
     let restore = toolbar::CAPTURE_WINDOW_LABELS
@@ -235,6 +252,14 @@ fn show_capture_window_on(
         .map(|label| (*label).to_string())
         .collect();
     let id = session.begin(mode, display.clone(), repeat, restore)?;
+    session.active.as_mut().unwrap().auto_epoch = auto_epoch;
+    if auto_epoch.is_some() {
+        // Old regions no longer describe the page. Never restore them after a
+        // blank page, failure or Stop; late OCR still needs the current id.
+        state.overlay.clear()?;
+        session.completed_id = None;
+        session.overlay_visible = false;
+    }
     drop(session);
     tray::refresh(&app);
     app.state::<AppState>().scans.set_selector_id(id);
@@ -335,9 +360,13 @@ async fn perform_capture(
         }
     }
     toolbar::emit_state(&app);
-    let captured = tauri::async_runtime::spawn_blocking(move || {
+    let (captured, frame) = tauri::async_runtime::spawn_blocking(move || {
         std::thread::sleep(std::time::Duration::from_millis(180));
-        capture.capture(&display, selection)
+        let captured = capture
+            .capture(&display, selection)
+            .map_err(|e| e.to_string())?;
+        let frame = auto_detect::Frame::captured(&captured)?;
+        Ok::<_, String>((captured, frame))
     })
     .await
     .map_err(|e| e.to_string())?
@@ -346,6 +375,7 @@ async fn perform_capture(
         let state = app.state::<AppState>();
         let mut session = state.scans.lock()?;
         session.captured(id, captured.metadata.clone())?;
+        session.active.as_mut().unwrap().frame = Some(frame);
         let scan = session.active(Some(id))?.clone();
         toolbar::restore_windows(&app, &scan, false)?;
     }
@@ -513,10 +543,11 @@ async fn crop_captured_page(
         .map_err(|error| error.to_string())?
         .map_err(|error| error.to_string())?;
     if let Some(ref page) = result {
-        app.state::<AppState>()
-            .scans
-            .lock()?
-            .captured(id, page.metadata.clone())?;
+        let frame = auto_detect::Frame::captured(page)?;
+        let state = app.state::<AppState>();
+        let mut session = state.scans.lock()?;
+        session.captured(id, page.metadata.clone())?;
+        session.active.as_mut().unwrap().frame = Some(frame);
         eprintln!(
             "YomiMado: automatic manga page physical={:?} image={}x{}",
             page.metadata.selection_physical_bounds,
@@ -668,6 +699,7 @@ fn show_ocr_overlay(
         estimated_reading_order,
         id,
     )?;
+    session.last_manga = engine == "manga";
     let scan = session.complete(id, estimated_reading_order)?;
     toolbar::restore_windows(&app, &scan, false)?;
     drop(session);
@@ -1016,6 +1048,7 @@ pub fn run() {
                 overlay: overlay::OverlayStore::default(),
                 overlay_input: overlay::input::InputRouter::default(),
                 scans: toolbar::ScanStore::default(),
+                auto_worker: auto_detect::Worker::default(),
                 toolbar_layout: Mutex::new(toolbar::ToolbarLayout::default()),
                 toolbar_menu: toolbar::ToolbarMenuStore::default(),
                 tray: tray::TrayState::default(),
@@ -1050,6 +1083,7 @@ pub fn run() {
                 tauri::async_runtime::spawn_blocking(move || tray::report_error(&handle, format!("Tray icon unavailable: {error}. The toolbar stays available; use More actions to quit.")));
             }
             app.state::<AppState>().overlay_input.start(app.handle());
+            auto_detect::Worker::start(app.handle());
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
@@ -1058,6 +1092,7 @@ pub fn run() {
             shortcuts::capture_shortcuts,
             shortcuts::record_capture_shortcut,
             shortcuts::set_capture_shortcuts,
+            auto_detect::set_auto_detect,
             toolbar::get_toolbar_state,
             toolbar::start_toolbar_scan,
             toolbar::rescan,
@@ -1106,6 +1141,7 @@ pub fn run() {
         .run(|app, event| {
             if matches!(event, tauri::RunEvent::Exit) {
                 app.state::<AppState>().overlay_input.stop();
+                app.state::<AppState>().auto_worker.stop();
                 #[cfg(all(not(debug_assertions), target_os = "windows"))]
                 if let Ok(mut service) = app.state::<AppState>().windows_service.lock() {
                     // Drop closes the job and terminates its entire service tree.

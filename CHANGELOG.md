@@ -10,6 +10,21 @@ The [feature roadmap](docs/implementation-plan.md#feature-checklist) tracks comp
 
 ## Unreleased
 
+### 2026-10-28
+
+#### Added
+
+- Add a default-off **Auto detect** icon toggle (scan corners with a circular arrow)
+  to rescan the same manga area after a
+  visible page change settles. Keep screenshots local and reuse clean Rescan,
+  with popup/secondary-window pauses, overlay/control masks, single-scan admission,
+  stop/stale-result guards, blank-page continuation and display/error shutdown.
+  No new popup controls, dependencies, service endpoints or persistent setting.
+  All 477 frontend and 98 local macOS Rust tests, formatting/Clippy,
+  TypeScript/Vite and macOS debug build pass. Browser review covers expanded and
+  compact toolbar interaction; live native capture, Windows, mixed-DPI hardware
+  and exact installers remain unverified. [Behavior and limits](docs/usage.md#auto-detect-page-changes).
+
 ### 2026-10-27
 
 #### Added

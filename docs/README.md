@@ -30,6 +30,9 @@ For horizontal drag-selection outlines, see the
 For portable saved-library files, see [local backup and restore](usage.md#local-backup-and-restore)
 and its [verification limits](ui-testing.md#local-backup-and-restore).
 
+For opt-in page-change rescanning, see [Auto detect](usage.md#auto-detect-page-changes)
+and its [verification limits](ui-testing.md#auto-detect-page-changes).
+
 For conjugation explanations, see the [supported forms and grammar sources](implementation-plan.md#conjugation-behavior-and-supported-forms)
 and [expanded-form verification](ui-testing.md#expanded-conjugation-explanations).
 

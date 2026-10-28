@@ -53,12 +53,12 @@ impl XcapScreenCapture {
     }
 }
 
-impl ScreenCapture for XcapScreenCapture {
-    fn capture(
+impl XcapScreenCapture {
+    fn capture_pixels(
         &self,
         display: &DisplayInfo,
         selection_logical: Rectangle,
-    ) -> Result<CapturedImage, CaptureError> {
+    ) -> Result<image::RgbaImage, CaptureError> {
         let physical = Self::physical_selection(display, selection_logical)?;
         let monitors =
             xcap::Monitor::all().map_err(|error| CaptureError::Unavailable(error.to_string()))?;
@@ -114,7 +114,27 @@ impl ScreenCapture for XcapScreenCapture {
             image.height(),
         )?;
 
-        let crop = image::imageops::crop_imm(&image, local_x, local_y, width, height).to_image();
+        Ok(image::imageops::crop_imm(&image, local_x, local_y, width, height).to_image())
+    }
+}
+
+impl ScreenCapture for XcapScreenCapture {
+    fn sample(
+        &self,
+        display: &DisplayInfo,
+        selection_logical: Rectangle,
+    ) -> Result<image::RgbImage, CaptureError> {
+        let image = self.capture_pixels(display, selection_logical)?;
+        Ok(super::thumbnail(&image))
+    }
+
+    fn capture(
+        &self,
+        display: &DisplayInfo,
+        selection_logical: Rectangle,
+    ) -> Result<CapturedImage, CaptureError> {
+        let physical = Self::physical_selection(display, selection_logical)?;
+        let crop = self.capture_pixels(display, selection_logical)?;
         let mut png_bytes = Vec::new();
         image::codecs::png::PngEncoder::new(&mut png_bytes)
             .write_image(

@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en">
+  <meta charset="utf-8" />
+  <title>YomiMado Auto detect synthetic reader</title>
+  <style>
+    body {
+      background: #242830;
+      color: white;
+      margin: 24px;
+      font-family: system-ui;
+    }
+    button {
+      padding: 12px;
+      font: inherit;
+      margin-right: 8px;
+    }
+    main {
+      width: 640px;
+      height: 560px;
+      background: white;
+      color: black;
+      margin: 24px 0;
+      border: 4px solid black;
+      position: relative;
+    }
+    .art {
+      position: absolute;
+      inset: 110px 24px 24px;
+      border: 8px solid black;
+      background: repeating-linear-gradient(
+        30deg,
+        #fff 0 30px,
+        #252525 30px 60px
+      );
+    }
+    main[data-page="2"] .art {
+      background: repeating-linear-gradient(
+        140deg,
+        #111 0 65px,
+        #fff 65px 100px
+      );
+    }
+    main[data-page="3"] .art {
+      background: white;
+      border: 0;
+    }
+    .text {
+      font: 28px sans-serif;
+      padding: 24px;
+    }
+    main[data-page="3"] .text {
+      visibility: hidden;
+    }
+  </style>
+  <h1>Auto detect · synthetic reader</h1>
+  <p>Select the complete rectangle below, scan it, then enable Auto.</p>
+  <button onclick="document.querySelector('main').dataset.page = '1'">
+    Page 1
+  </button>
+  <button onclick="document.querySelector('main').dataset.page = '2'">
+    Page 2
+  </button>
+  <button onclick="document.querySelector('main').dataset.page = '3'">
+    Blank page
+  </button>
+  <main data-page="1" aria-label="Synthetic manga area">
+    <div class="text" lang="ja">今日はいい天気ですね。</div>
+    <div class="art"></div>
+  </main>
+  <p>Original CSS patterns and Japanese text. No manga assets.</p>
+</html>

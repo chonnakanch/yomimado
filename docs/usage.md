@@ -8,7 +8,7 @@ controls after setup.
 
 YomiMado starts with a compact always-on-top toolbar. Drag its handle, or
 focus the handle and use arrow keys, to move it. Collapse retains both scan icons,
-Rescan, overlay visibility/status and Expand. The overflow menu opens Saved,
+Rescan, Auto, overlay visibility/status and Expand. The overflow menu opens Saved,
 Settings, Sources & licenses and Quit. Closing Saved or Settings keeps the app
 running.
 
@@ -79,7 +79,7 @@ the active mode through its highlighted scan button. Scanning shows a spinner
 and phase label inside that button; click it to cancel. The eye icon shows whether
 overlays are visible. A warning icon opens
 error/model-setup details when needed; Escape dismisses those details. Compact
-mode keeps both scan-mode icons, Rescan, visibility/status and expand on one row.
+mode keeps both scan-mode icons, Rescan, Auto, visibility/status and expand on one row.
 Both toolbar forms keep the same control height. Near the bottom of the work area,
 More actions opens above the toolbar without moving its row. On short screens the
 menu scrolls; Escape closes it and returns focus to More actions.
@@ -99,6 +99,37 @@ before retrying.
 Saved, Settings and Sources & licenses each open their own native window from
 More actions. They can remain open together; opening another menu entry does
 not replace an existing window's content.
+
+### Auto detect page changes
+
+Scan a page or spread with **Selected Area** (or use Whole Screen's detected crop),
+then click the **Auto detect** icon (scan corners with a circular arrow) beside
+Rescan in the toolbar. The blue pressed button means Auto detect is
+on. Turn pages normally within the same area: after the image changes and settles,
+YomiMado captures that area again and refreshes its clickable OCR text. Saved-word
+highlights continue to work in the learning popup.
+
+Click the same icon again to stop, including while recognition is running. Canceling
+the scan, hiding OCR overlays with Escape/the hide control, hiding the toolbar,
+or starting a manual scan also stops Auto detect. It starts off each launch.
+Stopping ignores late OCR results; local inference that already started may finish.
+A blank page clears the previous page's regions and keeps waiting for another
+page change. Capture/OCR errors or a changed/disconnected display stop the mode
+and report an error; select or scan the area again before re-enabling it.
+
+Detection pauses while a learning popup, Saved, Settings, Sources or the toolbar
+menu is visible. It resumes after those windows close. OCR outlines, translated
+panels and toolbar controls are excluded from comparison; if they cover too much
+of the reading area, detection pauses until more of the page is visible. Choose
+a complete page rather than one small text bubble. Small cursor changes are
+ignored. Detection needs a visible change across the page: very similar pages or
+changes entirely beneath excluded panels may need **Rescan**. Continuous animation
+can delay scanning. The area stays fixed; stop Auto and select again if you move
+or resize the reader. Keep the intended reader visible in that area.
+
+Comparison uses temporary local image samples. Screenshots are not saved or sent
+to external services. OCR uses the existing local service. Translation still
+follows your explicit actions or your separately enabled bubble-translation setting.
 
 ### Translate in bubbles
 

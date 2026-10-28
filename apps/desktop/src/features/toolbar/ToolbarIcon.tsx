@@ -2,6 +2,7 @@ export type ToolbarIconName =
   | "area"
   | "screen"
   | "rescan"
+  | "autoDetect"
   | "visible"
   | "hidden"
   | "close"
@@ -37,7 +38,14 @@ export function ToolbarIcon({ name }: { name: ToolbarIconName }) {
           <path d="M12 9v5m0 3v.1" />
         </>
       )}
-      {name === "area" && <path d="M8 3H3v5m13-5h5v5M3 16v5h5m13-5v5h-5" />}
+      {(name === "area" || name === "autoDetect") && (
+        <path d="M8 3H3v5m13-5h5v5M3 16v5h5m13-5v5h-5" />
+      )}
+      {name === "autoDetect" && (
+        <g transform="translate(6 6) scale(0.5)" strokeWidth="2.6">
+          <path d="M20 11a8 8 0 1 0-2 6M20 4v7h-7" />
+        </g>
+      )}
       {name === "screen" && (
         <>
           <rect x="3" y="4" width="18" height="13" rx="2" />

@@ -10,6 +10,9 @@ vi.mock("@tauri-apps/api/core", () => ({ invoke: vi.fn() }));
 vi.mock("@tauri-apps/api/event", () => ({ listen: vi.fn() }));
 
 const initial: ToolbarState = {
+  autoDetect: false,
+  autoDetectStatus: "off",
+  canAutoDetect: false,
   revision: 1,
   sessionId: null,
   scanMode: "selectedArea",
@@ -19,7 +22,7 @@ const initial: ToolbarState = {
   hasOverlay: false,
   overlayVisible: false,
   displayName: "Left display",
-  availableWidth: 536,
+  availableWidth: 580,
   detectorModel: { required: false, installed: false },
   trayAvailable: true,
   trayError: null,
@@ -245,9 +248,9 @@ it("shrinks native bounds when collapsed and restores the saved preference", asy
         y: 0,
         top: 0,
         left: 0,
-        right: collapsed ? 244 : 536,
+        right: collapsed ? 288 : 580,
         bottom: 56,
-        width: collapsed ? 244 : 536,
+        width: collapsed ? 288 : 580,
         height: 56,
         toJSON() {},
       };
@@ -256,7 +259,7 @@ it("shrinks native bounds when collapsed and restores the saved preference", asy
   await mount();
   await act(async () => button("Collapse toolbar").click());
   expect(invoke).toHaveBeenCalledWith("resize_toolbar", {
-    logicalWidth: 244,
+    logicalWidth: 288,
     logicalHeight: 56,
     logicalRowHeight: 56,
   });
@@ -458,4 +461,65 @@ it("does not resize the toolbar when opening or dismissing the separate menu", a
       .mocked(invoke)
       .mock.calls.filter(([command]) => command === "resize_toolbar"),
   ).toHaveLength(before);
+});
+
+it("requires a real scan before enabling Auto detect", async () => {
+  await mount();
+  expect(button("Enable Auto detect").disabled).toBe(true);
+  await update({ canAutoDetect: true, hasOverlay: true, overlayVisible: true });
+  expect(button("Enable Auto detect").disabled).toBe(false);
+  await act(async () => button("Enable Auto detect").click());
+  expect(invoke).toHaveBeenCalledWith("set_auto_detect", { enabled: true });
+});
+
+it.each([false, true])(
+  "keeps Stop Auto detect usable during recognition in compact=%s",
+  async (compact) => {
+    window.localStorage.setItem(
+      "yomimado.toolbar.collapsed.v1",
+      String(compact),
+    );
+    snapshot = {
+      ...initial,
+      autoDetect: true,
+      autoDetectStatus: "settling",
+      sessionId: 5,
+      phase: "recognizing",
+    };
+    await mount();
+    const stop = button("Stop Auto detect");
+    expect(stop.disabled).toBe(false);
+    expect(stop.getAttribute("aria-pressed")).toBe("true");
+    await act(async () => stop.click());
+    expect(invoke).toHaveBeenCalledWith("set_auto_detect", { enabled: false });
+  },
+);
+
+it("exposes paused detection without adding learning-popup controls", async () => {
+  snapshot = { ...initial, autoDetect: true, autoDetectStatus: "paused" };
+  await mount();
+  expect(button("Stop Auto detect").getAttribute("aria-description")).toContain(
+    "paused",
+  );
+  expect(button("Stop Auto detect").textContent).toBe("");
+  expect(
+    button("Stop Auto detect")
+      .querySelector("svg")
+      ?.getAttribute("aria-hidden"),
+  ).toBe("true");
+});
+
+it("shows actionable status when overlay panels obscure the watched area", async () => {
+  snapshot = {
+    ...initial,
+    autoDetect: true,
+    autoDetectStatus: "covered",
+    message: "Auto detect paused: too little of the page is visible.",
+  };
+  await mount();
+  await act(async () => button("Scan status").click());
+  expect(container.querySelector("#toolbar-feedback")?.textContent).toContain(
+    "too little of the page",
+  );
+  expect(button("Stop Auto detect").disabled).toBe(false);
 });

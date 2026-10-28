@@ -1,6 +1,6 @@
 # Implementation status and feature roadmap
 
-Last reviewed: **2026-10-27**. This is the current plan, not a chronological work
+Last reviewed: **2026-10-28**. This is the current plan, not a chronological work
 log. [CHANGELOG.md](../CHANGELOG.md) records dated changes; the
 [release checklist](desktop-release.md) records publication and exact installers.
 Source completion, UI approval and installer acceptance are separate states.
@@ -88,6 +88,14 @@ recorded in the [release checklist](desktop-release.md).
 ## Feature checklist
 
 ### Implemented in source
+
+- [x] **Auto detect page changes** — explicit, default-off scan-and-repeat icon watches
+      the last successful manga area and uses settled image changes to start local
+      Rescan. Popup/secondary-window pauses, self-overlay masks, single-scan
+      admission, Stop/late-result guards, blank-page continuation and display/error
+      shutdown are implemented. No automatic capture at launch or cloud OCR.
+      [Controls and limits](usage.md#auto-detect-page-changes) and
+      [verification](ui-testing.md#auto-detect-page-changes).
 
 - [x] **Automatic translated text over bubbles** — a persisted opt-in setting in
       Settings → Reading starts local translations after each completed scan;
@@ -313,18 +321,18 @@ condition in the past.
 
 ### Supported slice
 
-| Category                        | Supported forms                                                                                                                                                       |
-| ------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Ichidan and regular godan verbs | Plain past, negative, negative past; polite non-past, past, negative and negative past                                                                                |
-| Irregular verbs                 | する and 来る／くる; IPADIC-marked 行く-type past and 問う-type ウ音便; ある's negative when the analyzed base is ある                                                |
-| I-adjectives                    | かった, くない, くなかった; those forms plus です, and dictionary form + です; standalone いい → よい stem                                                            |
-| Casual contractions             | ちゃう／ちゃった and じゃう／じゃった, expanded through てしまう／でしまう                                                                                            |
-| Continuing action/state         | ている／でいる and casual てる／でる; plain non-past, past, negative and negative past; polite ます, ました, ません and ませんでした, including forms with い omitted |
-| Desire                          | たい, たかった, たくない and たくなかった; each also with polite です                                                                                                 |
+| Category                        | Supported forms                                                                                                                                                                                |
+| ------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Ichidan and regular godan verbs | Plain past, negative, negative past; polite non-past, past, negative and negative past                                                                                                         |
+| Irregular verbs                 | する and 来る／くる; IPADIC-marked 行く-type past and 問う-type ウ音便; ある's negative when the analyzed base is ある                                                                         |
+| I-adjectives                    | かった, くない, くなかった; those forms plus です, and dictionary form + です; standalone いい → よい stem                                                                                     |
+| Casual contractions             | ちゃう／ちゃった and じゃう／じゃった, expanded through てしまう／でしまう                                                                                                                     |
+| Continuing action/state         | ている／でいる and casual てる／でる; plain non-past, past, negative and negative past; polite ます, ました, ません and ませんでした, including forms with い omitted                          |
+| Desire                          | たい, たかった, たくない and たくなかった; each also with polite です                                                                                                                          |
 | Potential/passive/honorific     | Ichidan and analyzed カ変 られる forms retain all three interpretations; godan and する passive/honorific forms retain both. Plain non-past, past, negative, negative past and polite variants |
-| Causative                      | せる／させる families for the supported analyzed classes, with plain non-past, past, negative, negative past and polite variants; make/let remains contextual |
-| Conditionals                   | Positive and negative ば and たら／だら for verbs and i-adjectives; the same adjective rules also cover たい conditionals |
-| Commands                       | Godan e-row, ichidan ろ／よ, する → しろ／せよ and 来る／くる → 来い／こい when IPADIC supplies an imperative feature; くれる's exception is not treated as regular ろ／よ |
+| Causative                       | せる／させる families for the supported analyzed classes, with plain non-past, past, negative, negative past and polite variants; make/let remains contextual                                  |
+| Conditionals                    | Positive and negative ば and たら／だら for verbs and i-adjectives; the same adjective rules also cover たい conditionals                                                                      |
+| Commands                        | Godan e-row, ichidan ろ／よ, する → しろ／せよ and 来る／くる → 来い／こい when IPADIC supplies an imperative feature; くれる's exception is not treated as regular ろ／よ                     |
 
 The current implementation relies on the pinned Lindera/IPADIC base form and
 verb/adjective class. It generates these small rule families and requires an

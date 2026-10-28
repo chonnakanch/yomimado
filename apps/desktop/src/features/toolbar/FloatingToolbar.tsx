@@ -7,6 +7,9 @@ import { debugTooltip } from "../../lib/debug-mode";
 import "./toolbar.css";
 
 export interface ToolbarState {
+  autoDetect: boolean;
+  autoDetectStatus: "off" | "watching" | "settling" | "paused" | "covered";
+  canAutoDetect: boolean;
   revision: number;
   sessionId: number | null;
   scanMode: ScanMode;
@@ -76,7 +79,7 @@ export function FloatingToolbar() {
   });
   const menuButton = useRef<HTMLButtonElement>(null);
   const busy = pending || state?.sessionId != null;
-  const compact = collapsed || (state?.availableWidth ?? 536) < 536;
+  const compact = collapsed || (state?.availableWidth ?? 580) < 580;
   const scanBusy = pendingScanMode !== null || state?.sessionId != null;
   const scanMode =
     state?.sessionId != null
@@ -305,7 +308,8 @@ export function FloatingToolbar() {
     !!state?.trayError ||
     !!missingModel ||
     state?.phase === "error" ||
-    state?.phase === "noText";
+    state?.phase === "noText" ||
+    (state?.autoDetect && state.autoDetectStatus === "covered");
   useEffect(() => {
     if (!attention) setFeedbackOpen(false);
   }, [attention]);
@@ -341,7 +345,7 @@ export function FloatingToolbar() {
         }
       }}
       style={{
-        width: Math.min(compact ? 244 : 536, state?.availableWidth ?? 536),
+        width: Math.min(compact ? 288 : 580, state?.availableWidth ?? 580),
         minHeight: layout.totalHeight,
       }}
     >
@@ -419,6 +423,30 @@ export function FloatingToolbar() {
           }
         >
           <ToolbarIcon name="rescan" />
+        </button>
+        <button
+          className={`utility-button utility-icon-button toolbar-auto-detect${state?.autoDetect ? " utility-button-primary" : ""}`}
+          aria-label={
+            state?.autoDetect ? "Stop Auto detect" : "Enable Auto detect"
+          }
+          aria-pressed={state?.autoDetect ?? false}
+          aria-description={
+            state?.autoDetect
+              ? ["paused", "covered"].includes(state.autoDetectStatus)
+                ? "Auto detect paused while a learning popup or app window is open, or too little of the page is visible."
+                : "Auto detect on. Page changes rescan the same area after it settles."
+              : "Scan Japanese text first, then enable automatic rescanning when the page changes."
+          }
+          disabled={
+            state?.autoDetect
+              ? false
+              : !state?.canAutoDetect || busy || !!missingModel
+          }
+          onClick={() =>
+            void run("set_auto_detect", { enabled: !state?.autoDetect })
+          }
+        >
+          <ToolbarIcon name="autoDetect" />
         </button>
         <button
           className={`utility-button utility-icon-button toolbar-overlay-status${state?.overlayVisible ? " is-visible" : ""}${attention ? " needs-attention" : ""}`}
