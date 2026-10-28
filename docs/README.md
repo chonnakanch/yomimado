@@ -52,8 +52,10 @@ a different installer.
   source review, seed build/upload, pin activation and owner publication approval.
 - [Shared release checklist](desktop-release.md): exact releases, workflow gates,
   complete delivery, source/notices and protected publication.
-- [v0.6.0 preparation](release-preparation-0.6.0.md): current version, checks,
-  replacement runtime source review and remaining release gates.
+- [v0.7.0 preparation](release-preparation-0.7.0.md): current version, checks,
+  replacement runtime candidate, pending source review and remaining release gates.
+- [v0.6.0 preparation](release-preparation-0.6.0.md): retained version, source review
+  and private seed evidence; publication metadata is in the shared checklist.
 - [v0.5.0 publication recovery](release-recovery-0.5.0.md): original verified
   installers, pinned artifacts, successful recovery and temporary workflow retirement.
 - [macOS release guide](macos-release.md) and [Windows release guide](windows-release.md):

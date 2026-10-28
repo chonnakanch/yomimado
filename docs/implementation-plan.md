@@ -35,23 +35,22 @@ at the owner's request.
 - OCR correction preserves the draft when Escape belongs to Japanese IME
   composition; ordinary Escape still cancels editing. Regression coverage is
   recorded with [popup verification](ui-testing.md#learning-popup-modes).
-- The latest public release is **v0.5.0**, source
-  `8ff3be2621096a9804cc23ba33902f5aab34da55`, with nine uploaded assets.
-  It includes custom capture shortcuts and initial OCR recovery using reviewed
-  seed `46a5649`. [Publication recovery](release-recovery-0.5.0.md) succeeded;
-  its temporary workflow is retired. Exact hashes and verification limits remain
-  in the [release checklist](desktop-release.md). This records hosted publication,
-  not a new local installer or hardware test.
+- The latest public release is **v0.6.0**, source
+  `e1d75bd4e8aab9d659bf22f089070dd2a1328f3e`, published on 2026-10-22 with nine
+  uploaded assets. It includes the OCR geometry, capture/tray and UI changes using
+  reviewed seed `194dd57`. Exact hashes and verification limits remain in the
+  [release checklist](desktop-release.md). This records hosted publication,
+  without new local installer or hardware acceptance.
 - Integration and release procedures are maintained in
   [Git conventions](git-conventions.md) and the [release runbook](release-runbook.md).
   Release dynamically selects an owner-reviewed compatible macOS seed; ordinary
   PR Checks do not block on seed availability.
-- **v0.6.0 is prepared on `release/0.6.0`**, including the merged OCR geometry,
-  capture/tray and UI changes. Local application/release checks and the initial
-  six hosted Checks pass. The fresh macOS runtime seed is owner-approved and
-  privately activated; it covers the changed Python service. Main integration
-  and publication remain
-  separate. See the [preparation record](release-preparation-0.6.0.md).
+- **v0.7.0 is prepared on `release/0.7.0`**, including merged PRs #39–#45.
+  Local application/release checks pass. The changed Python service requires a
+  replacement runtime seed; its private candidate and unsigned source delivery
+  are prepared for owner review. Source approval, private activation, main
+  integration and exact-installer publication remain separate. See the
+  [preparation record](release-preparation-0.7.0.md).
 
 The current private macOS runtime seed binds reviewed source `194dd57`, including
 horizontal/mixed-content geometry recovery. Actual source approval, four uploaded

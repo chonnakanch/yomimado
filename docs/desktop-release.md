@@ -1,5 +1,27 @@
 # Shared desktop release checklist
 
+v0.7.0 preparation — **2026-10-28**: branch `release/0.7.0` binds version/runtime
+source `2059ccbbc16dcd8a102eba00ae71b8dcee92a42f`, based on merged PR #45.
+All 477 frontend, 310 service/contracts, 98 local macOS native and 166 release-tool
+tests pass, with formatting/lint, TypeScript, native/frontend builds and workflow
+syntax checks. The `194dd57` seed is incompatible with changed runtime inputs.
+A private replacement candidate passes mounted bundle/platform/signature,
+offline smoke and all 30 frozen-module/entrypoint source comparisons. Its unsigned
+source/licence delivery awaits owner review; no new seed is activated. Main merge,
+exact CI installer acceptance and protected publication remain unapproved. See the
+[preparation record](release-preparation-0.7.0.md).
+
+v0.6.0 observed public pre-release — **2026-10-28**: GitHub reports
+[v0.6.0](https://github.com/chonnakanch/yomimado/releases/tag/v0.6.0) published on
+2026-10-22 at `e1d75bd4e8aab9d659bf22f089070dd2a1328f3e`, with nine uploaded assets.
+The public tag resolves to that exact commit. Reported installer SHA-256:
+
+- macOS: `4261e4c9f880f5db9053e7eebdb1d5a051fa791db2823bb1059242afbd08fc71`
+- Windows: `2e7b2771aea6d4a7735f6273d36c14624f22c12351b8829fd434003032daed03`
+
+These are observed hosted metadata, adding no new local installer/hardware test,
+acceptance or waiver. The earlier preparation state below remains historical.
+
 v0.6.0 preparation — **2026-10-22**: branch `release/0.6.0` binds version source
 `194dd5704b2a07c5f57c380f60adac35c748e46d`. Application and release-tool checks
 pass, including all six hosted Checks at `9f3d290`. The owner approved the exact
