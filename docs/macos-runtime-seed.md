@@ -4,6 +4,54 @@ For the step-by-step rebuild, source review, private staging and pin activation
 procedure, follow the [release runbook](release-runbook.md#build-a-replacement-macos-seed).
 The records below retain the exact identities and approval scope of existing seeds.
 
+## v0.7.0 replacement seed — 2026-10-28
+
+Exact reviewed source: `2059ccbbc16dcd8a102eba00ae71b8dcee92a42f`.
+The owner explicitly approved **“Approve source delivery and private seed
+activation”** for this source and unsigned worksheet SHA-256
+`4a56ed7ee44d790d7239fdbf5fad69478ba4b1ccb7715ddf3261aaf1c2023fd2`.
+Actual approval is retained separately in `source-approval.json` and approved
+`source-delivery.json`, SHA-256
+`f276d3c8176cc9bfd580158c23ee36ef7f0b04ef644c6d45cf0fce60a3f09f65`.
+The original unsigned worksheet remains unchanged.
+
+Private label: `macos-reviewed-seed-2059ccb`, targeting the full source above.
+The [private draft](https://github.com/chonnakanch/yomimado/releases/tag/untagged-a147c6651157992b22a0)
+(release ID `426675225`) remains unpublished and is privately activated. The owner
+account `chonnakanch` created the draft and all five completed uploads. After the
+four input names, byte counts, SHA-256 values, asset IDs and upload states verified
+through the authenticated GitHub API, the activation manifest was uploaded last.
+All five owner asset identities pass the same strict selection validator used
+by Release. No app seed constants or Windows dictionary pins were changed.
+
+| Input                                   |     Bytes | SHA-256                                                            |
+| --------------------------------------- | --------: | ------------------------------------------------------------------ |
+| `YomiMado_0.7.0_aarch64.dmg`            | 656475561 | `447d20f623627ac97640e86a93feb2a25bd47a5d313a69652e1939c0e843f8ee` |
+| `YomiMado_0.7.0_notices_2059ccb.tar.gz` |   1104383 | `3381158d28fca3a701d5751c916ad17f415302c10a390cf5e4d55eb38921d4a4` |
+| `YomiMado_0.7.0_sources_2059ccb.tar.gz` | 937881471 | `4a8538f91f8d3bc6d0da4551ad19339f6ca9632deabc0e71795eb31edb218bc9` |
+| `YomiMado_0.7.0_translation_torch.zip`  | 306394404 | `e1c6a0ae58777d1eb4e8085eddff7a908fe0035e95c82178707178b7690434ef` |
+
+Activation manifest: **1,075 bytes**, SHA-256
+`329a26960ffe47b36e1e909cc28fd08b5c9bee92b907448b4ee22b29d0b98062`.
+
+This seed contains the Python backup/restore, Ollama translation and OCR fixes
+since v0.6.0. Its source-approved build passes mounted bundle/platform/source and
+ad-hoc signature verification, frozen offline learning/translation/persistence
+smoke, and equality of all 30 frozen application modules plus the entrypoint with
+reviewed source. Sources/notices retain 476 records, 76 archives and 112 unique
+native inputs. All 75 reused original dependency archives and unchanged inventories
+verify; independent comparison checks 163,833 retained files across 107 containers
+with no filtering changes to code/notices. The archives contain the same approved
+manifest and safe regular-file/directory membership. The separate Torch ZIP
+matches its embedded descriptor and retains its prior bytes.
+
+Local evidence is ignored under `services/ocr/build/runtime-seed-2059ccb/`.
+The [preparation record](release-preparation-0.7.0.md) retains checks and the
+separate earlier private test DMG hash. Preserve reviewed source `2059ccb` when
+merging. Source-only rebuilding, dated advisory triage and unrecorded hardware
+limits retain their scope. This decision does not accept future exact CI installers
+or authorize merging/public publication. Previous seeds remain retained below.
+
 ## v0.6.0 replacement seed — 2026-10-22
 
 Exact reviewed source: `194dd5704b2a07c5f57c380f60adac35c748e46d`.

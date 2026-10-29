@@ -12,6 +12,16 @@ The [feature roadmap](docs/implementation-plan.md#feature-checklist) tracks comp
 
 ### 2026-10-28
 
+#### Release preparation
+
+- Prepare v0.7.0 from main with PR-based notes since published v0.6.0. All five
+  app versions agree; local application and release checks pass. The existing
+  macOS runtime seed is incompatible; the owner approved the replacement's exact
+  source/licence delivery and private seed activation. Its source-approved build,
+  four uploaded inputs and owner activation manifest verify. Main integration
+  and exact-installer publication remain separate.
+  [Preparation and limits](docs/release-preparation-0.7.0.md).
+
 #### Added
 
 - Add a default-off **Auto detect** icon toggle (scan corners with a circular arrow)
