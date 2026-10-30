@@ -53,19 +53,47 @@
     }
   </style>
   <h1>Auto detect · synthetic reader</h1>
-  <p>Select the complete rectangle below, scan it, then enable Auto.</p>
-  <button onclick="document.querySelector('main').dataset.page = '1'">
-    Page 1
-  </button>
-  <button onclick="document.querySelector('main').dataset.page = '2'">
-    Page 2
-  </button>
-  <button onclick="document.querySelector('main').dataset.page = '3'">
-    Blank page
-  </button>
+  <p>
+    Select the complete rectangle below, scan it, then enable Auto. Turn pages
+    with Left/Right arrow keys or the buttons; keep the pointer still for the
+    keyboard check.
+  </p>
+  <button data-page-target="1">Page 1</button>
+  <button data-page-target="2">Page 2</button>
+  <button data-page-target="3">Blank page</button>
+  <output aria-live="polite" id="page-status">Page 1</output>
   <main data-page="1" aria-label="Synthetic manga area">
     <div class="text" lang="ja">今日はいい天気ですね。</div>
     <div class="art"></div>
   </main>
   <p>Original CSS patterns and Japanese text. No manga assets.</p>
+  <script>
+    const reader = document.querySelector("main");
+    const status = document.getElementById("page-status");
+    const texts = [
+      "今日はいい天気ですね。",
+      "明日は一緒に出かけましょう。",
+      "",
+    ];
+    function showPage(page) {
+      reader.dataset.page = String(page);
+      reader.querySelector(".text").textContent = texts[page - 1];
+      status.textContent = page === 3 ? "Blank page" : `Page ${page}`;
+    }
+    document.querySelectorAll("[data-page-target]").forEach((button) => {
+      button.addEventListener("click", () =>
+        showPage(Number(button.dataset.pageTarget)),
+      );
+    });
+    document.addEventListener("keydown", (event) => {
+      if (event.altKey || event.ctrlKey || event.metaKey || event.shiftKey)
+        return;
+      if (event.key !== "ArrowLeft" && event.key !== "ArrowRight") return;
+      event.preventDefault();
+      const direction = event.key === "ArrowRight" ? 1 : -1;
+      showPage(
+        Math.min(3, Math.max(1, Number(reader.dataset.page) + direction)),
+      );
+    });
+  </script>
 </html>

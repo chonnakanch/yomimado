@@ -207,12 +207,18 @@ it captures/crops through the same measured image-to-physical mapping, then redu
 the crop without PNG encoding, disk writes or OCR requests. No dependency, provider
 or service contract is added.
 
-A channel difference over 24 counts as a changed sample cell. At least 4% of usable
+A channel difference over 24 counts as a changed sample cell. Within OCR highlights,
+comparison discounts the existing 14% blue fill so a clean capture and its painted
+overlay match; actual page text remains part of the comparison. The fill constants
+are checked against the shipped CSS, including hover/selection aliases and
+overlapping regions. At least 4% of usable
 cells must differ from the last scanned baseline; two successive samples must
 differ by less than 0.5% before one repeat scan starts. The native input router
-supplies screen-physical masks for OCR polygons and measured controls/translation
-panels. Toolbar bounds are also masked; cell footprints and paint margins prevent
-self-triggering. Comparisons exclude masks from both frames and pause below 30%
+supplies original screen-physical OCR polygons plus measured opaque controls and
+translation panels. Only polygon strokes are excluded, using segment distances and
+the sample cell footprint rather than masking entire text rectangles. Toolbar
+bounds are also masked; cell footprints and paint margins prevent self-triggering.
+Comparisons exclude opaque/stroke masks from both frames and pause below 30%
 usable area. Visible learning/secondary windows and the toolbar menu pause samples.
 After a pause, two fresh samples must settle; the scanned baseline is retained.
 
