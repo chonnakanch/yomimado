@@ -1,6 +1,6 @@
 # Implementation status and feature roadmap
 
-Last reviewed: **2026-10-28**. This is the current plan, not a chronological work
+Last reviewed: **2026-10-30**. This is the current plan, not a chronological work
 log. [CHANGELOG.md](../CHANGELOG.md) records dated changes; the
 [release checklist](desktop-release.md) records publication and exact installers.
 Source completion, UI approval and installer acceptance are separate states.
@@ -90,7 +90,8 @@ recorded in the [release checklist](desktop-release.md).
 
 - [x] **Auto detect page changes** — explicit, default-off scan-and-repeat icon watches
       the last successful manga area and uses settled image changes to start local
-      Rescan. Popup/secondary-window pauses, self-overlay masks, single-scan
+      Rescan. Changes beneath translucent OCR highlights remain detectable;
+      popup/secondary-window pauses, opaque/stroke masks, single-scan
       admission, Stop/late-result guards, blank-page continuation and display/error
       shutdown are implemented. No automatic capture at launch or cloud OCR.
       [Controls and limits](usage.md#auto-detect-page-changes) and

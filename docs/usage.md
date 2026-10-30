@@ -118,8 +118,9 @@ page change. Capture/OCR errors or a changed/disconnected display stop the mode
 and report an error; select or scan the area again before re-enabling it.
 
 Detection pauses while a learning popup, Saved, Settings, Sources or the toolbar
-menu is visible. It resumes after those windows close. OCR outlines, translated
-panels and toolbar controls are excluded from comparison; if they cover too much
+menu is visible. It resumes after those windows close. The detector watches page
+content through transparent OCR highlights, while excluding their borders, opaque
+translated panels and toolbar controls from comparison; if those cover too much
 of the reading area, detection pauses until more of the page is visible. Choose
 a complete page rather than one small text bubble. Small cursor changes are
 ignored. Detection needs a visible change across the page: very similar pages or

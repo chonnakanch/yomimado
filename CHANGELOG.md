@@ -10,6 +10,22 @@ The [feature roadmap](docs/implementation-plan.md#feature-checklist) tracks comp
 
 ## Unreleased
 
+### 2026-10-30
+
+#### Fixed
+
+- Keep page changes beneath transparent OCR highlights visible to Auto detect.
+  The previous comparison masked entire OCR text regions, so new text inside
+  old boxes could leave stale OCR even when the page visibly changed. Exclude
+  only outline strokes and opaque controls/panels, compensate the existing blue
+  fill and preserve exact polygon geometry. Add a stationary-pointer regression
+  for text-only page changes and arrow-key controls in the original synthetic
+  reader fixture. This addresses a reproducible missed-change case from the
+  Windows keyboard-page-turn report; live Windows reader acceptance remains
+  unverified. All 104 local macOS Rust tests and 477 frontend tests, formatting,
+  Clippy, TypeScript/Vite and the macOS debug build pass. No global key hooks,
+  service changes or new dependencies.
+
 ### 2026-10-28
 
 #### Release preparation
