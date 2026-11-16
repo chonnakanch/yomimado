@@ -468,6 +468,13 @@ frozen inference runtime. The ONNX adapter retains the recognition model's
 preprocessing, vocabulary and decoding behavior. The detector's ONNX file is separate from the recognition graphs and optional
 translation graphs.
 
+When a Windows capture needs tiled detection, a single worker runs the tile and
+mask passes while ONNX Runtime reads the regions from the initial detector pass.
+Tile and mask regions are applied after the initial regions in their existing
+order. The service holds OCR request admission until both stages finish, including
+after a client cancels. The macOS service schedules detection and recognition
+sequentially.
+
 ## Bundled files versus generated user data
 
 The package's `ocr/` resource directory contains `runtime/`, `assets/` and

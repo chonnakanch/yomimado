@@ -75,11 +75,12 @@ def test_backend_cannot_replace_macos_runtime(monkeypatch):
 
 
 def test_windows_assembly_preserves_routes_and_does_not_load_models(monkeypatch, tmp_path):
-    from app.api import translation
+    from app.api import ocr, translation
     from app.pipeline import real_ocr
 
     old_models, old_service = real_ocr._models, translation.service
     monkeypatch.setattr(real_ocr, "_models", old_models)
+    monkeypatch.setattr(ocr, "pipeline", ocr.pipeline)
     monkeypatch.setattr(translation, "service", old_service)
     monkeypatch.setattr(backend, "HOST_PLATFORM", "win32")
     monkeypatch.setenv("YOMIMADO_TRANSLATION_CACHE", str(tmp_path / "cache.sqlite3"))
@@ -95,6 +96,7 @@ def test_windows_assembly_preserves_routes_and_does_not_load_models(monkeypatch,
     routes = list(translation.router.routes)
     backend.configure_backend()
     assert real_ocr._models is backend.cpu_models
+    assert ocr.pipeline._overlap_tile_detection
     from app.translation_preferences import ConfiguredTranslationProvider
 
     assert isinstance(translation.service.provider, ConfiguredTranslationProvider)
