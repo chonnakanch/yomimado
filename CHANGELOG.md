@@ -10,6 +10,18 @@ The [feature roadmap](docs/implementation-plan.md#feature-checklist) tracks comp
 
 ## Unreleased
 
+### 2026-11-16
+
+#### Performance
+
+- Start reading regions from the first Windows detector pass while the tile and
+  mask passes run. Three warmed source runs per profile with the Windows OCR
+  adapters on macOS measured median times of 5.06 → 3.99 s for a 768 × 880 crop
+  and 14.04 → 12.14 s for an 810 × 1320 text-heavy crop. OCR output and model call
+  counts matched on the timed synthetic fixtures. 311 service and OCR contract
+  tests pass. Native Windows latency and installer behavior remain unmeasured.
+  [Windows OCR scheduling](docs/architecture.md#macos-and-windows-use-different-inference-backends).
+
 ### 2026-10-28
 
 #### Release preparation
