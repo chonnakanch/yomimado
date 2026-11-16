@@ -12,6 +12,12 @@ The [feature roadmap](docs/implementation-plan.md#feature-checklist) tracks comp
 
 ### 2026-11-16
 
+#### Fixed
+
+- Run the required macOS native checks on GitHub Actions' macOS 15 Arm64
+  runner. GitHub retired the macOS 14 runner, which cancelled the native job
+  before any steps ran.
+
 #### Performance
 
 - Start reading regions from the first Windows detector pass while the tile and
