@@ -48,8 +48,7 @@ pub struct InputRouter {
 
 // Inclusive edges match the visible polygon boundary; concave regions must not
 // turn the empty corners of their bounding box into native hit targets.
-#[cfg(any(target_os = "macos", test))]
-fn contains(polygon: &[Point], p: Point) -> bool {
+pub(crate) fn contains(polygon: &[Point], p: Point) -> bool {
     let mut inside = false;
     for (a, b) in polygon
         .iter()
@@ -246,36 +245,48 @@ impl InputRouter {
         Ok(())
     }
 
-    /// Screen-physical bounds of visible overlay paint. Use the same measured
-    /// geometry as native hit routing, including translated panels and controls.
-    pub fn capture_masks(&self, x: f64, y: f64) -> Result<Vec<Rectangle>, String> {
+    /// Keep translucent OCR interiors available to detection. Only their strokes
+    /// and the measured opaque controls/translation panels hide page pixels.
+    pub fn capture_masks(
+        &self,
+        x: f64,
+        y: f64,
+    ) -> Result<Vec<crate::auto_detect::CaptureMask>, String> {
+        use crate::auto_detect::CaptureMask;
         let route = self.route.lock().map_err(|e| e.to_string())?;
         if !route.active {
             return Err("Wait for OCR overlays to finish opening.".into());
         }
-        Ok(route
-            .polygons
-            .iter()
-            .chain(&route.controls)
-            .map(|polygon| {
-                let left = polygon.iter().map(|p| p.x).fold(f64::INFINITY, f64::min);
-                let top = polygon.iter().map(|p| p.y).fold(f64::INFINITY, f64::min);
-                let right = polygon
+        let highlights = route.polygons.iter().map(|polygon| {
+            CaptureMask::Highlight(
+                polygon
                     .iter()
-                    .map(|p| p.x)
-                    .fold(f64::NEG_INFINITY, f64::max);
-                let bottom = polygon
-                    .iter()
-                    .map(|p| p.y)
-                    .fold(f64::NEG_INFINITY, f64::max);
-                Rectangle {
-                    x: x + left - 8.0,
-                    y: y + top - 8.0,
-                    width: right - left + 16.0,
-                    height: bottom - top + 16.0,
-                }
+                    .map(|p| Point {
+                        x: x + p.x,
+                        y: y + p.y,
+                    })
+                    .collect(),
+            )
+        });
+        let opaque = route.controls.iter().map(|polygon| {
+            let left = polygon.iter().map(|p| p.x).fold(f64::INFINITY, f64::min);
+            let top = polygon.iter().map(|p| p.y).fold(f64::INFINITY, f64::min);
+            let right = polygon
+                .iter()
+                .map(|p| p.x)
+                .fold(f64::NEG_INFINITY, f64::max);
+            let bottom = polygon
+                .iter()
+                .map(|p| p.y)
+                .fold(f64::NEG_INFINITY, f64::max);
+            CaptureMask::Opaque(Rectangle {
+                x: x + left - 8.0,
+                y: y + top - 8.0,
+                width: right - left + 16.0,
+                height: bottom - top + 16.0,
             })
-            .collect())
+        });
+        Ok(highlights.chain(opaque).collect())
     }
 
     pub fn remember_popup(&self, region: Option<String>) {
@@ -490,6 +501,39 @@ mod windows {
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn capture_paint_preserves_highlight_shapes_and_masks_opaque_controls() {
+        use crate::auto_detect::CaptureMask;
+        let polygon = vec![
+            Point { x: 10., y: 20. },
+            Point { x: 110., y: 20. },
+            Point { x: 90., y: 120. },
+        ];
+        let router = InputRouter {
+            route: Arc::new(Mutex::new(Route {
+                active: true,
+                polygons: vec![polygon.clone()],
+                controls: vec![polygon],
+                ..Route::default()
+            })),
+            ..InputRouter::default()
+        };
+        let masks = router.capture_masks(-1920., 50.).unwrap();
+        assert_eq!(masks.len(), 2);
+        let CaptureMask::Highlight(points) = &masks[0] else {
+            panic!("OCR text must remain visible");
+        };
+        assert_eq!(points[0], Point { x: -1910., y: 70. });
+        assert_eq!(points.len(), 3);
+        let CaptureMask::Opaque(bounds) = &masks[1] else {
+            panic!("Controls must remain excluded");
+        };
+        assert_eq!(
+            (bounds.x, bounds.y, bounds.width, bounds.height),
+            (-1918., 62., 116., 116.)
+        );
+    }
+
     #[test]
     fn translated_panels_share_the_control_transform_and_capture_clipping() {
         for scale in [1., 1.25, 1.5, 2.] {

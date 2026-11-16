@@ -993,12 +993,38 @@ Browser checks verify off/on interaction and expanded/compact placement; all 477
 frontend tests, formatting, TypeScript/Vite and the macOS debug build pass for
 this icon follow-up. Native capture and Windows hardware limits above still apply.
 
+### Page changes beneath OCR highlights — 2026-10-30
+
+The owner reported that on Windows the manga visibly advances with arrow keys
+while OCR remains stale; clicking advances/rescans and Auto remains blue without
+a warning. A source regression reproduces a missed-change case with an unchanged
+pointer and overlay geometry: only text inside an old OCR region changes. The
+former full-region mask reports zero change. Keeping the translucent interior
+visible detects the changed page after two stable samples. This proves the image
+comparison fix; it does not establish that every failure in the owner's Windows
+reader has the same cause.
+
+Six added native tests cover stationary-pointer text changes, repaint/hover and
+overlapping highlight suppression, all color channels, exact polygon interiors
+versus strokes, the shipped CSS fill contract and native highlight/opaque-control
+classification at a negative monitor origin. All 104 local macOS Rust tests and
+477 frontend tests pass, along with Rust formatting/Clippy, frontend formatting,
+TypeScript/Vite and the macOS debug build. No screenshot assets, key hooks,
+capture backend changes, dependencies or service changes are added.
+
+The synthetic reader now shares page navigation between buttons and Left/Right
+keys. Browser review verified Page 1 → Page 2 → Page 1 → Page 2 with only arrow
+keys, changing both Japanese text and the original CSS artwork. That verifies
+the fixture, independently of the native pixel-comparison regressions. Live
+Windows reader/capture, mixed-DPI hardware and exact installers remain unverified.
+
 For native verification, use the original
 [`auto-detect-reader.html`](../apps/desktop/src/features/overlay/fixtures/auto-detect-reader.html)
 fixture through the development server. Select its complete page rectangle and
 scan with local OCR (or a clearly labeled synthetic local response service).
-Enable Auto, turn Page 1 → Page 2, and verify one settled rescan without repeated
-requests. Move the pointer and hover regions without turning pages; no new scan
+Enable Auto, keep the pointer stationary and use Right/Left arrows to turn Page 1
+→ Page 2 → Page 1. Verify one settled rescan per page without clicking or repeated
+requests; then repeat using the buttons. Move the pointer and hover regions without turning pages; no new scan
 should start. Open a learning popup, change the page, then close it; OCR should
 wait and resume only after fresh stable samples. Repeat with Saved/Settings and
 translated panels. Verify Stop during a delayed response ignores its result,
