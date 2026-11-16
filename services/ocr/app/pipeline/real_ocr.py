@@ -5,8 +5,12 @@ from __future__ import annotations
 import base64
 import logging
 import sys
+from collections.abc import Iterable, Iterator
+from concurrent.futures import ThreadPoolExecutor
+from contextlib import contextmanager
 from functools import lru_cache
 from io import BytesIO
+from itertools import chain
 from os import environ
 from pathlib import Path
 from types import SimpleNamespace
@@ -50,6 +54,7 @@ LANGUAGE_REVIEW_REASON = (
 )
 SELECTION_REVIEW_REASON = "Text recovered from the whole selection; area approximate—verify on page"
 logger = logging.getLogger(__name__)
+PreparedDetection = tuple[Any, int, int, str, tuple[int, int]]
 
 
 def _configured_paths() -> tuple[Path, Path, Path]:
@@ -219,7 +224,12 @@ def _detected_blocks(
     _, _, blocks = detector(bgr)
     for block in blocks:
         yield block, 0, 0, "full"
+    yield from _retry_blocks(detector, bgr, retry_tiles, cv2)
 
+
+def _retry_blocks(
+    detector: Any, bgr: Any, retry_tiles: list[tuple[int, int, int, int]], cv2: Any
+) -> Iterator[tuple[Any, int, int, str]]:
     mask_candidates = []
     for x, y, tile_width, tile_height in retry_tiles:
         tile = bgr[y : y + tile_height, x : x + tile_width].copy()
@@ -243,7 +253,7 @@ def _detected_blocks(
 
 def _refine_horizontal_blocks(
     candidates: list[tuple[Any, int, int, str]], bgr: Any, cv2: Any, np: Any
-) -> list[tuple[Any, int, int, str, tuple[int, int]]]:
+) -> list[PreparedDetection]:
     height, width = bgr.shape[:2]
     bounds = [
         tuple(int(v + (x if i % 2 == 0 else y)) for i, v in enumerate(block.xyxy))
@@ -382,6 +392,35 @@ def _refine_horizontal_blocks(
         return item[3] != "full", not refined, -area
 
     return sorted(prepared, key=priority)
+
+
+@contextmanager
+def _prepare_detections(
+    detector: Any,
+    bgr: Any,
+    retry_tiles: list[tuple[int, int, int, int]],
+    cv2: Any,
+    np: Any,
+    overlap_tile_detection: bool,
+) -> Iterator[Iterable[PreparedDetection]]:
+    if not overlap_tile_detection or not retry_tiles:
+        candidates = list(_detected_blocks(detector, bgr, retry_tiles, cv2))
+        yield _refine_horizontal_blocks(candidates, bgr, cv2, np)
+        return
+
+    full = list(_detected_blocks(detector, bgr, [], cv2))
+    # Only full-pass blocks contribute to horizontal refinement. While those
+    # regions are recognized, the detector can run the existing tile/mask passes
+    # on one worker. Joining here keeps the detector inside the request lock,
+    # including when recognition raises or the client cancels the request.
+    with ThreadPoolExecutor(max_workers=1) as worker:
+        retries = worker.submit(list, _retry_blocks(detector, bgr, retry_tiles, cv2))
+
+        def ordered_retries() -> Iterator[PreparedDetection]:
+            for order, (block, x, y, stage) in enumerate(retries.result(), start=len(full)):
+                yield block, x, y, stage, (order, 0)
+
+        yield chain(_refine_horizontal_blocks(full, bgr, cv2, np), ordered_retries())
 
 
 def _overlap_over_smaller(
@@ -557,7 +596,9 @@ def _crop_data_url(crop: Any) -> str:
     return "data:image/png;base64," + base64.b64encode(output.getvalue()).decode("ascii")
 
 
-def recognize_with_models(image_bytes: bytes, *, debug: bool = False) -> OcrResponse:
+def recognize_with_models(
+    image_bytes: bytes, *, debug: bool = False, overlap_tile_detection: bool = False
+) -> OcrResponse:
     try:
         import cv2  # type: ignore[import-not-found]
         import numpy as np  # type: ignore[import-not-found]
@@ -576,6 +617,25 @@ def recognize_with_models(image_bytes: bytes, *, debug: bool = False) -> OcrResp
     detector, recognizer = _models(repo, detector_path, recognizer_path)
     bgr = cv2.cvtColor(np.asarray(image), cv2.COLOR_RGB2BGR)
     retry_tiles = _content_retry_tiles(image)
+    with _prepare_detections(
+        detector, bgr, retry_tiles, cv2, np, overlap_tile_detection
+    ) as detections:
+        return _recognize_candidates(
+            image, bgr, recognizer, detections, cv2, np, debug=debug, retry_count=len(retry_tiles)
+        )
+
+
+def _recognize_candidates(
+    image: Any,
+    bgr: Any,
+    recognizer: Any,
+    candidates: Iterable[PreparedDetection],
+    cv2: Any,
+    np: Any,
+    *,
+    debug: bool,
+    retry_count: int,
+) -> OcrResponse:
     recognized_crops: dict[tuple[int, int, int, int], str] = {}
 
     def recognize_crop(box: tuple[int, int, int, int], crop: Any) -> str:
@@ -594,10 +654,7 @@ def recognize_with_models(image_bytes: bytes, *, debug: bool = False) -> OcrResp
     refined_boxes: list[tuple[int, int, int, int]] = []
     filtered_detection = False
     index = 0
-    candidates = list(_detected_blocks(detector, bgr, retry_tiles, cv2))
-    for block, offset_x, offset_y, detection_pass, source_order in _refine_horizontal_blocks(
-        candidates, bgr, cv2, np
-    ):
+    for block, offset_x, offset_y, detection_pass, source_order in candidates:
         raw_x1, raw_y1, raw_x2, raw_y2 = [int(value) for value in block.xyxy]
         x1, y1 = raw_x1 + offset_x, raw_y1 + offset_y
         x2, y2 = raw_x2 + offset_x, raw_y2 + offset_y
@@ -864,8 +921,8 @@ def recognize_with_models(image_bytes: bytes, *, debug: bool = False) -> OcrResp
         debug=(
             OcrDebug(
                 detections=detections,
-                tileRetryCount=len(retry_tiles),
-                maskRetryCount=len(retry_tiles),
+                tileRetryCount=retry_count,
+                maskRetryCount=retry_count,
                 selectionText=selection_text,
                 selectionFallbackUsed=fallback_used,
             )

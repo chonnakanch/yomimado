@@ -25,6 +25,9 @@ at the owner's request.
   Source checks and
   [synthetic measurements](ocr-geometry-results.json) pass; native Windows
   extended-monitor acceptance remains unrecorded.
+- Windows OCR overlaps tiled detection with recognition of the initial regions
+  and preserves tile/mask recovery order. Source regression checks pass.
+  [Windows OCR scheduling](architecture.md#macos-and-windows-use-different-inference-backends).
 - Detector setup's release link opens the latest upstream page in the system
   browser, with launch errors shown in Settings. The native macOS link and exact
   download hash are [verified in development](ui-testing.md#detector-release-link-verification).

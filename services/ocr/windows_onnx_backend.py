@@ -94,12 +94,14 @@ def configure_backend() -> None:
     import onnxruntime
 
     onnxruntime.disable_telemetry_events()
-    from app.api import translation
+    from app.api import ocr, translation
     from app.pipeline import real_ocr
+    from app.pipeline.pipeline import OcrPipeline
     from app.translation import TranslationService, default_cache_path
     from app.translation_preferences import ConfiguredTranslationProvider
 
-    # Assemble the existing Python API boundary in this Windows process only.
-    # No shared route, OCR pipeline, coordinate transform or macOS file changes.
+    # Assemble the Python API boundary in this Windows process only. Overlap
+    # OpenCV tile detection with ONNX recognition inside the existing scan lock.
     real_ocr._models = cpu_models
+    ocr.pipeline = OcrPipeline(overlap_tile_detection=True)
     translation.service = TranslationService(ConfiguredTranslationProvider(), default_cache_path())

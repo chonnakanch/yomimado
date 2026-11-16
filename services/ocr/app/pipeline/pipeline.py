@@ -28,6 +28,9 @@ class OcrPipeline:
     The unconfigured service returns a demo boundary, not a claimed OCR result.
     """
 
+    def __init__(self, *, overlap_tile_detection: bool = False) -> None:
+        self._overlap_tile_detection = overlap_tile_detection
+
     @property
     def engine(self) -> str:
         return "manga" if environ.get("YOMIMADO_DETECTOR_REPO") else "demo"
@@ -46,7 +49,11 @@ class OcrPipeline:
         if self.engine == "manga":
             from app.pipeline.real_ocr import recognize_with_models
 
-            return recognize_with_models(input_image.image_bytes, debug=input_image.debug)
+            return recognize_with_models(
+                input_image.image_bytes,
+                debug=input_image.debug,
+                overlap_tile_detection=self._overlap_tile_detection,
+            )
 
         width, height = map(float, dimensions)
 

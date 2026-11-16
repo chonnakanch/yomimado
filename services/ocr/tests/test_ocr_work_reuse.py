@@ -2,6 +2,7 @@
 
 from io import BytesIO
 from pathlib import Path
+from threading import Event
 from types import SimpleNamespace
 
 import pytest
@@ -98,3 +99,41 @@ def test_selection_fallback_reuses_identical_full_capture_crop(monkeypatch):
     assert calls == [(120, 160)]
     assert response.regions[0].text == response.debug.selectionText == "学校"
     assert not response.debug.selectionFallbackUsed
+
+
+def test_full_regions_are_recognized_while_tile_detection_is_still_running(monkeypatch):
+    image = Image.new("RGB", (600, 900), "white")
+    draw = ImageDraw.Draw(image)
+    draw.rectangle((30, 30, 45, 95), fill="black")
+    draw.rectangle((460, 460, 475, 520), fill="black")
+    full = SimpleNamespace(xyxy=(20, 20, 60, 110), lines=[], vertical=True)
+    tile = SimpleNamespace(xyxy=(50, 50, 90, 140), lines=[], vertical=True)
+    tile_started, recognized_full = Event(), Event()
+    overlap = False
+
+    def detect(pixels):
+        if pixels.shape[0] == image.height:
+            return None, None, [full]
+        if overlap:
+            tile_started.set()
+            assert recognized_full.wait(timeout=5)
+        return None, None, [tile]
+
+    def recognize(crop):
+        if overlap and not recognized_full.is_set():
+            assert tile_started.wait(timeout=5)
+            recognized_full.set()
+        return "学校に行く"
+
+    monkeypatch.setattr(real_ocr, "_configured_paths", lambda: (Path("."),) * 3)
+    monkeypatch.setattr(real_ocr, "_content_retry_tiles", lambda _: [(400, 400, 200, 500)])
+    monkeypatch.setattr(real_ocr, "_models", lambda *_: (detect, recognize))
+    data = png(image)
+    sequential = real_ocr.recognize_with_models(data, debug=True)
+    overlap = True
+    parallel = real_ocr.recognize_with_models(data, debug=True, overlap_tile_detection=True)
+
+    assert recognized_full.is_set()
+    assert len(parallel.regions) == 2
+    assert [detection.detectionPass for detection in parallel.debug.detections] == ["full", "tile"]
+    assert parallel == sequential
