@@ -3,8 +3,10 @@
 v0.8.0 preparation — **2026-11-17**: version/runtime source
 `6af1644cfccda05c867460438b4d44845cbec8e7` includes PRs #47 and #48.
 Local application and release checks pass. The previous seed is incompatible
-with changed shared Python OCR source; a replacement is prepared for source review.
-The macOS Release runner uses macOS 15 Arm64. See the
+with changed shared Python OCR source. The owner approved the exact source/licence
+delivery, and the [replacement seed](macos-runtime-seed.md#v080-replacement-seed--2026-11-17)
+is privately activated with five verified owner uploads. The macOS Release runner
+uses macOS 15 Arm64. See the
 [preparation record](release-preparation-0.8.0.md) for checks and remaining gates.
 
 v0.7.0 observed public pre-release — **2026-11-17**: GitHub reports

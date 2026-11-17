@@ -50,14 +50,15 @@ at the owner's request.
   PR Checks do not block on seed availability.
 - **v0.8.0 is prepared on `release/0.8.0`**, including the Auto detect fix and
   Windows OCR speedup. Local application and release checks pass. The shared
-  Python change requires a replacement macOS runtime seed; its source review,
-  private activation and exact-installer publication are tracked separately.
+  Python change requires a replacement macOS runtime seed, which the owner
+  approved and which is now privately activated. Main integration and installer
+  publication are tracked separately.
   See the [preparation record](release-preparation-0.8.0.md).
 
-The current private macOS runtime seed binds reviewed source `2059ccb`, including
-the v0.7.0 Python backup, translation and OCR fixes. Actual source approval, four uploaded
+The v0.8.0 private macOS runtime seed binds reviewed source `6af1644` and includes
+the updated shared OCR source. Actual source approval, four uploaded
 input hashes and the owner-uploaded activation manifest are retained in the
-[seed record](macos-runtime-seed.md#v070-replacement-seed--2026-10-28).
+[seed record](macos-runtime-seed.md#v080-replacement-seed--2026-11-17).
 Mounted source/signature and frozen offline smoke checks pass; this does not
 change published installers or establish new exact-installer acceptance.
 Later Python service changes require a compatible replacement reviewed runtime seed

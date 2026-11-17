@@ -38,14 +38,22 @@ separate from these source checks.
 
 Seed `2059ccb` is incompatible: #48 changes shared packaged Python OCR source
 even though concurrent detection and recognition is enabled on Windows only.
-No dependency, model, dictionary pin or reuse guard was changed. The new private
-candidate and unsigned source/licence review are under
-`services/ocr/build/runtime-seed-6af1644/`. The previous owner's source approval
-does not extend to this revision.
+No dependency, model, dictionary pin or reuse guard was changed. The owner
+approved the new exact source/licence delivery, and its replacement seed is
+privately activated. The approved DMG passed mounted source, platform and ad-hoc
+signature verification and frozen offline smoke. All 30 frozen app modules and
+the entrypoint match committed source. The [seed record](macos-runtime-seed.md#v080-replacement-seed--2026-11-17)
+retains the owner decision, uploaded hashes and verification limits.
 
-After exact source approval, rebuild and verify the reviewed seed, stage the four
-private inputs, and activate by uploading the owner manifest last. Merge only when
-authorized, with current PR Checks passing and the reviewed source history
-preserved. Release runs after successful Checks on the exact main merge. Both
-resulting installers still require hash-bound acceptance and separate owner
-publication approval.
+The private test DMG built before source approval remains under
+`services/ocr/build/runtime-seed-6af1644/private-candidate/`, SHA-256
+`c4ded62ba90abc89813e071e89518295145f14e7e2953b8281eea630e404f7a0`.
+It is separate from the source-approved DMG and the future CI installer.
+
+[Release PR #49](https://github.com/chonnakanch/yomimado/pull/49) remains unmerged.
+All six hosted Checks passed on preparation head `968f2d3` in
+[run 44052261901](https://github.com/chonnakanch/yomimado/actions/runs/44052261901);
+the current head requires its own Checks. Merge only when authorized, with
+current PR Checks passing and the reviewed source history preserved. Release
+runs after successful Checks on the exact main merge. Both resulting installers
+still require hash-bound acceptance and separate owner publication approval.
