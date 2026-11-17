@@ -155,7 +155,7 @@ jobs:
       YOMIMADO_SEED_SELECTION_SHA256: ${{ needs.seed-inputs.outputs.seed-sha256 }}
     needs: [plan, seed-inputs]
     if: needs.plan.outputs.release == 'true'
-    runs-on: macos-14
+    runs-on: macos-15
     timeout-minutes: 90
     outputs:
       record: ${{ steps.package.outputs.record }}
