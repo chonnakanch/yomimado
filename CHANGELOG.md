@@ -10,6 +10,15 @@ The [feature roadmap](docs/implementation-plan.md#feature-checklist) tracks comp
 
 ## Unreleased
 
+### 2026-11-17
+
+#### Release preparation
+
+- Prepare v0.8.0 with the Auto detect page-turn fix and faster Windows OCR.
+  Use the supported macOS 15 Arm64 Release runner. Local application and release
+  checks pass; the changed shared OCR service requires a newly reviewed macOS
+  runtime seed. [Preparation and limits](docs/release-preparation-0.8.0.md).
+
 ### 2026-11-16
 
 #### Fixed
