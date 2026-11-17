@@ -1,5 +1,25 @@
 # Shared desktop release checklist
 
+v0.8.0 preparation — **2026-11-17**: version/runtime source
+`6af1644cfccda05c867460438b4d44845cbec8e7` includes PRs #47 and #48.
+Local application and release checks pass. The previous seed is incompatible
+with changed shared Python OCR source. The owner approved the exact source/licence
+delivery, and the [replacement seed](macos-runtime-seed.md#v080-replacement-seed--2026-11-17)
+is privately activated with five verified owner uploads. The macOS Release runner
+uses macOS 15 Arm64. See the
+[preparation record](release-preparation-0.8.0.md) for checks and remaining gates.
+
+v0.7.0 observed public pre-release — **2026-11-17**: GitHub reports
+[v0.7.0](https://github.com/chonnakanch/yomimado/releases/tag/v0.7.0) published on
+2026-10-29 at `93581ccab4b999b16347e6404fba023f2203c558` with nine uploaded assets.
+Reported installer SHA-256:
+
+- macOS: `1edc030028768c0f96137999447fd3e065e2d40e8002e1f964759d8217f7be82`
+- Windows: `d0336cbc9be2fecddf4f392c2ec45804f3fb572555957fcfd815a6f7d6a7ac9c`
+
+These are observed hosted metadata, adding no new local installer/hardware test,
+acceptance or waiver. The earlier preparation state below remains historical.
+
 v0.7.0 preparation — **2026-10-28**: branch `release/0.7.0` binds version/runtime
 source `2059ccbbc16dcd8a102eba00ae71b8dcee92a42f`, based on merged PR #45.
 All 477 frontend, 310 service/contracts, 98 local macOS native and 166 release-tool

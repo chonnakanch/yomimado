@@ -4,6 +4,48 @@ For the step-by-step rebuild, source review, private staging and pin activation
 procedure, follow the [release runbook](release-runbook.md#build-a-replacement-macos-seed).
 The records below retain the exact identities and approval scope of existing seeds.
 
+## v0.8.0 replacement seed — 2026-11-17
+
+Exact reviewed source: `6af1644cfccda05c867460438b4d44845cbec8e7`.
+The owner explicitly answered **“Approve source delivery and private seed
+activation”** for this source and unsigned worksheet SHA-256
+`73fb89d7c877d3f01922ec2d8d4ae446d6919cacaa3f4e2c94d97858f506e84f`.
+The separate approved `source-delivery.json` SHA-256 is
+`64d5225d0c5c416e05c11195fef6800e6011f6d75c51cbdfb5b79933f05f865d`.
+The original unsigned worksheet and actual owner decision are retained locally.
+
+Private label: `macos-reviewed-seed-6af1644`, targeting that full source commit.
+The [private draft](https://github.com/chonnakanch/yomimado/releases/tag/untagged-99fbd0ece54f2f46d83d)
+(release ID `448379975`) is unpublished. The draft and all five assets belong
+to `chonnakanch`. The four input names, SHA-256 values, byte counts, asset IDs and
+upload states verified before the activation manifest was uploaded last. Live
+selection picked this seed for the release preparation source.
+
+| Input                                   |     Bytes | SHA-256                                                            |
+| --------------------------------------- | --------: | ------------------------------------------------------------------ |
+| `YomiMado_0.8.0_aarch64.dmg`            | 656466673 | `834fcb18d7cd410c95c928a12375871ff5b4ae44bd3eb99294e99cdd4ff3641c` |
+| `YomiMado_0.8.0_notices_6af1644.tar.gz` |   1104511 | `16e839549a29616b5dd93a61d0001a5aa37ca4f9a725d8f9b1d27970b8fb9255` |
+| `YomiMado_0.8.0_sources_6af1644.tar.gz` | 937890541 | `cbab56996a02dd062a99c4aef7561776548b1b0a417c78d82a62c1a7657feb6f` |
+| `YomiMado_0.8.0_translation_torch.zip`  | 306394404 | `e1c6a0ae58777d1eb4e8085eddff7a908fe0035e95c82178707178b7690434ef` |
+
+Activation manifest: **1,075 bytes**, SHA-256
+`22ae40ba75b9210e1ca28a100a79cd5071197626eb5c86f204b82e66de6ccebe`.
+
+The approved DMG passes mounted bundle/platform/source/signature checks and
+offline OCR/learning/translation/persistence smoke. All 30 frozen app modules
+and the entrypoint match reviewed source. The delivery covers 476 records, 76
+archives and 112 unique native inputs. The 75 reused original dependency archives
+and unchanged inventories verify. Independent comparison covered 163,834 retained
+files with no filtering changes to code or notices. The Torch ZIP matches
+the embedded descriptor and retains its prior bytes. Dependency and data pins
+and reuse guards remain unchanged.
+
+Local evidence is under `services/ocr/build/runtime-seed-6af1644/`; see the
+[preparation record](release-preparation-0.8.0.md) for the separate private test DMG
+hash and application checks. Preserve `6af1644` when merging. Full source-only
+rebuild and unrecorded hardware cases remain unverified. The source decision
+does not approve merging, accepting the exact CI installers or publishing.
+
 ## v0.7.0 replacement seed — 2026-10-28
 
 Exact reviewed source: `2059ccbbc16dcd8a102eba00ae71b8dcee92a42f`.

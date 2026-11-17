@@ -1,6 +1,6 @@
 # Implementation status and feature roadmap
 
-Last reviewed: **2026-10-30**. This is the current plan, not a chronological work
+Last reviewed: **2026-11-17**. This is the current plan, not a chronological work
 log. [CHANGELOG.md](../CHANGELOG.md) records dated changes; the
 [release checklist](desktop-release.md) records publication and exact installers.
 Source completion, UI approval and installer acceptance are separate states.
@@ -38,27 +38,27 @@ at the owner's request.
 - OCR correction preserves the draft when Escape belongs to Japanese IME
   composition; ordinary Escape still cancels editing. Regression coverage is
   recorded with [popup verification](ui-testing.md#learning-popup-modes).
-- The latest public release is **v0.6.0**, source
-  `e1d75bd4e8aab9d659bf22f089070dd2a1328f3e`, published on 2026-10-22 with nine
-  uploaded assets. It includes the OCR geometry, capture/tray and UI changes using
-  reviewed seed `194dd57`. Exact hashes and verification limits remain in the
+- The latest public release is **v0.7.0**, source
+  `93581ccab4b999b16347e6404fba023f2203c558`, published on 2026-10-29 with nine
+  uploaded assets. It includes Auto detect, bubble translation, local backup
+  and improved learning tools using reviewed seed `2059ccb`. Exact hashes and verification limits remain in the
   [release checklist](desktop-release.md). This records hosted publication,
   without new local installer or hardware acceptance.
 - Integration and release procedures are maintained in
   [Git conventions](git-conventions.md) and the [release runbook](release-runbook.md).
   Release dynamically selects an owner-reviewed compatible macOS seed; ordinary
   PR Checks do not block on seed availability.
-- **v0.7.0 is prepared on `release/0.7.0`**, including merged PRs #39–#45.
-  Local application/release checks pass. The changed Python service requires a
-  replacement runtime seed; its exact source/licence delivery is owner-approved
-  and its verified private inputs are activated. Main integration and
-  exact-installer publication remain separate. See the
-  [preparation record](release-preparation-0.7.0.md).
+- **v0.8.0 is prepared on `release/0.8.0`**, including the Auto detect fix and
+  Windows OCR speedup. Local application and release checks pass. The shared
+  Python change requires a replacement macOS runtime seed, which the owner
+  approved and which is now privately activated. Main integration and installer
+  publication are tracked separately.
+  See the [preparation record](release-preparation-0.8.0.md).
 
-The current private macOS runtime seed binds reviewed source `2059ccb`, including
-the v0.7.0 Python backup, translation and OCR fixes. Actual source approval, four uploaded
+The v0.8.0 private macOS runtime seed binds reviewed source `6af1644` and includes
+the updated shared OCR source. Actual source approval, four uploaded
 input hashes and the owner-uploaded activation manifest are retained in the
-[seed record](macos-runtime-seed.md#v070-replacement-seed--2026-10-28).
+[seed record](macos-runtime-seed.md#v080-replacement-seed--2026-11-17).
 Mounted source/signature and frozen offline smoke checks pass; this does not
 change published installers or establish new exact-installer acceptance.
 Later Python service changes require a compatible replacement reviewed runtime seed
